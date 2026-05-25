@@ -123,12 +123,12 @@ export default function IslandBee() {
   ]
 
   const services = [
-    { icon: <Ship className="h-8 w-8" />, title: 'Ferry Tickets', description: 'Book ferries from Turkey to Greek islands' },
-    { icon: <Car className="h-8 w-8" />, title: 'Car Rental', description: 'Explore islands at your own pace' },
-    { icon: <Hotel className="h-8 w-8" />, title: 'Hotels & Stays', description: 'Handpicked accommodations' },
-    { icon: <Compass className="h-8 w-8" />, title: 'Island Tours', description: 'Guided experiences and excursions' },
-    { icon: <FileText className="h-8 w-8" />, title: 'Visa Support', description: 'Schengen visa assistance' },
-    { icon: <Shield className="h-8 w-8" />, title: 'Travel Insurance', description: 'Comprehensive coverage' },
+    { icon: <Ship className="h-8 w-8" />, title: 'Ferry Tickets', description: 'Book ferries from Turkey to Greek islands', href: '/ferry' },
+    { icon: <Car className="h-8 w-8" />, title: 'Car Rental', description: 'Explore islands at your own pace', href: '/car-rental' },
+    { icon: <Hotel className="h-8 w-8" />, title: 'Hotels & Stays', description: 'Handpicked accommodations', href: '#' },
+    { icon: <Compass className="h-8 w-8" />, title: 'Island Tours', description: 'Guided experiences and excursions', href: '/tours' },
+    { icon: <FileText className="h-8 w-8" />, title: 'Visa Support', description: 'Schengen visa assistance', href: '/visa' },
+    { icon: <Shield className="h-8 w-8" />, title: 'Travel Insurance', description: 'Comprehensive coverage', href: '#' },
   ]
 
   const testimonials = [
@@ -143,18 +143,6 @@ export default function IslandBee() {
     { icon: <Globe className="h-6 w-6" />, title: 'Turkce Destek', subtitle: 'Turkish Language Support' },
     { icon: <Shield className="h-6 w-6" />, title: 'Insured Trips', subtitle: 'Full Travel Protection' },
   ]
-
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId)
-    if (section) {
-      const header = document.querySelector('header')
-      const headerHeight = header ? header.offsetHeight : 0
-      const yOffset = -headerHeight - 20
-      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset
-      window.scrollTo({ top: y, behavior: 'smooth' })
-      setIsMenuOpen(false)
-    }
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background scroll-smooth">
@@ -189,19 +177,18 @@ export default function IslandBee() {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {[
-              { id: 'services', label: 'Services' },
-              { id: 'islands', label: 'Islands' },
-              { id: 'cars', label: 'Car Rental' },
-              { id: 'tours', label: 'Tours' },
-              { id: 'support', label: 'Support' },
+              { href: '/ferry', label: 'Ferry Tickets' },
+              { href: '/car-rental', label: 'Car Rental' },
+              { href: '/tours', label: 'Tours' },
+              { href: '/visa', label: 'Visa Support' },
             ].map((item) => (
-              <button
-                key={item.id}
+              <Link
+                key={item.href}
+                href={item.href}
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => scrollToSection(item.id)}
               >
                 {item.label}
-              </button>
+              </Link>
             ))}
           </nav>
           <div className="flex items-center gap-3">
@@ -222,19 +209,19 @@ export default function IslandBee() {
               <SheetContent side="right">
                 <div className="flex flex-col gap-4 mt-8">
                   {[
-                    { id: 'services', label: 'Services' },
-                    { id: 'islands', label: 'Islands' },
-                    { id: 'cars', label: 'Car Rental' },
-                    { id: 'tours', label: 'Tours' },
-                    { id: 'support', label: 'Support' },
+                    { href: '/ferry', label: 'Ferry Tickets' },
+                    { href: '/car-rental', label: 'Car Rental' },
+                    { href: '/tours', label: 'Tours' },
+                    { href: '/visa', label: 'Visa Support' },
                   ].map((item) => (
-                    <button
-                      key={item.id}
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors text-left"
-                      onClick={() => scrollToSection(item.id)}
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </SheetContent>
@@ -787,15 +774,17 @@ export default function IslandBee() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-border/50 bg-card">
-                    <CardContent className="p-6 flex flex-col items-center text-center">
-                      <div className="mb-4 p-3 bg-primary/10 rounded-xl text-primary">
-                        {service.icon}
-                      </div>
-                      <h3 className="font-semibold text-foreground mb-2">{service.title}</h3>
-                      <p className="text-sm text-muted-foreground">{service.description}</p>
-                    </CardContent>
-                  </Card>
+                  <Link href={service.href}>
+                    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-border/50 bg-card">
+                      <CardContent className="p-6 flex flex-col items-center text-center">
+                        <div className="mb-4 p-3 bg-primary/10 rounded-xl text-primary">
+                          {service.icon}
+                        </div>
+                        <h3 className="font-semibold text-foreground mb-2">{service.title}</h3>
+                        <p className="text-sm text-muted-foreground">{service.description}</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -814,10 +803,12 @@ export default function IslandBee() {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Car Fleet</h2>
                 <p className="text-muted-foreground text-lg max-w-xl">Perfect cars for island exploration. Pick up at port or your hotel.</p>
               </div>
-              <Button variant="outline" className="mt-4 md:mt-0 text-foreground border-border">
-                View All Cars
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+              <Link href="/car-rental">
+                <Button variant="outline" className="mt-4 md:mt-0 text-foreground border-border">
+                  View All Cars
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {carFleet.map((car, index) => (
@@ -990,10 +981,12 @@ export default function IslandBee() {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Tours & Experiences</h2>
                 <p className="text-muted-foreground text-lg max-w-xl">Unforgettable adventures guided by local experts</p>
               </div>
-              <Button variant="outline" className="mt-4 md:mt-0 text-foreground border-border">
-                View All Tours
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+              <Link href="/tours">
+                <Button variant="outline" className="mt-4 md:mt-0 text-foreground border-border">
+                  View All Tours
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {tours.map((tour, index) => (
@@ -1268,6 +1261,20 @@ export default function IslandBee() {
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <motion.a
+        href="https://wa.me/90532XXXXXXX?text=Merhaba,%20Yunan%20adalar%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+      >
+        <MessageCircle className="h-6 w-6" />
+        <span className="font-semibold hidden sm:inline">WhatsApp ile Yazin</span>
+      </motion.a>
     </div>
   )
 }
