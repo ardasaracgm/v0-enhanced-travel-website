@@ -1,11 +1,15 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
+// Check if Supabase is properly configured
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
+
+// Create client only if configured, otherwise create a dummy client that will fail gracefully
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
 )
 
 // Types for database tables
@@ -91,6 +95,10 @@ export interface Car {
  * Create or get existing customer by email
  */
 export async function getOrCreateCustomer(email: string, phone: string): Promise<{ data: Customer | null; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { data: null, error: new Error('Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.') }
+  }
+
   // First try to find existing customer
   const { data: existingCustomer, error: findError } = await supabase
     .from('customers')
@@ -207,6 +215,10 @@ export async function completeBooking(params: {
     isLeadPassenger: boolean
   }>
 }): Promise<{ success: boolean; bookingId?: string; error?: string }> {
+  if (!isSupabaseConfigured) {
+    return { success: false, error: 'Supabase is not configured. Your booking was not saved to the database.' }
+  }
+
   try {
     // 1. Get or create customer
     const { data: customer, error: customerError } = await getOrCreateCustomer(params.email, params.phone)
@@ -269,6 +281,10 @@ export async function completeBooking(params: {
  * Save a contact form submission
  */
 export async function saveContactRequest(request: Omit<ContactRequest, 'id' | 'created_at' | 'status'>): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured) {
+    return { success: false, error: 'Supabase is not configured. Please add environment variables.' }
+  }
+
   const { error } = await supabase
     .from('contact_requests')
     .insert({ ...request, status: 'new' })
@@ -284,6 +300,10 @@ export async function saveContactRequest(request: Omit<ContactRequest, 'id' | 'c
  * Get all available cars
  */
 export async function getAvailableCars(): Promise<{ data: Car[] | null; error: Error | null; isEmpty: boolean }> {
+  if (!isSupabaseConfigured) {
+    return { data: null, error: new Error('Supabase is not configured'), isEmpty: true }
+  }
+
   const { data, error } = await supabase
     .from('cars')
     .select('*')
