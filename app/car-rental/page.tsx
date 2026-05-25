@@ -259,19 +259,20 @@ export default function CarRentalPage() {
               <p className="text-muted-foreground text-lg">Well-maintained vehicles perfect for exploring Kos Island</p>
             </div>
             
-            {error && (
-              <Alert className="mb-8 max-w-2xl mx-auto border-red-200 bg-red-50">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  <strong>Database Error:</strong> {error}
+            {/* Only show database error in development */}
+            {error && process.env.NODE_ENV === 'development' && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  <strong>Dev Notice:</strong> {error}
                 </AlertDescription>
               </Alert>
             )}
             
-            {usingFallback && !error && (
-              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
+            {usingFallback && !error && process.env.NODE_ENV === 'development' && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-blue-200 bg-blue-50">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
                   {fallbackReason}
                 </AlertDescription>
               </Alert>
