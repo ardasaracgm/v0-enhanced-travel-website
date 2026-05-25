@@ -287,7 +287,7 @@ export default function VisaSupportPage() {
                     <p className="text-sm text-muted-foreground">{step.description}</p>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-px bg-border" />
+                    <div className="hidden md:block absolute top-8 left-[60%] w-[40%] h-px bg-border" />
                   )}
                 </motion.div>
               ))}

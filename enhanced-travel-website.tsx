@@ -600,12 +600,12 @@ export default function TravelBeez() {
                 </ul>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                className="relative"
+                className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl"
               >
-                <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
+                <div className="relative h-full w-full overflow-hidden">
                   <Image
                     src="https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80"
                     alt="Greek islands landscape"
@@ -614,7 +614,7 @@ export default function TravelBeez() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
                 </div>
-                <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-lg border border-border/50">
+                <div className="absolute bottom-0 left-0 bg-card p-4 rounded-tr-xl shadow-lg border-t border-r border-border/50">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <Award className="h-6 w-6 text-primary" />
