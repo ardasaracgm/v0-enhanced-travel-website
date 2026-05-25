@@ -24,6 +24,13 @@ import {
   ChevronDown,
   Anchor,
   Building2,
+  Globe,
+  CreditCard,
+  Headphones,
+  BadgeCheck,
+  Lock,
+  Award,
+  Heart,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -82,10 +89,30 @@ export default function IslandBee() {
   ]
 
   const carFleet = [
-    { type: 'Economy', model: 'Fiat Panda', price: '25', image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&q=80', features: ['A/C', 'Manual', '4 Seats'] },
-    { type: 'Compact', model: 'VW Polo', price: '35', image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80', features: ['A/C', 'Automatic', '5 Seats'] },
-    { type: 'SUV', model: 'Jeep Renegade', price: '55', image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400&q=80', features: ['A/C', 'Automatic', '5 Seats'] },
-    { type: 'Convertible', model: 'Mini Cooper', price: '65', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80', features: ['A/C', 'Automatic', '4 Seats'] },
+    { 
+      type: 'Mini', 
+      model: 'Citroen Ami', 
+      price: '19', 
+      image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80', 
+      features: ['Electric', '2 Seats', 'City Perfect'],
+      badge: 'Eco-Friendly'
+    },
+    { 
+      type: 'Economy', 
+      model: 'Fiat Panda', 
+      price: '25', 
+      image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&q=80', 
+      features: ['A/C', 'Manual', '4 Seats'],
+      badge: 'Most Popular'
+    },
+    { 
+      type: 'Compact', 
+      model: 'DFSK 500', 
+      price: '29', 
+      image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80', 
+      features: ['A/C', 'Manual', '5 Seats'],
+      badge: 'Best Value'
+    },
   ]
 
   const tours = [
@@ -110,11 +137,11 @@ export default function IslandBee() {
     { name: 'Mehmet S.', location: 'Ankara', comment: 'Vize islemlerinde buyuk yardımcı oldular. Kesinlikle tavsiye ederim.', rating: 5 },
   ]
 
-  const whyChooseUs = [
-    { icon: <CheckCircle className="h-10 w-10 text-primary" />, title: 'Local Expertise', description: 'Years of experience in Greek island travel' },
-    { icon: <Clock className="h-10 w-10 text-primary" />, title: 'Fast Booking', description: 'Instant confirmations for all services' },
-    { icon: <Shield className="h-10 w-10 text-primary" />, title: 'Secure Payments', description: 'Safe transactions with full protection' },
-    { icon: <Phone className="h-10 w-10 text-primary" />, title: '24/7 Support', description: 'Always here when you need us' },
+  const trustBadges = [
+    { icon: <BadgeCheck className="h-6 w-6" />, title: 'Greek Licensed', subtitle: 'EOT Registered Company' },
+    { icon: <Lock className="h-6 w-6" />, title: 'Secure Payment', subtitle: '256-bit SSL Encryption' },
+    { icon: <Globe className="h-6 w-6" />, title: 'Turkce Destek', subtitle: 'Turkish Language Support' },
+    { icon: <Shield className="h-6 w-6" />, title: 'Insured Trips', subtitle: 'Full Travel Protection' },
   ]
 
   const scrollToSection = (sectionId: string) => {
@@ -131,6 +158,24 @@ export default function IslandBee() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background scroll-smooth">
+      {/* Top Trust Bar */}
+      <div className="w-full bg-primary/5 border-b border-primary/10 py-2">
+        <div className="container flex items-center justify-center gap-6 text-xs md:text-sm">
+          <div className="flex items-center gap-2 text-foreground">
+            <BadgeCheck className="h-4 w-4 text-primary" />
+            <span>Greek Licensed Company (EOT)</span>
+          </div>
+          <div className="hidden md:flex items-center gap-2 text-foreground">
+            <Globe className="h-4 w-4 text-primary" />
+            <span>Turkce Destek</span>
+          </div>
+          <div className="hidden md:flex items-center gap-2 text-foreground">
+            <Lock className="h-4 w-4 text-primary" />
+            <span>Secure Payments</span>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
@@ -160,8 +205,8 @@ export default function IslandBee() {
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" className="hidden md:flex gap-2 text-foreground">
-              <Phone className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="hidden md:flex gap-2 text-foreground border-primary/30 hover:border-primary hover:bg-primary/5">
+              <Phone className="h-4 w-4 text-primary" />
               +90 532 XXX XX XX
             </Button>
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -236,6 +281,27 @@ export default function IslandBee() {
               >
                 Ferry tickets, car rentals, hotels, and tours to Kos, Rhodes, Samos, Leros, and Patmos. Trusted by thousands of Turkish travelers.
               </motion.p>
+              
+              {/* Hero Trust Indicators */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-2"
+              >
+                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Star className="h-4 w-4 text-accent fill-current" />
+                  <span>4.9/5 (2,400+ Reviews)</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span>15,000+ Happy Travelers</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Award className="h-4 w-4 text-primary" />
+                  <span>Since 2018</span>
+                </div>
+              </motion.div>
             </div>
 
             {/* Search Tabs */}
@@ -354,9 +420,9 @@ export default function IslandBee() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="any">Any</SelectItem>
-                                <SelectItem value="economy">Economy</SelectItem>
-                                <SelectItem value="compact">Compact</SelectItem>
-                                <SelectItem value="suv">SUV</SelectItem>
+                                <SelectItem value="mini">Mini (Citroen Ami)</SelectItem>
+                                <SelectItem value="economy">Economy (Fiat Panda)</SelectItem>
+                                <SelectItem value="compact">Compact (DFSK 500)</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -472,66 +538,235 @@ export default function IslandBee() {
           </div>
         </section>
 
-        {/* Kos Port Office Section */}
-        <section className="w-full py-16 md:py-20 bg-secondary/30">
+        {/* Trust Badges Section */}
+        <section className="w-full py-8 bg-secondary/50 border-y border-border/30">
           <div className="container px-4 md:px-6">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+              {trustBadges.map((badge, index) => (
+                <motion.div
+                  key={badge.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center gap-3 justify-center md:justify-start"
+                >
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    {badge.icon}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{badge.title}</p>
+                    <p className="text-xs text-muted-foreground">{badge.subtitle}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Greek Licensed Company Section */}
+        <section className="w-full py-16 md:py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/30">
+          <div className="container px-4 md:px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="space-y-6"
+              >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                  <Anchor className="h-4 w-4" />
-                  Kos Port Office
+                  <BadgeCheck className="h-4 w-4" />
+                  Greek Registered Company
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
-                  Meet Us at Kos Port
+                  Licensed & Registered in Greece
                 </h2>
-                <p className="text-muted-foreground text-lg text-pretty">
-                  Our friendly team is ready to welcome you at Kos Port. Pick up your rental car, get your tour tickets, or simply ask for local recommendations.
+                <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
+                  IslandBee is a fully licensed Greek travel company registered with the Greek National Tourism Organization (EOT). We operate from our office in Kos, ensuring you receive authentic local service with full legal protection.
                 </p>
-                <ul className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-card border border-border/50">
+                    <p className="text-2xl font-bold text-primary">EOT</p>
+                    <p className="text-sm text-muted-foreground">Licensed Tourism Agency</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-card border border-border/50">
+                    <p className="text-2xl font-bold text-primary">GEMI</p>
+                    <p className="text-sm text-muted-foreground">Greek Business Registry</p>
+                  </div>
+                </div>
+                <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Car delivery directly to the port</span>
+                    <span>Full EU consumer protection rights</span>
                   </li>
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Turkish-speaking staff available</span>
+                    <span>Insured business operations</span>
                   </li>
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Free island maps and travel tips</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-foreground">
-                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Last-minute tour bookings</span>
+                    <span>Official receipts and invoices</span>
                   </li>
                 </ul>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Get Directions
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
-              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="relative"
+              >
+                <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
+                  <Image
+                    src="https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80"
+                    alt="Greek islands landscape"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
+                </div>
+                <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-lg border border-border/50">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Award className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">6+ Years</p>
+                      <p className="text-sm text-muted-foreground">Serving Turkish Travelers</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Real Kos Port Office Section */}
+        <section className="w-full py-16 md:py-20 bg-card">
+          <div className="container px-4 md:px-6">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              <div className="order-2 md:order-1 relative h-[450px] rounded-2xl overflow-hidden shadow-xl">
                 <Image
                   src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
                   alt="Kos Port Office"
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
-                  <div className="bg-card/95 backdrop-blur p-4 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-primary-foreground" />
+                  <div className="bg-card/95 backdrop-blur p-5 rounded-xl">
+                    <div className="flex items-start gap-4">
+                      <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <Building2 className="h-7 w-7 text-primary-foreground" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">IslandBee Kos Office</p>
-                        <p className="text-sm text-muted-foreground">Open Daily 8:00 - 20:00</p>
+                        <p className="font-bold text-foreground text-lg">IslandBee Kos Office</p>
+                        <p className="text-sm text-muted-foreground mb-2">Akti Kountouriotou 5, Kos Port</p>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1 text-primary">
+                            <Clock className="h-4 w-4" />
+                            08:00 - 20:00
+                          </span>
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Phone className="h-4 w-4" />
+                            +30 22420 XXXXX
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <div className="order-1 md:order-2 space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent-foreground text-sm font-medium">
+                  <Anchor className="h-4 w-4 text-accent" />
+                  Physical Office at Kos Port
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
+                  Meet Us When You Arrive
+                </h2>
+                <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
+                  Our office is located directly at Kos Port, just steps from where your ferry arrives. Our Turkish-speaking team will greet you, hand over your rental car keys, and help with anything you need.
+                </p>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3 text-foreground">
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-medium">Port-side car delivery</span>
+                      <p className="text-sm text-muted-foreground">Your car waits at the ferry terminal</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 text-foreground">
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-medium">Turkish-speaking staff</span>
+                      <p className="text-sm text-muted-foreground">Communicate easily in your language</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 text-foreground">
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-medium">Local insider tips</span>
+                      <p className="text-sm text-muted-foreground">Best restaurants, beaches, and hidden gems</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 text-foreground">
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-medium">Emergency support</span>
+                      <p className="text-sm text-muted-foreground">24/7 help while you&apos;re on the island</p>
+                    </div>
+                  </li>
+                </ul>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Get Directions
+                  </Button>
+                  <Button variant="outline" className="border-primary/30 text-foreground hover:bg-primary/5">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Chat with Us
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Customer Support Highlights */}
+        <section className="w-full py-16 md:py-20 bg-muted/30">
+          <div className="container px-4 md:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Always Here For You</h2>
+              <p className="text-muted-foreground text-lg">Real support from real people, in Turkish</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: <MessageCircle className="h-8 w-8" />, title: 'WhatsApp Support', description: 'Instant replies on WhatsApp. Write in Turkish, get answers fast.', highlight: 'Response < 5 min' },
+                { icon: <Phone className="h-8 w-8" />, title: 'Phone Support', description: 'Call us directly from Turkey or Greece. We speak Turkish fluently.', highlight: '+90 & +30 lines' },
+                { icon: <Headphones className="h-8 w-8" />, title: '24/7 Emergency', description: 'Problems on the island? We handle emergencies any time, day or night.', highlight: 'Always available' },
+                { icon: <Heart className="h-8 w-8" />, title: 'Personal Service', description: 'No call centers. You talk to our team who knows your booking.', highlight: 'Dedicated team' },
+              ].map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="h-full bg-card border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="mb-4 p-3 inline-block bg-primary/10 rounded-xl text-primary">
+                        {item.icon}
+                      </div>
+                      <h3 className="font-semibold text-lg text-foreground mb-2">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+                        {item.highlight}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
@@ -567,20 +802,24 @@ export default function IslandBee() {
           </div>
         </section>
 
-        {/* Car Fleet Section */}
-        <section id="cars" className="w-full py-16 md:py-24 bg-muted/30">
+        {/* Car Fleet Section - Updated */}
+        <section id="cars" className="w-full py-16 md:py-24 bg-gradient-to-b from-secondary/30 to-background">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12">
               <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                  <Car className="h-4 w-4" />
+                  Kos Island Fleet
+                </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Car Fleet</h2>
-                <p className="text-muted-foreground text-lg max-w-xl">Choose from our well-maintained vehicles. Pick up at port or hotel.</p>
+                <p className="text-muted-foreground text-lg max-w-xl">Perfect cars for island exploration. Pick up at port or your hotel.</p>
               </div>
               <Button variant="outline" className="mt-4 md:mt-0 text-foreground border-border">
                 View All Cars
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {carFleet.map((car, index) => (
                 <motion.div
                   key={car.model}
@@ -589,42 +828,102 @@ export default function IslandBee() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
+                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card border-border/50">
                     <CardContent className="p-0">
-                      <div className="relative h-48 bg-muted">
+                      <div className="relative h-52 bg-gradient-to-br from-muted to-muted/50">
                         <Image
                           src={car.image}
                           alt={car.model}
                           fill
                           className="object-cover"
                         />
-                        <div className="absolute top-3 left-3">
+                        <div className="absolute top-3 left-3 flex gap-2">
                           <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
                             {car.type}
                           </span>
+                          {car.badge && (
+                            <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
+                              {car.badge}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="p-5">
-                        <h3 className="font-semibold text-lg text-foreground mb-2">{car.model}</h3>
-                        <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="p-6">
+                        <h3 className="font-bold text-xl text-foreground mb-3">{car.model}</h3>
+                        <div className="flex flex-wrap gap-2 mb-5">
                           {car.features.map((feature) => (
-                            <span key={feature} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded">
+                            <span key={feature} className="px-3 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg font-medium">
                               {feature}
                             </span>
                           ))}
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between pt-4 border-t border-border/50">
                           <div>
-                            <span className="text-2xl font-bold text-primary">{car.price}</span>
+                            <span className="text-3xl font-bold text-primary">{car.price}</span>
                             <span className="text-muted-foreground text-sm">/day</span>
                           </div>
-                          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">Book</Button>
+                          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </motion.div>
               ))}
+            </div>
+            {/* Car Fleet Trust Indicators */}
+            <div className="mt-10 p-6 bg-card rounded-2xl border border-border/50">
+              <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
+                <div className="flex items-center gap-2 text-foreground">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>Full insurance included</span>
+                </div>
+                <div className="flex items-center gap-2 text-foreground">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>No hidden fees</span>
+                </div>
+                <div className="flex items-center gap-2 text-foreground">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>Free cancellation 24h before</span>
+                </div>
+                <div className="flex items-center gap-2 text-foreground">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>Port delivery included</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Secure Payment Section */}
+        <section className="w-full py-12 bg-card border-y border-border/30">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl">
+                  <Lock className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground text-lg">Secure Payments</h3>
+                  <p className="text-sm text-muted-foreground">256-bit SSL encryption. Your data is always protected.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 flex-wrap justify-center">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-sm font-medium">Visa</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-sm font-medium">Mastercard</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CreditCard className="h-6 w-6" />
+                  <span className="text-sm font-medium">TROY</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span className="text-sm font-medium">Bank Transfer (TL/EUR)</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -825,40 +1124,12 @@ export default function IslandBee() {
           </div>
         </section>
 
-        {/* Why Choose Us */}
+        {/* Testimonials */}
         <section className="w-full py-16 md:py-24 bg-muted/30">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Choose IslandBee</h2>
-              <p className="text-muted-foreground text-lg">Trusted by thousands of travelers from Turkey</p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {whyChooseUs.map((item, index) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
-                    {item.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="w-full py-16 md:py-24">
-          <div className="container px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">What Our Travelers Say</h2>
-              <p className="text-muted-foreground text-lg">Real experiences from real travelers</p>
+              <p className="text-muted-foreground text-lg">Real experiences from Turkish travelers</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {testimonials.map((testimonial, index) => (
@@ -894,17 +1165,17 @@ export default function IslandBee() {
           </div>
         </section>
 
-        {/* WhatsApp CTA */}
-        <section className="w-full py-16 md:py-24 bg-primary">
+        {/* WhatsApp CTA Section */}
+        <section className="w-full py-16 md:py-24 bg-gradient-to-r from-primary to-primary/80">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="text-center md:text-left">
                 <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">Ready to Plan Your Trip?</h2>
-                <p className="text-primary-foreground/80 text-lg max-w-xl">
-                  Chat with us on WhatsApp for instant booking and personalized travel assistance.
+                <p className="text-primary-foreground/90 text-lg max-w-xl">
+                  Chat with us on WhatsApp for instant booking and personalized travel assistance. We reply in Turkish!
                 </p>
               </div>
-              <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 bg-card text-foreground hover:bg-card/90">
+              <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 bg-card text-foreground hover:bg-card/90 shadow-lg">
                 <MessageCircle className="h-5 w-5" />
                 Chat on WhatsApp
               </Button>
@@ -913,11 +1184,22 @@ export default function IslandBee() {
         </section>
       </main>
 
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/905321234567"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] hover:bg-[#20BA5C] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+      >
+        <MessageCircle className="h-6 w-6" />
+        <span className="font-medium hidden sm:inline group-hover:inline">WhatsApp ile Yazin</span>
+      </a>
+
       {/* Footer */}
       <footer className="w-full border-t border-border bg-card">
         <div className="container px-4 md:px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+            <div className="col-span-2">
               <Link className="flex items-center gap-2 mb-4" href="#">
                 <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-lg">B</span>
@@ -925,11 +1207,21 @@ export default function IslandBee() {
                 <span className="text-xl font-bold text-foreground">Island<span className="text-primary">Bee</span></span>
               </Link>
               <p className="text-sm text-muted-foreground mb-4">
-                Your trusted partner for Greek island travel from Turkey.
+                Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (EOT).
               </p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                +90 532 XXX XX XX
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <span>TR: +90 532 XXX XX XX</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <span>GR: +30 22420 XXXXX</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>Akti Kountouriotou 5, Kos, Greece</span>
+                </div>
               </div>
             </div>
             <div>
@@ -961,13 +1253,17 @@ export default function IslandBee() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              2024 IslandBee. All rights reserved.
-            </p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <div className="border-t border-border mt-8 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                <span>2024 IslandBee Travel Ltd.</span>
+                <span>EOT License: XXXXXXX</span>
+                <span>GEMI: XXXXXXXXXX</span>
+              </div>
+              <div className="flex gap-6 text-sm text-muted-foreground">
+                <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+              </div>
             </div>
           </div>
         </div>
