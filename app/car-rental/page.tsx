@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { Car, Calendar, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap } from 'lucide-react'
+import { Car, Calendar, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
@@ -28,37 +29,45 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
+import { getAvailableCars, type Car as CarType } from '@/lib/supabase'
 
-const carFleet = [
+// Fallback data in case database is empty or unavailable
+const fallbackCarFleet = [
   { 
+    id: 'fallback-1',
     type: 'City Car', 
     model: 'Citroen Ami', 
-    price: '€19', 
+    price: 19, 
     image: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80', 
     features: ['Electric', '2 Seats', 'Auto'],
     specs: { fuel: 'Electric', seats: 2, transmission: 'Automatic', ac: true },
     badge: 'Eco-Friendly',
-    description: 'Perfect for couples exploring Kos Town. 100% electric, easy to park, and fun to drive along the coast.'
+    description: 'Perfect for couples exploring Kos Town. 100% electric, easy to park, and fun to drive along the coast.',
+    available: true,
   },
   { 
+    id: 'fallback-2',
     type: 'Economy', 
     model: 'Fiat Panda', 
-    price: '€25', 
+    price: 25, 
     image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80', 
     features: ['Petrol', '4 Seats', 'Manual'],
     specs: { fuel: 'Petrol', seats: 4, transmission: 'Manual', ac: true },
     badge: 'Most Popular',
-    description: 'Our most popular choice for families. Reliable, fuel-efficient, and perfect for island exploration.'
+    description: 'Our most popular choice for families. Reliable, fuel-efficient, and perfect for island exploration.',
+    available: true,
   },
   { 
+    id: 'fallback-3',
     type: 'Compact', 
     model: 'DFSK 500', 
-    price: '€29', 
+    price: 29, 
     image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80', 
     features: ['Petrol', '5 Seats', 'Manual'],
     specs: { fuel: 'Petrol', seats: 5, transmission: 'Manual', ac: true },
     badge: 'Best Value',
-    description: 'Spacious and comfortable for families or groups. Great luggage space for longer stays.'
+    description: 'Spacious and comfortable for families or groups. Great luggage space for longer stays.',
+    available: true,
   },
 ]
 
@@ -97,6 +106,48 @@ const benefits = [
 ]
 
 export default function CarRentalPage() {
+  const [cars, setCars] = React.useState<CarType[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [usingFallback, setUsingFallback] = React.useState(false)
+  const [fallbackReason, setFallbackReason] = React.useState<string>('')
+
+  React.useEffect(() => {
+    async function fetchCars() {
+      console.log('[v0] CarRentalPage: Starting car fetch...')
+      setLoading(true)
+      setError(null)
+      setUsingFallback(false)
+      
+      const { data, error: fetchError, isEmpty } = await getAvailableCars()
+      
+      console.log('[v0] CarRentalPage: Fetch result:', { 
+        dataLength: data?.length, 
+        error: fetchError?.message,
+        isEmpty 
+      })
+      
+      if (fetchError) {
+        console.error('[v0] CarRentalPage: Fetch error:', fetchError.message)
+        setError(fetchError.message)
+        setCars(fallbackCarFleet as CarType[])
+        setUsingFallback(true)
+        setFallbackReason(`Database error: ${fetchError.message}`)
+      } else if (isEmpty || !data || data.length === 0) {
+        console.log('[v0] CarRentalPage: No cars in database, using fallback')
+        setCars(fallbackCarFleet as CarType[])
+        setUsingFallback(true)
+        setFallbackReason('No cars found in database. Showing default fleet.')
+      } else {
+        console.log('[v0] CarRentalPage: Successfully loaded', data.length, 'cars from database')
+        setCars(data)
+      }
+      setLoading(false)
+    }
+
+    fetchCars()
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <TrustBar />
@@ -217,71 +268,97 @@ export default function CarRentalPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Car Fleet</h2>
               <p className="text-muted-foreground text-lg">Well-maintained vehicles perfect for exploring Kos Island</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {carFleet.map((car, index) => (
-                <motion.div
-                  key={car.model}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card border-border/50 h-full">
-                    <CardContent className="p-0 flex flex-col h-full">
-                      <div className="relative h-56 bg-gradient-to-br from-muted to-muted/50">
-                        <Image
-                          src={car.image}
-                          alt={car.model}
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute top-3 left-3 flex gap-2">
-                          <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                            {car.type}
-                          </span>
-                          {car.badge && (
-                            <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
-                              {car.badge}
+            
+            {error && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <strong>Database Error:</strong> {error}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {usingFallback && !error && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  {fallbackReason}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">Loading available cars...</span>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8">
+                {cars.map((car, index) => (
+                  <motion.div
+                    key={car.id || car.model}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card border-border/50 h-full">
+                      <CardContent className="p-0 flex flex-col h-full">
+                        <div className="relative h-56 bg-gradient-to-br from-muted to-muted/50">
+                          <Image
+                            src={car.image}
+                            alt={car.model}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute top-3 left-3 flex gap-2">
+                            <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                              {car.type}
                             </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="p-6 flex flex-col flex-1">
-                        <h3 className="font-bold text-2xl text-foreground mb-2">{car.model}</h3>
-                        <p className="text-muted-foreground text-sm mb-4">{car.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-3 mb-6">
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Fuel className="h-4 w-4 text-primary" />
-                            <span>{car.specs.fuel}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Users className="h-4 w-4 text-primary" />
-                            <span>{car.specs.seats} Seats</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Settings className="h-4 w-4 text-primary" />
-                            <span>{car.specs.transmission}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Zap className="h-4 w-4 text-primary" />
-                            <span>A/C</span>
+                            {car.badge && (
+                              <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
+                                {car.badge}
+                              </span>
+                            )}
                           </div>
                         </div>
-                        
-                        <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
-                          <div>
-                            <span className="text-3xl font-bold text-primary">{car.price}</span>
-                            <span className="text-muted-foreground text-sm">/day</span>
+                        <div className="p-6 flex flex-col flex-1">
+                          <h3 className="font-bold text-2xl text-foreground mb-2">{car.model}</h3>
+                          <p className="text-muted-foreground text-sm mb-4">{car.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-3 mb-6">
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Fuel className="h-4 w-4 text-primary" />
+                              <span>{car.specs.fuel}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Users className="h-4 w-4 text-primary" />
+                              <span>{car.specs.seats} Seats</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Settings className="h-4 w-4 text-primary" />
+                              <span>{car.specs.transmission}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Zap className="h-4 w-4 text-primary" />
+                              <span>A/C</span>
+                            </div>
                           </div>
-                          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
+                          
+                          <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
+                            <div>
+                              <span className="text-3xl font-bold text-primary">&euro;{car.price}</span>
+                              <span className="text-muted-foreground text-sm">/day</span>
+                            </div>
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
             
             {/* Included Features */}
             <div className="mt-12 p-6 bg-card rounded-2xl border border-border/50">

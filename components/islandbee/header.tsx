@@ -11,6 +11,7 @@ const navItems = [
   { href: '/car-rental', label: 'Car Rental' },
   { href: '/tours', label: 'Tours' },
   { href: '/visa', label: 'Visa Support' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 export function Header() {

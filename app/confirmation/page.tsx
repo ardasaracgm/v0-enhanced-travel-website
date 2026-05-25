@@ -2,22 +2,27 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { Ship, CheckCircle, Download, Mail, Phone, MapPin, Calendar, Clock, User, ArrowRight, Home } from 'lucide-react'
+import { Ship, CheckCircle, Download, Mail, Phone, MapPin, Calendar, Clock, User, ArrowRight, Home, AlertCircle, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { useBooking } from '@/lib/booking-context'
+import { completeBooking } from '@/lib/supabase'
 
 export default function ConfirmationPage() {
   const { state } = useBooking()
+  const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = React.useState<string>('')
+  const hasSaved = React.useRef(false)
 
   React.useEffect(() => {
     // Trigger confetti on page load
@@ -28,6 +33,80 @@ export default function ConfirmationPage() {
       colors: ['#1e88e5', '#FFD54F', '#4CAF50'],
     })
   }, [])
+
+  // Save booking to Supabase
+  React.useEffect(() => {
+    async function saveBooking() {
+      console.log('[v0] ConfirmationPage: saveBooking effect running')
+      console.log('[v0] ConfirmationPage: hasSaved:', hasSaved.current)
+      console.log('[v0] ConfirmationPage: state check:', {
+        hasSelectedFerry: !!state.selectedFerry,
+        hasBookingReference: !!state.bookingReference,
+        hasContactEmail: !!state.contactEmail
+      })
+      
+      if (hasSaved.current || !state.selectedFerry || !state.bookingReference || !state.contactEmail) {
+        console.log('[v0] ConfirmationPage: Skipping save - conditions not met')
+        return
+      }
+      
+      hasSaved.current = true
+      setSaveStatus('saving')
+      console.log('[v0] ConfirmationPage: Starting Supabase save...')
+
+      // Parse total price (remove € symbol and convert to number)
+      const totalPriceNum = typeof state.totalPrice === 'string' 
+        ? parseFloat(state.totalPrice.replace('€', '').replace(',', '.'))
+        : state.totalPrice
+      
+      console.log('[v0] ConfirmationPage: Total price parsed:', totalPriceNum)
+
+      // Prepare passengers data
+      const passengersData = state.passengers.map((p, index) => {
+        const nameParts = p.fullName.split(' ')
+        const firstName = nameParts[0] || ''
+        const lastName = nameParts.slice(1).join(' ') || ''
+        
+        return {
+          firstName,
+          lastName,
+          birthDate: p.birthDate,
+          passportNumber: p.passportNumber,
+          nationality: p.nationality,
+          isLeadPassenger: index === 0,
+        }
+      })
+      
+      console.log('[v0] ConfirmationPage: Passengers prepared:', passengersData.length)
+
+      const result = await completeBooking({
+        email: state.contactEmail,
+        phone: state.contactPhone,
+        bookingReference: state.bookingReference,
+        routeFrom: state.selectedFerry.from,
+        routeTo: state.selectedFerry.to,
+        departureDate: state.searchParams.date,
+        returnDate: state.searchParams.returnDate || undefined,
+        outboundFerry: `${state.selectedFerry.operator} - ${state.selectedFerry.vessel}`,
+        returnFerry: state.returnFerry ? `${state.returnFerry.operator} - ${state.returnFerry.vessel}` : undefined,
+        totalPrice: totalPriceNum,
+        passengers: passengersData,
+      })
+
+      console.log('[v0] ConfirmationPage: completeBooking result:', result)
+
+      if (result.success) {
+        console.log('[v0] ConfirmationPage: Save SUCCESS!')
+        setSaveStatus('success')
+      } else {
+        console.error('[v0] ConfirmationPage: Save FAILED:', result.error)
+        setSaveStatus('error')
+        setErrorMessage(result.error || 'Failed to save booking')
+      }
+    }
+
+    saveBooking()
+  }, [state])
 
   if (!state.selectedFerry || !state.bookingReference) {
     return (
@@ -77,9 +156,51 @@ export default function ConfirmationPage() {
               <p className="text-sm text-muted-foreground">
                 Confirmation email sent to <span className="font-medium text-foreground">{state.contactEmail}</span>
               </p>
+              
+              {/* Save Status Indicator */}
+              {saveStatus === 'saving' && (
+                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving booking details...</span>
+                </div>
+              )}
             </motion.div>
           </div>
         </section>
+
+        {/* Status Messages */}
+        {saveStatus === 'error' && (
+          <section className="w-full py-4">
+            <div className="container px-4 md:px-6">
+              <div className="max-w-3xl mx-auto">
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Database Save Failed</AlertTitle>
+                  <AlertDescription>
+                    {errorMessage}. Your booking reference <strong>{state.bookingReference}</strong> is still valid. 
+                    Please contact our support team via WhatsApp with your booking reference.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {saveStatus === 'success' && (
+          <section className="w-full py-4">
+            <div className="container px-4 md:px-6">
+              <div className="max-w-3xl mx-auto">
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertTitle className="text-green-800">Booking Saved Successfully</AlertTitle>
+                  <AlertDescription className="text-green-700">
+                    Your booking has been saved to our system. You will receive a confirmation email shortly.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Booking Details */}
         <section className="w-full py-8 md:py-12">
@@ -135,7 +256,7 @@ export default function ConfirmationPage() {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-foreground font-medium">{state.selectedFerry.from} → {state.selectedFerry.to}</span>
+                            <span className="text-foreground font-medium">{state.selectedFerry.from} &rarr; {state.selectedFerry.to}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -165,7 +286,7 @@ export default function ConfirmationPage() {
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-sm">
                               <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-foreground font-medium">{state.returnFerry.from} → {state.returnFerry.to}</span>
+                              <span className="text-foreground font-medium">{state.returnFerry.from} &rarr; {state.returnFerry.to}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -205,7 +326,7 @@ export default function ConfirmationPage() {
                         <div key={index} className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
                           <div>
                             <p className="font-medium text-foreground">{passenger.fullName}</p>
-                            <p className="text-sm text-muted-foreground">{passenger.nationality} · Passport: {passenger.passportNumber}</p>
+                            <p className="text-sm text-muted-foreground">{passenger.nationality} &middot; Passport: {passenger.passportNumber}</p>
                           </div>
                           {index === 0 && (
                             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Lead Passenger</span>
@@ -229,12 +350,12 @@ export default function ConfirmationPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Ferry Tickets ({state.searchParams.passengers} passengers)</span>
-                        <span className="text-foreground">{state.selectedFerry.price * state.searchParams.passengers}</span>
+                        <span className="text-foreground">&euro;{state.selectedFerry.price * state.searchParams.passengers}</span>
                       </div>
                       {state.returnFerry && (
                         <div className="flex items-center justify-between">
                           <span className="text-muted-foreground">Return Tickets ({state.searchParams.passengers} passengers)</span>
-                          <span className="text-foreground">{state.returnFerry.price * state.searchParams.passengers}</span>
+                          <span className="text-foreground">&euro;{state.returnFerry.price * state.searchParams.passengers}</span>
                         </div>
                       )}
                       <div className="flex items-center justify-between">
@@ -292,16 +413,16 @@ export default function ConfirmationPage() {
                   <CardContent className="p-6">
                     <h2 className="text-lg font-bold text-foreground mb-4">Need Help?</h2>
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
+                      <a href="https://wa.me/302242050009" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors">
                         <div className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center">
                           <Phone className="h-5 w-5 text-[#25D366]" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">WhatsApp Support</p>
-                          <p className="text-sm text-muted-foreground">+90 532 XXX XX XX</p>
+                          <p className="text-sm text-muted-foreground">+30 22420 5009</p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
+                      </a>
+                      <a href="mailto:support@islandbee.com" className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <Mail className="h-5 w-5 text-primary" />
                         </div>
@@ -309,7 +430,7 @@ export default function ConfirmationPage() {
                           <p className="text-sm font-medium text-foreground">Email Support</p>
                           <p className="text-sm text-muted-foreground">support@islandbee.com</p>
                         </div>
-                      </div>
+                      </a>
                     </div>
                   </CardContent>
                 </Card>
