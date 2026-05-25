@@ -31,6 +31,61 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { getAvailableCars, type Car as CarType } from '@/lib/supabase'
 
+// Normalize Supabase car data to UI shape
+interface NormalizedCar {
+  id: string
+  type: string
+  model: string
+  price: number
+  image: string
+  features: string[]
+  specs: {
+    fuel: string
+    seats: number | string
+    transmission: string
+    ac: boolean | string
+  }
+  badge?: string
+  description?: string
+  available: boolean
+}
+
+function normalizeCar(car: CarType): NormalizedCar {
+  // If car already has specs object (fallback data), return as-is
+  if (car.specs && typeof car.specs === 'object') {
+    return car as NormalizedCar
+  }
+  
+  // Convert Supabase flat structure to UI nested structure
+  const supabaseCar = car as Record<string, unknown>
+  
+  return {
+    id: String(supabaseCar.id || ''),
+    type: String(supabaseCar.category || supabaseCar.type || 'Car'),
+    model: supabaseCar.brand && supabaseCar.model 
+      ? `${supabaseCar.brand} ${supabaseCar.model}` 
+      : String(supabaseCar.model || 'Unknown'),
+    price: Number(supabaseCar.price_per_day || supabaseCar.price || 0),
+    image: String(supabaseCar.image_url || supabaseCar.image || 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'),
+    features: [
+      String(supabaseCar.fuel_type || supabaseCar.category || 'Petrol'),
+      `${supabaseCar.seats || 4} Seats`,
+      String(supabaseCar.transmission || 'Manual'),
+    ],
+    specs: {
+      fuel: String(supabaseCar.fuel_type || supabaseCar.category || 'Petrol'),
+      seats: supabaseCar.seats ? Number(supabaseCar.seats) : 4,
+      transmission: String(supabaseCar.transmission || 'Manual'),
+      ac: true,
+    },
+    badge: supabaseCar.badge ? String(supabaseCar.badge) : undefined,
+    description: supabaseCar.description 
+      ? String(supabaseCar.description) 
+      : 'Reliable vehicle for exploring Kos Island.',
+    available: supabaseCar.available !== false,
+  }
+}
+
 // Fallback data in case database is empty or unavailable
 const fallbackCarFleet = [
   { 
@@ -106,7 +161,7 @@ const benefits = [
 ]
 
 export default function CarRentalPage() {
-  const [cars, setCars] = React.useState<CarType[]>([])
+  const [cars, setCars] = React.useState<NormalizedCar[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [usingFallback, setUsingFallback] = React.useState(false)
@@ -122,15 +177,16 @@ export default function CarRentalPage() {
       
       if (fetchError) {
         setError(fetchError.message)
-        setCars(fallbackCarFleet as CarType[])
+        setCars(fallbackCarFleet.map(normalizeCar) as NormalizedCar[])
         setUsingFallback(true)
         setFallbackReason(`Database error: ${fetchError.message}`)
       } else if (isEmpty || !data || data.length === 0) {
-        setCars(fallbackCarFleet as CarType[])
+        setCars(fallbackCarFleet.map(normalizeCar) as NormalizedCar[])
         setUsingFallback(true)
         setFallbackReason('No cars found in database. Showing default fleet.')
       } else {
-        setCars(data)
+        // Normalize all cars from Supabase
+        setCars(data.map(normalizeCar))
       }
       setLoading(false)
     }
@@ -320,15 +376,15 @@ export default function CarRentalPage() {
                           <div className="grid grid-cols-2 gap-3 mb-6">
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Fuel className="h-4 w-4 text-primary" />
-                              <span>{car.specs.fuel}</span>
+                              <span>{car.specs?.fuel || 'Petrol'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Users className="h-4 w-4 text-primary" />
-                              <span>{car.specs.seats} Seats</span>
+                              <span>{car.specs?.seats || 4} Seats</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Settings className="h-4 w-4 text-primary" />
-                              <span>{car.specs.transmission}</span>
+                              <span>{car.specs?.transmission || 'Manual'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Zap className="h-4 w-4 text-primary" />
