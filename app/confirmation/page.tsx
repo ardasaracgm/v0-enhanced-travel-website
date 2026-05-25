@@ -37,17 +37,30 @@ export default function ConfirmationPage() {
   // Save booking to Supabase
   React.useEffect(() => {
     async function saveBooking() {
+      console.log('[v0] ConfirmationPage: saveBooking effect running')
+      console.log('[v0] ConfirmationPage: hasSaved:', hasSaved.current)
+      console.log('[v0] ConfirmationPage: state check:', {
+        hasSelectedFerry: !!state.selectedFerry,
+        hasBookingReference: !!state.bookingReference,
+        hasContactEmail: !!state.contactEmail,
+        passengersCount: state.passengers?.length
+      })
+      
       if (hasSaved.current || !state.selectedFerry || !state.bookingReference || !state.contactEmail) {
+        console.log('[v0] ConfirmationPage: Skipping save - conditions not met')
         return
       }
       
       hasSaved.current = true
       setSaveStatus('saving')
+      console.log('[v0] ConfirmationPage: Starting Supabase save...')
 
       // Parse total price (remove € symbol and convert to number)
       const totalPriceNum = typeof state.totalPrice === 'string' 
         ? parseFloat(state.totalPrice.replace('€', '').replace(',', '.'))
         : state.totalPrice
+      
+      console.log('[v0] ConfirmationPage: Total price parsed:', totalPriceNum)
 
       // Prepare passengers data
       const passengersData = state.passengers.map((p, index) => {
@@ -64,6 +77,8 @@ export default function ConfirmationPage() {
           isLeadPassenger: index === 0,
         }
       })
+      
+      console.log('[v0] ConfirmationPage: Passengers prepared:', passengersData)
 
       const result = await completeBooking({
         email: state.contactEmail,
@@ -79,9 +94,13 @@ export default function ConfirmationPage() {
         passengers: passengersData,
       })
 
+      console.log('[v0] ConfirmationPage: completeBooking result:', result)
+
       if (result.success) {
+        console.log('[v0] ConfirmationPage: Save SUCCESS!')
         setSaveStatus('success')
       } else {
+        console.error('[v0] ConfirmationPage: Save FAILED:', result.error)
         setSaveStatus('error')
         setErrorMessage(result.error || 'Failed to save booking')
       }
@@ -127,10 +146,14 @@ export default function ConfirmationPage() {
               className="text-center"
             >
               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+                {saveStatus === 'saving' ? (
+                  <Loader2 className="h-10 w-10 text-green-600 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-10 w-10 text-green-600" />
+                )}
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Booking Confirmed!
+                {saveStatus === 'saving' ? 'Processing Booking...' : 'Booking Confirmed!'}
               </h1>
               <p className="text-muted-foreground text-lg mb-2">
                 Thank you for booking with TravelBeez
@@ -143,7 +166,7 @@ export default function ConfirmationPage() {
               {saveStatus === 'saving' && (
                 <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Saving booking details...</span>
+                  <span>Saving booking to database...</span>
                 </div>
               )}
             </motion.div>
