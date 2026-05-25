@@ -32,7 +32,7 @@ const tours = [
   { 
     name: 'Three Islands Cruise', 
     duration: 'Full Day (8h)', 
-    price: '89', 
+    price: '€89', 
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80',
     category: 'Boat Tour',
     islands: ['Kos', 'Kalymnos', 'Pserimos'],
@@ -43,7 +43,7 @@ const tours = [
   { 
     name: 'Rhodes Old Town Day Trip', 
     duration: '10 Hours', 
-    price: '95', 
+    price: '€95', 
     image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&q=80',
     category: 'Cultural',
     islands: ['Rhodes'],
@@ -54,7 +54,7 @@ const tours = [
   { 
     name: 'Sunset Sailing Adventure', 
     duration: '4 Hours', 
-    price: '75', 
+    price: '€75', 
     image: 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&q=80',
     category: 'Sailing',
     islands: ['Kos Coast'],
@@ -65,7 +65,7 @@ const tours = [
   { 
     name: 'Ancient Asklepion & Wine Tour', 
     duration: '5 Hours', 
-    price: '55', 
+    price: '€55', 
     image: 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=600&q=80',
     category: 'Cultural',
     islands: ['Kos'],
@@ -76,7 +76,7 @@ const tours = [
   { 
     name: 'Nisyros Volcano Excursion', 
     duration: 'Full Day (9h)', 
-    price: '85', 
+    price: '€85', 
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80',
     category: 'Adventure',
     islands: ['Nisyros'],
@@ -87,7 +87,7 @@ const tours = [
   { 
     name: 'Beach Hopping BBQ Cruise', 
     duration: '6 Hours', 
-    price: '69', 
+    price: '€69', 
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
     category: 'Boat Tour',
     islands: ['Kos Beaches'],
@@ -309,7 +309,7 @@ export default function ToursPage() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Book Tours With Us?</h2>
-              <p className="text-muted-foreground text-lg">Creating unforgettable experiences since 2018</p>
+              <p className="text-muted-foreground text-lg">Creating unforgettable experiences in the Greek islands</p>
             </div>
             <div className="grid md:grid-cols-4 gap-6">
               <Card className="bg-card border-border/50 text-center">

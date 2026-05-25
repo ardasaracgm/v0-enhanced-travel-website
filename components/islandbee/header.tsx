@@ -41,9 +41,9 @@ export function Header() {
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" className="hidden md:flex gap-2 text-foreground border-primary/30 hover:border-primary hover:bg-primary/5">
             <Phone className="h-4 w-4 text-primary" />
-            +90 532 XXX XX XX
+            +30 22420 5008
           </Button>
-          <Link href="https://wa.me/90532XXXXXXX" target="_blank">
+          <Link href="https://wa.me/302242050009" target="_blank">
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               Book Now
             </Button>

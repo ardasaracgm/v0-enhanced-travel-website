@@ -20,10 +20,10 @@ export function WhatsAppCTA({
               {description}
             </p>
           </div>
-          <a href="https://wa.me/90532XXXXXXX?text=Merhaba,%20bilgi%20almak%20istiyorum" target="_blank" rel="noopener noreferrer">
+          <a href="https://wa.me/302242050009?text=Merhaba,%20bilgi%20almak%20istiyorum" target="_blank" rel="noopener noreferrer">
             <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 bg-card text-foreground hover:bg-card/90 shadow-lg">
               <MessageCircle className="h-5 w-5" />
-              WhatsApp ile Yazin
+              WhatsApp ile Yazın
             </Button>
           </a>
         </div>
