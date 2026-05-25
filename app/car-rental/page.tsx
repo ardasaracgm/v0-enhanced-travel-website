@@ -333,7 +333,6 @@ export default function CarRentalPage() {
                 ))}
               </div>
             )}
-            </div>
             
             {/* Included Features */}
             <div className="mt-12 p-6 bg-card rounded-2xl border border-border/50">
