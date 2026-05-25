@@ -114,22 +114,32 @@ export default function CarRentalPage() {
 
   React.useEffect(() => {
     async function fetchCars() {
+      console.log('[v0] CarRentalPage: Starting car fetch...')
       setLoading(true)
       setError(null)
       setUsingFallback(false)
       
       const { data, error: fetchError, isEmpty } = await getAvailableCars()
       
+      console.log('[v0] CarRentalPage: Fetch result:', { 
+        dataLength: data?.length, 
+        error: fetchError?.message,
+        isEmpty 
+      })
+      
       if (fetchError) {
+        console.error('[v0] CarRentalPage: Fetch error:', fetchError.message)
         setError(fetchError.message)
         setCars(fallbackCarFleet as CarType[])
         setUsingFallback(true)
         setFallbackReason(`Database error: ${fetchError.message}`)
       } else if (isEmpty || !data || data.length === 0) {
+        console.log('[v0] CarRentalPage: No cars in database, using fallback')
         setCars(fallbackCarFleet as CarType[])
         setUsingFallback(true)
         setFallbackReason('No cars found in database. Showing default fleet.')
       } else {
+        console.log('[v0] CarRentalPage: Successfully loaded', data.length, 'cars from database')
         setCars(data)
       }
       setLoading(false)
@@ -386,7 +396,7 @@ export default function CarRentalPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Rent With Travel Beez?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Rent With IslandBee?</h2>
                 <div className="space-y-6">
                   {benefits.map((benefit, index) => (
                     <div key={index} className="flex gap-4">

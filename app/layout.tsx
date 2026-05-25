@@ -7,8 +7,9 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Travel Beez - Greek Islands Ferry, Car Rental & Tours',
+  title: 'IslandBee - Greek Islands Ferry, Car Rental & Tours',
   description: 'Your trusted partner for Greek island travel. Book ferry tickets, car rentals, hotels, and tours to Kos, Rhodes, Samos, Leros, and Patmos.',
+  generator: 'v0.app',
   icons: {
     icon: [
       {
@@ -34,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background overflow-x-hidden">
-      <body className="font-sans antialiased bg-background overflow-x-hidden">
+    <html lang="en" className="bg-background">
+      <body className="font-sans antialiased bg-background">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

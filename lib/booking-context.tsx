@@ -98,7 +98,7 @@ const BookingContext = React.createContext<{
   dispatch: React.Dispatch<BookingAction>
 } | null>(null)
 
-const STORAGE_KEY = 'travelbeez-booking'
+const STORAGE_KEY = 'islandbee-booking'
 
 function getInitialState(): BookingState {
   if (typeof window === 'undefined') return initialState
