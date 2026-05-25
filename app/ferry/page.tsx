@@ -2,13 +2,15 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -29,14 +31,13 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
+import { useBooking } from '@/lib/booking-context'
 
 const routes = [
   { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
-  { from: 'Bodrum', to: 'Rhodes', duration: '2.5 hours', price: '55', frequency: 'Daily', operator: 'Bodrum Ferryboat' },
+  { from: 'Turgutreis', to: 'Kos', duration: '40 min', price: '30', frequency: 'Daily', operator: 'Turgutreis Lines' },
   { from: 'Marmaris', to: 'Rhodes', duration: '50 min', price: '45', frequency: 'Daily', operator: 'Marmaris Ferries' },
   { from: 'Kusadasi', to: 'Samos', duration: '1.5 hours', price: '40', frequency: 'Daily', operator: 'Meander Travel' },
-  { from: 'Fethiye', to: 'Rhodes', duration: '2 hours', price: '60', frequency: '3x Week', operator: 'Fethiye Lines' },
-  { from: 'Bodrum', to: 'Leros', duration: '3 hours', price: '50', frequency: '4x Week', operator: 'Dodecanese Seaways' },
 ]
 
 const faqs = [
@@ -67,6 +68,30 @@ const faqs = [
 ]
 
 export default function FerryTicketsPage() {
+  const router = useRouter()
+  const { state, dispatch } = useBooking()
+  const [tripType, setTripType] = React.useState<'one-way' | 'round-trip'>('one-way')
+  const [from, setFrom] = React.useState('bodrum')
+  const [to, setTo] = React.useState('kos')
+  const [date, setDate] = React.useState('')
+  const [returnDate, setReturnDate] = React.useState('')
+  const [passengers, setPassengers] = React.useState('2')
+
+  const handleSearch = () => {
+    dispatch({
+      type: 'SET_SEARCH_PARAMS',
+      payload: {
+        from,
+        to,
+        date,
+        passengers: parseInt(passengers),
+        tripType,
+        returnDate: tripType === 'round-trip' ? returnDate : undefined,
+      },
+    })
+    router.push('/ferry/results')
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <TrustBar />
@@ -109,7 +134,7 @@ export default function FerryTicketsPage() {
                 transition={{ delay: 0.2 }}
                 className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
               >
-                Book your ferry crossing from Bodrum, Marmaris, Kusadasi, and Fethiye to Kos, Rhodes, Samos, and more. Fast booking, best prices, Turkish support.
+                Book your ferry crossing from Bodrum, Turgutreis, Marmaris, and Kusadasi to Kos, Rhodes, and Samos. Fast booking, best prices, Turkish support.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -139,25 +164,44 @@ export default function FerryTicketsPage() {
           <div className="container px-4 md:px-6">
             <Card className="border-0 shadow-2xl bg-card">
               <CardContent className="p-6 md:p-8">
-                <h2 className="text-xl font-bold text-foreground mb-6">Search Ferry Tickets</h2>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                  <h2 className="text-xl font-bold text-foreground">Search Ferry Tickets</h2>
+                  <RadioGroup
+                    value={tripType}
+                    onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="one-way" id="one-way" />
+                      <Label htmlFor="one-way" className="cursor-pointer">One-way</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="round-trip" id="round-trip" />
+                      <Label htmlFor="round-trip" className="cursor-pointer flex items-center gap-1">
+                        <ArrowLeftRight className="h-4 w-4" />
+                        Round-trip
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">From</label>
-                    <Select defaultValue="bodrum">
+                    <Select value={from} onValueChange={setFrom}>
                       <SelectTrigger>
                         <SelectValue placeholder="Departure" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="bodrum">Bodrum, Turkey</SelectItem>
+                        <SelectItem value="turgutreis">Turgutreis, Turkey</SelectItem>
                         <SelectItem value="marmaris">Marmaris, Turkey</SelectItem>
                         <SelectItem value="kusadasi">Kusadasi, Turkey</SelectItem>
-                        <SelectItem value="fethiye">Fethiye, Turkey</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">To</label>
-                    <Select defaultValue="kos">
+                    <Select value={to} onValueChange={setTo}>
                       <SelectTrigger>
                         <SelectValue placeholder="Destination" />
                       </SelectTrigger>
@@ -165,18 +209,32 @@ export default function FerryTicketsPage() {
                         <SelectItem value="kos">Kos, Greece</SelectItem>
                         <SelectItem value="rhodes">Rhodes, Greece</SelectItem>
                         <SelectItem value="samos">Samos, Greece</SelectItem>
-                        <SelectItem value="leros">Leros, Greece</SelectItem>
-                        <SelectItem value="patmos">Patmos, Greece</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Date</label>
-                    <Input type="date" className="h-10" />
+                    <label className="text-sm font-medium text-foreground">Departure Date</label>
+                    <Input 
+                      type="date" 
+                      className="h-10" 
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
                   </div>
+                  {tripType === 'round-trip' && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Return Date</label>
+                      <Input 
+                        type="date" 
+                        className="h-10" 
+                        value={returnDate}
+                        onChange={(e) => setReturnDate(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Passengers</label>
-                    <Select defaultValue="2">
+                    <Select value={passengers} onValueChange={setPassengers}>
                       <SelectTrigger>
                         <SelectValue placeholder="Passengers" />
                       </SelectTrigger>
@@ -185,13 +243,16 @@ export default function FerryTicketsPage() {
                         <SelectItem value="2">2 Passengers</SelectItem>
                         <SelectItem value="3">3 Passengers</SelectItem>
                         <SelectItem value="4">4 Passengers</SelectItem>
-                        <SelectItem value="5">5+ Passengers</SelectItem>
+                        <SelectItem value="5">5 Passengers</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">&nbsp;</label>
-                    <Button className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button 
+                      className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={handleSearch}
+                    >
                       Search Ferries
                     </Button>
                   </div>
@@ -208,7 +269,7 @@ export default function FerryTicketsPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Popular Ferry Routes</h2>
               <p className="text-muted-foreground text-lg">Direct connections from Turkish coast to Greek islands</p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {routes.map((route, index) => (
                 <motion.div
                   key={`${route.from}-${route.to}`}
@@ -251,7 +312,15 @@ export default function FerryTicketsPage() {
                           <span className="text-2xl font-bold text-primary">{route.price}</span>
                           <span className="text-sm text-muted-foreground">/person</span>
                         </div>
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button 
+                          size="sm" 
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                          onClick={() => {
+                            setFrom(route.from.toLowerCase())
+                            setTo(route.to.toLowerCase())
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                        >
                           Book
                         </Button>
                       </div>
