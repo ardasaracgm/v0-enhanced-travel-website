@@ -92,7 +92,7 @@ export default function IslandBee() {
     { 
       type: 'Mini', 
       model: 'Citroen Ami', 
-      price: '19', 
+      price: '€19', 
       image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80', 
       features: ['Electric', '2 Seats', 'City Perfect'],
       badge: 'Eco-Friendly'
@@ -100,7 +100,7 @@ export default function IslandBee() {
     { 
       type: 'Economy', 
       model: 'Fiat Panda', 
-      price: '25', 
+      price: '€25', 
       image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&q=80', 
       features: ['A/C', 'Manual', '4 Seats'],
       badge: 'Most Popular'
@@ -108,7 +108,7 @@ export default function IslandBee() {
     { 
       type: 'Compact', 
       model: 'DFSK 500', 
-      price: '29', 
+      price: '€29', 
       image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80', 
       features: ['A/C', 'Manual', '5 Seats'],
       badge: 'Best Value'
@@ -116,10 +116,10 @@ export default function IslandBee() {
   ]
 
   const tours = [
-    { name: 'Three Islands Cruise', duration: 'Full Day', price: '89', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80', islands: 'Kos, Kalymnos, Pserimos' },
-    { name: 'Rhodes Old Town Tour', duration: '6 Hours', price: '65', image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=80', islands: 'Rhodes City' },
-    { name: 'Sunset Sailing', duration: '4 Hours', price: '75', image: 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=400&q=80', islands: 'Kos Coast' },
-    { name: 'Ancient Ruins Explorer', duration: '5 Hours', price: '55', image: 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=400&q=80', islands: 'Kos & Asklepion' },
+    { name: 'Three Islands Cruise', duration: 'Full Day', price: '€89', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80', islands: 'Kos, Kalymnos, Pserimos' },
+    { name: 'Rhodes Old Town Tour', duration: '6 Hours', price: '€65', image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=80', islands: 'Rhodes City' },
+    { name: 'Sunset Sailing', duration: '4 Hours', price: '€75', image: 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=400&q=80', islands: 'Kos Coast' },
+    { name: 'Ancient Ruins Explorer', duration: '5 Hours', price: '€55', image: 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=400&q=80', islands: 'Kos & Asklepion' },
   ]
 
   const services = [
@@ -138,9 +138,9 @@ export default function IslandBee() {
   ]
 
   const trustBadges = [
-    { icon: <BadgeCheck className="h-6 w-6" />, title: 'Greek Licensed', subtitle: 'EOT Registered Company' },
+    { icon: <BadgeCheck className="h-6 w-6" />, title: 'Greek Licensed', subtitle: 'ΜΗ.Τ.Ε. Registered' },
     { icon: <Lock className="h-6 w-6" />, title: 'Secure Payment', subtitle: '256-bit SSL Encryption' },
-    { icon: <Globe className="h-6 w-6" />, title: 'Turkce Destek', subtitle: 'Turkish Language Support' },
+    { icon: <Globe className="h-6 w-6" />, title: 'Türkçe Destek', subtitle: 'Turkish Language Support' },
     { icon: <Shield className="h-6 w-6" />, title: 'Insured Trips', subtitle: 'Full Travel Protection' },
   ]
 
@@ -151,15 +151,15 @@ export default function IslandBee() {
         <div className="container flex items-center justify-center gap-6 text-xs md:text-sm">
           <div className="flex items-center gap-2 text-foreground">
             <BadgeCheck className="h-4 w-4 text-primary" />
-            <span>Greek Licensed Company (EOT)</span>
+            <span>Greek Licensed (ΜΗ.Τ.Ε.)</span>
+          </div>
+          <div className="hidden md:flex items-center gap-2 text-foreground">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span>Kos Port Office</span>
           </div>
           <div className="hidden md:flex items-center gap-2 text-foreground">
             <Globe className="h-4 w-4 text-primary" />
-            <span>Turkce Destek</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-foreground">
-            <Lock className="h-4 w-4 text-primary" />
-            <span>Secure Payments</span>
+            <span>Türkçe Destek</span>
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function IslandBee() {
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" className="hidden md:flex gap-2 text-foreground border-primary/30 hover:border-primary hover:bg-primary/5">
               <Phone className="h-4 w-4 text-primary" />
-              +90 532 XXX XX XX
+              +30 22420 5008
             </Button>
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               Book Now
@@ -278,15 +278,15 @@ export default function IslandBee() {
               >
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
                   <Star className="h-4 w-4 text-accent fill-current" />
-                  <span>4.9/5 (2,400+ Reviews)</span>
+                  <span>4.9/5 Google Reviews</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
-                  <Users className="h-4 w-4 text-primary" />
-                  <span>15,000+ Happy Travelers</span>
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span>Office at Kos Port</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
-                  <Award className="h-4 w-4 text-primary" />
-                  <span>Since 2018</span>
+                  <BadgeCheck className="h-4 w-4 text-primary" />
+                  <span>Licensed Greek Agency</span>
                 </div>
               </motion.div>
             </div>
@@ -569,11 +569,11 @@ export default function IslandBee() {
                   Licensed & Registered in Greece
                 </h2>
                 <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
-                  IslandBee is a fully licensed Greek travel company registered with the Greek National Tourism Organization (EOT). We operate from our office in Kos, ensuring you receive authentic local service with full legal protection.
+                  IslandBee is a fully licensed Greek travel company registered with the Greek Ministry of Tourism (ΜΗ.Τ.Ε.). We operate from our office at Kos Port, ensuring you receive authentic local service with full legal protection.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-card border border-border/50">
-                    <p className="text-2xl font-bold text-primary">EOT</p>
+                      <p className="text-2xl font-bold text-primary">ΜΗ.Τ.Ε.</p>
                     <p className="text-sm text-muted-foreground">Licensed Tourism Agency</p>
                   </div>
                   <div className="p-4 rounded-xl bg-card border border-border/50">
@@ -647,7 +647,7 @@ export default function IslandBee() {
                       </div>
                       <div>
                         <p className="font-bold text-foreground text-lg">IslandBee Kos Office</p>
-                        <p className="text-sm text-muted-foreground mb-2">Akti Kountouriotou 5, Kos Port</p>
+                        <p className="text-sm text-muted-foreground mb-2">G Averos 4, Kos (under Achilleas Hotel)</p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1 text-primary">
                             <Clock className="h-4 w-4" />
@@ -655,7 +655,7 @@ export default function IslandBee() {
                           </span>
                           <span className="flex items-center gap-1 text-muted-foreground">
                             <Phone className="h-4 w-4" />
-                            +30 22420 XXXXX
+                            +30 22420 5008
                           </span>
                         </div>
                       </div>
@@ -666,13 +666,13 @@ export default function IslandBee() {
               <div className="order-1 md:order-2 space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent-foreground text-sm font-medium">
                   <Anchor className="h-4 w-4 text-accent" />
-                  Physical Office at Kos Port
+                  Located Directly at Kos Port Exit
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
                   Meet Us When You Arrive
                 </h2>
                 <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
-                  Our office is located directly at Kos Port, just steps from where your ferry arrives. Our Turkish-speaking team will greet you, hand over your rental car keys, and help with anything you need.
+                  Our office is located directly at Kos Port exit, under Achilleas Hotel & Apartments. Our Turkish-speaking team will greet you, hand over your rental car keys, and help with anything you need.
                 </p>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3 text-foreground">
@@ -1185,7 +1185,7 @@ export default function IslandBee() {
         className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] hover:bg-[#20BA5C] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
       >
         <MessageCircle className="h-6 w-6" />
-        <span className="font-medium hidden sm:inline group-hover:inline">WhatsApp ile Yazin</span>
+                  <span className="font-medium hidden sm:inline group-hover:inline">WhatsApp ile Yazın</span>
       </a>
 
       {/* Footer */}
@@ -1200,20 +1200,23 @@ export default function IslandBee() {
                 <span className="text-xl font-bold text-foreground">Island<span className="text-primary">Bee</span></span>
               </Link>
               <p className="text-sm text-muted-foreground mb-4">
-                Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (EOT).
+                Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (ΜΗ.Τ.Ε.).
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Phone className="h-4 w-4" />
-                  <span>TR: +90 532 XXX XX XX</span>
+                  <span>+30 22420 5008</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4" />
-                  <span>GR: +30 22420 XXXXX</span>
+                  <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                  <span>WhatsApp: +30 22420 5009</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>Akti Kountouriotou 5, Kos, Greece</span>
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="text-foreground font-medium">G Averos 4, Kos, Greece</span>
+                    <p className="text-xs">Under Achilleas Hotel, at Port exit</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1250,8 +1253,7 @@ export default function IslandBee() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span>2024 IslandBee Travel Ltd.</span>
-                <span>EOT License: XXXXXXX</span>
-                <span>GEMI: XXXXXXXXXX</span>
+                <span>ΜΗ.Τ.Ε.: 1471Ε60000074600</span>
               </div>
               <div className="flex gap-6 text-sm text-muted-foreground">
                 <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
@@ -1264,7 +1266,7 @@ export default function IslandBee() {
 
       {/* Floating WhatsApp Button */}
       <motion.a
-        href="https://wa.me/90532XXXXXXX?text=Merhaba,%20Yunan%20adalar%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+        href="https://wa.me/302242050009?text=Merhaba,%20Yunan%20adalar%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
@@ -1273,7 +1275,7 @@ export default function IslandBee() {
         transition={{ delay: 1 }}
       >
         <MessageCircle className="h-6 w-6" />
-        <span className="font-semibold hidden sm:inline">WhatsApp ile Yazin</span>
+        <span className="font-semibold hidden sm:inline">WhatsApp ile Yazın</span>
       </motion.a>
     </div>
   )

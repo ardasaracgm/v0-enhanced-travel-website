@@ -24,7 +24,7 @@ import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/tru
 const services = [
   {
     title: 'Document Preparation',
-    price: '49',
+    price: '€49',
     description: 'Complete checklist and review of all required documents for your Schengen visa application.',
     includes: [
       'Document checklist tailored to your situation',
@@ -36,7 +36,7 @@ const services = [
   },
   {
     title: 'Full Visa Package',
-    price: '99',
+    price: '€99',
     description: 'Comprehensive support including travel itinerary, hotel reservations, and all documentation.',
     includes: [
       'Everything in Document Preparation',
@@ -50,7 +50,7 @@ const services = [
   },
   {
     title: 'VIP Concierge',
-    price: '199',
+    price: '€199',
     description: 'Premium end-to-end support with personal assistance throughout the entire process.',
     includes: [
       'Everything in Full Package',
@@ -347,7 +347,7 @@ export default function VisaSupportPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Greek Licensed Company</h3>
-                      <p className="text-muted-foreground">We are a registered Greek tourism company (EOT) with an office at Kos Port. Legitimate and trustworthy.</p>
+                      <p className="text-muted-foreground">We are a registered Greek tourism company (ΜΗ.Τ.Ε.) with an office at Kos Port. Legitimate and trustworthy.</p>
                     </div>
                   </div>
                   <div className="flex gap-4">

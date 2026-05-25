@@ -34,10 +34,10 @@ import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/tru
 import { useBooking } from '@/lib/booking-context'
 
 const routes = [
-  { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
-  { from: 'Turgutreis', to: 'Kos', duration: '40 min', price: '30', frequency: 'Daily', operator: 'Turgutreis Lines' },
-  { from: 'Marmaris', to: 'Rhodes', duration: '50 min', price: '45', frequency: 'Daily', operator: 'Marmaris Ferries' },
-  { from: 'Kusadasi', to: 'Samos', duration: '1.5 hours', price: '40', frequency: 'Daily', operator: 'Meander Travel' },
+  { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
+  { from: 'Turgutreis', to: 'Kos', duration: '40 min', price: '€30', frequency: 'Daily', operator: 'Turgutreis Lines' },
+  { from: 'Marmaris', to: 'Rhodes', duration: '50 min', price: '€45', frequency: 'Daily', operator: 'Marmaris Ferries' },
+  { from: 'Kusadasi', to: 'Samos', duration: '1.5 hours', price: '€40', frequency: 'Daily', operator: 'Meander Travel' },
 ]
 
 const faqs = [
@@ -339,7 +339,7 @@ export default function FerryTicketsPage() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Book Ferry Tickets With Us?</h2>
-              <p className="text-muted-foreground text-lg">The trusted choice for Turkish travelers since 2018</p>
+              <p className="text-muted-foreground text-lg">The trusted choice for Turkish travelers to Greek islands</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="bg-card border-border/50 text-center">

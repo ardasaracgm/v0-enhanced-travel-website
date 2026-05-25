@@ -1,12 +1,13 @@
 import Link from 'next/link'
-import { Ship, Car, Compass, FileText, Phone, Mail, MapPin } from 'lucide-react'
+import { Ship, Car, Compass, FileText, Phone, Mail, MapPin, BadgeCheck, Clock } from 'lucide-react'
 
 export function Footer() {
   return (
     <footer className="w-full bg-foreground text-background py-16">
       <div className="container px-4 md:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          {/* Company Info */}
+          <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-6">
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B</span>
@@ -14,23 +15,41 @@ export function Footer() {
               <span className="text-xl font-bold">Island<span className="text-primary">Bee</span></span>
             </div>
             <p className="text-background/70 text-sm mb-4">
-              Your trusted partner for Greek island travel. Licensed and operating since 2018.
+              Your trusted partner for Greek island travel. Licensed travel agency with physical office at Kos Port.
             </p>
-            <div className="flex flex-col gap-2 text-sm text-background/70">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span>Kos Port, Greece</span>
+            <div className="flex flex-col gap-3 text-sm text-background/70 mb-6">
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="text-background font-medium">G Averos 4, Kos, Greece</span>
+                  <p className="text-xs text-background/60">Under Achilleas Hotel & Apartments</p>
+                  <p className="text-xs text-primary">First shop at Kos Port exit</p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+90 532 XXX XX XX</span>
+                <span>+30 22420 5008</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-[#25D366]" />
+                <span>WhatsApp: +30 22420 5009</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
                 <span>info@islandbee.com</span>
               </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <span>Open daily 08:00 - 20:00</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-background/60">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              <span>ΜΗ.Τ.Ε.: 1471Ε60000074600</span>
             </div>
           </div>
+
+          {/* Services */}
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Ship className="h-4 w-4 text-primary" />
@@ -44,6 +63,8 @@ export function Footer() {
               <li><Link href="#" className="hover:text-primary transition-colors">Travel Insurance</Link></li>
             </ul>
           </div>
+
+          {/* Islands */}
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Compass className="h-4 w-4 text-primary" />
@@ -57,6 +78,8 @@ export function Footer() {
               <li><Link href="#" className="hover:text-primary transition-colors">Patmos Island</Link></li>
             </ul>
           </div>
+
+          {/* Support */}
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
@@ -71,10 +94,28 @@ export function Footer() {
             </ul>
           </div>
         </div>
+
+        {/* Google Maps Embed */}
+        <div className="mb-8 rounded-xl overflow-hidden border border-background/10">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3178.8!2d27.0917!3d36.8933!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDUzJzM1LjkiTiAyN8KwMDUnMzAuMSJF!5e0!3m2!1sen!2sgr!4v1699999999999!5m2!1sen!2sgr"
+            width="100%"
+            height="200"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="IslandBee Kos Office Location"
+            className="grayscale hover:grayscale-0 transition-all duration-300"
+          />
+        </div>
+
+        {/* Bottom Bar */}
         <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-background/50">
-            2024 IslandBee Travel. All rights reserved. Greek Tourism License: EOT 0000000
-          </p>
+          <div className="text-sm text-background/50 text-center md:text-left">
+            <p>&copy; 2024 IslandBee Travel. All rights reserved.</p>
+            <p className="text-xs mt-1">Greek Tourism License: ΜΗ.Τ.Ε. 1471Ε60000074600</p>
+          </div>
           <div className="flex items-center gap-4 text-sm text-background/50">
             <span>Secure Payments:</span>
             <span>Visa</span>

@@ -11,7 +11,7 @@ export function TrustIndicators() {
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-sm">Greek Licensed</h3>
-              <p className="text-xs text-muted-foreground">EOT Registered</p>
+              <p className="text-xs text-muted-foreground">ΜΗ.Τ.Ε. Registered</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -28,7 +28,7 @@ export function TrustIndicators() {
               <Headphones className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground text-sm">Turkce Destek</h3>
+              <h3 className="font-semibold text-foreground text-sm">Türkçe Destek</h3>
               <p className="text-xs text-muted-foreground">24/7 Available</p>
             </div>
           </div>

@@ -33,7 +33,7 @@ const carFleet = [
   { 
     type: 'City Car', 
     model: 'Citroen Ami', 
-    price: '19', 
+    price: '€19', 
     image: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80', 
     features: ['Electric', '2 Seats', 'Auto'],
     specs: { fuel: 'Electric', seats: 2, transmission: 'Automatic', ac: true },
@@ -43,7 +43,7 @@ const carFleet = [
   { 
     type: 'Economy', 
     model: 'Fiat Panda', 
-    price: '25', 
+    price: '€25', 
     image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80', 
     features: ['Petrol', '4 Seats', 'Manual'],
     specs: { fuel: 'Petrol', seats: 4, transmission: 'Manual', ac: true },
@@ -53,7 +53,7 @@ const carFleet = [
   { 
     type: 'Compact', 
     model: 'DFSK 500', 
-    price: '29', 
+    price: '€29', 
     image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80', 
     features: ['Petrol', '5 Seats', 'Manual'],
     specs: { fuel: 'Petrol', seats: 5, transmission: 'Manual', ac: true },
