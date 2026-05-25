@@ -37,17 +37,29 @@ export default function ConfirmationPage() {
   // Save booking to Supabase
   React.useEffect(() => {
     async function saveBooking() {
+      console.log('[v0] ConfirmationPage: saveBooking effect running')
+      console.log('[v0] ConfirmationPage: hasSaved:', hasSaved.current)
+      console.log('[v0] ConfirmationPage: state check:', {
+        hasSelectedFerry: !!state.selectedFerry,
+        hasBookingReference: !!state.bookingReference,
+        hasContactEmail: !!state.contactEmail
+      })
+      
       if (hasSaved.current || !state.selectedFerry || !state.bookingReference || !state.contactEmail) {
+        console.log('[v0] ConfirmationPage: Skipping save - conditions not met')
         return
       }
       
       hasSaved.current = true
       setSaveStatus('saving')
+      console.log('[v0] ConfirmationPage: Starting Supabase save...')
 
       // Parse total price (remove € symbol and convert to number)
       const totalPriceNum = typeof state.totalPrice === 'string' 
         ? parseFloat(state.totalPrice.replace('€', '').replace(',', '.'))
         : state.totalPrice
+      
+      console.log('[v0] ConfirmationPage: Total price parsed:', totalPriceNum)
 
       // Prepare passengers data
       const passengersData = state.passengers.map((p, index) => {
@@ -64,6 +76,8 @@ export default function ConfirmationPage() {
           isLeadPassenger: index === 0,
         }
       })
+      
+      console.log('[v0] ConfirmationPage: Passengers prepared:', passengersData.length)
 
       const result = await completeBooking({
         email: state.contactEmail,
@@ -79,9 +93,13 @@ export default function ConfirmationPage() {
         passengers: passengersData,
       })
 
+      console.log('[v0] ConfirmationPage: completeBooking result:', result)
+
       if (result.success) {
+        console.log('[v0] ConfirmationPage: Save SUCCESS!')
         setSaveStatus('success')
       } else {
+        console.error('[v0] ConfirmationPage: Save FAILED:', result.error)
         setSaveStatus('error')
         setErrorMessage(result.error || 'Failed to save booking')
       }

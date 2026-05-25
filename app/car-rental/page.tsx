@@ -109,21 +109,38 @@ export default function CarRentalPage() {
   const [cars, setCars] = React.useState<CarType[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+  const [usingFallback, setUsingFallback] = React.useState(false)
+  const [fallbackReason, setFallbackReason] = React.useState<string>('')
 
   React.useEffect(() => {
     async function fetchCars() {
+      console.log('[v0] CarRentalPage: Starting car fetch...')
       setLoading(true)
-      const { data, error: fetchError } = await getAvailableCars()
+      setError(null)
+      setUsingFallback(false)
+      
+      const { data, error: fetchError, isEmpty } = await getAvailableCars()
+      
+      console.log('[v0] CarRentalPage: Fetch result:', { 
+        dataLength: data?.length, 
+        error: fetchError?.message,
+        isEmpty 
+      })
       
       if (fetchError) {
+        console.error('[v0] CarRentalPage: Fetch error:', fetchError.message)
         setError(fetchError.message)
         setCars(fallbackCarFleet as CarType[])
-      } else if (data && data.length > 0) {
-        setCars(data)
-        setError(null)
-      } else {
-        // Use fallback if no cars in database
+        setUsingFallback(true)
+        setFallbackReason(`Database error: ${fetchError.message}`)
+      } else if (isEmpty || !data || data.length === 0) {
+        console.log('[v0] CarRentalPage: No cars in database, using fallback')
         setCars(fallbackCarFleet as CarType[])
+        setUsingFallback(true)
+        setFallbackReason('No cars found in database. Showing default fleet.')
+      } else {
+        console.log('[v0] CarRentalPage: Successfully loaded', data.length, 'cars from database')
+        setCars(data)
       }
       setLoading(false)
     }
@@ -253,10 +270,19 @@ export default function CarRentalPage() {
             </div>
             
             {error && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <strong>Database Error:</strong> {error}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {usingFallback && !error && (
               <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  Unable to load live car data. Showing default fleet options.
+                  {fallbackReason}
                 </AlertDescription>
               </Alert>
             )}
