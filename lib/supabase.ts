@@ -73,21 +73,29 @@ export interface ContactRequest {
   created_at?: string
 }
 
+// Car type - matches Supabase cars table with flat columns
 export interface Car {
   id: string
-  type: string
+  brand?: string
   model: string
+  category?: string
+  type?: string
   price_per_day: number
-  image: string
-  features: string[]
-  specs: {
+  price?: number // Mapped from price_per_day for UI compatibility
+  image_url?: string
+  image?: string
+  fuel_type?: string
+  seats?: number
+  transmission?: string
+  features?: string[]
+  specs?: {
     fuel: string
-    seats: number
+    seats: number | string
     transmission: string
-    ac: boolean
+    ac: boolean | string
   }
   badge?: string
-  description: string
+  description?: string
   available: boolean
   created_at?: string
 }

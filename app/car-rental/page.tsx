@@ -51,38 +51,43 @@ interface NormalizedCar {
 }
 
 function normalizeCar(car: CarType): NormalizedCar {
-  // If car already has specs object (fallback data), return as-is
-  if (car.specs && typeof car.specs === 'object') {
-    return car as NormalizedCar
-  }
+  // Check if car already has a properly formed specs object (fallback data)
+  const hasValidSpecs = car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
   
-  // Convert Supabase flat structure to UI nested structure
-  const supabaseCar = car as Record<string, unknown>
+  // Get values from either the specs object or flat Supabase columns
+  const fuel = hasValidSpecs 
+    ? String(car.specs!.fuel) 
+    : String(car.fuel_type || car.category || 'Petrol')
+  const seats = hasValidSpecs 
+    ? car.specs!.seats 
+    : (car.seats || 4)
+  const transmission = hasValidSpecs 
+    ? String(car.specs!.transmission) 
+    : String(car.transmission || 'Manual')
+  
+  // Build display name from brand + model or just model
+  const displayName = car.brand && car.model 
+    ? `${car.brand} ${car.model}` 
+    : String(car.model || 'Unknown')
   
   return {
-    id: String(supabaseCar.id || ''),
-    type: String(supabaseCar.category || supabaseCar.type || 'Car'),
-    model: supabaseCar.brand && supabaseCar.model 
-      ? `${supabaseCar.brand} ${supabaseCar.model}` 
-      : String(supabaseCar.model || 'Unknown'),
-    price: Number(supabaseCar.price_per_day || supabaseCar.price || 0),
-    image: String(supabaseCar.image_url || supabaseCar.image || 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'),
-    features: [
-      String(supabaseCar.fuel_type || supabaseCar.category || 'Petrol'),
-      `${supabaseCar.seats || 4} Seats`,
-      String(supabaseCar.transmission || 'Manual'),
-    ],
+    id: String(car.id || ''),
+    type: String(car.category || car.type || 'Car'),
+    model: displayName,
+    price: Number(car.price || car.price_per_day || 0),
+    image: String(car.image_url || car.image || 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'),
+    features: [fuel, `${seats} Seats`, transmission],
     specs: {
-      fuel: String(supabaseCar.fuel_type || supabaseCar.category || 'Petrol'),
-      seats: supabaseCar.seats ? Number(supabaseCar.seats) : 4,
-      transmission: String(supabaseCar.transmission || 'Manual'),
+      fuel,
+      seats,
+      transmission,
       ac: true,
     },
-    badge: supabaseCar.badge ? String(supabaseCar.badge) : undefined,
-    description: supabaseCar.description 
-      ? String(supabaseCar.description) 
+    badge: car.badge ? String(car.badge) : undefined,
+    description: car.description 
+      ? String(car.description) 
       : 'Reliable vehicle for exploring Kos Island.',
-    available: supabaseCar.available !== false,
+    available: car.available !== false,
   }
 }
 
