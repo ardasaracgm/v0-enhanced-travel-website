@@ -114,32 +114,22 @@ export default function CarRentalPage() {
 
   React.useEffect(() => {
     async function fetchCars() {
-      console.log('[v0] CarRentalPage: Starting car fetch...')
       setLoading(true)
       setError(null)
       setUsingFallback(false)
       
       const { data, error: fetchError, isEmpty } = await getAvailableCars()
       
-      console.log('[v0] CarRentalPage: Fetch result:', { 
-        dataLength: data?.length, 
-        error: fetchError?.message,
-        isEmpty 
-      })
-      
       if (fetchError) {
-        console.error('[v0] CarRentalPage: Fetch error:', fetchError.message)
         setError(fetchError.message)
         setCars(fallbackCarFleet as CarType[])
         setUsingFallback(true)
         setFallbackReason(`Database error: ${fetchError.message}`)
       } else if (isEmpty || !data || data.length === 0) {
-        console.log('[v0] CarRentalPage: No cars in database, using fallback')
         setCars(fallbackCarFleet as CarType[])
         setUsingFallback(true)
         setFallbackReason('No cars found in database. Showing default fleet.')
       } else {
-        console.log('[v0] CarRentalPage: Successfully loaded', data.length, 'cars from database')
         setCars(data)
       }
       setLoading(false)
@@ -269,19 +259,20 @@ export default function CarRentalPage() {
               <p className="text-muted-foreground text-lg">Well-maintained vehicles perfect for exploring Kos Island</p>
             </div>
             
-            {error && (
-              <Alert className="mb-8 max-w-2xl mx-auto border-red-200 bg-red-50">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  <strong>Database Error:</strong> {error}
+            {/* Only show database error in development */}
+            {error && process.env.NODE_ENV === 'development' && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  <strong>Dev Notice:</strong> {error}
                 </AlertDescription>
               </Alert>
             )}
             
-            {usingFallback && !error && (
-              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
+            {usingFallback && !error && process.env.NODE_ENV === 'development' && (
+              <Alert className="mb-8 max-w-2xl mx-auto border-blue-200 bg-blue-50">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
                   {fallbackReason}
                 </AlertDescription>
               </Alert>
@@ -396,7 +387,7 @@ export default function CarRentalPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Rent With IslandBee?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Rent With TravelBeez?</h2>
                 <div className="space-y-6">
                   {benefits.map((benefit, index) => (
                     <div key={index} className="flex gap-4">
