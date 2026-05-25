@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Ship, Car, Compass, FileText, Phone, Mail, MapPin, BadgeCheck, Clock } from 'lucide-react'
+import { Ship, Compass, FileText, Phone, MapPin, BadgeCheck, Clock, MessageCircle } from 'lucide-react'
 
 export function Footer() {
   return (
@@ -12,7 +12,7 @@ export function Footer() {
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B</span>
               </div>
-              <span className="text-xl font-bold">Island<span className="text-primary">Bee</span></span>
+              <span className="text-xl font-bold">Travel <span className="text-primary">Beez</span></span>
             </div>
             <p className="text-background/70 text-sm mb-4">
               Your trusted partner for Greek island travel. Licensed travel agency with physical office at Kos Port.
@@ -31,12 +31,8 @@ export function Footer() {
                 <span>+30 22420 5008</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[#25D366]" />
-                <span>WhatsApp: +30 22420 5009</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                <span>info@islandbee.com</span>
+                <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                <span>WhatsApp: +30 22420 5008</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
@@ -60,7 +56,8 @@ export function Footer() {
               <li><Link href="/car-rental" className="hover:text-primary transition-colors">Car Rental</Link></li>
               <li><Link href="/tours" className="hover:text-primary transition-colors">Island Tours</Link></li>
               <li><Link href="/visa" className="hover:text-primary transition-colors">Visa Support</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Travel Insurance</Link></li>
+              <li><span className="text-background/50">Hotels & Stays <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Travel Insurance <span className="text-xs text-primary">(Soon)</span></span></li>
             </ul>
           </div>
 
@@ -71,11 +68,11 @@ export function Footer() {
               Islands
             </h3>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><Link href="#" className="hover:text-primary transition-colors">Kos Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Rhodes Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Samos Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Leros Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Patmos Island</Link></li>
+              <li><span className="text-background/50">Kos Island <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Rhodes Island <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Samos Island <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Leros Island <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Patmos Island <span className="text-xs text-primary">(Soon)</span></span></li>
             </ul>
           </div>
 
@@ -86,11 +83,11 @@ export function Footer() {
               Support
             </h3>
             <ul className="space-y-2 text-sm text-background/70">
-              <li><Link href="#" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">FAQ</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Cancellation Policy</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><span className="text-background/50">FAQ <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Terms of Service <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Privacy Policy <span className="text-xs text-primary">(Soon)</span></span></li>
+              <li><span className="text-background/50">Cancellation Policy <span className="text-xs text-primary">(Soon)</span></span></li>
             </ul>
           </div>
         </div>
@@ -105,7 +102,7 @@ export function Footer() {
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="IslandBee Kos Office Location"
+            title="Travel Beez Kos Office Location"
             className="grayscale hover:grayscale-0 transition-all duration-300"
           />
         </div>
@@ -113,7 +110,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-background/50 text-center md:text-left">
-            <p>&copy; 2024 IslandBee Travel. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} FerryBee Travel IKE — operating as Travel Beez. All rights reserved.</p>
             <p className="text-xs mt-1">Greek Tourism License: ΜΗ.Τ.Ε. 1471Ε60000074600</p>
           </div>
           <div className="flex items-center gap-4 text-sm text-background/50">

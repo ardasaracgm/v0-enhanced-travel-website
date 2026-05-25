@@ -284,7 +284,7 @@ export default function CheckoutPage() {
                           <Link href="#" className="text-primary hover:underline">Cancellation Policy</Link>
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          By completing this booking, you agree to the ferry operator&apos;s terms and IslandBee&apos;s booking conditions.
+                          By completing this booking, you agree to the ferry operator&apos;s terms and Travel Beez&apos;s booking conditions.
                         </p>
                       </div>
                     </div>

@@ -307,7 +307,7 @@ export default function VisaSupportPage() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Important Information</h3>
                     <p className="text-muted-foreground text-sm">
-                      IslandBee provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval.
+                      Travel Beez provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval.
                     </p>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export default function VisaSupportPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Choose IslandBee for Visa Support?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Choose Travel Beez for Visa Support?</h2>
                 <div className="space-y-6">
                   <div className="flex gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl h-fit">
@@ -369,14 +369,14 @@ export default function VisaSupportPage() {
                       <Phone className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">WhatsApp / Phone</p>
-                        <p className="font-medium text-foreground">+90 532 XXX XX XX</p>
+                        <p className="font-medium text-foreground">+30 22420 5008</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Mail className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium text-foreground">visa@islandbee.com</p>
+                        <p className="font-medium text-foreground">visa@travelbeez.com</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">

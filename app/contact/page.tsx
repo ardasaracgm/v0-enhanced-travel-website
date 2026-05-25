@@ -100,10 +100,10 @@ export default function ContactPage() {
                         <h3 className="font-semibold text-foreground mb-1">Email</h3>
                         <p className="text-muted-foreground text-sm mb-2">We reply within 24 hours</p>
                         <a 
-                          href="mailto:info@islandbee.com" 
+                          href="mailto:info@travelbeez.com" 
                           className="text-primary font-medium hover:underline"
                         >
-                          info@islandbee.com
+                          info@travelbeez.com
                         </a>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function ContactPage() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="IslandBee Kos Office Location"
+                title="Travel Beez Kos Office Location"
               />
             </div>
           </div>
