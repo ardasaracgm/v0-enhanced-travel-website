@@ -307,7 +307,7 @@ export default function VisaSupportPage() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Important Information</h3>
                     <p className="text-muted-foreground text-sm">
-                      IslandBee provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval.
+                      TravelBeez provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval.
                     </p>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export default function VisaSupportPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Choose IslandBee for Visa Support?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Choose TravelBeez for Visa Support?</h2>
                 <div className="space-y-6">
                   <div className="flex gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl h-fit">

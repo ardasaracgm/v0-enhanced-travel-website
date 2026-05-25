@@ -183,7 +183,7 @@ export default function ContactPage() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="IslandBee Kos Office Location"
+                title="TravelBeez Kos Office Location"
               />
             </div>
           </div>

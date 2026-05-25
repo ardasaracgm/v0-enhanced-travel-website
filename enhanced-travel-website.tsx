@@ -31,6 +31,7 @@ import {
   Lock,
   Award,
   Heart,
+  Package,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -47,7 +48,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export default function IslandBee() {
+export default function TravelBeez() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
 
   const islands = [
@@ -128,7 +129,7 @@ export default function IslandBee() {
     { icon: <Hotel className="h-8 w-8" />, title: 'Hotels & Stays', description: 'Handpicked accommodations', href: '#' },
     { icon: <Compass className="h-8 w-8" />, title: 'Island Tours', description: 'Guided experiences and excursions', href: '/tours' },
     { icon: <FileText className="h-8 w-8" />, title: 'Visa Support', description: 'Schengen visa assistance', href: '/visa' },
-    { icon: <Shield className="h-8 w-8" />, title: 'Travel Insurance', description: 'Comprehensive coverage', href: '#' },
+    { icon: <Package className="h-8 w-8" />, title: 'Package Pickup', description: 'Secure delivery address and storage at Kos Port', href: '/package-pickup' },
   ]
 
   const testimonials = [
@@ -172,7 +173,7 @@ export default function IslandBee() {
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B</span>
               </div>
-              <span className="text-xl font-bold text-foreground">Island<span className="text-primary">Bee</span></span>
+              <span className="text-xl font-bold text-foreground">Travel<span className="text-primary">Beez</span></span>
             </div>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
@@ -181,6 +182,7 @@ export default function IslandBee() {
               { href: '/car-rental', label: 'Car Rental' },
               { href: '/tours', label: 'Tours' },
               { href: '/visa', label: 'Visa Support' },
+              { href: '/package-pickup', label: 'Package Pickup' },
             ].map((item) => (
               <Link
                 key={item.href}
@@ -213,6 +215,7 @@ export default function IslandBee() {
                     { href: '/car-rental', label: 'Car Rental' },
                     { href: '/tours', label: 'Tours' },
                     { href: '/visa', label: 'Visa Support' },
+                    { href: '/package-pickup', label: 'Package Pickup' },
                   ].map((item) => (
                     <Link
                       key={item.href}
@@ -569,7 +572,7 @@ export default function IslandBee() {
                   Licensed & Registered in Greece
                 </h2>
                 <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
-                  IslandBee is a fully licensed Greek travel company registered with the Greek Ministry of Tourism (ΜΗ.Τ.Ε.). We operate from our office at Kos Port, ensuring you receive authentic local service with full legal protection.
+                  TravelBeez is a fully licensed Greek travel company registered with the Greek Ministry of Tourism (MH.T.E.). We operate from our office at Kos Port, ensuring you receive authentic local service with full legal protection.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-card border border-border/50">
@@ -646,7 +649,7 @@ export default function IslandBee() {
                         <Building2 className="h-7 w-7 text-primary-foreground" />
                       </div>
                       <div>
-                        <p className="font-bold text-foreground text-lg">IslandBee Kos Office</p>
+                        <p className="font-bold text-foreground text-lg">TravelBeez Kos Office</p>
                         <p className="text-sm text-muted-foreground mb-2">G Averos 4, Kos (under Achilleas Hotel)</p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1 text-primary">
@@ -1197,7 +1200,7 @@ export default function IslandBee() {
                 <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-lg">B</span>
                 </div>
-                <span className="text-xl font-bold text-foreground">Island<span className="text-primary">Bee</span></span>
+              <span className="text-xl font-bold text-foreground">Travel<span className="text-primary">Beez</span></span>
               </Link>
               <p className="text-sm text-muted-foreground mb-4">
                 Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (ΜΗ.Τ.Ε.).
@@ -1252,7 +1255,7 @@ export default function IslandBee() {
           <div className="border-t border-border mt-8 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                <span>2024 IslandBee Travel Ltd.</span>
+                <span>{new Date().getFullYear()} FerryBee Travel IKE - operating as TravelBeez.</span>
                 <span>ΜΗ.Τ.Ε.: 1471Ε60000074600</span>
               </div>
               <div className="flex gap-6 text-sm text-muted-foreground">

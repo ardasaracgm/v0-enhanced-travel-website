@@ -11,6 +11,7 @@ const navItems = [
   { href: '/car-rental', label: 'Car Rental' },
   { href: '/tours', label: 'Tours' },
   { href: '/visa', label: 'Visa Support' },
+  { href: '/package-pickup', label: 'Package Pickup' },
   { href: '/contact', label: 'Contact' },
 ]
 
@@ -25,7 +26,7 @@ export function Header() {
             <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">B</span>
             </div>
-            <span className="text-xl font-bold text-foreground">Island<span className="text-primary">Bee</span></span>
+            <span className="text-xl font-bold text-foreground">Travel<span className="text-primary">Beez</span></span>
           </div>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
@@ -44,7 +45,7 @@ export function Header() {
             <Phone className="h-4 w-4 text-primary" />
             +30 22420 5008
           </Button>
-          <Link href="https://wa.me/302242050009" target="_blank">
+          <Link href="https://wa.me/302242050008" target="_blank">
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               Book Now
             </Button>
