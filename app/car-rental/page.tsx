@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { Car, Calendar, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, Loader2 } from 'lucide-react'
+import { Car, Calendar, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, Loader2, CarIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { CarCardSkeleton, EmptyState } from '@/components/ui/skeleton'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
@@ -340,10 +341,22 @@ export default function CarRentalPage() {
             )}
             
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-3 text-muted-foreground">Loading available cars...</span>
+              <div className="grid md:grid-cols-3 gap-8">
+                {[1, 2, 3].map((i) => (
+                  <CarCardSkeleton key={i} />
+                ))}
               </div>
+            ) : cars.length === 0 ? (
+              <EmptyState
+                icon={<CarIcon className="h-8 w-8 text-muted-foreground" />}
+                title="No Cars Available"
+                description="We couldn't find any cars at the moment. Please try again later or contact us directly."
+                action={
+                  <a href="https://wa.me/302242050008" target="_blank" rel="noopener noreferrer">
+                    <Button>Contact Us on WhatsApp</Button>
+                  </a>
+                }
+              />
             ) : (
               <div className="grid md:grid-cols-3 gap-8">
                 {cars.map((car, index) => (
