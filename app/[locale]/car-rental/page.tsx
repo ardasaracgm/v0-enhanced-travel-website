@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { Car, Calendar, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, Loader2, CarIcon } from 'lucide-react'
+import { Car, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, CarIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -51,47 +51,75 @@ interface NormalizedCar {
   available: boolean
 }
 
-function normalizeCar(car: CarType): NormalizedCar {
-  // Narrow specs once to a concrete object (or null) so TypeScript can follow it
+function normalizeCar(car: CarType | Record<string, unknown>): NormalizedCar {
+  const carRecord = car as Record<string, unknown>
+
+  // Narrow specs once to a concrete object (or null) so TypeScript can follow it.
+  // Supabase rows currently arrive as flat columns, while older/static UI data can
+  // include a nested specs object.
+  const rawSpecs = carRecord.specs
   const validSpecs =
-    car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
-      ? (car.specs as { fuel?: string; seats?: number; transmission?: string; ac?: boolean })
+    rawSpecs && typeof rawSpecs === 'object' && !Array.isArray(rawSpecs)
+      ? (rawSpecs as { fuel?: string; seats?: number | string; transmission?: string; ac?: boolean | string })
       : null
 
+  const getString = (key: string, fallback = '') => {
+    const value = carRecord[key]
+    return value === null || value === undefined ? fallback : String(value)
+  }
+
+  const getNumber = (key: string, fallback = 0) => {
+    const value = carRecord[key]
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') {
+      const parsed = Number(value)
+      return Number.isFinite(parsed) ? parsed : fallback
+    }
+    return fallback
+  }
+
   // Get values from either the validSpecs object or flat Supabase columns
-  const fuel = validSpecs
+  const fuel = validSpecs?.fuel
     ? String(validSpecs.fuel)
-    : String(car.fuel_type || car.category || 'Petrol')
-  const seats = validSpecs
-    ? validSpecs.seats
-    : (car.seats || 4)
-  const transmission = validSpecs
+    : getString('fuel_type', getString('category', 'Petrol'))
+
+  const seats = validSpecs?.seats ?? carRecord.seats ?? 4
+
+  const transmission = validSpecs?.transmission
     ? String(validSpecs.transmission)
-    : String(car.transmission || 'Manual')
-  
+    : getString('transmission', 'Manual')
+
   // Build display name from brand + model or just model
-  const displayName = car.brand && car.model 
-    ? `${car.brand} ${car.model}` 
-    : String(car.model || 'Unknown')
-  
+  const brand = getString('brand')
+  const model = getString('model', 'Unknown')
+  const displayName = brand && model ? `${brand} ${model}` : model
+
+  const price =
+    getNumber('price') ||
+    getNumber('price_per_day') ||
+    0
+
+  const image =
+    getString('image_url') ||
+    getString('image') ||
+    'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'
+
   return {
-    id: String(car.id || ''),
-    type: String(car.category || car.type || 'Car'),
+    id: getString('id'),
+    type: getString('category', getString('type', 'Car')),
     model: displayName,
-    price: Number(car.price || car.price_per_day || 0),
-    image: String(car.image_url || car.image || 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'),
+    price,
+    image,
     features: [fuel, `${seats} Seats`, transmission],
     specs: {
       fuel,
       seats,
       transmission,
-      ac: true,
+      ac: validSpecs?.ac ?? true,
     },
-    badge: car.badge ? String(car.badge) : undefined,
-    description: car.description 
-      ? String(car.description) 
-      : 'Reliable vehicle for exploring Kos Island.',
-    available: car.available !== false,
+    badge: getString('badge') || undefined,
+    description: getString('description') || 'Reliable vehicle for exploring Kos Island.',
+    available: carRecord.available !== false,
   }
 }
 
