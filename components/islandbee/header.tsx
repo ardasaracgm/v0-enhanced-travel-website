@@ -7,6 +7,11 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { TrustBar } from "@/components/islandbee/trust-bar";
+
+<>
+  <TrustBar />
+</>;
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
