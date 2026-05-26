@@ -248,24 +248,6 @@ export default function TravelBeez() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background scroll-smooth">
-      {/* Top Trust Bar */}
-      <div className="w-full bg-primary/5 border-b border-primary/10 py-2">
-        <div className="container flex items-center justify-center gap-6 text-xs md:text-sm">
-          <div className="flex items-center gap-2 text-foreground">
-            <BadgeCheck className="h-4 w-4 text-primary" />
-            <span>Greek Licensed (ΜΗ.Τ.Ε.)</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-foreground">
-            <MapPin className="h-4 w-4 text-primary" />
-            <span>Kos Port Office</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-foreground">
-            <Globe className="h-4 w-4 text-primary" />
-            <span>Türkçe Destek</span>
-          </div>
-        </div>
-      </div>
-
       <main className="flex-1">
         {/* Hero Section with Search */}
         <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden">

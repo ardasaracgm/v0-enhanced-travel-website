@@ -1,25 +1,36 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { Link } from '@/i18n/routing'
-import { Menu, Phone } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { LanguageSwitcher } from '@/components/i18n/language-switcher'
+import * as React from "react";
+import { Link } from "@/i18n/routing";
+import { Menu, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false)
-  const t = useTranslations('header')
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const t = useTranslations("header");
 
-  const navItems: { href: '/ferry' | '/car-rental' | '/tours' | '/visa' | '/package-pickup' | '/contact'; labelKey: string }[] = [
-    { href: '/ferry',          labelKey: 'ferryTickets' },
-    { href: '/car-rental',     labelKey: 'carRental' },
-    { href: '/tours',          labelKey: 'tours' },
-    { href: '/visa',           labelKey: 'visaSupport' },
-    { href: '/package-pickup', labelKey: 'packagePickup' },
-    { href: '/contact',        labelKey: 'contact' },
-  ]
+  const navItems: {
+    href:
+      | "/ferry"
+      | "/car-rental"
+      | "/tours"
+      | "/visa"
+      | "/events"
+      | "/package-pickup"
+      | "/contact";
+    labelKey: string;
+  }[] = [
+    { href: "/ferry", labelKey: "ferryTickets" },
+    { href: "/car-rental", labelKey: "carRental" },
+    { href: "/tours", labelKey: "tours" },
+    { href: "/events", labelKey: "eventsGroups" },
+    { href: "/visa", labelKey: "visaSupport" },
+    { href: "/package-pickup", labelKey: "packagePickup" },
+    { href: "/contact", labelKey: "contact" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -27,7 +38,9 @@ export function Header() {
         <Link className="flex items-center gap-2" href="/">
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">B</span>
+              <span className="text-primary-foreground font-bold text-lg">
+                B
+              </span>
             </div>
             <span className="text-xl font-bold text-foreground">
               Travel<span className="text-primary">Beez</span>
@@ -65,14 +78,22 @@ export function Header() {
           </Button>
 
           <a href="https://wa.me/302242050008" target="_blank" rel="noopener">
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              {t('bookNow')}
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {t("bookNow")}
             </Button>
           </a>
 
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <Button className="lg:hidden" size="icon" variant="ghost" aria-label={t('openMenu')}>
+              <Button
+                className="lg:hidden"
+                size="icon"
+                variant="ghost"
+                aria-label={t("openMenu")}
+              >
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -85,7 +106,6 @@ export function Header() {
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                  
                     {t(item.labelKey)}
                   </Link>
                 ))}
@@ -98,5 +118,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
