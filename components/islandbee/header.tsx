@@ -85,7 +85,7 @@ export function Header() {
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {/* @ts-expect-error - dynamic key */}
+                  
                     {t(item.labelKey)}
                   </Link>
                 ))}
