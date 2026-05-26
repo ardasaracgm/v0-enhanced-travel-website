@@ -15,7 +15,6 @@ import { ContactForm } from '@/components/islandbee/contact-form'
 export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <TrustBar />
       <Header />
       
       <main className="flex-1">

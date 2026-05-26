@@ -49,7 +49,6 @@ export default function CheckoutPage() {
   if (!state.selectedFerry || state.passengers.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <TrustBar />
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <Card className="max-w-md mx-auto">
@@ -70,7 +69,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <TrustBar />
       <Header />
       
       <main className="flex-1">

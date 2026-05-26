@@ -113,7 +113,6 @@ export default function PassengerDetailsPage() {
   if (!state.selectedFerry) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <TrustBar />
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <Card className="max-w-md mx-auto">
@@ -134,7 +133,6 @@ export default function PassengerDetailsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <TrustBar />
       <Header />
       
       <main className="flex-1">

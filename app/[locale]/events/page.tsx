@@ -157,7 +157,6 @@ export default function EventsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <TrustBar />
       <Header />
       
       <main className="flex-1">

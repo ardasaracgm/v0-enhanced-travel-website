@@ -115,7 +115,6 @@ export default function ConfirmationPage() {
   if (!state.selectedFerry || !state.bookingReference) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <TrustBar />
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <Card className="max-w-md mx-auto">
@@ -136,7 +135,6 @@ export default function ConfirmationPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <TrustBar />
       <Header />
       
       <main className="flex-1">
