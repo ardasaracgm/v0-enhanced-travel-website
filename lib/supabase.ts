@@ -511,3 +511,58 @@ export async function getBookingByReference(reference: string): Promise<{ data: 
     return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
   }
 }
+
+// Event request type
+export interface EventRequest {
+  id?: string
+  full_name: string
+  phone: string
+  email: string
+  event_type: string
+  island_preference: string
+  group_size: number
+  date_range: string
+  message?: string
+  status?: string
+  created_at?: string
+}
+
+/**
+ * Save an event request submission
+ */
+export async function saveEventRequest(request: Omit<EventRequest, 'id' | 'created_at' | 'status'>): Promise<{ success: boolean; error?: string }> {
+  console.log('[v0] saveEventRequest: Starting with data', request)
+  
+  const client = getSupabaseClient()
+  if (!client) {
+    console.error('[v0] saveEventRequest: Supabase not configured')
+    return { success: false, error: 'Database not configured. Your request was received but could not be saved. Please contact us on WhatsApp.' }
+  }
+
+  try {
+    const { error } = await client
+      .from('event_requests')
+      .insert({
+        full_name: request.full_name,
+        phone: request.phone,
+        email: request.email,
+        event_type: request.event_type,
+        island_preference: request.island_preference,
+        group_size: request.group_size,
+        date_range: request.date_range,
+        message: request.message || null,
+        status: 'new',
+      })
+
+    if (error) {
+      console.error('[v0] saveEventRequest: Error', error)
+      return { success: false, error: error.message }
+    }
+
+    console.log('[v0] saveEventRequest: Success')
+    return { success: true }
+  } catch (err) {
+    console.error('[v0] saveEventRequest: Unexpected error', err)
+    return { success: false, error: err instanceof Error ? err.message : 'An unexpected error occurred' }
+  }
+}
