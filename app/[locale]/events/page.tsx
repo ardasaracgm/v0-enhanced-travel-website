@@ -598,7 +598,7 @@ export default function EventsPage() {
         {/* WhatsApp CTA */}
         <WhatsAppCTA 
           title="Tell us your dream island event"
-          subtitle="We will plan the rest."
+          description="We will plan the rest."
         />
 
         <TrustIndicators />
