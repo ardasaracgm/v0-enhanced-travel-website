@@ -11,20 +11,15 @@ export const metadata: Metadata = {
   description: 'Your trusted partner for Greek island travel. Book ferry tickets, car rentals, hotels, and tours to Kos, Rhodes, Samos, Leros, and Patmos.',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/apple-icon.png',
+    apple: '/icon.svg',
+  },
+  openGraph: {
+    title: 'TravelBeez - Greek Islands Ferry, Car Rental & Tours',
+    description: 'Your trusted partner for Greek island travel from Turkey to Kos, Rhodes, Samos, Leros, and Patmos.',
+    type: 'website',
+    locale: 'en_US',
   },
 }
 
