@@ -57,13 +57,13 @@ function normalizeCar(car: CarType): NormalizedCar {
   
   // Get values from either the specs object or flat Supabase columns
   const fuel = validSpecs 
-    ? String(car.specs!.fuel) 
+    ? String(validSpecs.fuel) 
     : String(car.fuel_type || car.category || 'Petrol')
   const seats = validSpecs 
-    ? car.specs!.seats 
+    ? validSpecs.seats
     : (car.seats || 4)
   const transmission = validSpecs 
-    ? String(car.specs!.transmission) 
+    ? String(validSpecs.transmission)
     : String(car.transmission || 'Manual')
   
   // Build display name from brand + model or just model
