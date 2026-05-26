@@ -51,6 +51,11 @@ interface NormalizedCar {
   available: boolean
 }
 
+function getValue(obj: unknown, key: string): unknown {
+  if (!obj || typeof obj !== 'object') return undefined
+  return (obj as Record<string, unknown>)[key]
+}
+
 function normalizeCar(car: CarType | Record<string, unknown>): NormalizedCar {
   const carRecord = car as Record<string, unknown>
 
