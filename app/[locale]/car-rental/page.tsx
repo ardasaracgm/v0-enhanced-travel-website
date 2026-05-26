@@ -52,17 +52,20 @@ interface NormalizedCar {
 }
 
 function normalizeCar(car: CarType): NormalizedCar {
-  // Check if car already has a properly formed specs object (fallback data)
-  const validSpecs = car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
-  
-  // Get values from either the specs object or flat Supabase columns
-  const fuel = validSpecs 
-    ? String(validSpecs.fuel) 
+  // Narrow specs once to a concrete object (or null) so TypeScript can follow it
+  const validSpecs =
+    car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
+      ? (car.specs as { fuel?: string; seats?: number; transmission?: string; ac?: boolean })
+      : null
+
+  // Get values from either the validSpecs object or flat Supabase columns
+  const fuel = validSpecs
+    ? String(validSpecs.fuel)
     : String(car.fuel_type || car.category || 'Petrol')
-  const seats = validSpecs 
+  const seats = validSpecs
     ? validSpecs.seats
     : (car.seats || 4)
-  const transmission = validSpecs 
+  const transmission = validSpecs
     ? String(validSpecs.transmission)
     : String(car.transmission || 'Manual')
   
