@@ -391,20 +391,34 @@ export interface ContactRequest {
 // `cars` table is preserved as-is from the existing schema
 export interface Car {
   id: string
-  type: string
-  model: string
+  available: boolean
   price: number
   image: string
-  features: string[]
-  specs: {
-    fuel?: string
-    seats?: number
-    transmission?: string
-    ac?: boolean
-  } | string  // some rows are flat in current data
+
+  // Optional fields — Supabase rows may have either nested specs object
+  // OR flat columns, depending on when they were inserted.
+  // The car-rental page's normalizeCar() handles both shapes.
+  type?: string
+  model?: string
+  brand?: string
+  category?: string
+  description?: string
   badge?: string
-  description: string
-  available: boolean
+  features?: string[]
+  specs?:
+    | {
+        fuel?: string
+        seats?: number
+        transmission?: string
+        ac?: boolean
+      }
+    | string
+
+  // Flat column variants (legacy / direct Supabase rows)
+  fuel_type?: string
+  seats?: number
+  transmission?: string
+
   created_at?: string
 }
 
