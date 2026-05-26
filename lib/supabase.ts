@@ -1,568 +1,587 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+/**
+ * TravelBeez · Supabase Client + Domain Types
+ * ============================================
+ * Trip-centric data model.
+ *
+ * IMPORTANT:
+ * Helper functions for booking flow (createBooking, completeBooking, etc.)
+ * from the previous schema have been removed. They will be reintroduced as
+ * server actions in Kademe 3 (ferry booking flow). Until then, any caller
+ * importing those will get a compile-time error pointing to this file.
+ *
+ * The deprecated functions are kept as stubs at the bottom of this file
+ * that throw a clear error, so existing pages won't crash at runtime
+ * silently — they'll fail loudly with a helpful message.
+ */
 
-// Environment variables
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+// ============================================================
+// CLIENT
+// ============================================================
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Check if Supabase is properly configured
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
-
-// Create Supabase client only if configured
-let supabase: SupabaseClient | null = null
-
-if (isSupabaseConfigured) {
-  supabase = createClient(supabaseUrl!, supabaseAnonKey!)
-} else if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  console.warn('[TravelBeez] Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+if (!supabaseUrl || !supabaseAnonKey) {
+  // Don't crash at module load; log clearly so misconfig is obvious in logs.
+  // Calls will fail with a clear "no client" error if attempted.
+  console.error(
+    '[supabase] Missing env vars: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  )
 }
 
-// Safe getter for Supabase client
-function getSupabaseClient(): SupabaseClient | null {
-  return supabase
-}
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl ?? '',
+  supabaseAnonKey ?? '',
+  {
+    auth: { persistSession: false },
+  }
+)
 
-// Types for database tables - matching exact Supabase columns
+
+// ============================================================
+// DOMAIN ENUMS  (mirror the Postgres enum types exactly)
+// ============================================================
+
+export type TripState =
+  | 'draft'
+  | 'pending_payment'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'failed'
+
+export type TripItemType =
+  | 'ferry'
+  | 'transfer'
+  | 'car_rental'
+  | 'tour'
+  | 'hotel'
+  | 'package_pickup'
+  | 'insurance'
+  | 'esim'
+  | 'visa'
+  | 'custom'
+
+export type TripItemState =
+  | 'draft'
+  | 'reserved'
+  | 'confirmed'
+  | 'fulfilled'
+  | 'cancelled'
+  | 'failed'
+
+export type SupplierType =
+  | 'internal'
+  | 'ferry_operator'
+  | 'car_rental'
+  | 'hotel_aggregator'
+  | 'tour_provider'
+  | 'transfer_provider'
+  | 'insurance'
+  | 'esim'
+  | 'visa_service'
+  | 'warehouse'
+
+export type PaymentProvider =
+  | 'viva_wallet'
+  | 'bank_transfer'
+  | 'cash'
+  | 'internal'
+
+export type PaymentState =
+  | 'pending'
+  | 'completed'
+  | 'failed'
+  | 'refunded'
+  | 'partially_refunded'
+
+export type PassengerType = 'adult' | 'child' | 'infant'
+
+export type InquiryType =
+  | 'tour'
+  | 'hotel'
+  | 'bundle'
+  | 'vip_transfer'
+  | 'package_pickup'
+  | 'kos_transit'
+  | 'custom'
+
+export type InquiryState =
+  | 'new'
+  | 'in_progress'
+  | 'quoted'
+  | 'won'
+  | 'lost'
+
+export type Locale = 'tr' | 'el' | 'en'
+
+export type Currency = 'EUR' // for now; widen later if needed
+
+
+// ============================================================
+// DOMAIN TYPES  (mirror table columns 1:1)
+// ============================================================
+
 export interface Customer {
-  id?: string
-  full_name: string
+  id: string
   email: string
   phone: string
-  nationality: string
-  created_at?: string
+  full_name?: string | null
+  nationality?: string | null
+  preferred_language: Locale
+  marketing_consent: boolean
+  created_at: string
+  updated_at: string
 }
 
-export interface Booking {
-  id?: string
-  booking_reference: string
+export interface Supplier {
+  id: string
+  name: string
+  type: SupplierType
+  contact_email?: string | null
+  contact_phone?: string | null
+  api_endpoint?: string | null
+  api_config: Record<string, unknown>
+  active: boolean
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Trip {
+  id: string
   customer_id: string
-  booking_type: 'ferry' | 'car_rental' | 'tour' | 'hotel'
-  status: 'pending' | 'confirmed' | 'cancelled'
+  reference: string
+  title?: string | null
+  state: TripState
+  start_date?: string | null
+  end_date?: string | null
+  party_size: number
+  contact_email: string
+  contact_phone: string
+  currency: Currency
   total_amount: number
-  currency: string
-  created_at?: string
+  locale: Locale
+  notes_internal?: string | null
+  notes_customer?: string | null
+  source?: string | null
+  created_at: string
+  updated_at: string
+  confirmed_at?: string | null
+  cancelled_at?: string | null
+  cancellation_reason?: string | null
+}
+
+/**
+ * Item-type-specific metadata schemas.
+ * These are documented contracts for what goes in `trip_items.metadata` (jsonb).
+ * Application code should validate against these before write.
+ */
+export interface FerryItemMetadata {
+  from_port: string
+  to_port: string
+  vessel?: string
+  operator?: string
+  departure_time: string  // ISO time
+  arrival_time: string    // ISO time
+  duration_minutes?: number
+  seat_class?: 'economy' | 'business' | 'vip'
+  vehicle?: { type: string; plate?: string } | null
+}
+
+export interface TransferItemMetadata {
+  pickup_location: string       // address or POI
+  dropoff_location: string
+  vehicle_class: 'standard' | 'vip' | 'minivan' | 'minibus'
+  pickup_at: string             // ISO
+  flight_or_ferry_ref?: string
+}
+
+export interface CarRentalItemMetadata {
+  car_id?: string               // FK to cars table if internal
+  model: string
+  pickup_location: string
+  dropoff_location: string
+  pickup_at: string
+  dropoff_at: string
+  driver_license_country?: string
+  insurance_level?: 'basic' | 'full'
+}
+
+export interface TourItemMetadata {
+  tour_slug: string
+  tour_date: string             // ISO date
+  start_time?: string
+  meeting_point?: string
+  duration_hours?: number
+  participants?: { adults: number; children?: number }
+}
+
+export interface HotelItemMetadata {
+  hotel_id?: string
+  hotel_name: string
+  city: string
+  check_in: string              // ISO date
+  check_out: string             // ISO date
+  room_type: string
+  num_rooms?: number
+  guests?: { adults: number; children?: number }
+  meal_plan?: 'room_only' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive'
+}
+
+export interface PackagePickupItemMetadata {
+  package_count: number
+  expected_arrival_date: string
+  package_description?: string
+  delivery_location: string
+  delivery_window?: { from: string; to: string }
+}
+
+export interface InsuranceItemMetadata {
+  policy_type: 'travel' | 'health' | 'cancellation' | 'comprehensive'
+  coverage_amount?: number
+  starts_at: string
+  ends_at: string
+  insurer?: string
+}
+
+export interface ESIMItemMetadata {
+  data_gb: number | 'unlimited'
+  validity_days: number
+  region: string  // e.g. 'GR', 'EU'
+  delivery_method?: 'qr_email' | 'physical'
+}
+
+export interface VisaItemMetadata {
+  visa_type: 'schengen' | 'door_visa' | 'other'
+  applicant_count: number
+  urgency?: 'standard' | 'expedited'
+  appointment_required?: boolean
+}
+
+export interface CustomItemMetadata {
+  description: string
+  [key: string]: unknown
+}
+
+export type TripItemMetadata =
+  | FerryItemMetadata
+  | TransferItemMetadata
+  | CarRentalItemMetadata
+  | TourItemMetadata
+  | HotelItemMetadata
+  | PackagePickupItemMetadata
+  | InsuranceItemMetadata
+  | ESIMItemMetadata
+  | VisaItemMetadata
+  | CustomItemMetadata
+
+export interface TripItem {
+  id: string
+  trip_id: string
+  item_type: TripItemType
+  sequence: number
+  supplier_id?: string | null
+  supplier_ref?: string | null
+  title: string
+  description?: string | null
+  scheduled_at?: string | null
+  ends_at?: string | null
+  passenger_count: number
+  price_amount: number
+  price_currency: Currency
+  cancellation_policy: Record<string, unknown>
+  state: TripItemState
+  metadata: TripItemMetadata | Record<string, unknown>
+  internal_notes?: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Passenger {
-  id?: string
-  booking_id: string
-  full_name: string
-  birth_date: string
-  passport_number: string
-  nationality: string
-  created_at?: string
+  id: string
+  trip_id: string
+  first_name: string
+  last_name: string
+  birth_date?: string | null
+  passport_number?: string | null
+  passport_country?: string | null
+  nationality?: string | null
+  type: PassengerType
+  is_lead: boolean
+  email?: string | null
+  phone?: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Payment {
-  id?: string
-  booking_id: string
-  payment_provider: string
-  payment_status: 'pending' | 'completed' | 'failed' | 'refunded'
+  id: string
+  trip_id: string
   amount: number
-  currency: string
-  created_at?: string
+  currency: Currency
+  provider: PaymentProvider
+  provider_ref?: string | null
+  state: PaymentState
+  payment_method?: string | null
+  idempotency_key: string
+  metadata: Record<string, unknown>
+  failure_reason?: string | null
+  created_at: string
+  updated_at: string
+  completed_at?: string | null
+}
+
+export interface PaymentAllocation {
+  id: string
+  payment_id: string
+  trip_item_id: string
+  amount: number
+  currency: Currency
+  created_at: string
+}
+
+export interface SupplierBooking {
+  id: string
+  trip_item_id?: string | null
+  supplier_id?: string | null
+  operation: 'create' | 'update' | 'cancel' | 'status_check'
+  request_payload?: Record<string, unknown> | null
+  response_payload?: Record<string, unknown> | null
+  status_code?: number | null
+  success: boolean
+  error_message?: string | null
+  attempted_at: string
+}
+
+export interface Inquiry {
+  id: string
+  inquiry_type: InquiryType
+  customer_email: string
+  customer_phone?: string | null
+  customer_name?: string | null
+  party_size?: number | null
+  preferred_dates: Record<string, unknown>
+  requirements?: string | null
+  locale: Locale
+  state: InquiryState
+  assigned_to?: string | null
+  internal_notes?: string | null
+  trip_id?: string | null
+  source?: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface ContactRequest {
-  id?: string
+  id: string
+  name: string
+  email: string
+  phone?: string | null
+  subject: string
+  message: string
+  state: 'new' | 'read' | 'responded' | 'archived'
+  locale: Locale
+  created_at: string
+}
+
+// `cars` table is preserved as-is from the existing schema
+export interface Car {
+  id: string
+  type: string
+  model: string
+  price: number
+  image: string
+  features: string[]
+  specs: {
+    fuel?: string
+    seats?: number
+    transmission?: string
+    ac?: boolean
+  } | string  // some rows are flat in current data
+  badge?: string
+  description: string
+  available: boolean
+  created_at?: string
+}
+
+
+// ============================================================
+// COMPOSITE TYPES  (for reads with joined data)
+// ============================================================
+
+export interface TripWithItems extends Trip {
+  items: TripItem[]
+  passengers: Passenger[]
+}
+
+export interface TripFull extends Trip {
+  customer: Customer
+  items: TripItem[]
+  passengers: Passenger[]
+  payments: Payment[]
+}
+
+
+// ============================================================
+// PUBLIC HELPER FUNCTIONS  (read-only, anon-safe)
+// ============================================================
+
+/**
+ * Fetch all available cars from the catalog.
+ * Read-only, suitable for the public car-rental page.
+ */
+export async function getAvailableCars(): Promise<{
+  data: Car[] | null
+  error: Error | null
+  isEmpty: boolean
+}> {
+  const { data, error } = await supabase
+    .from('cars')
+    .select('*')
+    .eq('available', true)
+    .order('price', { ascending: true })
+
+  if (error) {
+    return { data: null, error: new Error(error.message), isEmpty: false }
+  }
+
+  return { data: data ?? [], error: null, isEmpty: !data || data.length === 0 }
+}
+
+/**
+ * Fetch a single car by id. Used on car detail pages.
+ */
+export async function getCarById(id: string): Promise<{
+  data: Car | null
+  error: Error | null
+}> {
+  const { data, error } = await supabase
+    .from('cars')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    return { data: null, error: new Error(error.message) }
+  }
+  return { data, error: null }
+}
+
+/**
+ * Submit a generic contact form message.
+ * Used by /contact page. Anon-allowed insert.
+ */
+export async function submitContactRequest(input: {
   name: string
   email: string
   phone?: string
   subject: string
   message: string
-  status: 'new' | 'read' | 'responded'
-  created_at?: string
-}
+  locale?: Locale
+}): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.from('contact_requests').insert({
+    name: input.name,
+    email: input.email,
+    phone: input.phone ?? null,
+    subject: input.subject,
+    message: input.message,
+    locale: input.locale ?? 'en',
+  })
 
-// Car type - matches Supabase cars table with flat columns
-export interface Car {
-  id: string
-  brand?: string
-  model: string
-  category?: string
-  type?: string
-  price_per_day: number
-  price?: number // Mapped from price_per_day for UI compatibility
-  image_url?: string
-  image?: string
-  fuel_type?: string
-  seats?: number
-  transmission?: string
-  features?: string[]
-  specs?: {
-    fuel: string
-    seats: number | string
-    transmission: string
-    ac: boolean | string
+  if (error) {
+    console.error('[supabase] contact_requests insert failed:', error.message)
+    return { success: false, error: error.message }
   }
-  badge?: string
-  description?: string
-  available: boolean
-  created_at?: string
-}
-
-// Database helper functions
-
-/**
- * Create or get existing customer by email
- */
-export async function getOrCreateCustomer(
-  fullName: string,
-  email: string, 
-  phone: string,
-  nationality: string
-): Promise<{ data: Customer | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured. Please contact support.') }
-  }
-
-  console.log('[v0] getOrCreateCustomer: Starting with', { fullName, email, phone, nationality })
-
-  try {
-    // First try to find existing customer
-    const { data: existingCustomer, error: findError } = await client
-      .from('customers')
-      .select('*')
-      .eq('email', email)
-      .single()
-
-    console.log('[v0] getOrCreateCustomer: Find result', { existingCustomer, findError: findError?.message })
-
-    if (existingCustomer) {
-      // Update if needed
-      if (existingCustomer.phone !== phone || existingCustomer.full_name !== fullName) {
-        const { data: updatedCustomer, error: updateError } = await client
-          .from('customers')
-          .update({ phone, full_name: fullName, nationality })
-          .eq('id', existingCustomer.id)
-          .select()
-          .single()
-        
-        console.log('[v0] getOrCreateCustomer: Update result', { updatedCustomer, updateError: updateError?.message })
-        
-        if (updateError) {
-          console.error('[v0] getOrCreateCustomer: Update error', updateError)
-          return { data: null, error: new Error(updateError.message) }
-        }
-        return { data: updatedCustomer, error: null }
-      }
-      return { data: existingCustomer, error: null }
-    }
-
-    // Create new customer if not found (and not a "no rows" error)
-    if (findError && findError.code !== 'PGRST116') {
-      console.error('[v0] getOrCreateCustomer: Find error', findError)
-      return { data: null, error: new Error(findError.message) }
-    }
-
-    console.log('[v0] getOrCreateCustomer: Creating new customer')
-    const { data: newCustomer, error: createError } = await client
-      .from('customers')
-      .insert({ 
-        full_name: fullName,
-        email, 
-        phone,
-        nationality
-      })
-      .select()
-      .single()
-
-    console.log('[v0] getOrCreateCustomer: Create result', { newCustomer, createError: createError?.message })
-
-    if (createError) {
-      console.error('[v0] getOrCreateCustomer: Create error', createError)
-      return { data: null, error: new Error(createError.message) }
-    }
-
-    return { data: newCustomer, error: null }
-  } catch (err) {
-    console.error('[v0] getOrCreateCustomer: Unexpected error', err)
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
+  return { success: true }
 }
 
 /**
- * Create a new booking
+ * Submit an inquiry / lead for products not yet on automated checkout
+ * (tours, hotels, bundle packages, VIP transfer, package pickup, multi-leg).
+ * Used by the various "Request a Quote" forms.
  */
-export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Promise<{ data: Booking | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured. Please contact support.') }
-  }
-
-  console.log('[v0] createBooking: Starting with', booking)
-
-  try {
-    const { data, error } = await client
-      .from('bookings')
-      .insert(booking)
-      .select()
-      .single()
-
-    console.log('[v0] createBooking: Result', { data, error: error?.message })
-
-    if (error) {
-      console.error('[v0] createBooking: Error', error)
-      return { data: null, error: new Error(error.message) }
-    }
-
-    return { data, error: null }
-  } catch (err) {
-    console.error('[v0] createBooking: Unexpected error', err)
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
-}
-
-/**
- * Create passengers for a booking
- */
-export async function createPassengers(passengers: Omit<Passenger, 'id' | 'created_at'>[]): Promise<{ data: Passenger[] | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured. Please contact support.') }
-  }
-
-  console.log('[v0] createPassengers: Starting with', passengers)
-
-  try {
-    const { data, error } = await client
-      .from('passengers')
-      .insert(passengers)
-      .select()
-
-    console.log('[v0] createPassengers: Result', { data, error: error?.message })
-
-    if (error) {
-      console.error('[v0] createPassengers: Error', error)
-      return { data: null, error: new Error(error.message) }
-    }
-
-    return { data, error: null }
-  } catch (err) {
-    console.error('[v0] createPassengers: Unexpected error', err)
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
-}
-
-/**
- * Create a payment record
- */
-export async function createPayment(payment: Omit<Payment, 'id' | 'created_at'>): Promise<{ data: Payment | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured. Please contact support.') }
-  }
-
-  console.log('[v0] createPayment: Starting with', payment)
-
-  try {
-    const { data, error } = await client
-      .from('payments')
-      .insert(payment)
-      .select()
-      .single()
-
-    console.log('[v0] createPayment: Result', { data, error: error?.message })
-
-    if (error) {
-      console.error('[v0] createPayment: Error', error)
-      return { data: null, error: new Error(error.message) }
-    }
-
-    return { data, error: null }
-  } catch (err) {
-    console.error('[v0] createPayment: Unexpected error', err)
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
-}
-
-/**
- * Complete booking flow - creates customer, booking, passengers, and payment in order
- */
-export async function completeBooking(params: {
-  email: string
-  phone: string
-  bookingReference: string
-  routeFrom: string
-  routeTo: string
-  departureDate: string
-  returnDate?: string
-  outboundFerry: string
-  returnFerry?: string
-  totalPrice: number
-  passengers: Array<{
-    firstName: string
-    lastName: string
-    birthDate: string
-    passportNumber: string
-    nationality: string
-    isLeadPassenger: boolean
-  }>
-}): Promise<{ success: boolean; bookingId?: string; error?: string }> {
-  console.log('[v0] completeBooking: Starting with params', params)
-
-  if (!isSupabaseConfigured) {
-    console.error('[v0] completeBooking: Supabase not configured')
-    return { success: false, error: 'Database not configured. Your booking was received but could not be saved. Please contact support.' }
-  }
-
-  try {
-    // Get lead passenger for customer record
-    const leadPassenger = params.passengers.find(p => p.isLeadPassenger) || params.passengers[0]
-    const fullName = `${leadPassenger.firstName} ${leadPassenger.lastName}`
-    
-    // 1. Create customer
-    console.log('[v0] completeBooking: Step 1 - Creating customer')
-    const { data: customer, error: customerError } = await getOrCreateCustomer(
-      fullName,
-      params.email, 
-      params.phone,
-      leadPassenger.nationality
-    )
-    if (customerError || !customer) {
-      console.error('[v0] completeBooking: Customer creation failed', customerError)
-      return { success: false, error: customerError?.message || 'Failed to create customer' }
-    }
-    console.log('[v0] completeBooking: Customer created', customer)
-
-    // 2. Create booking
-    console.log('[v0] completeBooking: Step 2 - Creating booking')
-    const { data: booking, error: bookingError } = await createBooking({
-      booking_reference: params.bookingReference,
-      customer_id: customer.id!,
-      booking_type: 'ferry',
-      status: 'confirmed',
-      total_amount: params.totalPrice,
-      currency: 'EUR',
+export async function submitInquiry(input: {
+  inquiry_type: InquiryType
+  customer_email: string
+  customer_phone?: string
+  customer_name?: string
+  party_size?: number
+  preferred_dates?: Record<string, unknown>
+  requirements?: string
+  locale?: Locale
+  source?: string
+}): Promise<{ success: boolean; inquiry_id?: string; error?: string }> {
+  const { data, error } = await supabase
+    .from('inquiries')
+    .insert({
+      inquiry_type: input.inquiry_type,
+      customer_email: input.customer_email,
+      customer_phone: input.customer_phone ?? null,
+      customer_name: input.customer_name ?? null,
+      party_size: input.party_size ?? null,
+      preferred_dates: input.preferred_dates ?? {},
+      requirements: input.requirements ?? null,
+      locale: input.locale ?? 'en',
+      source: input.source ?? null,
     })
-    if (bookingError || !booking) {
-      console.error('[v0] completeBooking: Booking creation failed', bookingError)
-      return { success: false, error: bookingError?.message || 'Failed to create booking' }
-    }
-    console.log('[v0] completeBooking: Booking created', booking)
+    .select('id')
+    .single()
 
-    // 3. Create passengers
-    console.log('[v0] completeBooking: Step 3 - Creating passengers')
-    const passengerRecords = params.passengers.map((p) => ({
-      booking_id: booking.id!,
-      full_name: `${p.firstName} ${p.lastName}`,
-      birth_date: p.birthDate,
-      passport_number: p.passportNumber,
-      nationality: p.nationality,
-    }))
-    const { data: passengers, error: passengersError } = await createPassengers(passengerRecords)
-    if (passengersError) {
-      console.error('[v0] completeBooking: Passengers creation failed', passengersError)
-      return { success: false, error: passengersError.message }
-    }
-    console.log('[v0] completeBooking: Passengers created', passengers)
-
-    // 4. Create payment record
-    console.log('[v0] completeBooking: Step 4 - Creating payment')
-    const { data: payment, error: paymentError } = await createPayment({
-      booking_id: booking.id!,
-      payment_provider: 'viva_wallet',
-      payment_status: 'pending',
-      amount: params.totalPrice,
-      currency: 'EUR',
-    })
-    if (paymentError) {
-      console.error('[v0] completeBooking: Payment creation failed', paymentError)
-      return { success: false, error: paymentError.message }
-    }
-    console.log('[v0] completeBooking: Payment created', payment)
-
-    console.log('[v0] completeBooking: SUCCESS - All records created')
-    return { success: true, bookingId: booking.id }
-  } catch (err) {
-    console.error('[v0] completeBooking: Unexpected error', err)
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error occurred' }
+  if (error) {
+    console.error('[supabase] inquiries insert failed:', error.message)
+    return { success: false, error: error.message }
   }
+  return { success: true, inquiry_id: data.id }
 }
 
-/**
- * Save a contact form submission
- */
-export async function saveContactRequest(request: Omit<ContactRequest, 'id' | 'created_at' | 'status'>): Promise<{ success: boolean; error?: string }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    console.error('[v0] saveContactRequest: Supabase not configured')
-    return { success: false, error: 'Database not configured. Your message was received but could not be saved. Please try WhatsApp instead.' }
-  }
 
-  console.log('[v0] saveContactRequest: Starting with', request)
+// ============================================================
+// DEPRECATED STUBS
+// ============================================================
+// The following functions existed in the previous schema and are
+// imported by some legacy pages. They are stubbed so the app still
+// compiles, but calling them throws a loud error.
+//
+// They will be replaced by proper server actions in Kademe 3.
 
-  try {
-    const { data, error } = await client
-      .from('contact_requests')
-      .insert({ ...request, status: 'new' })
-      .select()
+const DEPRECATED_MSG =
+  'This function was removed in the Kademe 1 migration. The new trip-centric booking flow lands in Kademe 3.'
 
-    console.log('[v0] saveContactRequest: Result', { data, error: error?.message })
-
-    if (error) {
-      console.error('[v0] saveContactRequest: Error', error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true }
-  } catch (err) {
-    console.error('[v0] saveContactRequest: Unexpected error', err)
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+export async function getOrCreateCustomer(): Promise<never> {
+  throw new Error(`getOrCreateCustomer: ${DEPRECATED_MSG}`)
 }
 
-/**
- * Get all available cars - uses price_per_day column
- */
-export async function getAvailableCars(): Promise<{ data: Car[] | null; error: Error | null; isEmpty: boolean }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured'), isEmpty: true }
-  }
-
-  console.log('[v0] getAvailableCars: Fetching cars')
-
-  try {
-    const { data, error } = await client
-      .from('cars')
-      .select('*')
-      .eq('available', true)
-      .order('price_per_day', { ascending: true })
-
-    console.log('[v0] getAvailableCars: Result', { count: data?.length, error: error?.message })
-
-    if (error) {
-      console.error('[v0] getAvailableCars: Error', error)
-      return { data: null, error: new Error(error.message), isEmpty: false }
-    }
-
-    if (!data || data.length === 0) {
-      return { data: [], error: null, isEmpty: true }
-    }
-
-    // Map database columns to expected format (price_per_day -> price for UI compatibility)
-    const mappedData = data.map(car => ({
-      ...car,
-      price: car.price_per_day, // Map for backward compatibility with UI
-    }))
-
-    return { data: mappedData, error: null, isEmpty: false }
-  } catch (err) {
-    console.error('[v0] getAvailableCars: Unexpected error', err)
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error'), isEmpty: false }
-  }
+export async function createBooking(): Promise<never> {
+  throw new Error(`createBooking: ${DEPRECATED_MSG}`)
 }
 
-/**
- * Get a single car by ID
- */
-export async function getCarById(id: string): Promise<{ data: Car | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured') }
-  }
-
-  try {
-    const { data, error } = await client
-      .from('cars')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (error) {
-      return { data: null, error: new Error(error.message) }
-    }
-
-    // Map price_per_day to price for UI compatibility
-    const mappedData = data ? { ...data, price: data.price_per_day } : null
-
-    return { data: mappedData, error: null }
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
+export async function createPassengers(): Promise<never> {
+  throw new Error(`createPassengers: ${DEPRECATED_MSG}`)
 }
 
-/**
- * Get booking by reference
- */
-export async function getBookingByReference(reference: string): Promise<{ data: (Booking & { passengers: Passenger[] }) | null; error: Error | null }> {
-  const client = getSupabaseClient()
-  if (!client) {
-    return { data: null, error: new Error('Database not configured') }
-  }
-
-  try {
-    const { data, error } = await client
-      .from('bookings')
-      .select(`
-        *,
-        passengers (*)
-      `)
-      .eq('booking_reference', reference)
-      .single()
-
-    if (error) {
-      return { data: null, error: new Error(error.message) }
-    }
-
-    return { data, error: null }
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err : new Error('Unknown error') }
-  }
+export async function createPayment(): Promise<never> {
+  throw new Error(`createPayment: ${DEPRECATED_MSG}`)
 }
 
-// Event request type
-export interface EventRequest {
-  id?: string
-  full_name: string
-  phone: string
+export async function completeBooking(): Promise<never> {
+  throw new Error(`completeBooking: ${DEPRECATED_MSG}`)
+}
+
+export async function saveContactRequest(input: {
+  name: string
   email: string
-  event_type: string
-  island_preference: string
-  group_size: number
-  date_range: string
-  message?: string
-  status?: string
-  created_at?: string
+  phone?: string
+  subject: string
+  message: string
+}): Promise<{ success: boolean; error?: string }> {
+  // Forward to the new function so legacy callers still work transparently.
+  return submitContactRequest(input)
 }
 
-/**
- * Save an event request submission
- */
-export async function saveEventRequest(request: Omit<EventRequest, 'id' | 'created_at' | 'status'>): Promise<{ success: boolean; error?: string }> {
-  console.log('[v0] saveEventRequest: Starting with data', request)
-  
-  const client = getSupabaseClient()
-  if (!client) {
-    console.error('[v0] saveEventRequest: Supabase not configured')
-    return { success: false, error: 'Database not configured. Your request was received but could not be saved. Please contact us on WhatsApp.' }
-  }
-
-  try {
-    const { error } = await client
-      .from('event_requests')
-      .insert({
-        full_name: request.full_name,
-        phone: request.phone,
-        email: request.email,
-        event_type: request.event_type,
-        island_preference: request.island_preference,
-        group_size: request.group_size,
-        date_range: request.date_range,
-        message: request.message || null,
-        status: 'new',
-      })
-
-    if (error) {
-      console.error('[v0] saveEventRequest: Error', error)
-      return { success: false, error: error.message }
-    }
-
-    console.log('[v0] saveEventRequest: Success')
-    return { success: true }
-  } catch (err) {
-    console.error('[v0] saveEventRequest: Unexpected error', err)
-    return { success: false, error: err instanceof Error ? err.message : 'An unexpected error occurred' }
-  }
+export async function getBookingByReference(): Promise<never> {
+  throw new Error(`getBookingByReference: ${DEPRECATED_MSG}`)
 }
