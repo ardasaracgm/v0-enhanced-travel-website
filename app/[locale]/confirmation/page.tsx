@@ -6,6 +6,18 @@ import { Ship, CheckCircle, Download, Mail, Phone, MapPin, Calendar, Clock, User
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 
+function parseTotalPrice(value: unknown): number {
+  if (typeof value === 'number') return value
+
+  if (typeof value === 'string') {
+    const cleaned = value.replace('€', '').replace(',', '.').trim()
+    const parsed = Number.parseFloat(cleaned)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  return 0
+}
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -23,6 +35,8 @@ export default function ConfirmationPage() {
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = React.useState<string>('')
   const hasSaved = React.useRef(false)
+
+  
 
   React.useEffect(() => {
     // Trigger confetti on page load
@@ -56,9 +70,7 @@ export default function ConfirmationPage() {
       console.log('[v0] ConfirmationPage: Starting Supabase save...')
 
       // Parse total price (remove € symbol and convert to number)
-      const totalPriceNum = typeof state.totalPrice === 'string' 
-        ? parseFloat(state.totalPrice.replace('€', '').replace(',', '.'))
-        : state.totalPrice
+      const totalPriceNum = parseTotalPrice((state as { totalPrice?: unknown }).totalPrice)
       
       console.log('[v0] ConfirmationPage: Total price parsed:', totalPriceNum)
 
