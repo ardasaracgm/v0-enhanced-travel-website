@@ -1,7 +1,13 @@
-"use client"
+"use client";
 
-import Component from "../../enhanced-travel-website"
+import { Header } from "@/components/islandbee/header";
+import Component from "../../enhanced-travel-website";
 
 export default function SyntheticV0PageForDeployment() {
-  return <Component />
+  return (
+    <>
+      <Header />
+      <Component />
+    </>
+  );
 }
