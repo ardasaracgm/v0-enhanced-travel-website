@@ -1,7 +1,22 @@
-import Link from 'next/link'
-import { Ship, Car, Compass, FileText, Phone, Mail, MapPin, BadgeCheck, Clock, Package } from 'lucide-react'
+import { Link } from '@/i18n/routing'
+import {
+  Ship,
+  Compass,
+  FileText,
+  Phone,
+  Mail,
+  MapPin,
+  BadgeCheck,
+  Clock,
+  MessageCircle,
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export function Footer() {
+  const t = useTranslations('footer')
+  const tHeader = useTranslations('header')
+  const year = new Date().getFullYear()
+
   return (
     <footer className="w-full bg-foreground text-background">
       <div className="container px-4 md:px-6 py-12 md:py-16">
@@ -12,40 +27,60 @@ export function Footer() {
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B</span>
               </div>
-              <span className="text-xl font-bold">Travel<span className="text-primary">Beez</span></span>
+              <span className="text-xl font-bold">
+                Travel<span className="text-primary">Beez</span>
+              </span>
             </div>
+
             <p className="text-background/70 text-sm mb-4 leading-relaxed">
-              Your trusted partner for Greek island travel. Licensed travel agency with physical office at Kos Port.
+              {t('tagline')}
             </p>
+
             <div className="flex flex-col gap-3 text-sm text-background/70 mb-5">
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="text-background font-medium">G Averos 4, Kos, Greece</span>
-                  <p className="text-xs text-background/60">Under Achilleas Hotel & Apartments</p>
+                  <span className="text-background font-medium">{t('addressLine1')}</span>
+                  <p className="text-xs text-background/60">G. Averos 4, under Achilleas Hotel & Apartments</p>
                   <p className="text-xs text-primary">First shop at Kos Port exit</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              <a
+                href="tel:+302242050009"
+                className="flex items-center gap-2 hover:text-primary transition-colors"
+              >
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+30 22420 50008</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[#25D366]" />
-                <span>WhatsApp: +30 22420 50008</span>
-              </div>
-              <div className="flex items-center gap-2">
+                <span>+30 22420 5009</span>
+              </a>
+
+              <a
+                href="https://wa.me/302242050008"
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-2 hover:text-primary transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                <span>WhatsApp: +30 22420 5008</span>
+              </a>
+
+              <a
+                href="mailto:info@travelbeez.gr"
+                className="flex items-center gap-2 hover:text-primary transition-colors"
+              >
                 <Mail className="h-4 w-4 text-primary" />
-                <span>info@travelbeez.com</span>
-              </div>
+                <span>info@travelbeez.gr</span>
+              </a>
+
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
-                <span>Open daily 08:00 - 20:00</span>
+                <span>{t('openHours')}</span>
               </div>
             </div>
+
             <div className="flex items-center gap-2 text-xs text-background/60">
               <BadgeCheck className="h-4 w-4 text-primary" />
-              <span>Greek Tourism License: MH.T.E. 1471E60000074600</span>
+              <span>{t('licenseLine')}</span>
             </div>
           </div>
 
@@ -53,14 +88,14 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Ship className="h-4 w-4 text-primary" />
-              Services
+              {t('services')}
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
-              <li><Link href="/ferry" className="hover:text-primary transition-colors">Ferry Tickets</Link></li>
-              <li><Link href="/car-rental" className="hover:text-primary transition-colors">Car Rental</Link></li>
-              <li><Link href="/tours" className="hover:text-primary transition-colors">Island Tours</Link></li>
-              <li><Link href="/visa" className="hover:text-primary transition-colors">Visa Support</Link></li>
-              <li><Link href="/package-pickup" className="hover:text-primary transition-colors">Package Pickup</Link></li>
+              <li><Link href="/ferry" className="hover:text-primary transition-colors">{tHeader('ferryTickets')}</Link></li>
+              <li><Link href="/car-rental" className="hover:text-primary transition-colors">{tHeader('carRental')}</Link></li>
+              <li><Link href="/tours" className="hover:text-primary transition-colors">{tHeader('tours')}</Link></li>
+              <li><Link href="/visa" className="hover:text-primary transition-colors">{tHeader('visaSupport')}</Link></li>
+              <li><Link href="/package-pickup" className="hover:text-primary transition-colors">{tHeader('packagePickup')}</Link></li>
             </ul>
           </div>
 
@@ -71,11 +106,11 @@ export function Footer() {
               Islands
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
-              <li><Link href="#" className="hover:text-primary transition-colors">Kos Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Rhodes Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Samos Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Leros Island</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Patmos Island</Link></li>
+              <li>Kos</li>
+              <li>Rhodes</li>
+              <li>Samos</li>
+              <li>Leros</li>
+              <li>Patmos</li>
             </ul>
           </div>
 
@@ -83,14 +118,12 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
-              Support
+              {t('support')}
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">FAQ</Link></li>
-              <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Cancellation Policy</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">{t('contactSection')}</Link></li>
+              <li><Link href="/terms" className="hover:text-primary transition-colors">{t('terms')}</Link></li>
+              <li><Link href="/privacy" className="hover:text-primary transition-colors">{t('privacy')}</Link></li>
             </ul>
           </div>
         </div>
@@ -113,18 +146,15 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-background/50 text-center md:text-left">
-            <p>&copy; {new Date().getFullYear()} FerryBee Travel IKE - operating as TravelBeez. All rights reserved.</p>
-            <p className="text-xs mt-1">Greek Tourism License: MH.T.E. 1471E60000074600</p>
+            <p>&copy; {year} {t('operatingAs')}. {t('rightsReserved')}.</p>
           </div>
           <div className="flex items-center gap-6 text-sm text-background/50">
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-            <div className="flex items-center gap-3">
-              <span>Payments:</span>
-              <span>Visa</span>
-              <span>Mastercard</span>
-              <span>TROY</span>
-            </div>
+            <Link href="/terms" className="hover:text-primary transition-colors">
+              {t('terms')}
+            </Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">
+              {t('privacy')}
+            </Link>
           </div>
         </div>
       </div>
