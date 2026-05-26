@@ -599,3 +599,12 @@ export async function saveContactRequest(input: {
 export async function getBookingByReference(): Promise<never> {
   throw new Error(`getBookingByReference: ${DEPRECATED_MSG}`)
 }
+
+export async function saveEventRequest(data: any) {
+  console.warn("saveEventRequest is temporarily disabled in Kademe 2", data)
+
+  return {
+    success: false,
+    error: "Event requests will be enabled soon. Please contact us on WhatsApp.",
+  }
+}
