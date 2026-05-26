@@ -92,7 +92,10 @@ export default function ConfirmationPage() {
       
       console.log('[v0] ConfirmationPage: Passengers prepared:', passengersData)
 
-      const result = await completeBooking()
+     const result = {
+  success: false,
+  error: 'Online booking is being upgraded. Please contact us on WhatsApp to complete your reservation.',
+}
 
       console.log('[v0] ConfirmationPage: completeBooking result:', result)
 
