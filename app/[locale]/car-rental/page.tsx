@@ -53,16 +53,16 @@ interface NormalizedCar {
 
 function normalizeCar(car: CarType): NormalizedCar {
   // Check if car already has a properly formed specs object (fallback data)
-  const hasValidSpecs = car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
+  const validSpecs = car.specs && typeof car.specs === 'object' && 'fuel' in car.specs
   
   // Get values from either the specs object or flat Supabase columns
-  const fuel = hasValidSpecs 
+  const fuel = validSpecs 
     ? String(car.specs!.fuel) 
     : String(car.fuel_type || car.category || 'Petrol')
-  const seats = hasValidSpecs 
+  const seats = validSpecs 
     ? car.specs!.seats 
     : (car.seats || 4)
-  const transmission = hasValidSpecs 
+  const transmission = validSpecs 
     ? String(car.specs!.transmission) 
     : String(car.transmission || 'Manual')
   
