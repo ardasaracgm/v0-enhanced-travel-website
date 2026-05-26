@@ -42,7 +42,6 @@ export function Header() {
               href={item.href}
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
-              {/* @ts-expect-error - dynamic key */}
               {t(item.labelKey)}
             </Link>
           ))}
