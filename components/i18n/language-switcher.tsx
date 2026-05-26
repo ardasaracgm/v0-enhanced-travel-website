@@ -8,18 +8,23 @@ import { routing, type Locale } from '@/i18n/routing'
 /**
  * Header language switcher.
  *
- * Three flag buttons. Active locale is visually highlighted.
- * Clicking swaps the URL prefix (e.g. /ferry → /tr/ferry) and sets
- * the NEXT_LOCALE cookie so the choice persists for next visit.
+ * Uses flagcdn.com SVG flags (free CDN, MIT licensed) instead of
+ * Unicode flag emojis. Reason: Windows Chrome/Edge do not render
+ * regional indicator emoji pairs as flags — they fall back to letter
+ * pairs (GB, TR, GR). SVG flags render identically on every platform.
+ *
+ * `<img>` is used instead of next/image because flagcdn isn't in
+ * next.config.images.remotePatterns and we don't need optimization
+ * for 20x15 px flag icons.
  */
 
 const LOCALE_META: Record<
   Locale,
-  { label: string; flag: string; short: string }
+  { label: string; flagCode: string; short: string }
 > = {
-  en: { label: 'English', flag: '🇬🇧', short: 'EN' },
-  tr: { label: 'Türkçe', flag: '🇹🇷', short: 'TR' },
-  el: { label: 'Ελληνικά', flag: '🇬🇷', short: 'EL' },
+  en: { label: 'English',  flagCode: 'gb', short: 'EN' },
+  tr: { label: 'Türkçe',   flagCode: 'tr', short: 'TR' },
+  el: { label: 'Ελληνικά', flagCode: 'gr', short: 'EL' },
 }
 
 export function LanguageSwitcher({
@@ -67,9 +72,15 @@ export function LanguageSwitcher({
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',
             ].join(' ')}
           >
-            <span aria-hidden="true" className="text-base leading-none">
-              {meta.flag}
-            </span>
+            <img
+              src={`https://flagcdn.com/${meta.flagCode}.svg`}
+              alt=""
+              aria-hidden="true"
+              width={20}
+              height={15}
+              className="rounded-sm shadow-sm h-[15px] w-[20px] object-cover"
+              loading="lazy"
+            />
             <span className="hidden sm:inline">{meta.short}</span>
           </button>
         )
