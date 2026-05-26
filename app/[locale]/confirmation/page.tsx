@@ -92,19 +92,7 @@ export default function ConfirmationPage() {
       
       console.log('[v0] ConfirmationPage: Passengers prepared:', passengersData)
 
-      const result = await completeBooking({
-        email: state.contactEmail,
-        phone: state.contactPhone,
-        bookingReference: state.bookingReference,
-        routeFrom: state.selectedFerry.from,
-        routeTo: state.selectedFerry.to,
-        departureDate: state.searchParams.date,
-        returnDate: state.searchParams.returnDate || undefined,
-        outboundFerry: `${state.selectedFerry.operator} - ${state.selectedFerry.vessel}`,
-        returnFerry: state.returnFerry ? `${state.returnFerry.operator} - ${state.returnFerry.vessel}` : undefined,
-        totalPrice: totalPriceNum,
-        passengers: passengersData,
-      })
+      const result = await completeBooking()
 
       console.log('[v0] ConfirmationPage: completeBooking result:', result)
 
