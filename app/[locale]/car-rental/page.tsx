@@ -83,7 +83,11 @@ function normalizeCar(car: CarType | Record<string, unknown>): NormalizedCar {
     ? String(validSpecs.fuel)
     : getString('fuel_type', getString('category', 'Petrol'))
 
-  const seats = validSpecs?.seats ?? carRecord.seats ?? 4
+  const rawSeats = validSpecs?.seats ?? getValue(car, 'seats') ?? 4
+const seats: string | number =
+  typeof rawSeats === 'number' || typeof rawSeats === 'string'
+    ? rawSeats
+    : 4
 
   const transmission = validSpecs?.transmission
     ? String(validSpecs.transmission)
