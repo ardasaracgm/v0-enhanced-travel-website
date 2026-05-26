@@ -181,6 +181,7 @@ export default function TravelBeez() {
               { href: '/ferry', label: 'Ferry Tickets' },
               { href: '/car-rental', label: 'Car Rental' },
               { href: '/tours', label: 'Tours' },
+              { href: '/events', label: 'Events & Groups' },
               { href: '/visa', label: 'Visa Support' },
               { href: '/package-pickup', label: 'Package Pickup' },
             ].map((item) => (
@@ -214,6 +215,7 @@ export default function TravelBeez() {
                     { href: '/ferry', label: 'Ferry Tickets' },
                     { href: '/car-rental', label: 'Car Rental' },
                     { href: '/tours', label: 'Tours' },
+                    { href: '/events', label: 'Events & Groups' },
                     { href: '/visa', label: 'Visa Support' },
                     { href: '/package-pickup', label: 'Package Pickup' },
                   ].map((item) => (

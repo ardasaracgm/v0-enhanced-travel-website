@@ -10,6 +10,7 @@ const navItems = [
   { href: '/ferry', label: 'Ferry Tickets' },
   { href: '/car-rental', label: 'Car Rental' },
   { href: '/tours', label: 'Tours' },
+  { href: '/events', label: 'Events & Groups' },
   { href: '/visa', label: 'Visa Support' },
   { href: '/package-pickup', label: 'Package Pickup' },
   { href: '/contact', label: 'Contact' },
