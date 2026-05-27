@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import {
   Ship,
   CheckCircle,
@@ -36,10 +36,27 @@ import {
 
 export default function ConfirmationPage() {
   const { state, dispatch } = useBooking()
+  const router = useRouter()
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
   const car = selectCarRental(state)
   const [copied, setCopied] = React.useState(false)
+
+  /**
+   * Clears booking state then navigates imperatively.
+   *
+   * Why not <Button asChild><Link>? The asChild pattern merges onClick onto
+   * the Link child, but React's persistence useEffect (which writes reset
+   * state to sessionStorage) is not guaranteed to flush before Next.js
+   * initiates the route transition. Using router.push() after the synchronous
+   * side-effects ensures sessionStorage is cleared and the in-memory RESET has
+   * been dispatched before the new page's BookingProvider can hydrate.
+   */
+  const handleNewBooking = (href: '/' | '/ferry') => {
+    clearBookingStorage()
+    dispatch({ type: 'RESET' })
+    router.push(href)
+  }
 
   // Confetti on mount (only when a real booking exists)
   React.useEffect(() => {
@@ -363,21 +380,12 @@ export default function ConfirmationPage() {
 
             {/* New booking CTA */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/">
-                <Button variant="outline">
-                  <Home className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  clearBookingStorage()
-                  dispatch({ type: 'RESET' })
-                }}
-                asChild
-              >
-                <Link href="/ferry">Start New Booking</Link>
+              <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
+                <Home className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+              <Button type="button" variant="outline" onClick={() => handleNewBooking('/ferry')}>
+                Start New Booking
               </Button>
             </div>
           </div>
