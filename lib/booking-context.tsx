@@ -1,20 +1,35 @@
 'use client'
 
+/**
+ * Booking flow state container.
+ * =============================
+ * Holds the user's in-progress booking across multiple pages
+ * (search → results → passenger details → checkout → confirmation).
+ *
+ * Persisted in sessionStorage so refresh/navigation doesn't lose state.
+ *
+ * After Kademe 3.2a, this context also tracks:
+ *   - `idempotencyKey` — UUID generated once per booking attempt.
+ *     Sent with the submit, prevents duplicate trips if user
+ *     double-clicks or browser retries.
+ *   - `carRental` — optional add-on selected after ferry choice.
+ *   - `paymentWhatsAppUrl` — set after successful submit. Used by
+ *     the confirmation page's "Pay via WhatsApp" button.
+ *   - `submitError` — populated when the server action rejects.
+ */
+
 import * as React from 'react'
 
-export interface FerryRoute {
-  id: string
-  from: string
-  to: string
-  date: string
-  departureTime: string
-  arrivalTime: string
-  duration: string
-  price: number
-  operator: string
-  vessel: string
-  availableSeats: number
-}
+// Re-export ferry types/data so existing imports of
+// `from '@/lib/booking-context'` keep working.
+export {
+  mockFerries,
+  getFerriesForRoute,
+  getFerryById,
+  type FerryRoute,
+} from '@/lib/ferry-mock-data'
+
+import type { FerryRoute } from '@/lib/ferry-mock-data'
 
 export interface Passenger {
   fullName: string
@@ -23,6 +38,18 @@ export interface Passenger {
   nationality: string
   phone: string
   email: string
+}
+
+export interface CarRentalSelection {
+  carId: string
+  model: string
+  brand?: string
+  pricePerDay: number
+  days: number
+  pickupLocation: string
+  dropoffLocation: string
+  pickupAt: string // ISO timestamp
+  dropoffAt: string // ISO timestamp
 }
 
 export interface BookingState {
@@ -40,7 +67,24 @@ export interface BookingState {
   contactEmail: string
   contactPhone: string
   totalPrice: number
+  carRental: CarRentalSelection | null
+  /** Generated on first booking attempt, cleared on RESET. */
+  idempotencyKey: string
+  /** Server-generated reference (e.g. TB-26-A8F3K2), set after successful submit. */
   bookingReference: string
+  /** WhatsApp deep link for payment confirmation, set after successful submit. */
+  paymentWhatsAppUrl: string
+  /** Last submission error message for the UI to display. */
+  submitError: string | null
+}
+
+function newIdempotencyKey(): string {
+  // Server actions also accept this format
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback for very old browsers
+  return 'idk-' + Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
 const initialState: BookingState = {
@@ -57,17 +101,26 @@ const initialState: BookingState = {
   contactEmail: '',
   contactPhone: '',
   totalPrice: 0,
+  carRental: null,
+  idempotencyKey: '',
   bookingReference: '',
+  paymentWhatsAppUrl: '',
+  submitError: null,
 }
 
 type BookingAction =
   | { type: 'SET_SEARCH_PARAMS'; payload: Partial<BookingState['searchParams']> }
   | { type: 'SELECT_FERRY'; payload: FerryRoute }
   | { type: 'SELECT_RETURN_FERRY'; payload: FerryRoute }
+  | { type: 'CLEAR_RETURN_FERRY' }
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
   | { type: 'SET_TOTAL_PRICE'; payload: number }
+  | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
+  | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
+  | { type: 'SET_PAYMENT_LINK'; payload: string }
+  | { type: 'SET_SUBMIT_ERROR'; payload: string | null }
   | { type: 'RESET' }
 
 function bookingReducer(state: BookingState, action: BookingAction): BookingState {
@@ -78,16 +131,30 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return { ...state, selectedFerry: action.payload }
     case 'SELECT_RETURN_FERRY':
       return { ...state, returnFerry: action.payload }
+    case 'CLEAR_RETURN_FERRY':
+      return { ...state, returnFerry: null }
     case 'SET_PASSENGERS':
       return { ...state, passengers: action.payload }
     case 'SET_CONTACT':
-      return { ...state, contactEmail: action.payload.email, contactPhone: action.payload.phone }
+      return {
+        ...state,
+        contactEmail: action.payload.email,
+        contactPhone: action.payload.phone,
+      }
     case 'SET_TOTAL_PRICE':
       return { ...state, totalPrice: action.payload }
+    case 'SET_CAR_RENTAL':
+      return { ...state, carRental: action.payload }
+    case 'SET_IDEMPOTENCY_KEY':
+      return { ...state, idempotencyKey: action.payload }
     case 'SET_BOOKING_REFERENCE':
       return { ...state, bookingReference: action.payload }
+    case 'SET_PAYMENT_LINK':
+      return { ...state, paymentWhatsAppUrl: action.payload }
+    case 'SET_SUBMIT_ERROR':
+      return { ...state, submitError: action.payload }
     case 'RESET':
-      return initialState
+      return { ...initialState, idempotencyKey: newIdempotencyKey() }
     default:
       return state
   }
@@ -100,69 +167,97 @@ const BookingContext = React.createContext<{
 
 const STORAGE_KEY = 'travelbeez-booking'
 
-function getInitialState(): BookingState {
-  if (typeof window === 'undefined') return initialState
-  
+function readStoredState(): BookingState | null {
+  if (typeof window === 'undefined') return null
   try {
     const stored = sessionStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored)
-    }
+    if (!stored) return null
+    const parsed = JSON.parse(stored)
+    return { ...initialState, ...parsed }
   } catch {
-    // Ignore errors
+    return null
   }
-  return initialState
 }
 
 export function BookingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = React.useReducer(bookingReducer, initialState)
   const [isHydrated, setIsHydrated] = React.useState(false)
 
-  // Hydrate from sessionStorage on mount
+  // Hydrate from sessionStorage once on mount, then ensure idempotencyKey
   React.useEffect(() => {
-    const stored = getInitialState()
-    if (stored !== initialState) {
-      // Restore each piece of state
-      if (stored.searchParams) {
-        dispatch({ type: 'SET_SEARCH_PARAMS', payload: stored.searchParams })
-      }
-      if (stored.selectedFerry) {
-        dispatch({ type: 'SELECT_FERRY', payload: stored.selectedFerry })
-      }
-      if (stored.returnFerry) {
-        dispatch({ type: 'SELECT_RETURN_FERRY', payload: stored.returnFerry })
-      }
-      if (stored.passengers.length > 0) {
-        dispatch({ type: 'SET_PASSENGERS', payload: stored.passengers })
-      }
+    const stored = readStoredState()
+    if (stored) {
+      Object.entries(stored).forEach(([key, value]) => {
+        switch (key) {
+          case 'searchParams':
+            dispatch({ type: 'SET_SEARCH_PARAMS', payload: value as BookingState['searchParams'] })
+            break
+          case 'selectedFerry':
+            if (value) dispatch({ type: 'SELECT_FERRY', payload: value as FerryRoute })
+            break
+          case 'returnFerry':
+            if (value) dispatch({ type: 'SELECT_RETURN_FERRY', payload: value as FerryRoute })
+            break
+          case 'passengers':
+            if (Array.isArray(value) && value.length > 0) {
+              dispatch({ type: 'SET_PASSENGERS', payload: value as Passenger[] })
+            }
+            break
+          case 'contactEmail':
+          case 'contactPhone':
+            // restored together below
+            break
+          case 'carRental':
+            if (value) dispatch({ type: 'SET_CAR_RENTAL', payload: value as CarRentalSelection })
+            break
+          case 'totalPrice':
+            if (typeof value === 'number') dispatch({ type: 'SET_TOTAL_PRICE', payload: value })
+            break
+          case 'idempotencyKey':
+            if (typeof value === 'string' && value)
+              dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: value })
+            break
+          case 'bookingReference':
+            if (typeof value === 'string' && value)
+              dispatch({ type: 'SET_BOOKING_REFERENCE', payload: value })
+            break
+          case 'paymentWhatsAppUrl':
+            if (typeof value === 'string' && value)
+              dispatch({ type: 'SET_PAYMENT_LINK', payload: value })
+            break
+        }
+      })
+
       if (stored.contactEmail || stored.contactPhone) {
-        dispatch({ type: 'SET_CONTACT', payload: { email: stored.contactEmail, phone: stored.contactPhone } })
+        dispatch({
+          type: 'SET_CONTACT',
+          payload: { email: stored.contactEmail, phone: stored.contactPhone },
+        })
       }
-      if (stored.totalPrice) {
-        dispatch({ type: 'SET_TOTAL_PRICE', payload: stored.totalPrice })
+
+      // If we restored without an idempotencyKey (legacy state), set one
+      if (!stored.idempotencyKey) {
+        dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: newIdempotencyKey() })
       }
-      if (stored.bookingReference) {
-        dispatch({ type: 'SET_BOOKING_REFERENCE', payload: stored.bookingReference })
-      }
+    } else {
+      // Fresh session — generate idempotency key
+      dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: newIdempotencyKey() })
     }
     setIsHydrated(true)
   }, [])
 
   // Persist to sessionStorage on state change
   React.useEffect(() => {
-    if (isHydrated) {
-      try {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-      } catch {
-        // Ignore errors
-      }
+    if (!isHydrated) return
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // Storage may be unavailable (private mode, full quota) — ignore
     }
   }, [state, isHydrated])
 
   return (
-    <BookingContext.Provider value={{ state, dispatch }}>
-      {children}
-    </BookingContext.Provider>
+    <BookingContext.Provider value={{ state, dispatch }}>{children}</BookingContext.Provider>
   )
 }
 
@@ -174,134 +269,13 @@ export function useBooking() {
   return context
 }
 
-// Mock ferry data
-export const mockFerries: FerryRoute[] = [
-  {
-    id: 'bk-1',
-    from: 'Bodrum',
-    to: 'Kos',
-    date: '',
-    departureTime: '09:00',
-    arrivalTime: '10:00',
-    duration: '1h 00m',
-    price: 35,
-    operator: 'Bodrum Express Lines',
-    vessel: 'Bodrum Express I',
-    availableSeats: 45,
-  },
-  {
-    id: 'bk-2',
-    from: 'Bodrum',
-    to: 'Kos',
-    date: '',
-    departureTime: '11:30',
-    arrivalTime: '12:30',
-    duration: '1h 00m',
-    price: 35,
-    operator: 'Bodrum Express Lines',
-    vessel: 'Bodrum Express II',
-    availableSeats: 28,
-  },
-  {
-    id: 'bk-3',
-    from: 'Bodrum',
-    to: 'Kos',
-    date: '',
-    departureTime: '16:00',
-    arrivalTime: '17:00',
-    duration: '1h 00m',
-    price: 40,
-    operator: 'Bodrum Ferryboat',
-    vessel: 'Sea Star',
-    availableSeats: 62,
-  },
-  {
-    id: 'tk-1',
-    from: 'Turgutreis',
-    to: 'Kos',
-    date: '',
-    departureTime: '08:30',
-    arrivalTime: '09:10',
-    duration: '40m',
-    price: 30,
-    operator: 'Turgutreis Lines',
-    vessel: 'Turgutreis Express',
-    availableSeats: 35,
-  },
-  {
-    id: 'tk-2',
-    from: 'Turgutreis',
-    to: 'Kos',
-    date: '',
-    departureTime: '14:00',
-    arrivalTime: '14:40',
-    duration: '40m',
-    price: 30,
-    operator: 'Turgutreis Lines',
-    vessel: 'Kos Star',
-    availableSeats: 52,
-  },
-  {
-    id: 'mr-1',
-    from: 'Marmaris',
-    to: 'Rhodes',
-    date: '',
-    departureTime: '09:00',
-    arrivalTime: '09:50',
-    duration: '50m',
-    price: 45,
-    operator: 'Marmaris Ferries',
-    vessel: 'Rhodes Dream',
-    availableSeats: 78,
-  },
-  {
-    id: 'mr-2',
-    from: 'Marmaris',
-    to: 'Rhodes',
-    date: '',
-    departureTime: '17:00',
-    arrivalTime: '17:50',
-    duration: '50m',
-    price: 50,
-    operator: 'Marmaris Ferries',
-    vessel: 'Aegean Spirit',
-    availableSeats: 41,
-  },
-  {
-    id: 'ks-1',
-    from: 'Kusadasi',
-    to: 'Samos',
-    date: '',
-    departureTime: '08:00',
-    arrivalTime: '09:30',
-    duration: '1h 30m',
-    price: 40,
-    operator: 'Meander Travel',
-    vessel: 'Samos Star',
-    availableSeats: 55,
-  },
-  {
-    id: 'ks-2',
-    from: 'Kusadasi',
-    to: 'Samos',
-    date: '',
-    departureTime: '15:30',
-    arrivalTime: '17:00',
-    duration: '1h 30m',
-    price: 40,
-    operator: 'Meander Travel',
-    vessel: 'Ephesus Princess',
-    availableSeats: 38,
-  },
-]
-
-export function getFerriesForRoute(from: string, to: string): FerryRoute[] {
-  const fromNormalized = from.toLowerCase()
-  const toNormalized = to.toLowerCase()
-  
-  return mockFerries.filter(
-    (ferry) =>
-      ferry.from.toLowerCase() === fromNormalized &&
-      ferry.to.toLowerCase() === toNormalized
-  )
+/** Helper to clear booking state after a successful confirmation. */
+export function clearBookingStorage(): void {
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+  }
 }
