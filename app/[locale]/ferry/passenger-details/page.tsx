@@ -1,8 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link, useRouter } from '@/i18n/routing'
 import { Ship, ChevronLeft, ArrowRight, User, CheckCircle, Shield, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -22,7 +21,13 @@ import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
-import { useBooking, type Passenger } from '@/lib/booking-context'
+import {
+  useBooking,
+  selectOutboundFerry,
+  selectReturnFerry,
+  selectTotalPrice,
+  type Passenger,
+} from '@/lib/booking-context'
 
 const nationalities = [
   'Turkey',
@@ -43,6 +48,8 @@ const nationalities = [
 export default function PassengerDetailsPage() {
   const router = useRouter()
   const { state, dispatch } = useBooking()
+  const outbound = selectOutboundFerry(state)
+  const returnF = selectReturnFerry(state)
   const [passengers, setPassengers] = React.useState<Passenger[]>([])
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
@@ -110,7 +117,7 @@ export default function PassengerDetailsPage() {
     }
   }
 
-  if (!state.selectedFerry) {
+  if (!outbound) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
@@ -148,19 +155,19 @@ export default function PassengerDetailsPage() {
                 </Link>
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold">
-                    <span>{state.selectedFerry.from}</span>
+                    <span>{outbound.from}</span>
                     <ArrowRight className="h-4 w-4" />
-                    <span>{state.selectedFerry.to}</span>
+                    <span>{outbound.to}</span>
                   </div>
                   <p className="text-sm text-primary-foreground/80">
-                    {state.searchParams.date} · {state.selectedFerry.departureTime} - {state.selectedFerry.arrivalTime}
+                    {state.searchParams.date} · {outbound.departureTime} - {outbound.arrivalTime}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-sm text-primary-foreground/80">Total Price</p>
-                  <p className="text-2xl font-bold">{state.totalPrice}</p>
+                  <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
                 </div>
               </div>
             </div>
@@ -357,22 +364,22 @@ export default function PassengerDetailsPage() {
                             <Ship className="h-4 w-4" />
                             <span>Outbound</span>
                           </div>
-                          <p className="font-semibold text-foreground">{state.selectedFerry.from} → {state.selectedFerry.to}</p>
+                          <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
                           <p className="text-sm text-muted-foreground">{state.searchParams.date}</p>
-                          <p className="text-sm text-muted-foreground">{state.selectedFerry.departureTime} - {state.selectedFerry.arrivalTime}</p>
-                          <p className="text-sm text-muted-foreground">{state.selectedFerry.operator}</p>
+                          <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
+                          <p className="text-sm text-muted-foreground">{outbound.operator}</p>
                         </div>
                         
-                        {state.returnFerry && (
+                        {returnF && (
                           <div className="p-4 bg-secondary/50 rounded-xl">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                               <Ship className="h-4 w-4" />
                               <span>Return</span>
                             </div>
-                            <p className="font-semibold text-foreground">{state.returnFerry.from} → {state.returnFerry.to}</p>
+                            <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
                             <p className="text-sm text-muted-foreground">{state.searchParams.returnDate}</p>
-                            <p className="text-sm text-muted-foreground">{state.returnFerry.departureTime} - {state.returnFerry.arrivalTime}</p>
-                            <p className="text-sm text-muted-foreground">{state.returnFerry.operator}</p>
+                            <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
+                            <p className="text-sm text-muted-foreground">{returnF.operator}</p>
                           </div>
                         )}
                         
@@ -383,11 +390,11 @@ export default function PassengerDetailsPage() {
                           </div>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-muted-foreground">Ferry Tickets</span>
-                            <span className="text-foreground">{state.totalPrice}</span>
+                            <span className="text-foreground">€{selectTotalPrice(state)}</span>
                           </div>
                           <div className="flex items-center justify-between text-lg font-bold pt-2 border-t border-border/50">
                             <span className="text-foreground">Total</span>
-                            <span className="text-primary">{state.totalPrice}</span>
+                            <span className="text-primary">€{selectTotalPrice(state)}</span>
                           </div>
                         </div>
                         
