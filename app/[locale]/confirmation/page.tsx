@@ -1,8 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
-import { useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
 import {
   Ship,
   CheckCircle,
@@ -26,16 +25,25 @@ import { Separator } from '@/components/ui/separator'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
-import { useBooking, clearBookingStorage } from '@/lib/booking-context'
+import {
+  useBooking,
+  clearBookingStorage,
+  selectOutboundFerry,
+  selectReturnFerry,
+  selectCarRental,
+  selectTotalPrice,
+} from '@/lib/booking-context'
 
 export default function ConfirmationPage() {
-  const locale = useLocale()
   const { state, dispatch } = useBooking()
+  const outbound = selectOutboundFerry(state)
+  const returnF = selectReturnFerry(state)
+  const car = selectCarRental(state)
   const [copied, setCopied] = React.useState(false)
 
   // Confetti on mount (only when a real booking exists)
   React.useEffect(() => {
-    if (state.bookingReference && state.selectedFerry) {
+    if (state.bookingReference && outbound) {
       confetti({
         particleCount: 100,
         spread: 70,
@@ -43,7 +51,7 @@ export default function ConfirmationPage() {
         colors: ['#1e88e5', '#FFD54F', '#4CAF50'],
       })
     }
-  }, [state.bookingReference, state.selectedFerry])
+  }, [state.bookingReference, outbound])
 
   const handleCopyReference = async () => {
     try {
@@ -56,7 +64,7 @@ export default function ConfirmationPage() {
   }
 
   // No active booking — show empty state
-  if (!state.selectedFerry || !state.bookingReference) {
+  if (!outbound || !state.bookingReference) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
@@ -68,7 +76,7 @@ export default function ConfirmationPage() {
               <p className="text-muted-foreground mb-6">
                 Start a new booking to see your confirmation.
               </p>
-              <Link href={`/${locale}/ferry`}>
+              <Link href="/ferry">
                 <Button>Search Ferries</Button>
               </Link>
             </CardContent>
@@ -80,14 +88,10 @@ export default function ConfirmationPage() {
   }
 
   // Compute totals
-  const ferryTotal = state.selectedFerry.price * state.searchParams.passengers
-  const returnTotal = state.returnFerry
-    ? state.returnFerry.price * state.searchParams.passengers
-    : 0
-  const carTotal = state.carRental
-    ? state.carRental.pricePerDay * state.carRental.days
-    : 0
-  const grandTotal = ferryTotal + returnTotal + carTotal
+  const ferryTotal  = outbound ? outbound.price * state.searchParams.passengers : 0
+  const returnTotal = returnF  ? returnF.price  * state.searchParams.passengers : 0
+  const carTotal    = car      ? car.pricePerDay * car.days                     : 0
+  const grandTotal  = selectTotalPrice(state)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -211,21 +215,21 @@ export default function ConfirmationPage() {
                       <span className="text-sm font-semibold text-primary">€{ferryTotal}</span>
                     </div>
                     <p className="font-semibold text-foreground">
-                      {state.selectedFerry.from} → {state.selectedFerry.to}
+                      {outbound.from} → {outbound.to}
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                       <Calendar className="h-4 w-4" />
                       {state.searchParams.date}
                       <Clock className="h-4 w-4 ml-2" />
-                      {state.selectedFerry.departureTime} - {state.selectedFerry.arrivalTime}
+                      {outbound.departureTime} - {outbound.arrivalTime}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {state.selectedFerry.operator} · {state.selectedFerry.vessel}
+                      {outbound.operator} · {outbound.vessel}
                     </p>
                   </div>
 
                   {/* Return */}
-                  {state.returnFerry && (
+                  {returnF && (
                     <div className="p-4 bg-secondary/50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
@@ -234,22 +238,22 @@ export default function ConfirmationPage() {
                         <span className="text-sm font-semibold text-primary">€{returnTotal}</span>
                       </div>
                       <p className="font-semibold text-foreground">
-                        {state.returnFerry.from} → {state.returnFerry.to}
+                        {returnF.from} → {returnF.to}
                       </p>
                       <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                         <Calendar className="h-4 w-4" />
                         {state.searchParams.returnDate}
                         <Clock className="h-4 w-4 ml-2" />
-                        {state.returnFerry.departureTime} - {state.returnFerry.arrivalTime}
+                        {returnF.departureTime} - {returnF.arrivalTime}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {state.returnFerry.operator} · {state.returnFerry.vessel}
+                        {returnF.operator} · {returnF.vessel}
                       </p>
                     </div>
                   )}
 
                   {/* Car rental */}
-                  {state.carRental && (
+                  {car && (
                     <div className="p-4 bg-secondary/50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
@@ -258,14 +262,14 @@ export default function ConfirmationPage() {
                         <span className="text-sm font-semibold text-primary">€{carTotal}</span>
                       </div>
                       <p className="font-semibold text-foreground">
-                        {state.carRental.brand
-                          ? `${state.carRental.brand} ${state.carRental.model}`
-                          : state.carRental.model}{' '}
-                        ({state.carRental.days}{' '}
-                        {state.carRental.days === 1 ? 'day' : 'days'})
+                        {car.brand
+                          ? `${car.brand} ${car.model}`
+                          : car.model}{' '}
+                        ({car.days}{' '}
+                        {car.days === 1 ? 'day' : 'days'})
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Pickup: {state.carRental.pickupLocation}
+                        Pickup: {car.pickupLocation}
                       </p>
                     </div>
                   )}
@@ -359,7 +363,7 @@ export default function ConfirmationPage() {
 
             {/* New booking CTA */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href={`/${locale}`}>
+              <Link href="/">
                 <Button variant="outline">
                   <Home className="h-4 w-4 mr-2" />
                   Back to Home
@@ -373,7 +377,7 @@ export default function ConfirmationPage() {
                 }}
                 asChild
               >
-                <Link href={`/${locale}/ferry`}>Start New Booking</Link>
+                <Link href="/ferry">Start New Booking</Link>
               </Button>
             </div>
           </div>
