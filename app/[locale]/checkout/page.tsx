@@ -1,8 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import {
   Ship,
@@ -26,7 +25,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
-import { useBooking } from '@/lib/booking-context'
+import {
+  useBooking,
+  selectOutboundFerry,
+  selectReturnFerry,
+  selectCarRental,
+  selectTotalPrice,
+} from '@/lib/booking-context'
 import { submitBooking } from '@/lib/actions/submit-booking'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
@@ -34,12 +39,15 @@ export default function CheckoutPage() {
   const router = useRouter()
   const locale = useLocale() as Locale
   const { state, dispatch } = useBooking()
+  const outbound = selectOutboundFerry(state)
+  const returnF = selectReturnFerry(state)
+  const car = selectCarRental(state)
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
 
   const handleConfirm = async () => {
     if (!acceptTerms || isProcessing) return
-    if (!state.selectedFerry) return
+    if (!outbound) return
 
     setIsProcessing(true)
     dispatch({ type: 'SET_SUBMIT_ERROR', payload: null })
@@ -48,14 +56,12 @@ export default function CheckoutPage() {
       const result = await submitBooking({
         idempotencyKey: state.idempotencyKey,
         locale,
-        outboundFerryId: state.selectedFerry.id,
-        returnFerryId: state.returnFerry?.id,
-        carRentalId: state.carRental?.carId,
-        carRentalDays: state.carRental?.days,
-        carPickupAt: state.carRental?.pickupAt,
-        carDropoffAt: state.carRental?.dropoffAt,
-        departDate: state.searchParams.date,
-        returnDate: state.searchParams.returnDate,
+        items: state.items.map(item =>
+          item.type === 'ferry'
+            ? { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
+            : { type: 'car_rental' as const, carId: item.carId, days: item.days,
+                pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
+        ),
         passengerCount: state.searchParams.passengers,
         passengers: state.passengers.map((p, idx) => ({
           fullName: p.fullName,
@@ -77,7 +83,7 @@ export default function CheckoutPage() {
       // Success — persist reference + payment link, navigate to confirmation
       dispatch({ type: 'SET_BOOKING_REFERENCE', payload: result.reference })
       dispatch({ type: 'SET_PAYMENT_LINK', payload: result.paymentWhatsAppUrl })
-      router.push(`/${locale}/confirmation`)
+      router.push('/confirmation')
     } catch (err) {
       console.error('[checkout] submit threw:', err)
       dispatch({
@@ -89,7 +95,7 @@ export default function CheckoutPage() {
   }
 
   // Guard: must have ferry + passengers before reaching this page
-  if (!state.selectedFerry || state.passengers.length === 0) {
+  if (!outbound || state.passengers.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
@@ -101,7 +107,7 @@ export default function CheckoutPage() {
               <p className="text-muted-foreground mb-6">
                 Please complete the previous steps before checkout.
               </p>
-              <Link href={`/${locale}/ferry`}>
+              <Link href="/ferry">
                 <Button>Start New Booking</Button>
               </Link>
             </CardContent>
@@ -122,7 +128,7 @@ export default function CheckoutPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <Link href={`/${locale}/ferry/passenger-details`}>
+                <Link href="/ferry/passenger-details">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -178,54 +184,54 @@ export default function CheckoutPage() {
                       <div>
                         <p className="text-sm text-muted-foreground">Outbound</p>
                         <p className="font-semibold text-foreground">
-                          {state.selectedFerry.from} → {state.selectedFerry.to}
+                          {outbound.from} → {outbound.to}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {state.searchParams.date} · {state.selectedFerry.departureTime} -{' '}
-                          {state.selectedFerry.arrivalTime}
+                          {state.searchParams.date} · {outbound.departureTime} -{' '}
+                          {outbound.arrivalTime}
                         </p>
                       </div>
                       <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                        €{state.selectedFerry.price * state.searchParams.passengers}
+                        €{outbound.price * state.searchParams.passengers}
                       </p>
                     </div>
 
-                    {state.returnFerry && (
+                    {returnF && (
                       <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl">
                         <div>
                           <p className="text-sm text-muted-foreground">Return</p>
                           <p className="font-semibold text-foreground">
-                            {state.returnFerry.from} → {state.returnFerry.to}
+                            {returnF.from} → {returnF.to}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {state.searchParams.returnDate} ·{' '}
-                            {state.returnFerry.departureTime} -{' '}
-                            {state.returnFerry.arrivalTime}
+                            {returnF.departureTime} -{' '}
+                            {returnF.arrivalTime}
                           </p>
                         </div>
                         <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                          €{state.returnFerry.price * state.searchParams.passengers}
+                          €{returnF.price * state.searchParams.passengers}
                         </p>
                       </div>
                     )}
 
-                    {state.carRental && (
+                    {car && (
                       <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl">
                         <div>
                           <p className="text-sm text-muted-foreground">Car Rental</p>
                           <p className="font-semibold text-foreground">
-                            {state.carRental.brand
-                              ? `${state.carRental.brand} ${state.carRental.model}`
-                              : state.carRental.model}{' '}
-                            · {state.carRental.days}{' '}
-                            {state.carRental.days === 1 ? 'day' : 'days'}
+                            {car.brand
+                              ? `${car.brand} ${car.model}`
+                              : car.model}{' '}
+                            · {car.days}{' '}
+                            {car.days === 1 ? 'day' : 'days'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Pickup: {state.carRental.pickupLocation}
+                            Pickup: {car.pickupLocation}
                           </p>
                         </div>
                         <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                          €{state.carRental.pricePerDay * state.carRental.days}
+                          €{car.pricePerDay * car.days}
                         </p>
                       </div>
                     )}
@@ -298,12 +304,12 @@ export default function CheckoutPage() {
                       <div className="space-y-1">
                         <Label htmlFor="terms" className="text-sm cursor-pointer">
                           I agree to the{' '}
-                          <Link href={`/${locale}/terms`} className="text-primary hover:underline">
+                          <Link href="/terms" className="text-primary hover:underline">
                             Terms of Service
                           </Link>{' '}
                           and{' '}
                           <Link
-                            href={`/${locale}/privacy`}
+                            href="/privacy"
                             className="text-primary hover:underline"
                           >
                             Privacy Policy
@@ -342,26 +348,26 @@ export default function CheckoutPage() {
                               Outbound ({state.searchParams.passengers}×)
                             </span>
                             <span className="text-foreground">
-                              €{state.selectedFerry.price * state.searchParams.passengers}
+                              €{outbound.price * state.searchParams.passengers}
                             </span>
                           </div>
-                          {state.returnFerry && (
+                          {returnF && (
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">
                                 Return ({state.searchParams.passengers}×)
                               </span>
                               <span className="text-foreground">
-                                €{state.returnFerry.price * state.searchParams.passengers}
+                                €{returnF.price * state.searchParams.passengers}
                               </span>
                             </div>
                           )}
-                          {state.carRental && (
+                          {car && (
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-muted-foreground">
-                                Car ({state.carRental.days}d)
+                                Car ({car.days}d)
                               </span>
                               <span className="text-foreground">
-                                €{state.carRental.pricePerDay * state.carRental.days}
+                                €{car.pricePerDay * car.days}
                               </span>
                             </div>
                           )}
@@ -376,14 +382,7 @@ export default function CheckoutPage() {
                         <div className="flex items-center justify-between text-lg font-bold">
                           <span className="text-foreground">Total</span>
                           <span className="text-primary">
-                            €
-                            {(state.selectedFerry.price * state.searchParams.passengers) +
-                              (state.returnFerry
-                                ? state.returnFerry.price * state.searchParams.passengers
-                                : 0) +
-                              (state.carRental
-                                ? state.carRental.pricePerDay * state.carRental.days
-                                : 0)}
+                            €{selectTotalPrice(state)}
                           </span>
                         </div>
 

@@ -27,19 +27,11 @@ export interface SubmitBookingInput {
   idempotencyKey: string
   locale: Locale
 
-  /** Ferry leg IDs (looked up server-side for real price) */
-  outboundFerryId: string
-  returnFerryId?: string
-
-  /** Optional car rental from the Supabase cars table */
-  carRentalId?: string
-  carRentalDays?: number
-  carPickupAt?: string // ISO timestamp
-  carDropoffAt?: string
-
-  /** Trip dates (also validated against ferry schedule) */
-  departDate: string // YYYY-MM-DD
-  returnDate?: string
+  /** Booking line items — IDs only; server resolves prices */
+  items: Array<
+    | { type: 'ferry'; leg: 'outbound' | 'return'; ferryId: string; date: string }
+    | { type: 'car_rental'; carId: string; days: number; pickupAt?: string; dropoffAt?: string }
+  >
 
   /** Number of passengers (used to multiply per-passenger ferry price) */
   passengerCount: number
@@ -69,128 +61,88 @@ export type SubmitBookingResult = CreateTripResult
 // ============================================================
 
 export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBookingResult> {
-  // 1. Resolve outbound ferry
-  const outbound = getFerryById(input.outboundFerryId)
-  if (!outbound) {
-    return { ok: false, code: 'validation_failed', error: 'Outbound ferry not found' }
+  // 1. Validate items present
+  if (!input.items || input.items.length === 0) {
+    return { ok: false, code: 'validation_failed', error: 'Booking must contain at least one item' }
   }
 
-  // 2. Resolve optional return ferry
-  let returnFerry = null
-  if (input.returnFerryId) {
-    returnFerry = getFerryById(input.returnFerryId)
-    if (!returnFerry) {
-      return { ok: false, code: 'validation_failed', error: 'Return ferry not found' }
-    }
+  // 2. Validate outbound ferry present
+  if (!input.items.some(i => i.type === 'ferry' && i.leg === 'outbound')) {
+    return { ok: false, code: 'validation_failed', error: 'Booking must include an outbound ferry leg' }
   }
 
-  // 3. Resolve optional car rental from Supabase
-  let car: {
-    id: string
-    name: string
-    pricePerDay: number
-  } | null = null
-  if (input.carRentalId) {
-    try {
-      const supabase = getSupabaseAdmin()
-      const { data } = await supabase
-        .from('cars')
-        .select('id, brand, model, price, price_per_day')
-        .eq('id', input.carRentalId)
-        .maybeSingle()
-      if (data) {
-        car = {
-          id: data.id,
-          name: [data.brand, data.model].filter(Boolean).join(' ') || 'Car rental',
-          pricePerDay: Number(data.price ?? data.price_per_day ?? 0),
-        }
-      }
-    } catch (err) {
-      console.error('[submitBooking] car lookup failed:', err)
-      // Don't fail the whole booking — proceed without the car
-    }
-  }
-
-  // 4. Build createTrip items list
+  // 3. Resolve items and build createTrip list
   const items: CreateTripInput['items'] = []
 
-  // Outbound ferry leg
-  const outboundDateTime = combineDateAndTime(input.departDate, outbound.departureTime)
-  const outboundArrival = combineDateAndTime(input.departDate, outbound.arrivalTime)
-  items.push({
-    type: 'ferry',
-    title: `${outbound.from} → ${outbound.to} (${outbound.operator})`,
-    scheduledAt: outboundDateTime,
-    endsAt: outboundArrival,
-    passengerCount: input.passengerCount,
-    priceAmount: outbound.price * input.passengerCount,
-    priceCurrency: 'EUR',
-    metadata: {
-      from_port: outbound.from,
-      to_port: outbound.to,
-      operator: outbound.operator,
-      vessel: outbound.vessel,
-      departure_time: outbound.departureTime,
-      arrival_time: outbound.arrivalTime,
-      ferry_id: outbound.id,
-      per_passenger_price: outbound.price,
-    },
-  })
-
-  // Return ferry leg (round-trip)
-  if (returnFerry && input.returnDate) {
-    const ret = combineDateAndTime(input.returnDate, returnFerry.departureTime)
-    const retEnd = combineDateAndTime(input.returnDate, returnFerry.arrivalTime)
-    items.push({
-      type: 'ferry',
-      title: `${returnFerry.from} → ${returnFerry.to} (${returnFerry.operator})`,
-      scheduledAt: ret,
-      endsAt: retEnd,
-      passengerCount: input.passengerCount,
-      priceAmount: returnFerry.price * input.passengerCount,
-      priceCurrency: 'EUR',
-      metadata: {
-        from_port: returnFerry.from,
-        to_port: returnFerry.to,
-        operator: returnFerry.operator,
-        vessel: returnFerry.vessel,
-        departure_time: returnFerry.departureTime,
-        arrival_time: returnFerry.arrivalTime,
-        ferry_id: returnFerry.id,
-        per_passenger_price: returnFerry.price,
-      },
-    })
+  for (const item of input.items) {
+    if (item.type === 'ferry') {
+      const ferry = getFerryById(item.ferryId)
+      if (!ferry) {
+        return { ok: false, code: 'validation_failed', error: `Ferry not found: ${item.ferryId}` }
+      }
+      items.push({
+        type: 'ferry',
+        title: `${ferry.from} → ${ferry.to} (${ferry.operator})`,
+        scheduledAt: combineDateAndTime(item.date, ferry.departureTime),
+        endsAt: combineDateAndTime(item.date, ferry.arrivalTime),
+        passengerCount: input.passengerCount,
+        priceAmount: ferry.price * input.passengerCount,
+        priceCurrency: 'EUR',
+        metadata: {
+          from_port: ferry.from,
+          to_port: ferry.to,
+          operator: ferry.operator,
+          vessel: ferry.vessel,
+          departure_time: ferry.departureTime,
+          arrival_time: ferry.arrivalTime,
+          ferry_id: ferry.id,
+          per_passenger_price: ferry.price,
+        },
+      })
+    } else if (item.type === 'car_rental') {
+      try {
+        const supabase = getSupabaseAdmin()
+        const { data } = await supabase
+          .from('cars')
+          .select('id, brand, model, price, price_per_day')
+          .eq('id', item.carId)
+          .maybeSingle()
+        if (data) {
+          const carName = [data.brand, data.model].filter(Boolean).join(' ') || 'Car rental'
+          const pricePerDay = Number(data.price ?? data.price_per_day ?? 0)
+          items.push({
+            type: 'car_rental',
+            title: `${carName} (${item.days} ${item.days === 1 ? 'day' : 'days'})`,
+            scheduledAt: item.pickupAt ?? null,
+            endsAt: item.dropoffAt ?? null,
+            passengerCount: input.passengerCount,
+            priceAmount: pricePerDay * item.days,
+            priceCurrency: 'EUR',
+            metadata: {
+              car_id: data.id,
+              model: carName,
+              days: item.days,
+              per_day_price: pricePerDay,
+              pickup_at: item.pickupAt,
+              dropoff_at: item.dropoffAt,
+            },
+          })
+        }
+      } catch (err) {
+        console.error('[submitBooking] car lookup failed:', err)
+        // Soft failure — proceed without the car item
+      }
+    }
   }
 
-  // Car rental (optional)
-  if (car && input.carRentalDays && input.carRentalDays > 0) {
-    items.push({
-      type: 'car_rental',
-      title: `${car.name} (${input.carRentalDays} ${input.carRentalDays === 1 ? 'day' : 'days'})`,
-      scheduledAt: input.carPickupAt ?? null,
-      endsAt: input.carDropoffAt ?? null,
-      passengerCount: input.passengerCount,
-      priceAmount: car.pricePerDay * input.carRentalDays,
-      priceCurrency: 'EUR',
-      metadata: {
-        car_id: car.id,
-        model: car.name,
-        days: input.carRentalDays,
-        per_day_price: car.pricePerDay,
-        pickup_at: input.carPickupAt,
-        dropoff_at: input.carDropoffAt,
-      },
-    })
-  }
-
-  // 5. Find lead passenger (or fallback to first)
+  // 4. Find lead passenger (or fallback to first)
   const leadPassenger =
     input.passengers.find((p) => p.isLead) ?? input.passengers[0]
   if (!leadPassenger) {
     return { ok: false, code: 'validation_failed', error: 'At least one passenger is required' }
   }
 
-  // 6. Companion passengers — everyone except the lead
+  // 5. Companion passengers — everyone except the lead
   const companions = input.passengers
     .filter((p) => p !== leadPassenger)
     .map((p) => ({
@@ -203,7 +155,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       type: 'adult' as const,
     }))
 
-  // 7. Hand off to createTrip
+  // 6. Hand off to createTrip
   return createTrip({
     idempotencyKey: input.idempotencyKey,
     locale: input.locale,
