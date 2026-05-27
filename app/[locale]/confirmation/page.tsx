@@ -32,15 +32,172 @@ import {
   selectReturnFerry,
   selectCarRental,
   selectTotalPrice,
+  type FerryRoute,
+  type CarRentalSelection,
+  type Passenger,
 } from '@/lib/booking-context'
+
+// ── localStorage helpers ──────────────────────────────────────────────────────
+
+const LOCAL_STORAGE_KEY = 'travelbeez-confirmation'
+const TTL_MS = 24 * 60 * 60 * 1000
+
+interface ConfirmationRecord {
+  reference:   string
+  whatsappUrl: string
+  timestamp:   number
+}
+
+function writeConfirmationRecord(data: Omit<ConfirmationRecord, 'timestamp'>): void {
+  try {
+    const record: ConfirmationRecord = { ...data, timestamp: Date.now() }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(record))
+  } catch {
+    // localStorage unavailable (private browsing, quota exceeded) — ignore
+  }
+}
+
+function readConfirmationRecord(): ConfirmationRecord | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (!raw) return null
+    const record = JSON.parse(raw) as ConfirmationRecord
+    if (Date.now() - record.timestamp > TTL_MS) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY)
+      return null
+    }
+    return record
+  } catch {
+    return null
+  }
+}
+
+function clearConfirmationRecord(): void {
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_KEY)
+  } catch {
+    // ignore
+  }
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type ConfirmationMode = 'loading' | 'fresh' | 'refresh' | 'empty'
+
+interface BookingSnapshot {
+  bookingReference:   string
+  contactEmail:       string
+  contactPhone:       string
+  paymentWhatsAppUrl: string
+  outbound:           FerryRoute
+  returnFerry:        FerryRoute | null
+  car:                CarRentalSelection | null
+  passengers:         Passenger[]
+  searchDate:         string
+  returnDate:         string
+  passengerCount:     number
+  ferryTotal:         number
+  returnTotal:        number
+  carTotal:           number
+  grandTotal:         number
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConfirmationPage() {
   const { state, dispatch } = useBooking()
   const router = useRouter()
-  const outbound = selectOutboundFerry(state)
-  const returnF = selectReturnFerry(state)
-  const car = selectCarRental(state)
-  const [copied, setCopied] = React.useState(false)
+
+  const [mode, setMode]                 = React.useState<ConfirmationMode>('loading')
+  const [snapshot, setSnapshot]         = React.useState<BookingSnapshot | null>(null)
+  const [storedRecord, setStoredRecord] = React.useState<ConfirmationRecord | null>(null)
+  const [copied, setCopied]             = React.useState(false)
+  const modeDetectedRef                 = React.useRef(false)
+
+  // Fires confetti only when the fresh booking lands — not on refresh/empty.
+  React.useEffect(() => {
+    if (mode === 'fresh') {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#1e88e5', '#FFD54F', '#4CAF50'],
+      })
+    }
+  }, [mode])
+
+  // Mode-detection — fires once, after BookingProvider has hydrated.
+  // INVARIANT: initialState sets idempotencyKey to ''. BookingProvider then either
+  // restores a UUID from sessionStorage or generates a fresh one via newIdempotencyKey().
+  // Both paths produce a truthy string, so the '' → truthy transition is the hydration
+  // signal. Do NOT change initialState.idempotencyKey to null or to a lazily-initialised
+  // form without updating this gate — doing so would make mode detection fire before
+  // context is fully hydrated, always falling through to the localStorage/empty path.
+  //
+  // modeDetectedRef blocks re-entry: the RESET dispatch regenerates idempotencyKey,
+  // which would otherwise trigger a second detection pass that overwrites 'fresh' with
+  // 'empty'.
+  React.useEffect(() => {
+    if (!state.idempotencyKey) return
+    if (modeDetectedRef.current) return
+    modeDetectedRef.current = true
+
+    const outbound = selectOutboundFerry(state)
+
+    if (state.bookingReference && outbound) {
+      const returnFerry    = selectReturnFerry(state)
+      const car            = selectCarRental(state)
+      const passengerCount = state.searchParams.passengers
+
+      setSnapshot({
+        bookingReference:   state.bookingReference,
+        contactEmail:       state.contactEmail,
+        contactPhone:       state.contactPhone,
+        paymentWhatsAppUrl: state.paymentWhatsAppUrl,
+        outbound,
+        returnFerry,
+        car,
+        passengers:  state.passengers,
+        searchDate:  state.searchParams.date,
+        returnDate:  state.searchParams.returnDate ?? '',
+        passengerCount,
+        ferryTotal:  outbound.price * passengerCount,
+        returnTotal: returnFerry ? returnFerry.price * passengerCount : 0,
+        carTotal:    car ? car.pricePerDay * car.days : 0,
+        grandTotal:  selectTotalPrice(state),
+      })
+
+      writeConfirmationRecord({
+        reference:   state.bookingReference,
+        whatsappUrl: state.paymentWhatsAppUrl,
+      })
+
+      clearBookingStorage()
+      dispatch({ type: 'RESET' })
+      setMode('fresh')
+      return
+    }
+
+    const record = readConfirmationRecord()
+    if (record) {
+      setStoredRecord(record)
+      setMode('refresh')
+    } else {
+      setMode('empty')
+    }
+  }, [state.idempotencyKey]) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: run once after first hydration; including state/dispatch would re-fire on every state change
+
+  const activeReference = snapshot?.bookingReference ?? storedRecord?.reference ?? ''
+
+  const handleCopyReference = async () => {
+    try {
+      await navigator.clipboard.writeText(activeReference)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard unavailable, ignore
+    }
+  }
 
   /**
    * Clears booking state then navigates imperatively.
@@ -53,35 +210,19 @@ export default function ConfirmationPage() {
    * been dispatched before the new page's BookingProvider can hydrate.
    */
   const handleNewBooking = (href: '/' | '/ferry') => {
+    clearConfirmationRecord()
     clearBookingStorage()
     dispatch({ type: 'RESET' })
     router.push(href)
   }
 
-  // Confetti on mount (only when a real booking exists)
-  React.useEffect(() => {
-    if (state.bookingReference && outbound) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#1e88e5', '#FFD54F', '#4CAF50'],
-      })
-    }
-  }, [state.bookingReference, outbound])
+  // ── Render ───────────────────────────────────────────────────────────────────
 
-  const handleCopyReference = async () => {
-    try {
-      await navigator.clipboard.writeText(state.bookingReference)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // clipboard may be unavailable, ignore
-    }
-  }
+  // 'loading': return null suppresses the empty-state flash between first paint
+  // and BookingProvider hydration — the component mounts before its parent's effect runs.
+  if (mode === 'loading') return null
 
-  // No active booking — show empty state
-  if (!outbound || !state.bookingReference) {
+  if (mode === 'empty') {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
@@ -104,11 +245,103 @@ export default function ConfirmationPage() {
     )
   }
 
-  // Compute totals
-  const ferryTotal  = outbound ? outbound.price * state.searchParams.passengers : 0
-  const returnTotal = returnF  ? returnF.price  * state.searchParams.passengers : 0
-  const carTotal    = car      ? car.pricePerDay * car.days                     : 0
-  const grandTotal  = selectTotalPrice(state)
+  if (mode === 'refresh' && storedRecord) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1">
+          <section className="w-full py-12 bg-gradient-to-b from-green-50 to-background">
+            <div className="container px-4 md:px-6">
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="h-10 w-10 text-green-600" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  Booking Reserved!
+                </h1>
+              </div>
+            </div>
+          </section>
+
+          <section className="w-full py-8">
+            <div className="container px-4 md:px-6 max-w-3xl mx-auto">
+              <Card className="border-primary/30 mb-6">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
+                    Your Booking Reference
+                  </p>
+                  <div className="flex items-center justify-center gap-3">
+                    <p className="text-3xl md:text-4xl font-mono font-bold text-primary">
+                      {storedRecord.reference}
+                    </p>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={handleCopyReference}
+                      aria-label="Copy reference"
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Save this code. You&apos;ll need it for payment and support.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#25D366]/5 border-[#25D366]/40 mb-6">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-foreground mb-1">
+                        Next: Confirm Payment on WhatsApp
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Trip details have been sent to your email — contact us via WhatsApp
+                        to complete your payment.
+                      </p>
+                      <a
+                        href={storedRecord.whatsappUrl || 'https://wa.me/302242050008'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button className="bg-[#25D366] hover:bg-[#25D366]/90 text-white">
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          Open WhatsApp
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
+                  <Home className="h-4 w-4 mr-2" />
+                  Back to Home
+                </Button>
+                <Button type="button" variant="outline" onClick={() => handleNewBooking('/ferry')}>
+                  Start New Booking
+                </Button>
+              </div>
+            </div>
+          </section>
+        </main>
+        <Footer />
+        <FloatingWhatsApp />
+      </div>
+    )
+  }
+
+  // 'fresh' mode — full detail from in-memory snapshot; never null at this point
+  if (!snapshot) return null
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -134,7 +367,7 @@ export default function ConfirmationPage() {
               </p>
               <p className="text-sm text-muted-foreground">
                 Confirmation sent to{' '}
-                <span className="font-medium text-foreground">{state.contactEmail}</span>
+                <span className="font-medium text-foreground">{snapshot.contactEmail}</span>
               </p>
             </motion.div>
           </div>
@@ -150,7 +383,7 @@ export default function ConfirmationPage() {
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <p className="text-3xl md:text-4xl font-mono font-bold text-primary">
-                    {state.bookingReference}
+                    {snapshot.bookingReference}
                   </p>
                   <Button
                     size="icon"
@@ -186,15 +419,15 @@ export default function ConfirmationPage() {
                       Tap below to open WhatsApp. We&apos;ll send a secure payment link and
                       finalize your booking immediately.
                     </p>
-                    {state.paymentWhatsAppUrl ? (
+                    {snapshot.paymentWhatsAppUrl ? (
                       <a
-                        href={state.paymentWhatsAppUrl}
+                        href={snapshot.paymentWhatsAppUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <Button className="bg-[#25D366] hover:bg-[#25D366]/90 text-white">
                           <MessageCircle className="h-4 w-4 mr-2" />
-                          Pay €{grandTotal} on WhatsApp
+                          Pay €{snapshot.grandTotal} on WhatsApp
                         </Button>
                       </a>
                     ) : (
@@ -229,64 +462,64 @@ export default function ConfirmationPage() {
                       <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
                         Outbound
                       </span>
-                      <span className="text-sm font-semibold text-primary">€{ferryTotal}</span>
+                      <span className="text-sm font-semibold text-primary">€{snapshot.ferryTotal}</span>
                     </div>
                     <p className="font-semibold text-foreground">
-                      {outbound.from} → {outbound.to}
+                      {snapshot.outbound.from} → {snapshot.outbound.to}
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                       <Calendar className="h-4 w-4" />
-                      {state.searchParams.date}
+                      {snapshot.searchDate}
                       <Clock className="h-4 w-4 ml-2" />
-                      {outbound.departureTime} - {outbound.arrivalTime}
+                      {snapshot.outbound.departureTime} - {snapshot.outbound.arrivalTime}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {outbound.operator} · {outbound.vessel}
+                      {snapshot.outbound.operator} · {snapshot.outbound.vessel}
                     </p>
                   </div>
 
                   {/* Return */}
-                  {returnF && (
+                  {snapshot.returnFerry && (
                     <div className="p-4 bg-secondary/50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
                           Return
                         </span>
-                        <span className="text-sm font-semibold text-primary">€{returnTotal}</span>
+                        <span className="text-sm font-semibold text-primary">€{snapshot.returnTotal}</span>
                       </div>
                       <p className="font-semibold text-foreground">
-                        {returnF.from} → {returnF.to}
+                        {snapshot.returnFerry.from} → {snapshot.returnFerry.to}
                       </p>
                       <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                         <Calendar className="h-4 w-4" />
-                        {state.searchParams.returnDate}
+                        {snapshot.returnDate}
                         <Clock className="h-4 w-4 ml-2" />
-                        {returnF.departureTime} - {returnF.arrivalTime}
+                        {snapshot.returnFerry.departureTime} - {snapshot.returnFerry.arrivalTime}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {returnF.operator} · {returnF.vessel}
+                        {snapshot.returnFerry.operator} · {snapshot.returnFerry.vessel}
                       </p>
                     </div>
                   )}
 
                   {/* Car rental */}
-                  {car && (
+                  {snapshot.car && (
                     <div className="p-4 bg-secondary/50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
                           Car Rental
                         </span>
-                        <span className="text-sm font-semibold text-primary">€{carTotal}</span>
+                        <span className="text-sm font-semibold text-primary">€{snapshot.carTotal}</span>
                       </div>
                       <p className="font-semibold text-foreground">
-                        {car.brand
-                          ? `${car.brand} ${car.model}`
-                          : car.model}{' '}
-                        ({car.days}{' '}
-                        {car.days === 1 ? 'day' : 'days'})
+                        {snapshot.car.brand
+                          ? `${snapshot.car.brand} ${snapshot.car.model}`
+                          : snapshot.car.model}{' '}
+                        ({snapshot.car.days}{' '}
+                        {snapshot.car.days === 1 ? 'day' : 'days'})
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Pickup: {car.pickupLocation}
+                        Pickup: {snapshot.car.pickupLocation}
                       </p>
                     </div>
                   )}
@@ -296,7 +529,7 @@ export default function ConfirmationPage() {
 
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-foreground">Total</span>
-                  <span className="text-2xl font-bold text-primary">€{grandTotal}</span>
+                  <span className="text-2xl font-bold text-primary">€{snapshot.grandTotal}</span>
                 </div>
               </CardContent>
             </Card>
@@ -306,10 +539,10 @@ export default function ConfirmationPage() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
-                  Passengers ({state.passengers.length})
+                  Passengers ({snapshot.passengers.length})
                 </h3>
                 <div className="space-y-3">
-                  {state.passengers.map((p, i) => (
+                  {snapshot.passengers.map((p, i) => (
                     <div
                       key={i}
                       className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
@@ -358,7 +591,7 @@ export default function ConfirmationPage() {
                     </span>
                     <span>
                       Once payment clears, your tickets are issued and emailed to{' '}
-                      <strong>{state.contactEmail}</strong>.
+                      <strong>{snapshot.contactEmail}</strong>.
                     </span>
                   </li>
                 </ol>
@@ -368,11 +601,11 @@ export default function ConfirmationPage() {
                 <div className="grid sm:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="h-4 w-4 text-primary" />
-                    <span>{state.contactEmail}</span>
+                    <span>{snapshot.contactEmail}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-4 w-4 text-primary" />
-                    <span>{state.contactPhone}</span>
+                    <span>{snapshot.contactPhone}</span>
                   </div>
                 </div>
               </CardContent>
