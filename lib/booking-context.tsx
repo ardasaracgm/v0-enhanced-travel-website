@@ -52,6 +52,39 @@ export interface CarRentalSelection {
   dropoffAt: string // ISO timestamp
 }
 
+// ============================================================
+// BookingItem discriminated union (Sprint 1 — ferry + car_rental)
+// ============================================================
+// Named BookingItem (not TripItem) to avoid collision with the DB
+// row type exported from lib/supabase.ts. priceAmount is display-only;
+// the server always recomputes from IDs.
+
+export interface FerryBookingItem {
+  type: 'ferry'
+  leg: 'outbound' | 'return'
+  ferryId: string
+  ferry: FerryRoute
+  date: string           // YYYY-MM-DD snapshot at selection time
+  passengerCount: number
+  priceAmount: number    // ferry.price × passengerCount, display only
+}
+
+export interface CarRentalBookingItem {
+  type: 'car_rental'
+  carId: string
+  model: string
+  brand?: string
+  pricePerDay: number
+  days: number
+  pickupLocation: string
+  dropoffLocation: string
+  pickupAt: string       // ISO timestamp
+  dropoffAt: string      // ISO timestamp
+  priceAmount: number    // pricePerDay × days, display only
+}
+
+export type BookingItem = FerryBookingItem | CarRentalBookingItem
+
 export interface BookingState {
   searchParams: {
     from: string
@@ -68,6 +101,9 @@ export interface BookingState {
   contactPhone: string
   totalPrice: number
   carRental: CarRentalSelection | null
+  /** Sprint 1: source of truth for line items. Legacy named fields above
+   *  are kept for backward compat and dual-written by the reducer. */
+  items: BookingItem[]
   /** Generated on first booking attempt, cleared on RESET. */
   idempotencyKey: string
   /** Server-generated reference (e.g. TB-26-A8F3K2), set after successful submit. */
@@ -102,6 +138,7 @@ const initialState: BookingState = {
   contactPhone: '',
   totalPrice: 0,
   carRental: null,
+  items: [],
   idempotencyKey: '',
   bookingReference: '',
   paymentWhatsAppUrl: '',
@@ -117,6 +154,7 @@ type BookingAction =
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
   | { type: 'SET_TOTAL_PRICE'; payload: number }
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
+  | { type: 'SET_ITEMS'; payload: BookingItem[] }
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
   | { type: 'SET_PAYMENT_LINK'; payload: string }
@@ -127,12 +165,58 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
   switch (action.type) {
     case 'SET_SEARCH_PARAMS':
       return { ...state, searchParams: { ...state.searchParams, ...action.payload } }
-    case 'SELECT_FERRY':
-      return { ...state, selectedFerry: action.payload }
-    case 'SELECT_RETURN_FERRY':
-      return { ...state, returnFerry: action.payload }
+    // NOTE: reads state.searchParams.passengers to compute the new BookingItem's
+    // passengerCount and priceAmount. Hydration relies on SET_SEARCH_PARAMS firing
+    // before this action — see initialState key order.
+    case 'SELECT_FERRY': {
+      const pax = state.searchParams.passengers
+      const ferryItem: FerryBookingItem = {
+        type: 'ferry',
+        leg: 'outbound',
+        ferryId: action.payload.id,
+        ferry: action.payload,
+        date: state.searchParams.date,
+        passengerCount: pax,
+        priceAmount: action.payload.price * pax,
+      }
+      return {
+        ...state,
+        selectedFerry: action.payload,
+        items: [
+          ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'outbound')),
+          ferryItem,
+        ],
+      }
+    }
+    // NOTE: reads state.searchParams.passengers to compute the new BookingItem's
+    // passengerCount and priceAmount. Hydration relies on SET_SEARCH_PARAMS firing
+    // before this action — see initialState key order.
+    case 'SELECT_RETURN_FERRY': {
+      const pax = state.searchParams.passengers
+      const returnItem: FerryBookingItem = {
+        type: 'ferry',
+        leg: 'return',
+        ferryId: action.payload.id,
+        ferry: action.payload,
+        date: state.searchParams.returnDate ?? '',
+        passengerCount: pax,
+        priceAmount: action.payload.price * pax,
+      }
+      return {
+        ...state,
+        returnFerry: action.payload,
+        items: [
+          ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
+          returnItem,
+        ],
+      }
+    }
     case 'CLEAR_RETURN_FERRY':
-      return { ...state, returnFerry: null }
+      return {
+        ...state,
+        returnFerry: null,
+        items: state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
+      }
     case 'SET_PASSENGERS':
       return { ...state, passengers: action.payload }
     case 'SET_CONTACT':
@@ -143,8 +227,38 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
     case 'SET_TOTAL_PRICE':
       return { ...state, totalPrice: action.payload }
-    case 'SET_CAR_RENTAL':
-      return { ...state, carRental: action.payload }
+    case 'SET_CAR_RENTAL': {
+      if (!action.payload) {
+        return {
+          ...state,
+          carRental: null,
+          items: state.items.filter(i => i.type !== 'car_rental'),
+        }
+      }
+      const carItem: CarRentalBookingItem = {
+        type: 'car_rental',
+        carId: action.payload.carId,
+        model: action.payload.model,
+        brand: action.payload.brand,
+        pricePerDay: action.payload.pricePerDay,
+        days: action.payload.days,
+        pickupLocation: action.payload.pickupLocation,
+        dropoffLocation: action.payload.dropoffLocation,
+        pickupAt: action.payload.pickupAt,
+        dropoffAt: action.payload.dropoffAt,
+        priceAmount: action.payload.pricePerDay * action.payload.days,
+      }
+      return {
+        ...state,
+        carRental: action.payload,
+        items: [
+          ...state.items.filter(i => i.type !== 'car_rental'),
+          carItem,
+        ],
+      }
+    }
+    case 'SET_ITEMS':
+      return { ...state, items: action.payload }
     case 'SET_IDEMPOTENCY_KEY':
       return { ...state, idempotencyKey: action.payload }
     case 'SET_BOOKING_REFERENCE':
@@ -188,6 +302,11 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const stored = readStoredState()
     if (stored) {
       Object.entries(stored).forEach(([key, value]) => {
+        // Key processing order matters: searchParams must be hydrated before
+        // selectedFerry/returnFerry so SELECT_FERRY can read state.searchParams.passengers.
+        // initialState defines searchParams first, which preserves the order through
+        // JSON serialize/parse and Object.entries iteration. If you reorder initialState,
+        // verify this still holds.
         switch (key) {
           case 'searchParams':
             dispatch({ type: 'SET_SEARCH_PARAMS', payload: value as BookingState['searchParams'] })
@@ -225,6 +344,11 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
             if (typeof value === 'string' && value)
               dispatch({ type: 'SET_PAYMENT_LINK', payload: value })
             break
+          case 'items':
+            if (Array.isArray(value) && value.length > 0) {
+              dispatch({ type: 'SET_ITEMS', payload: value as BookingItem[] })
+            }
+            break
         }
       })
 
@@ -238,6 +362,53 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       // If we restored without an idempotencyKey (legacy state), set one
       if (!stored.idempotencyKey) {
         dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: newIdempotencyKey() })
+      }
+
+      // Migrate legacy storage: reconstruct items[] from named fields
+      // if absent, so old in-progress bookings survive the refactor.
+      if (!stored.items || stored.items.length === 0) {
+        const migratedItems: BookingItem[] = []
+        const pax = stored.searchParams?.passengers ?? 1
+        if (stored.selectedFerry) {
+          migratedItems.push({
+            type: 'ferry',
+            leg: 'outbound',
+            ferryId: stored.selectedFerry.id,
+            ferry: stored.selectedFerry,
+            date: stored.searchParams?.date ?? '',
+            passengerCount: pax,
+            priceAmount: stored.selectedFerry.price * pax,
+          })
+        }
+        if (stored.returnFerry) {
+          migratedItems.push({
+            type: 'ferry',
+            leg: 'return',
+            ferryId: stored.returnFerry.id,
+            ferry: stored.returnFerry,
+            date: stored.searchParams?.returnDate ?? '',
+            passengerCount: pax,
+            priceAmount: stored.returnFerry.price * pax,
+          })
+        }
+        if (stored.carRental) {
+          migratedItems.push({
+            type: 'car_rental',
+            carId: stored.carRental.carId,
+            model: stored.carRental.model,
+            brand: stored.carRental.brand,
+            pricePerDay: stored.carRental.pricePerDay,
+            days: stored.carRental.days,
+            pickupLocation: stored.carRental.pickupLocation,
+            dropoffLocation: stored.carRental.dropoffLocation,
+            pickupAt: stored.carRental.pickupAt,
+            dropoffAt: stored.carRental.dropoffAt,
+            priceAmount: stored.carRental.pricePerDay * stored.carRental.days,
+          })
+        }
+        if (migratedItems.length > 0) {
+          dispatch({ type: 'SET_ITEMS', payload: migratedItems })
+        }
       }
     } else {
       // Fresh session — generate idempotency key
@@ -278,4 +449,45 @@ export function clearBookingStorage(): void {
       // ignore
     }
   }
+}
+
+// ============================================================
+// Selectors — derive legacy values from items[]
+// ============================================================
+// Sprint 2 consumers will switch to these. Not yet called by any page.
+
+export function selectOutboundFerry(state: BookingState): FerryRoute | null {
+  const item = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
+  )
+  return item?.ferry ?? null
+}
+
+export function selectReturnFerry(state: BookingState): FerryRoute | null {
+  const item = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
+  )
+  return item?.ferry ?? null
+}
+
+export function selectCarRental(state: BookingState): CarRentalSelection | null {
+  const item = state.items.find(
+    (i): i is CarRentalBookingItem => i.type === 'car_rental'
+  )
+  if (!item) return null
+  return {
+    carId: item.carId,
+    model: item.model,
+    brand: item.brand,
+    pricePerDay: item.pricePerDay,
+    days: item.days,
+    pickupLocation: item.pickupLocation,
+    dropoffLocation: item.dropoffLocation,
+    pickupAt: item.pickupAt,
+    dropoffAt: item.dropoffAt,
+  }
+}
+
+export function selectTotalPrice(state: BookingState): number {
+  return state.items.reduce((sum, i) => sum + i.priceAmount, 0)
 }
