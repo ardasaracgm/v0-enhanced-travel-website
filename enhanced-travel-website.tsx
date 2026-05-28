@@ -50,6 +50,7 @@ import {
 
 export default function TravelBeez() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const islands = [
     {
@@ -408,7 +409,7 @@ export default function TravelBeez() {
                             <label className="text-sm font-medium text-foreground">
                               Date
                             </label>
-                            <Input type="date" className="h-10" />
+                            <Input type="date" className="h-10" min={todayAthens} />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">

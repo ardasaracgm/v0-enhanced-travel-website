@@ -77,6 +77,8 @@ export default function FerryTicketsPage() {
   const [returnDate, setReturnDate] = React.useState('')
   const [passengers, setPassengers] = React.useState('2')
 
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
+
   const handleSearch = () => {
     dispatch({
       type: 'SET_SEARCH_PARAMS',
@@ -213,9 +215,10 @@ export default function FerryTicketsPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Departure Date</label>
-                    <Input 
-                      type="date" 
-                      className="h-10" 
+                    <Input
+                      type="date"
+                      className="h-10"
+                      min={todayAthens}
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                     />
@@ -223,9 +226,10 @@ export default function FerryTicketsPage() {
                   {tripType === 'round-trip' && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">Return Date</label>
-                      <Input 
-                        type="date" 
-                        className="h-10" 
+                      <Input
+                        type="date"
+                        className="h-10"
+                        min={date || todayAthens}
                         value={returnDate}
                         onChange={(e) => setReturnDate(e.target.value)}
                       />
