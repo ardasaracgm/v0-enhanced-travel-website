@@ -1,0 +1,118 @@
+import 'server-only'
+
+// Base URLs differ between demo and live environments.
+// Switch with VIVA_ENV=demo (default) | live.
+
+interface VivaConfig {
+  authUrl:      string
+  apiBase:      string
+  checkoutBase: string
+}
+
+interface CachedToken {
+  accessToken: string
+  expiresAt:   number  // ms since epoch
+}
+
+// Module-level cache: persists across requests within the same server process.
+// Each serverless cold start begins with null — one token fetch per warm instance.
+let tokenCache: CachedToken | null = null
+// In-flight dedup: if two requests arrive simultaneously with an expired cache,
+// both await the same fetch rather than issuing two parallel OAuth requests.
+let tokenFetch: Promise<string> | null = null
+
+function getVivaConfig(): VivaConfig {
+  if (process.env.VIVA_ENV === 'live') {
+    return {
+      authUrl:      'https://accounts.vivapayments.com/connect/token',
+      apiBase:      'https://api.vivapayments.com',
+      checkoutBase: 'https://www.vivapayments.com',
+    }
+  }
+  return {
+    authUrl:      'https://demo-accounts.vivapayments.com/connect/token',
+    apiBase:      'https://demo-api.vivapayments.com',
+    checkoutBase: 'https://demo.vivapayments.com',
+  }
+}
+
+async function fetchAccessToken(): Promise<string> {
+  const clientId     = process.env.VIVA_CLIENT_ID
+  const clientSecret = process.env.VIVA_CLIENT_SECRET
+
+  if (!clientId || !clientSecret) {
+    throw new Error('[viva] Missing VIVA_CLIENT_ID or VIVA_CLIENT_SECRET')
+  }
+
+  const { authUrl } = getVivaConfig()
+
+  const res = await fetch(authUrl, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'client_credentials',
+      client_id:     clientId,
+      client_secret: clientSecret,
+    }).toString(),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`[viva] OAuth token request failed: HTTP ${res.status} — ${body}`)
+  }
+
+  const data = await res.json() as { access_token: string; expires_in: number }
+
+  // Cache with 60-second buffer so we never present an about-to-expire token
+  tokenCache = {
+    accessToken: data.access_token,
+    expiresAt:   Date.now() + (data.expires_in - 60) * 1000,
+  }
+
+  return data.access_token
+}
+
+async function getAccessToken(): Promise<string> {
+  if (tokenCache && Date.now() < tokenCache.expiresAt) {
+    return tokenCache.accessToken
+  }
+  if (!tokenFetch) {
+    tokenFetch = fetchAccessToken().finally(() => { tokenFetch = null })
+  }
+  return tokenFetch
+}
+
+/** Build the Viva Smart Checkout redirect URL for a given orderCode. */
+export function getVivaCheckoutUrl(orderCode: string): string {
+  return `${getVivaConfig().checkoutBase}/web/checkout?ref=${orderCode}`
+}
+
+/**
+ * Make an authenticated request to the Viva API.
+ * Obtains/reuses a cached OAuth2 bearer token automatically.
+ */
+export async function vivaRequest<T>(
+  method: 'GET' | 'POST' | 'DELETE',
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const { apiBase } = getVivaConfig()
+  const token = await getAccessToken()
+
+  const res = await fetch(`${apiBase}${path}`, {
+    method,
+    headers: {
+      Authorization:  `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept:         'application/json',
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`[viva] ${method} ${path} → HTTP ${res.status}: ${text}`)
+  }
+
+  return res.json() as Promise<T>
+}

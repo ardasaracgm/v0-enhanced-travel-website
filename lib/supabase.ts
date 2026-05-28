@@ -173,6 +173,7 @@ export interface Trip {
   confirmed_at?: string | null
   cancelled_at?: string | null
   cancellation_reason?: string | null
+  viva_order_code?: string | null
 }
 
 /**

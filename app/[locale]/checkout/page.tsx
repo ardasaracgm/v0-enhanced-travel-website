@@ -80,9 +80,20 @@ export default function CheckoutPage() {
         return
       }
 
-      // Success — persist reference + payment link, navigate to confirmation
+      // Success — persist reference + payment link
       dispatch({ type: 'SET_BOOKING_REFERENCE', payload: result.reference })
       dispatch({ type: 'SET_PAYMENT_LINK', payload: result.paymentWhatsAppUrl })
+
+      if (result.vivaRedirectUrl) {
+        // Viva path: stash the redirect URL and hand off to Smart Checkout.
+        // Keep isProcessing=true — page unmounts during navigation so there's
+        // no spinner to clear and no way to double-submit.
+        dispatch({ type: 'SET_VIVA_REDIRECT', payload: result.vivaRedirectUrl })
+        window.location.assign(result.vivaRedirectUrl)
+        return
+      }
+
+      // WhatsApp fallback: no Viva order — navigate to confirmation directly.
       router.push('/confirmation')
     } catch (err) {
       console.error('[checkout] submit threw:', err)

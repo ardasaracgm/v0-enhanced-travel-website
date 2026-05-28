@@ -93,6 +93,8 @@ export interface BookingState {
   bookingReference: string
   /** WhatsApp deep link for payment confirmation, set after successful submit. */
   paymentWhatsAppUrl: string
+  /** Viva Smart Checkout redirect URL, set when Viva order creation succeeds. */
+  vivaRedirectUrl: string
   /** Last submission error message for the UI to display. */
   submitError: string | null
 }
@@ -121,6 +123,7 @@ const initialState: BookingState = {
   idempotencyKey: '',
   bookingReference: '',
   paymentWhatsAppUrl: '',
+  vivaRedirectUrl: '',
   submitError: null,
 }
 
@@ -136,6 +139,7 @@ type BookingAction =
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
   | { type: 'SET_PAYMENT_LINK'; payload: string }
+  | { type: 'SET_VIVA_REDIRECT'; payload: string }
   | { type: 'SET_SUBMIT_ERROR'; payload: string | null }
   | { type: 'RESET' }
 
@@ -236,6 +240,8 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return { ...state, bookingReference: action.payload }
     case 'SET_PAYMENT_LINK':
       return { ...state, paymentWhatsAppUrl: action.payload }
+    case 'SET_VIVA_REDIRECT':
+      return { ...state, vivaRedirectUrl: action.payload }
     case 'SET_SUBMIT_ERROR':
       return { ...state, submitError: action.payload }
     case 'RESET':
@@ -297,6 +303,10 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
           case 'paymentWhatsAppUrl':
             if (typeof value === 'string' && value)
               dispatch({ type: 'SET_PAYMENT_LINK', payload: value })
+            break
+          case 'vivaRedirectUrl':
+            if (typeof value === 'string' && value)
+              dispatch({ type: 'SET_VIVA_REDIRECT', payload: value })
             break
           case 'items':
             if (Array.isArray(value) && value.length > 0) {

@@ -13,7 +13,8 @@
  * Returns the same shape as createTrip plus a couple of helpers.
  */
 
-import { createTrip, type CreateTripInput, type CreateTripResult } from './create-trip'
+import { createTrip, type CreateTripInput, type CreateTripErrorCode } from './create-trip'
+import { createPaymentOrder } from './create-payment-order'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
@@ -58,7 +59,19 @@ export interface SubmitBookingInput {
   notesCustomer?: string
 }
 
-export type SubmitBookingResult = CreateTripResult
+export type SubmitBookingResult =
+  | {
+      ok: true
+      tripId: string
+      reference: string
+      paymentWhatsAppUrl: string
+      emailSent: boolean
+      alreadyExisted: boolean
+      /** Viva Smart Checkout redirect URL. Present when Viva order creation succeeded.
+       *  Absent on graceful degradation — WhatsApp fallback applies. */
+      vivaRedirectUrl?: string
+    }
+  | { ok: false; error: string; code: CreateTripErrorCode }
 
 // ============================================================
 // Validation schemas (Zod)
@@ -205,8 +218,8 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       type: 'adult' as const,
     }))
 
-  // 5. Hand off to createTrip
-  return createTrip({
+  // 5. Create trip in DB (sets state = pending_payment)
+  const tripResult = await createTrip({
     idempotencyKey: input.idempotencyKey,
     locale: input.locale,
     source: 'web',
@@ -220,6 +233,28 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     additionalPassengers: companions,
     notesCustomer: input.notesCustomer,
   })
+
+  if (!tripResult.ok) return tripResult
+
+  // 6. Attempt Viva payment order. Non-fatal — if Viva is unreachable or returns
+  //    an error, the trip is already safely in pending_payment and the WhatsApp
+  //    link from createTrip serves as the fallback payment path.
+  let vivaRedirectUrl: string | undefined
+  try {
+    const vivaResult = await createPaymentOrder({
+      tripId: tripResult.tripId,
+      locale: input.locale,
+    })
+    if (vivaResult.ok) {
+      vivaRedirectUrl = vivaResult.redirectUrl
+    } else {
+      console.warn('[submitBooking] Viva order failed, WhatsApp fallback active:', vivaResult.error)
+    }
+  } catch (err) {
+    console.error('[submitBooking] createPaymentOrder threw unexpectedly:', err)
+  }
+
+  return { ...tripResult, vivaRedirectUrl }
 }
 
 // ============================================================
