@@ -3,19 +3,10 @@
 /**
  * Booking flow state container.
  * =============================
- * Holds the user's in-progress booking across multiple pages
- * (search → results → passenger details → checkout → confirmation).
- *
- * Persisted in sessionStorage so refresh/navigation doesn't lose state.
- *
- * After Kademe 3.2a, this context also tracks:
- *   - `idempotencyKey` — UUID generated once per booking attempt.
- *     Sent with the submit, prevents duplicate trips if user
- *     double-clicks or browser retries.
- *   - `carRental` — optional add-on selected after ferry choice.
- *   - `paymentWhatsAppUrl` — set after successful submit. Used by
- *     the confirmation page's "Pay via WhatsApp" button.
- *   - `submitError` — populated when the server action rejects.
+ * Holds the user's in-progress booking across multiple pages.
+ * Persisted in sessionStorage. State is items[]-centric after Kademe 3.2b.
+ * Use selectors (selectOutboundFerry, selectReturnFerry, selectCarRental,
+ * selectTotalPrice) to derive display values.
  */
 
 import * as React from 'react'
@@ -36,8 +27,6 @@ export interface Passenger {
   birthDate: string
   passportNumber: string
   nationality: string
-  phone: string
-  email: string
 }
 
 export interface CarRentalSelection {
@@ -94,15 +83,9 @@ export interface BookingState {
     tripType: 'one-way' | 'round-trip'
     returnDate?: string
   }
-  selectedFerry: FerryRoute | null
-  returnFerry: FerryRoute | null
   passengers: Passenger[]
   contactEmail: string
   contactPhone: string
-  totalPrice: number
-  carRental: CarRentalSelection | null
-  /** Sprint 1: source of truth for line items. Legacy named fields above
-   *  are kept for backward compat and dual-written by the reducer. */
   items: BookingItem[]
   /** Generated on first booking attempt, cleared on RESET. */
   idempotencyKey: string
@@ -131,13 +114,9 @@ const initialState: BookingState = {
     passengers: 2,
     tripType: 'one-way',
   },
-  selectedFerry: null,
-  returnFerry: null,
   passengers: [],
   contactEmail: '',
   contactPhone: '',
-  totalPrice: 0,
-  carRental: null,
   items: [],
   idempotencyKey: '',
   bookingReference: '',
@@ -152,7 +131,6 @@ type BookingAction =
   | { type: 'CLEAR_RETURN_FERRY' }
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
-  | { type: 'SET_TOTAL_PRICE'; payload: number }
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
   | { type: 'SET_ITEMS'; payload: BookingItem[] }
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
@@ -181,7 +159,6 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       return {
         ...state,
-        selectedFerry: action.payload,
         items: [
           ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'outbound')),
           ferryItem,
@@ -204,7 +181,6 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       return {
         ...state,
-        returnFerry: action.payload,
         items: [
           ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
           returnItem,
@@ -214,7 +190,6 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
     case 'CLEAR_RETURN_FERRY':
       return {
         ...state,
-        returnFerry: null,
         items: state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
       }
     case 'SET_PASSENGERS':
@@ -225,13 +200,10 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         contactEmail: action.payload.email,
         contactPhone: action.payload.phone,
       }
-    case 'SET_TOTAL_PRICE':
-      return { ...state, totalPrice: action.payload }
     case 'SET_CAR_RENTAL': {
       if (!action.payload) {
         return {
           ...state,
-          carRental: null,
           items: state.items.filter(i => i.type !== 'car_rental'),
         }
       }
@@ -250,7 +222,6 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       return {
         ...state,
-        carRental: action.payload,
         items: [
           ...state.items.filter(i => i.type !== 'car_rental'),
           carItem,
@@ -302,20 +273,9 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const stored = readStoredState()
     if (stored) {
       Object.entries(stored).forEach(([key, value]) => {
-        // Key processing order matters: searchParams must be hydrated before
-        // selectedFerry/returnFerry so SELECT_FERRY can read state.searchParams.passengers.
-        // initialState defines searchParams first, which preserves the order through
-        // JSON serialize/parse and Object.entries iteration. If you reorder initialState,
-        // verify this still holds.
         switch (key) {
           case 'searchParams':
             dispatch({ type: 'SET_SEARCH_PARAMS', payload: value as BookingState['searchParams'] })
-            break
-          case 'selectedFerry':
-            if (value) dispatch({ type: 'SELECT_FERRY', payload: value as FerryRoute })
-            break
-          case 'returnFerry':
-            if (value) dispatch({ type: 'SELECT_RETURN_FERRY', payload: value as FerryRoute })
             break
           case 'passengers':
             if (Array.isArray(value) && value.length > 0) {
@@ -325,12 +285,6 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
           case 'contactEmail':
           case 'contactPhone':
             // restored together below
-            break
-          case 'carRental':
-            if (value) dispatch({ type: 'SET_CAR_RENTAL', payload: value as CarRentalSelection })
-            break
-          case 'totalPrice':
-            if (typeof value === 'number') dispatch({ type: 'SET_TOTAL_PRICE', payload: value })
             break
           case 'idempotencyKey':
             if (typeof value === 'string' && value)
@@ -364,52 +318,6 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: newIdempotencyKey() })
       }
 
-      // Migrate legacy storage: reconstruct items[] from named fields
-      // if absent, so old in-progress bookings survive the refactor.
-      if (!stored.items || stored.items.length === 0) {
-        const migratedItems: BookingItem[] = []
-        const pax = stored.searchParams?.passengers ?? 1
-        if (stored.selectedFerry) {
-          migratedItems.push({
-            type: 'ferry',
-            leg: 'outbound',
-            ferryId: stored.selectedFerry.id,
-            ferry: stored.selectedFerry,
-            date: stored.searchParams?.date ?? '',
-            passengerCount: pax,
-            priceAmount: stored.selectedFerry.price * pax,
-          })
-        }
-        if (stored.returnFerry) {
-          migratedItems.push({
-            type: 'ferry',
-            leg: 'return',
-            ferryId: stored.returnFerry.id,
-            ferry: stored.returnFerry,
-            date: stored.searchParams?.returnDate ?? '',
-            passengerCount: pax,
-            priceAmount: stored.returnFerry.price * pax,
-          })
-        }
-        if (stored.carRental) {
-          migratedItems.push({
-            type: 'car_rental',
-            carId: stored.carRental.carId,
-            model: stored.carRental.model,
-            brand: stored.carRental.brand,
-            pricePerDay: stored.carRental.pricePerDay,
-            days: stored.carRental.days,
-            pickupLocation: stored.carRental.pickupLocation,
-            dropoffLocation: stored.carRental.dropoffLocation,
-            pickupAt: stored.carRental.pickupAt,
-            dropoffAt: stored.carRental.dropoffAt,
-            priceAmount: stored.carRental.pricePerDay * stored.carRental.days,
-          })
-        }
-        if (migratedItems.length > 0) {
-          dispatch({ type: 'SET_ITEMS', payload: migratedItems })
-        }
-      }
     } else {
       // Fresh session — generate idempotency key
       dispatch({ type: 'SET_IDEMPOTENCY_KEY', payload: newIdempotencyKey() })

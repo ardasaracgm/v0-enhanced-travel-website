@@ -64,8 +64,6 @@ export default function PassengerDetailsPage() {
         birthDate: '',
         passportNumber: '',
         nationality: '',
-        phone: '',
-        email: '',
       })
     )
     setPassengers(initialPassengers)
