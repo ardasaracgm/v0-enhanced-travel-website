@@ -146,7 +146,7 @@ export default function PassengerDetailsPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <Link href="/ferry/results">
+                <Link href="/ferry/extras">
                   <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
@@ -175,24 +175,31 @@ export default function PassengerDetailsPage() {
         {/* Progress Steps */}
         <section className="w-full py-4 border-b border-border/50 bg-card">
           <div className="container px-4 md:px-6">
-            <div className="flex items-center justify-center gap-8">
+            <div className="flex items-center justify-center gap-6 flex-wrap">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-medium">
                   <CheckCircle className="h-5 w-5" />
                 </div>
                 <span className="text-sm text-muted-foreground">Select Ferry</span>
               </div>
-              <div className="w-12 h-0.5 bg-primary" />
+              <div className="w-10 h-0.5 bg-primary" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-medium">
+                  <CheckCircle className="h-5 w-5" />
+                </div>
+                <span className="text-sm text-muted-foreground">Extras</span>
+              </div>
+              <div className="w-10 h-0.5 bg-primary" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                  2
+                  3
                 </div>
                 <span className="text-sm font-medium text-primary">Passengers</span>
               </div>
-              <div className="w-12 h-0.5 bg-border" />
+              <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                  3
+                  4
                 </div>
                 <span className="text-sm text-muted-foreground">Payment</span>
               </div>

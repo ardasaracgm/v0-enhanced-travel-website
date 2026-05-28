@@ -457,7 +457,7 @@ export async function getAvailableCars(): Promise<{
     .from('cars')
     .select('*')
     .eq('available', true)
-    .order('price', { ascending: true })
+    .order('price_per_day', { ascending: true })
 
   if (error) {
     return { data: null, error: new Error(error.message), isEmpty: false }

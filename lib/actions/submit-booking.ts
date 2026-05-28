@@ -16,6 +16,7 @@
 import { createTrip, type CreateTripInput, type CreateTripResult } from './create-trip'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { dateDiffInDays } from '@/lib/normalize-car'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 import { z } from 'zod'
 
@@ -141,27 +142,39 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       })
     } else if (item.type === 'car_rental') {
       try {
+        // Recompute days server-side from ferry dates when both legs are present
+        // (round-trip). For one-way, trust the Zod-validated client value.
+        const ferryItems = input.items.filter(
+          (i): i is Extract<typeof i, { type: 'ferry' }> => i.type === 'ferry'
+        )
+        const outboundFerryItem = ferryItems.find(i => i.leg === 'outbound')
+        const returnFerryItem   = ferryItems.find(i => i.leg === 'return')
+        const authorizedDays =
+          outboundFerryItem && returnFerryItem
+            ? Math.max(1, dateDiffInDays(outboundFerryItem.date, returnFerryItem.date))
+            : Math.max(1, item.days)
+
         const supabase = getSupabaseAdmin()
         const { data } = await supabase
           .from('cars')
-          .select('id, brand, model, price, price_per_day')
+          .select('id, brand, model, price_per_day, available')
           .eq('id', item.carId)
           .maybeSingle()
         if (data) {
           const carName = [data.brand, data.model].filter(Boolean).join(' ') || 'Car rental'
-          const pricePerDay = Number(data.price ?? data.price_per_day ?? 0)
+          const pricePerDay = Number(data.price_per_day ?? 0)
           items.push({
             type: 'car_rental',
-            title: `${carName} (${item.days} ${item.days === 1 ? 'day' : 'days'})`,
+            title: `${carName} (${authorizedDays} ${authorizedDays === 1 ? 'day' : 'days'})`,
             scheduledAt: item.pickupAt ?? null,
             endsAt: item.dropoffAt ?? null,
             passengerCount: input.passengerCount,
-            priceAmount: pricePerDay * item.days,
+            priceAmount: pricePerDay * authorizedDays,
             priceCurrency: 'EUR',
             metadata: {
               car_id: data.id,
               model: carName,
-              days: item.days,
+              days: authorizedDays,
               per_day_price: pricePerDay,
               pickup_at: item.pickupAt,
               dropoff_at: item.dropoffAt,

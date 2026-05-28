@@ -30,111 +30,8 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
-import { getAvailableCars, type Car as CarType } from '@/lib/supabase'
-
-// Normalize Supabase car data to UI shape
-interface NormalizedCar {
-  id: string
-  type: string
-  model: string
-  price: number
-  image: string
-  features: string[]
-  specs: {
-    fuel: string
-    seats: number | string
-    transmission: string
-    ac: boolean | string
-  }
-  badge?: string
-  description?: string
-  available: boolean
-}
-
-function getValue(obj: unknown, key: string): unknown {
-  if (!obj || typeof obj !== 'object') return undefined
-  return (obj as Record<string, unknown>)[key]
-}
-
-function normalizeCar(car: CarType | Record<string, unknown>): NormalizedCar {
-  const carRecord = car as Record<string, unknown>
-
-  // Narrow specs once to a concrete object (or null) so TypeScript can follow it.
-  // Supabase rows currently arrive as flat columns, while older/static UI data can
-  // include a nested specs object.
-  const rawSpecs = carRecord.specs
-  const validSpecs =
-    rawSpecs && typeof rawSpecs === 'object' && !Array.isArray(rawSpecs)
-      ? (rawSpecs as { fuel?: string; seats?: number | string; transmission?: string; ac?: boolean | string })
-      : null
-
-  const getString = (key: string, fallback = '') => {
-    const value = carRecord[key]
-    return value === null || value === undefined ? fallback : String(value)
-  }
-
-  const getNumber = (key: string, fallback = 0) => {
-    const value = carRecord[key]
-    if (typeof value === 'number') return value
-    if (typeof value === 'string') {
-      const parsed = Number(value)
-      return Number.isFinite(parsed) ? parsed : fallback
-    }
-    return fallback
-  }
-
-  // Get values from either the validSpecs object or flat Supabase columns
-  const fuel = validSpecs?.fuel
-    ? String(validSpecs.fuel)
-    : getString('fuel_type', getString('category', 'Petrol'))
-
-  const rawSeats =
-  validSpecs && (typeof validSpecs.seats === 'number' || typeof validSpecs.seats === 'string')
-    ? validSpecs.seats
-    : getValue(car, 'seats') ?? 4
-
-const seats: string | number =
-  typeof rawSeats === 'number' || typeof rawSeats === 'string'
-    ? rawSeats
-    : 4
-
-  const transmission = validSpecs?.transmission
-    ? String(validSpecs.transmission)
-    : getString('transmission', 'Manual')
-
-  // Build display name from brand + model or just model
-  const brand = getString('brand')
-  const model = getString('model', 'Unknown')
-  const displayName = brand && model ? `${brand} ${model}` : model
-
-  const price =
-    getNumber('price') ||
-    getNumber('price_per_day') ||
-    0
-
-  const image =
-    getString('image_url') ||
-    getString('image') ||
-    'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'
-
-  return {
-    id: getString('id'),
-    type: getString('category', getString('type', 'Car')),
-    model: displayName,
-    price,
-    image,
-    features: [fuel, `${seats} Seats`, transmission],
-    specs: {
-      fuel,
-      seats,
-      transmission,
-      ac: validSpecs?.ac ?? true,
-    },
-    badge: getString('badge') || undefined,
-    description: getString('description') || 'Reliable vehicle for exploring Kos Island.',
-    available: carRecord.available !== false,
-  }
-}
+import { getAvailableCars } from '@/lib/supabase'
+import { normalizeCar, type NormalizedCar } from '@/lib/normalize-car'
 
 // Fallback data in case database is empty or unavailable
 const fallbackCarFleet = [
@@ -216,6 +113,9 @@ export default function CarRentalPage() {
   const [error, setError] = React.useState<string | null>(null)
   const [usingFallback, setUsingFallback] = React.useState(false)
   const [fallbackReason, setFallbackReason] = React.useState<string>('')
+  const [pickupDate, setPickupDate] = React.useState('')
+  const [dropoffDate, setDropoffDate] = React.useState('')
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   React.useEffect(() => {
     async function fetchCars() {
@@ -326,11 +226,11 @@ export default function CarRentalPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Pickup Date</label>
-                    <Input type="date" className="h-10" />
+                    <Input type="date" className="h-10" min={todayAthens} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Return Date</label>
-                    <Input type="date" className="h-10" />
+                    <Input type="date" className="h-10" min={pickupDate || todayAthens} value={dropoffDate} onChange={e => setDropoffDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Driver Age</label>
@@ -363,16 +263,6 @@ export default function CarRentalPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Car Fleet</h2>
               <p className="text-muted-foreground text-lg">Well-maintained vehicles perfect for exploring Kos Island</p>
             </div>
-            
-            {/* Only show database error in development */}
-            {error && process.env.NODE_ENV === 'development' && (
-              <Alert className="mb-8 max-w-2xl mx-auto border-amber-200 bg-amber-50">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
-                  <strong>Dev Notice:</strong> {error}
-                </AlertDescription>
-              </Alert>
-            )}
             
             {usingFallback && !error && process.env.NODE_ENV === 'development' && (
               <Alert className="mb-8 max-w-2xl mx-auto border-blue-200 bg-blue-50">

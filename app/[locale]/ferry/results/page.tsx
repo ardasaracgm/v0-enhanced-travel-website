@@ -66,7 +66,7 @@ export default function FerryResultsPage() {
 
   const handleContinue = () => {
     if (outbound) {
-      router.push('/ferry/passenger-details')
+      router.push('/ferry/extras')
     }
   }
 
@@ -119,24 +119,31 @@ export default function FerryResultsPage() {
         {/* Progress Steps */}
         <section className="w-full py-4 border-b border-border/50 bg-card">
           <div className="container px-4 md:px-6">
-            <div className="flex items-center justify-center gap-8">
+            <div className="flex items-center justify-center gap-6 flex-wrap">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                   1
                 </div>
                 <span className="text-sm font-medium text-primary">Select Ferry</span>
               </div>
-              <div className="w-12 h-0.5 bg-border" />
+              <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   2
                 </div>
-                <span className="text-sm text-muted-foreground">Passengers</span>
+                <span className="text-sm text-muted-foreground">Extras</span>
               </div>
-              <div className="w-12 h-0.5 bg-border" />
+              <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   3
+                </div>
+                <span className="text-sm text-muted-foreground">Passengers</span>
+              </div>
+              <div className="w-10 h-0.5 bg-border" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+                  4
                 </div>
                 <span className="text-sm text-muted-foreground">Payment</span>
               </div>
