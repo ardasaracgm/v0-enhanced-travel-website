@@ -31,6 +31,12 @@ export interface BookingEmailData {
     price: number
   }>
   paymentWhatsAppUrl: string
+  /**
+   * When true, render the "payment received / confirmed" copy and OMIT the
+   * WhatsApp pay button. Set by the Viva webhook on confirm. When omitted/false,
+   * the existing "awaiting payment" + WhatsApp-CTA flow is used unchanged.
+   */
+  paid?: boolean
 }
 
 const T: Record<Locale, Record<string, string>> = {
@@ -47,6 +53,11 @@ const T: Record<Locale, Record<string, string>> = {
     paymentBody:
       'Tap the button below to complete your payment via WhatsApp. We will send you a secure payment link and confirm your booking immediately.',
     paymentCta: 'Confirm Payment on WhatsApp',
+    paidIntro:
+      "Thank you for choosing TravelBeez. We've received your payment and your booking is now confirmed.",
+    paidHeading: 'Payment Received — Booking Confirmed',
+    paidBody:
+      'Your payment has been received and your booking is confirmed. We look forward to welcoming you — no further action is needed.',
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Port, Greece · Licensed by the Greek Ministry of Tourism (MH.T.E.)',
     contactLine: 'Questions? WhatsApp +30 22420 5008 or call +30 22420 5009',
@@ -64,6 +75,11 @@ const T: Record<Locale, Record<string, string>> = {
     paymentBody:
       "Aşağıdaki butona basarak WhatsApp üzerinden ödemenizi tamamlayın. Size güvenli bir ödeme linki gönderir ve rezervasyonunuzu anında onaylarız.",
     paymentCta: "WhatsApp'tan Ödemeyi Onayla",
+    paidIntro:
+      "TravelBeez'i tercih ettiğiniz için teşekkür ederiz. Ödemeniz alındı ve rezervasyonunuz onaylandı.",
+    paidHeading: 'Ödeme Alındı — Rezervasyon Onaylandı',
+    paidBody:
+      'Ödemeniz alındı ve rezervasyonunuz onaylandı. Sizi ağırlamayı dört gözle bekliyoruz — başka bir işlem yapmanıza gerek yoktur.',
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Limanı, Yunanistan · Yunan Turizm Bakanlığı (MH.T.E.) lisanslı',
     contactLine: 'Sorularınız? WhatsApp +30 22420 5008 veya telefon +30 22420 5009',
@@ -81,6 +97,11 @@ const T: Record<Locale, Record<string, string>> = {
     paymentBody:
       'Πατήστε το παρακάτω κουμπί για να ολοκληρώσετε την πληρωμή μέσω WhatsApp. Θα σας στείλουμε έναν ασφαλή σύνδεσμο πληρωμής και θα επιβεβαιώσουμε την κράτηση άμεσα.',
     paymentCta: 'Επιβεβαίωση Πληρωμής στο WhatsApp',
+    paidIntro:
+      'Σας ευχαριστούμε που επιλέξατε την TravelBeez. Λάβαμε την πληρωμή σας και η κράτησή σας επιβεβαιώθηκε.',
+    paidHeading: 'Η Πληρωμή Ελήφθη — Κράτηση Επιβεβαιωμένη',
+    paidBody:
+      'Η πληρωμή σας ελήφθη και η κράτησή σας επιβεβαιώθηκε. Ανυπομονούμε να σας υποδεχτούμε — δεν απαιτείται καμία περαιτέρω ενέργεια.',
     footer:
       'TravelBeez · FerryBee Travel ΙΚΕ · Λιμένας Κω, Ελλάδα · Αδειοδοτημένο από το Υπουργείο Τουρισμού (Μ.Η.Τ.Ε.)',
     contactLine: 'Ερωτήσεις; WhatsApp +30 22420 5008 ή τηλ. +30 22420 5009',
@@ -93,6 +114,14 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
   text: string
 } {
   const t = T[data.locale]
+
+  // Paid path (Viva webhook confirm) swaps three strings and drops the WhatsApp
+  // button. When paid is falsy, every value below resolves to the original key,
+  // so the existing "awaiting payment" flow is byte-for-byte unchanged.
+  const paid       = data.paid === true
+  const introText  = paid ? t.paidIntro    : t.intro
+  const payHeading = paid ? t.paidHeading   : t.paymentHeading
+  const payBody    = paid ? t.paidBody      : t.paymentBody
 
   const itemsRows = data.items
     .map(
@@ -139,7 +168,7 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
         <!-- Greeting + Intro -->
         <tr><td style="padding:8px 32px 24px 32px;">
           <p style="margin:0 0 12px 0;color:#334155;font-size:15px;line-height:1.5;">${escape(t.greeting)} <strong>${escape(data.customerName)}</strong>,</p>
-          <p style="margin:0;color:#334155;font-size:15px;line-height:1.5;">${escape(t.intro)}</p>
+          <p style="margin:0;color:#334155;font-size:15px;line-height:1.5;">${escape(introText)}</p>
         </td></tr>
 
         <!-- Reference -->
@@ -162,14 +191,14 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
           </table>
         </td></tr>
 
-        <!-- Payment CTA -->
+        <!-- Payment CTA (unpaid) / confirmation (paid) -->
         <tr><td style="padding:32px 32px 24px 32px;">
           <div style="background:#ecfdf5;border:1px solid #d1fae5;border-radius:8px;padding:20px;text-align:center;">
-            <h3 style="margin:0 0 8px 0;font-size:16px;font-weight:700;color:#065f46;">${escape(t.paymentHeading)}</h3>
-            <p style="margin:0 0 16px 0;color:#047857;font-size:14px;line-height:1.5;">${escape(t.paymentBody)}</p>
-            <a href="${escape(data.paymentWhatsAppUrl)}" style="display:inline-block;background:#25d366;color:#ffffff;font-weight:600;font-size:15px;padding:12px 24px;border-radius:8px;text-decoration:none;">
+            <h3 style="margin:0 0 8px 0;font-size:16px;font-weight:700;color:#065f46;">${escape(payHeading)}</h3>
+            <p style="margin:0 0 16px 0;color:#047857;font-size:14px;line-height:1.5;">${escape(payBody)}</p>
+            ${paid ? '' : `<a href="${escape(data.paymentWhatsAppUrl)}" style="display:inline-block;background:#25d366;color:#ffffff;font-weight:600;font-size:15px;padding:12px 24px;border-radius:8px;text-decoration:none;">
               ${escape(t.paymentCta)}
-            </a>
+            </a>`}
           </div>
         </td></tr>
 
@@ -195,7 +224,7 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     '',
     `${t.greeting} ${data.customerName},`,
     '',
-    t.intro,
+    introText,
     '',
     `${t.refLabel}: ${data.reference}`,
     '',
@@ -207,9 +236,9 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     '',
     `${t.totalLabel}: ${data.totalAmount.toFixed(2)} ${data.currency}`,
     '',
-    t.paymentHeading,
-    t.paymentBody,
-    data.paymentWhatsAppUrl,
+    payHeading,
+    payBody,
+    ...(paid ? [] : [data.paymentWhatsAppUrl]),
     '',
     t.contactLine,
     '',

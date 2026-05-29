@@ -21,7 +21,7 @@ let tokenCache: CachedToken | null = null
 // both await the same fetch rather than issuing two parallel OAuth requests.
 let tokenFetch: Promise<string> | null = null
 
-function getVivaConfig(): VivaConfig {
+export function getVivaConfig(): VivaConfig {
   if (process.env.VIVA_ENV === 'live') {
     return {
       authUrl:      'https://accounts.vivapayments.com/connect/token',
@@ -115,4 +115,47 @@ export async function vivaRequest<T>(
   }
 
   return res.json() as Promise<T>
+}
+
+/**
+ * Fetch the webhook verification key from Viva.
+ *
+ * Viva's webhook handshake is NOT a static secret. When Viva registers or
+ * periodically re-checks a webhook URL, it issues a GET; we must answer with a
+ * key fetched live from Viva's token endpoint using BASIC auth —
+ * base64(`${MerchantID}:${APIKey}`) — echoed back as { "Key": "<value>" }.
+ *
+ * This is a DIFFERENT auth scheme than the OAuth client-credentials flow used
+ * by vivaRequest(); do NOT route it through getAccessToken().
+ *
+ * Host follows the same VIVA_ENV switch as getVivaConfig():
+ *   demo → https://demo-api.vivapayments.com/api/messages/config/token
+ *   live → https://api.vivapayments.com/api/messages/config/token
+ */
+export async function fetchWebhookVerificationKey(): Promise<string> {
+  const merchantId = process.env.VIVA_MERCHANT_ID
+  const apiKey     = process.env.VIVA_API_KEY
+
+  if (!merchantId || !apiKey) {
+    throw new Error('[viva] Missing VIVA_MERCHANT_ID or VIVA_API_KEY')
+  }
+
+  const { apiBase } = getVivaConfig()
+  const credentials = Buffer.from(`${merchantId}:${apiKey}`).toString('base64')
+
+  const res = await fetch(`${apiBase}/api/messages/config/token`, {
+    method:  'GET',
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      Accept:        'application/json',
+    },
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`[viva] Webhook key request failed: HTTP ${res.status} — ${body}`)
+  }
+
+  const data = await res.json() as { Key: string }
+  return data.Key
 }
