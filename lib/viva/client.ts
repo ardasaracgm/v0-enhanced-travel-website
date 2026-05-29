@@ -128,9 +128,11 @@ export async function vivaRequest<T>(
  * This is a DIFFERENT auth scheme than the OAuth client-credentials flow used
  * by vivaRequest(); do NOT route it through getAccessToken().
  *
- * Host follows the same VIVA_ENV switch as getVivaConfig():
- *   demo → https://demo-api.vivapayments.com/api/messages/config/token
- *   live → https://api.vivapayments.com/api/messages/config/token
+ * Host follows the same VIVA_ENV switch as getVivaConfig(), but uses the
+ * checkout/portal host (checkoutBase), NOT the *-api host — the verification
+ * token endpoint lives there:
+ *   demo → https://demo.vivapayments.com/api/messages/config/token
+ *   live → https://www.vivapayments.com/api/messages/config/token
  */
 export async function fetchWebhookVerificationKey(): Promise<string> {
   const merchantId = process.env.VIVA_MERCHANT_ID
@@ -140,10 +142,10 @@ export async function fetchWebhookVerificationKey(): Promise<string> {
     throw new Error('[viva] Missing VIVA_MERCHANT_ID or VIVA_API_KEY')
   }
 
-  const { apiBase } = getVivaConfig()
+  const { checkoutBase } = getVivaConfig()
   const credentials = Buffer.from(`${merchantId}:${apiKey}`).toString('base64')
 
-  const res = await fetch(`${apiBase}/api/messages/config/token`, {
+  const res = await fetch(`${checkoutBase}/api/messages/config/token`, {
     method:  'GET',
     headers: {
       Authorization: `Basic ${credentials}`,
