@@ -391,6 +391,89 @@ export interface ContactRequest {
   created_at: string
 }
 
+// ============================================================
+// VISA APPLICATIONS  (Vize-1 — in-house Schengen door-visa form)
+// ============================================================
+// Every field is a first-class typed column (NOT jsonb): a later phase
+// generates a Greek/bilingual PDF for the port authorities by reading
+// these columns under fixed Greek labels. Slugs mirror the CHECK
+// constraints in db/migrations/005_visa_applications.sql and the Zod
+// enums in lib/validation/visa.ts.
+
+export type VisaApplicationState =
+  | 'new'
+  | 'in_progress'
+  | 'pending_payment'   // initial state on web submit; payment wired in Vize-3
+  | 'reviewed'
+  | 'approved'
+  | 'rejected'
+
+export type VisaEntryPoint    = 'kos' | 'kalymnos' | 'rhodos'
+export type VisaVesselType     = 'ferry_san_nicolas' | 'catamaran_seastar'
+export type VisaGender         = 'male' | 'female'
+export type VisaMaritalStatus  = 'single' | 'married' | 'separated' | 'divorced' | 'widowed'
+export type VisaDocType        = 'normal' | 'diplomatic' | 'service' | 'official' | 'special'
+export type VisaTravelPurpose  = 'tourism' | 'business'
+
+export type VisaOccupation =
+  | 'architect' | 'artisan' | 'legal' | 'artist' | 'farmer'
+  | 'banker' | 'tradesman' | 'manager' | 'clergy' | 'driver'
+  | 'researcher' | 'teacher' | 'whiteCollar' | 'civilServant' | 'politician'
+  | 'computerExpert' | 'electronicsExpert' | 'chemicalEngineer' | 'technician' | 'journalist'
+  | 'medicalPharma' | 'seaman' | 'blueCollar' | 'selfEmployed' | 'fashionCosmetics'
+  | 'policeMilitary' | 'pensioner' | 'sportsman' | 'noOccupation' | 'student'
+  | 'diplomat' | 'magistrate' | 'companyExecutive' | 'housewife' | 'househusband'
+
+export interface VisaApplication {
+  id: string
+  state: VisaApplicationState
+  locale: 'tr' | 'en'
+  source?: string | null
+  idempotency_key?: string | null
+
+  // Step 1 · Travel
+  entry_point: VisaEntryPoint
+  vessel_type: VisaVesselType
+
+  // Step 2 · Personal
+  last_name: string
+  first_name: string
+  father_name: string
+  mother_name: string
+  birth_date: string          // YYYY-MM-DD
+  birth_place: string
+  birth_country: string
+  gender: VisaGender
+  marital_status: VisaMaritalStatus
+
+  // Step 3 · Document
+  id_number: string
+  doc_type: VisaDocType
+  doc_number: string
+  doc_issue_date: string      // YYYY-MM-DD
+  doc_expiry_date: string     // YYYY-MM-DD
+  issuing_authority: string
+
+  // Step 4 · Contact
+  residence_address: string
+  email: string
+  phone: string
+  lives_in_other_country: boolean
+  occupation: VisaOccupation
+
+  // Step 5 · Trip
+  travel_purpose: VisaTravelPurpose
+  stay_duration: number       // 1-7
+  schengen_last_3_years: boolean
+  fingerprints_taken: boolean
+  schengen_entry_date: string // YYYY-MM-DD
+  schengen_exit_date: string  // YYYY-MM-DD
+
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
 // `cars` table is preserved as-is from the existing schema
 export interface Car {
   id: string

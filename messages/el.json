@@ -167,7 +167,168 @@
   "visaPage": {
     "title": "Υποστήριξη Βίζας",
     "subtitle": "Σύμβουλοι Schengen βίζας για Τούρκους ταξιδιώτες. Καθοδήγηση αίτησης, έλεγχος εγγράφων, κλείσιμο ραντεβού.",
-    "leadIntro": "Μοιραστείτε τα στοιχεία σας και ένας ειδικός βίζας θα επικοινωνήσει εντός μίας εργάσιμης ημέρας."
+    "leadIntro": "Μοιραστείτε τα στοιχεία σας και ένας ειδικός βίζας θα επικοινωνήσει εντός μίας εργάσιμης ημέρας.",
+    "form": {
+      "heading": "Schengen Visa Application",
+      "intro": "Complete all five steps. All fields are required.",
+      "selectPlaceholder": "Select…",
+      "sections": {
+        "step1": "Travel",
+        "step2": "Personal Details",
+        "step3": "Travel Document",
+        "step4": "Contact & Occupation",
+        "step5": "Trip Details"
+      },
+      "nav": {
+        "next": "Next",
+        "back": "Back",
+        "step": "Step {current} of {total}"
+      },
+      "labels": {
+        "entryPoint": "Entry Point",
+        "vesselType": "Vessel",
+        "lastName": "Surname",
+        "firstName": "First Name",
+        "fatherName": "Father's Name",
+        "motherName": "Mother's Name",
+        "birthDate": "Date of Birth",
+        "birthPlace": "Place of Birth",
+        "birthCountry": "Country of Birth",
+        "gender": "Gender",
+        "maritalStatus": "Marital Status",
+        "idNumber": "ID Number",
+        "docType": "Document Type",
+        "docNumber": "Document Number",
+        "docIssueDate": "Issue Date",
+        "docExpiryDate": "Expiry Date",
+        "issuingAuthority": "Issuing Authority",
+        "residenceAddress": "Residence Address",
+        "email": "Email",
+        "phone": "Phone",
+        "livesInOtherCountry": "Do you live in a country different from your nationality?",
+        "occupation": "Occupation",
+        "travelPurpose": "Purpose of Travel",
+        "stayDuration": "Length of Stay (days)",
+        "schengenLast3Years": "Have you held a Schengen visa in the last 3 years?",
+        "fingerprintsTaken": "Have your fingerprints been taken previously?",
+        "schengenEntryDate": "Intended Entry Date",
+        "schengenExitDate": "Intended Exit Date"
+      },
+      "options": {
+        "entryPoint": { "kos": "Kos", "kalymnos": "Kalymnos", "rhodos": "Rhodes" },
+        "vesselType": {
+          "ferry_san_nicolas": "Ferry — San Nicolas",
+          "catamaran_seastar": "Catamaran — Seastar"
+        },
+        "gender": { "male": "Male", "female": "Female" },
+        "maritalStatus": {
+          "single": "Single",
+          "married": "Married",
+          "separated": "Separated",
+          "divorced": "Divorced",
+          "widowed": "Widowed"
+        },
+        "docType": {
+          "normal": "Normal passport",
+          "diplomatic": "Diplomatic passport",
+          "service": "Service passport",
+          "official": "Official passport",
+          "special": "Special passport"
+        },
+        "travelPurpose": { "tourism": "Tourism", "business": "Business" },
+        "yesNo": { "true": "Yes", "false": "No" },
+        "occupation": {
+          "architect": "Architect",
+          "artisan": "Artisan / Craftsperson",
+          "legal": "Legal profession (lawyer / notary)",
+          "artist": "Artist",
+          "farmer": "Farmer",
+          "banker": "Banker",
+          "tradesman": "Tradesman / Merchant",
+          "manager": "Manager",
+          "clergy": "Clergy",
+          "driver": "Driver",
+          "researcher": "Researcher",
+          "teacher": "Teacher / Academic",
+          "whiteCollar": "White-collar employee",
+          "civilServant": "Civil servant",
+          "politician": "Politician",
+          "computerExpert": "Computer / IT specialist",
+          "electronicsExpert": "Electronics specialist",
+          "chemicalEngineer": "Chemical engineer",
+          "technician": "Technician",
+          "journalist": "Journalist",
+          "medicalPharma": "Medical / Pharmaceutical",
+          "seaman": "Seaman / Mariner",
+          "blueCollar": "Blue-collar worker",
+          "selfEmployed": "Self-employed",
+          "fashionCosmetics": "Fashion / Cosmetics",
+          "policeMilitary": "Police / Military",
+          "pensioner": "Pensioner",
+          "sportsman": "Sportsperson",
+          "noOccupation": "No occupation",
+          "student": "Student",
+          "diplomat": "Diplomat",
+          "magistrate": "Magistrate / Judge",
+          "companyExecutive": "Company executive",
+          "housewife": "Housewife",
+          "househusband": "Househusband"
+        }
+      },
+      "errors": {
+        "entryPoint": { "required": "Please select an entry point." },
+        "vesselType": { "required": "Please select a vessel." },
+        "lastName": { "required": "Surname is required." },
+        "firstName": { "required": "First name is required." },
+        "fatherName": { "required": "Father's name is required." },
+        "motherName": { "required": "Mother's name is required." },
+        "birthDate": {
+          "invalid": "Enter a valid date.",
+          "past": "Date of birth must be in the past."
+        },
+        "birthPlace": { "required": "Place of birth is required." },
+        "birthCountry": { "required": "Country of birth is required." },
+        "gender": { "required": "Please select a gender." },
+        "maritalStatus": { "required": "Please select your marital status." },
+        "idNumber": { "required": "ID number is required." },
+        "docType": { "required": "Please select a document type." },
+        "docNumber": { "required": "Document number is required." },
+        "docIssueDate": {
+          "invalid": "Enter a valid issue date.",
+          "afterToday": "Issue date cannot be in the future."
+        },
+        "docExpiryDate": {
+          "invalid": "Enter a valid expiry date.",
+          "beforeToday": "The document must not be expired.",
+          "beforeIssue": "Expiry date cannot be before the issue date."
+        },
+        "issuingAuthority": { "required": "Issuing authority is required." },
+        "residenceAddress": { "required": "Residence address is required." },
+        "email": { "required": "Email is required.", "invalid": "Enter a valid email address." },
+        "phone": { "invalid": "Enter a valid phone number." },
+        "livesInOtherCountry": { "required": "Please answer this question." },
+        "occupation": { "required": "Please select an occupation." },
+        "travelPurpose": { "required": "Please select a purpose of travel." },
+        "stayDuration": { "range": "Length of stay must be between 1 and 7 days." },
+        "schengenLast3Years": { "required": "Please answer this question." },
+        "fingerprintsTaken": { "required": "Please answer this question." },
+        "schengenEntryDate": { "invalid": "Enter a valid entry date." },
+        "schengenExitDate": {
+          "invalid": "Enter a valid exit date.",
+          "beforeEntry": "Exit date cannot be before the entry date."
+        }
+      },
+      "submit": {
+        "cta": "Submit Application",
+        "submitting": "Submitting…",
+        "error": "Something went wrong. Please try again or contact us on WhatsApp."
+      },
+      "success": {
+        "title": "Application Received",
+        "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "whatsapp": "Message us on WhatsApp"
+      }
+    }
   },
 
   "contactPage": {

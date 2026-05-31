@@ -167,7 +167,168 @@
   "visaPage": {
     "title": "Vize Desteği",
     "subtitle": "Türk gezginler için Schengen vize danışmanlığı. Başvuru rehberliği, belge incelemesi, randevu alma.",
-    "leadIntro": "Bilgilerinizi paylaşın, bir iş günü içinde vize uzmanımız sizinle iletişime geçsin."
+    "leadIntro": "Bilgilerinizi paylaşın, bir iş günü içinde vize uzmanımız sizinle iletişime geçsin.",
+    "form": {
+      "heading": "Schengen Vize Başvurusu",
+      "intro": "Beş adımı da tamamlayın. Tüm alanlar zorunludur.",
+      "selectPlaceholder": "Seçiniz…",
+      "sections": {
+        "step1": "Seyahat",
+        "step2": "Kişisel Bilgiler",
+        "step3": "Seyahat Belgesi",
+        "step4": "İletişim ve Meslek",
+        "step5": "Seyahat Detayları"
+      },
+      "nav": {
+        "next": "İleri",
+        "back": "Geri",
+        "step": "Adım {current} / {total}"
+      },
+      "labels": {
+        "entryPoint": "Giriş Noktası",
+        "vesselType": "Gemi Tipi",
+        "lastName": "Soyadı",
+        "firstName": "Adı",
+        "fatherName": "Baba Adı",
+        "motherName": "Anne Adı",
+        "birthDate": "Doğum Tarihi",
+        "birthPlace": "Doğum Yeri",
+        "birthCountry": "Doğduğu Ülke",
+        "gender": "Cinsiyet",
+        "maritalStatus": "Medeni Durum",
+        "idNumber": "Kimlik Numarası",
+        "docType": "Belge Türü",
+        "docNumber": "Belge Numarası",
+        "docIssueDate": "Veriliş Tarihi",
+        "docExpiryDate": "Son Geçerlilik Tarihi",
+        "issuingAuthority": "Veren Makam",
+        "residenceAddress": "İkamet Adresi",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "livesInOtherCountry": "Vatandaşı olduğunuz ülkeden farklı bir ülkede mi yaşıyorsunuz?",
+        "occupation": "Meslek",
+        "travelPurpose": "Seyahat Amacı",
+        "stayDuration": "Kalış Süresi (gün)",
+        "schengenLast3Years": "Son 3 yılda Schengen vizeniz oldu mu?",
+        "fingerprintsTaken": "Daha önce parmak iziniz alındı mı?",
+        "schengenEntryDate": "Planlanan Giriş Tarihi",
+        "schengenExitDate": "Planlanan Çıkış Tarihi"
+      },
+      "options": {
+        "entryPoint": { "kos": "Kos", "kalymnos": "Kalimnos", "rhodos": "Rodos" },
+        "vesselType": {
+          "ferry_san_nicolas": "Feribot — San Nicolas",
+          "catamaran_seastar": "Katamaran — Seastar"
+        },
+        "gender": { "male": "Erkek", "female": "Kadın" },
+        "maritalStatus": {
+          "single": "Bekâr",
+          "married": "Evli",
+          "separated": "Ayrı yaşıyor",
+          "divorced": "Boşanmış",
+          "widowed": "Dul"
+        },
+        "docType": {
+          "normal": "Umuma mahsus pasaport",
+          "diplomatic": "Diplomatik pasaport",
+          "service": "Hizmet pasaportu",
+          "official": "Resmî pasaport",
+          "special": "Hususi pasaport"
+        },
+        "travelPurpose": { "tourism": "Turizm", "business": "İş" },
+        "yesNo": { "true": "Evet", "false": "Hayır" },
+        "occupation": {
+          "architect": "Mimar",
+          "artisan": "Esnaf / Zanaatkâr",
+          "legal": "Hukuk mesleği (avukat / noter)",
+          "artist": "Sanatçı",
+          "farmer": "Çiftçi",
+          "banker": "Bankacı",
+          "tradesman": "Tüccar",
+          "manager": "Yönetici",
+          "clergy": "Din görevlisi",
+          "driver": "Şoför",
+          "researcher": "Araştırmacı",
+          "teacher": "Öğretmen / Akademisyen",
+          "whiteCollar": "Beyaz yaka çalışan",
+          "civilServant": "Memur",
+          "politician": "Politikacı",
+          "computerExpert": "Bilgisayar / BT uzmanı",
+          "electronicsExpert": "Elektronik uzmanı",
+          "chemicalEngineer": "Kimya mühendisi",
+          "technician": "Teknisyen",
+          "journalist": "Gazeteci",
+          "medicalPharma": "Tıp / Eczacılık",
+          "seaman": "Denizci",
+          "blueCollar": "Mavi yaka işçi",
+          "selfEmployed": "Serbest meslek",
+          "fashionCosmetics": "Moda / Kozmetik",
+          "policeMilitary": "Polis / Asker",
+          "pensioner": "Emekli",
+          "sportsman": "Sporcu",
+          "noOccupation": "Mesleği yok",
+          "student": "Öğrenci",
+          "diplomat": "Diplomat",
+          "magistrate": "Hâkim / Savcı",
+          "companyExecutive": "Şirket yöneticisi",
+          "housewife": "Ev hanımı",
+          "househusband": "Ev kocası"
+        }
+      },
+      "errors": {
+        "entryPoint": { "required": "Lütfen bir giriş noktası seçin." },
+        "vesselType": { "required": "Lütfen bir gemi tipi seçin." },
+        "lastName": { "required": "Soyadı zorunludur." },
+        "firstName": { "required": "Ad zorunludur." },
+        "fatherName": { "required": "Baba adı zorunludur." },
+        "motherName": { "required": "Anne adı zorunludur." },
+        "birthDate": {
+          "invalid": "Geçerli bir tarih girin.",
+          "past": "Doğum tarihi geçmişte olmalıdır."
+        },
+        "birthPlace": { "required": "Doğum yeri zorunludur." },
+        "birthCountry": { "required": "Doğduğunuz ülke zorunludur." },
+        "gender": { "required": "Lütfen cinsiyet seçin." },
+        "maritalStatus": { "required": "Lütfen medeni durumunuzu seçin." },
+        "idNumber": { "required": "Kimlik numarası zorunludur." },
+        "docType": { "required": "Lütfen belge türü seçin." },
+        "docNumber": { "required": "Belge numarası zorunludur." },
+        "docIssueDate": {
+          "invalid": "Geçerli bir veriliş tarihi girin.",
+          "afterToday": "Veriliş tarihi gelecekte olamaz."
+        },
+        "docExpiryDate": {
+          "invalid": "Geçerli bir son geçerlilik tarihi girin.",
+          "beforeToday": "Belgenin süresi dolmuş olmamalıdır.",
+          "beforeIssue": "Son geçerlilik tarihi, veriliş tarihinden önce olamaz."
+        },
+        "issuingAuthority": { "required": "Veren makam zorunludur." },
+        "residenceAddress": { "required": "İkamet adresi zorunludur." },
+        "email": { "required": "E-posta zorunludur.", "invalid": "Geçerli bir e-posta adresi girin." },
+        "phone": { "invalid": "Geçerli bir telefon numarası girin." },
+        "livesInOtherCountry": { "required": "Lütfen bu soruyu yanıtlayın." },
+        "occupation": { "required": "Lütfen bir meslek seçin." },
+        "travelPurpose": { "required": "Lütfen seyahat amacı seçin." },
+        "stayDuration": { "range": "Kalış süresi 1 ile 7 gün arasında olmalıdır." },
+        "schengenLast3Years": { "required": "Lütfen bu soruyu yanıtlayın." },
+        "fingerprintsTaken": { "required": "Lütfen bu soruyu yanıtlayın." },
+        "schengenEntryDate": { "invalid": "Geçerli bir giriş tarihi girin." },
+        "schengenExitDate": {
+          "invalid": "Geçerli bir çıkış tarihi girin.",
+          "beforeEntry": "Çıkış tarihi, giriş tarihinden önce olamaz."
+        }
+      },
+      "submit": {
+        "cta": "Başvuruyu Gönder",
+        "submitting": "Gönderiliyor…",
+        "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin veya WhatsApp'tan bize ulaşın."
+      },
+      "success": {
+        "title": "Başvurunuz Alındı",
+        "body": "Teşekkürler. Vize ekibimiz başvurunuzu inceleyecek ve bir iş günü içinde sizinle iletişime geçecektir.",
+        "whatsapp": "WhatsApp'tan bize yazın"
+      }
+    }
   },
 
   "contactPage": {

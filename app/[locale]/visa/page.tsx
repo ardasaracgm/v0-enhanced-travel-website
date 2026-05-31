@@ -20,6 +20,7 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
+import { VisaWizard } from './visa-wizard'
 
 const services = [
   {
@@ -122,6 +123,12 @@ const stats = [
 ]
 
 export default function VisaSupportPage() {
+  const scrollToForm = () => {
+    document
+      .getElementById('visa-application-form')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -246,9 +253,10 @@ export default function VisaSupportPage() {
                           ))}
                         </div>
                         
-                        <Button 
+                        <Button
                           className={`w-full mt-auto ${service.popular ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
                           variant={service.popular ? 'default' : 'outline'}
+                          onClick={scrollToForm}
                         >
                           Get Started
                         </Button>
@@ -258,6 +266,17 @@ export default function VisaSupportPage() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Visa Application Form */}
+        <section id="visa-application-form" className="w-full py-16 md:py-24 scroll-mt-20">
+          <div className="container px-4 md:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Start Your Visa Application</h2>
+              <p className="text-muted-foreground text-lg">Complete the form below — it takes about 5 minutes.</p>
+            </div>
+            <VisaWizard />
           </div>
         </section>
 
@@ -368,14 +387,14 @@ export default function VisaSupportPage() {
                       <Phone className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">WhatsApp / Phone</p>
-                        <p className="font-medium text-foreground">+90 532 XXX XX XX</p>
+                        <p className="font-medium text-foreground">+30 22420 5009</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Mail className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium text-foreground">visa@islandbee.com</p>
+                        <p className="font-medium text-foreground">visa@travelbeez.gr</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
@@ -386,7 +405,10 @@ export default function VisaSupportPage() {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button
+                    className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    onClick={scrollToForm}
+                  >
                     Start Visa Application
                   </Button>
                 </CardContent>
