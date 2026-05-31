@@ -4,6 +4,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import { Car, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, CarIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -73,41 +74,19 @@ const fallbackCarFleet = [
   },
 ]
 
-const faqs = [
-  {
-    question: 'What documents do I need to rent a car in Kos?',
-    answer: 'You need a valid driving license (held for at least 1 year), passport or ID, and a credit/debit card. International Driving Permits (IDP) are recommended but not required for EU and Turkish licenses.',
-  },
-  {
-    question: 'Can you deliver the car to the port when I arrive?',
-    answer: 'Yes! Port delivery is included free of charge. We will meet you at Kos Port with your car ready and waiting. Just let us know your ferry arrival time.',
-  },
-  {
-    question: 'Is insurance included in the price?',
-    answer: 'Yes, all rentals include basic insurance (CDW - Collision Damage Waiver and TPL - Third Party Liability). We also offer full coverage upgrades that eliminate your excess for complete peace of mind.',
-  },
-  {
-    question: 'What is your fuel policy?',
-    answer: 'We operate a "full to full" policy. You receive the car with a full tank and return it with a full tank. Fuel stations are easy to find throughout Kos.',
-  },
-  {
-    question: 'Can I drive to other islands with the rental car?',
-    answer: 'Our cars are only authorized for use on Kos Island. If you want to visit other islands, we recommend taking a ferry as a foot passenger or booking one of our island-hopping tours.',
-  },
-  {
-    question: 'What is the minimum age to rent a car?',
-    answer: 'The minimum age is 21 years old, and you must have held your driving license for at least 1 year. Drivers under 25 may have a young driver surcharge depending on the vehicle category.',
-  },
+// Titles/descriptions resolved via t() under carRentalPage.{key}Title/Desc.
+const benefits = [
+  { icon: <MapPin className="h-6 w-6" />, key: 'benefit1' },
+  { icon: <Shield className="h-6 w-6" />, key: 'benefit2' },
+  { icon: <Fuel className="h-6 w-6" />, key: 'benefit3' },
+  { icon: <Star className="h-6 w-6" />, key: 'benefit4' },
 ]
 
-const benefits = [
-  { icon: <MapPin className="h-6 w-6" />, title: 'Port Pickup', description: 'Free delivery to Kos Port' },
-  { icon: <Shield className="h-6 w-6" />, title: 'Full Insurance', description: 'CDW & TPL included' },
-  { icon: <Fuel className="h-6 w-6" />, title: 'No Hidden Fees', description: 'Transparent pricing' },
-  { icon: <Star className="h-6 w-6" />, title: '24/7 Support', description: 'Turkish speaking staff' },
-]
+// FAQ content lives in i18n (carRentalPage.faq{n}Q / faq{n}A).
+const FAQ_COUNT = 6
 
 export default function CarRentalPage() {
+  const t = useTranslations('carRentalPage')
   const [cars, setCars] = React.useState<NormalizedCar[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -154,7 +133,7 @@ export default function CarRentalPage() {
           <div className="absolute inset-0">
             <Image
               src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&q=80"
-              alt="Scenic coastal road in Greece"
+              alt={t('heroImageAlt')}
               fill
               className="object-cover"
               priority
@@ -169,7 +148,7 @@ export default function CarRentalPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6"
               >
                 <Car className="h-4 w-4" />
-                Kos Island Fleet
+                {t('heroBadge')}
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -177,7 +156,7 @@ export default function CarRentalPage() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance"
               >
-                Car Rental in Kos Island
+                {t('title')}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -185,7 +164,7 @@ export default function CarRentalPage() {
                 transition={{ delay: 0.2 }}
                 className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
               >
-                Explore Kos at your own pace with our reliable, well-maintained cars. Free port pickup, full insurance included, and Turkish-speaking support.
+                {t('subtitle')}
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -196,7 +175,7 @@ export default function CarRentalPage() {
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-primary" />
-                    <span>{benefit.title}</span>
+                    <span>{t(`${benefit.key}Title`)}</span>
                   </div>
                 ))}
               </motion.div>
@@ -209,45 +188,45 @@ export default function CarRentalPage() {
           <div className="container px-4 md:px-6">
             <Card className="border-0 shadow-2xl bg-card">
               <CardContent className="p-6 md:p-8">
-                <h2 className="text-xl font-bold text-foreground mb-6">Search Available Cars</h2>
+                <h2 className="text-xl font-bold text-foreground mb-6">{t('searchTitle')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Pickup Location</label>
+                    <label className="text-sm font-medium text-foreground">{t('pickupLocationLabel')}</label>
                     <Select defaultValue="port">
                       <SelectTrigger>
-                        <SelectValue placeholder="Location" />
+                        <SelectValue placeholder={t('locationPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="port">Kos Port (Free)</SelectItem>
-                        <SelectItem value="airport">Kos Airport (+10)</SelectItem>
-                        <SelectItem value="hotel">Hotel Delivery (+5)</SelectItem>
+                        <SelectItem value="port">{t('locationPort')}</SelectItem>
+                        <SelectItem value="airport">{t('locationAirport')}</SelectItem>
+                        <SelectItem value="hotel">{t('locationHotel')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Pickup Date</label>
+                    <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
                     <Input type="date" className="h-10" min={todayAthens} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Return Date</label>
+                    <label className="text-sm font-medium text-foreground">{t('returnDateLabel')}</label>
                     <Input type="date" className="h-10" min={pickupDate || todayAthens} value={dropoffDate} onChange={e => setDropoffDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Driver Age</label>
+                    <label className="text-sm font-medium text-foreground">{t('driverAgeLabel')}</label>
                     <Select defaultValue="25+">
                       <SelectTrigger>
-                        <SelectValue placeholder="Age" />
+                        <SelectValue placeholder={t('agePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="21-24">21-24 years</SelectItem>
-                        <SelectItem value="25+">25+ years</SelectItem>
+                        <SelectItem value="21-24">{t('age2124')}</SelectItem>
+                        <SelectItem value="25+">{t('age25plus')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">&nbsp;</label>
                     <Button className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Search Cars
+                      {t('searchButton')}
                     </Button>
                   </div>
                 </div>
@@ -260,8 +239,8 @@ export default function CarRentalPage() {
         <section className="w-full py-16 md:py-24">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Our Car Fleet</h2>
-              <p className="text-muted-foreground text-lg">Well-maintained vehicles perfect for exploring Kos Island</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('fleetTitle')}</h2>
+              <p className="text-muted-foreground text-lg">{t('fleetSubtitle')}</p>
             </div>
             
             {usingFallback && !error && process.env.NODE_ENV === 'development' && (
@@ -282,11 +261,11 @@ export default function CarRentalPage() {
             ) : cars.length === 0 ? (
               <EmptyState
                 icon={<CarIcon className="h-8 w-8 text-muted-foreground" />}
-                title="No Cars Available"
-                description="We couldn't find any cars at the moment. Please try again later or contact us directly."
+                title={t('emptyTitle')}
+                description={t('emptyDesc')}
                 action={
                   <a href="https://wa.me/302242050008" target="_blank" rel="noopener noreferrer">
-                    <Button>Contact Us on WhatsApp</Button>
+                    <Button>{t('emptyCta')}</Button>
                   </a>
                 }
               />
@@ -331,7 +310,7 @@ export default function CarRentalPage() {
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Users className="h-4 w-4 text-primary" />
-                              <span>{car.specs?.seats || 4} Seats</span>
+                              <span>{t('seatsLabel', { count: car.specs?.seats || 4 })}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Settings className="h-4 w-4 text-primary" />
@@ -339,16 +318,16 @@ export default function CarRentalPage() {
                             </div>
                             <div className="flex items-center gap-2 text-sm text-foreground">
                               <Zap className="h-4 w-4 text-primary" />
-                              <span>A/C</span>
+                              <span>{t('acLabel')}</span>
                             </div>
                           </div>
-                          
+
                           <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
                             <div>
                               <span className="text-3xl font-bold text-primary">&euro;{car.price}</span>
-                              <span className="text-muted-foreground text-sm">/day</span>
+                              <span className="text-muted-foreground text-sm">{t('perDay')}</span>
                             </div>
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">{t('selectButton')}</Button>
                           </div>
                         </div>
                       </CardContent>
@@ -360,28 +339,14 @@ export default function CarRentalPage() {
             
             {/* Included Features */}
             <div className="mt-12 p-6 bg-card rounded-2xl border border-border/50">
-              <h3 className="font-semibold text-foreground text-center mb-6">All Rentals Include</h3>
+              <h3 className="font-semibold text-foreground text-center mb-6">{t('includeTitle')}</h3>
               <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Full insurance (CDW + TPL)</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Unlimited kilometers</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Free port delivery</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>24/7 roadside assistance</span>
-                </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>No hidden fees</span>
-                </div>
+                {([1, 2, 3, 4, 5] as const).map((n) => (
+                  <div key={n} className="flex items-center gap-2 text-foreground">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <span>{t(`include${n}`)}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -394,7 +359,7 @@ export default function CarRentalPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Rent With TravelBeez?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('whyRentTitle')}</h2>
                 <div className="space-y-6">
                   {benefits.map((benefit, index) => (
                     <div key={index} className="flex gap-4">
@@ -402,8 +367,8 @@ export default function CarRentalPage() {
                         {React.cloneElement(benefit.icon, { className: 'h-6 w-6 text-primary' })}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">{benefit.title}</h3>
-                        <p className="text-muted-foreground">{benefit.description}</p>
+                        <h3 className="font-semibold text-foreground mb-1">{t(`${benefit.key}Title`)}</h3>
+                        <p className="text-muted-foreground">{t(`${benefit.key}Desc`)}</p>
                       </div>
                     </div>
                   ))}
@@ -412,14 +377,14 @@ export default function CarRentalPage() {
               <div className="relative h-[400px] rounded-2xl overflow-hidden">
                 <Image
                   src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
-                  alt="Scenic drive in Kos"
+                  alt={t('exploreImageAlt')}
                   fill
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
-                  <p className="text-white text-lg font-semibold">Explore Kos Island</p>
-                  <p className="text-white/80 text-sm">Beautiful beaches, ancient ruins, and charming villages await</p>
+                  <p className="text-white text-lg font-semibold">{t('exploreTitle')}</p>
+                  <p className="text-white/80 text-sm">{t('exploreDesc')}</p>
                 </div>
               </div>
             </div>
@@ -431,17 +396,17 @@ export default function CarRentalPage() {
           <div className="container px-4 md:px-6">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-                <p className="text-muted-foreground text-lg">Everything you need to know about car rental in Kos</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('faqTitle')}</h2>
+                <p className="text-muted-foreground text-lg">{t('faqSubtitle')}</p>
               </div>
               <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                {Array.from({ length: FAQ_COUNT }, (_, i) => i + 1).map((n) => (
+                  <AccordionItem key={n} value={`item-${n}`} className="border-border/50">
                     <AccordionTrigger className="text-left text-foreground hover:text-primary">
-                      {faq.question}
+                      {t(`faq${n}Q`)}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
+                      {t(`faq${n}A`)}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -452,9 +417,9 @@ export default function CarRentalPage() {
 
         <SecurePaymentBanner />
         
-        <WhatsAppCTA 
-          title="Need Help Choosing a Car?"
-          description="Our team can recommend the perfect car for your trip and answer any questions in Turkish."
+        <WhatsAppCTA
+          title={t('ctaTitle')}
+          description={t('ctaDescription')}
         />
       </main>
 
