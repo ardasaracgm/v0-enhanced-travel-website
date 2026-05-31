@@ -4,7 +4,9 @@ import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { Ship, ChevronLeft, ArrowRight, User, CheckCircle, Shield, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
+import { makePassengerFormSchema } from '@/lib/validation/booking'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -45,11 +47,42 @@ const nationalities = [
   'Other',
 ]
 
+// Maps a Zod schema field name → the error-key suffix the JSX reads.
+// Identity for most; only the two passport fields differ.
+const FIELD_TO_KEY: Record<string, string> = {
+  firstName: 'firstName',
+  lastName: 'lastName',
+  gender: 'gender',
+  birthDate: 'birthDate',
+  passportNumber: 'passport',
+  passportExpiryDate: 'passportExpiry',
+  nationality: 'nationality',
+}
+
+// Zod issue path → the flat error-state key the JSX reads.
+//   ['passengers', 0, 'firstName'] → 'passenger-0-firstName'
+//   ['contactEmail']               → 'contactEmail'
+function pathToErrorKey(path: (string | number)[]): string | null {
+  if (path[0] === 'passengers' && typeof path[1] === 'number') {
+    const suffix = FIELD_TO_KEY[String(path[2])]
+    return suffix ? `passenger-${path[1]}-${suffix}` : null
+  }
+  if (path[0] === 'contactEmail') return 'contactEmail'
+  if (path[0] === 'contactPhone') return 'contactPhone'
+  return null
+}
+
 export default function PassengerDetailsPage() {
   const router = useRouter()
   const { state, dispatch } = useBooking()
+  const t = useTranslations('passengerDetails')
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
+  // YYYY-MM-DD travel dates for the validation factory. `|| undefined` so an
+  // empty searchParams.date degrades to a "valid through today" floor rather
+  // than ''-lenient (see makePassengerSchema). Age banding is server-side.
+  const outboundDate = state.searchParams.date || undefined
+  const returnDate = state.searchParams.returnDate || undefined
   const [passengers, setPassengers] = React.useState<Passenger[]>([])
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
@@ -60,9 +93,12 @@ export default function PassengerDetailsPage() {
     const initialPassengers: Passenger[] = Array.from(
       { length: state.searchParams.passengers },
       () => ({
-        fullName: '',
+        firstName: '',
+        lastName: '',
+        gender: '',
         birthDate: '',
         passportNumber: '',
+        passportExpiryDate: '',
         nationality: '',
       })
     )
@@ -76,35 +112,25 @@ export default function PassengerDetailsPage() {
   }
 
   const validateForm = () => {
+    const schema = makePassengerFormSchema({ outboundDate, returnDate })
+    const result = schema.safeParse({ passengers, contactEmail, contactPhone })
+
+    if (result.success) {
+      setErrors({})
+      return true
+    }
+
     const newErrors: Record<string, string> = {}
-    
-    passengers.forEach((passenger, index) => {
-      if (!passenger.fullName.trim()) {
-        newErrors[`passenger-${index}-name`] = 'Full name is required'
+    for (const issue of result.error.issues) {
+      const key = pathToErrorKey(issue.path)
+      // First issue per field wins; issue.message is an i18n fragment
+      // like 'firstName.required' → resolved under passengerDetails.errors.
+      if (key && !newErrors[key]) {
+        newErrors[key] = t(`errors.${issue.message}`)
       }
-      if (!passenger.birthDate) {
-        newErrors[`passenger-${index}-birthDate`] = 'Birth date is required'
-      }
-      if (!passenger.passportNumber.trim()) {
-        newErrors[`passenger-${index}-passport`] = 'Passport number is required'
-      }
-      if (!passenger.nationality) {
-        newErrors[`passenger-${index}-nationality`] = 'Nationality is required'
-      }
-    })
-    
-    if (!contactEmail.trim()) {
-      newErrors['contactEmail'] = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
-      newErrors['contactEmail'] = 'Please enter a valid email'
     }
-    
-    if (!contactPhone.trim()) {
-      newErrors['contactPhone'] = 'Phone number is required'
-    }
-    
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return false
   }
 
   const handleContinue = () => {
@@ -123,10 +149,10 @@ export default function PassengerDetailsPage() {
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-foreground mb-2">No Ferry Selected</h2>
-              <p className="text-muted-foreground mb-6">Please select a ferry before entering passenger details.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">{t('noFerry.title')}</h2>
+              <p className="text-muted-foreground mb-6">{t('noFerry.body')}</p>
               <Link href="/ferry">
-                <Button>Search Ferries</Button>
+                <Button>{t('noFerry.cta')}</Button>
               </Link>
             </CardContent>
           </Card>
@@ -164,7 +190,7 @@ export default function PassengerDetailsPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-sm text-primary-foreground/80">Total Price</p>
+                  <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
                   <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
                 </div>
               </div>
@@ -180,28 +206,28 @@ export default function PassengerDetailsPage() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-medium">
                   <CheckCircle className="h-5 w-5" />
                 </div>
-                <span className="text-sm text-muted-foreground">Select Ferry</span>
+                <span className="text-sm text-muted-foreground">{t('steps.selectFerry')}</span>
               </div>
               <div className="w-10 h-0.5 bg-primary" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-medium">
                   <CheckCircle className="h-5 w-5" />
                 </div>
-                <span className="text-sm text-muted-foreground">Extras</span>
+                <span className="text-sm text-muted-foreground">{t('steps.extras')}</span>
               </div>
               <div className="w-10 h-0.5 bg-primary" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                   3
                 </div>
-                <span className="text-sm font-medium text-primary">Passengers</span>
+                <span className="text-sm font-medium text-primary">{t('steps.passengers')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   4
                 </div>
-                <span className="text-sm text-muted-foreground">Payment</span>
+                <span className="text-sm text-muted-foreground">{t('steps.payment')}</span>
               </div>
             </div>
           </div>
@@ -214,8 +240,8 @@ export default function PassengerDetailsPage() {
               {/* Forms */}
               <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-2">Passenger Details</h2>
-                  <p className="text-muted-foreground">Please enter details exactly as they appear on passports</p>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">{t('heading')}</h2>
+                  <p className="text-muted-foreground">{t('subheading')}</p>
                 </div>
                 
                 {passengers.map((passenger, index) => (
@@ -231,26 +257,43 @@ export default function PassengerDetailsPage() {
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                             <User className="h-5 w-5 text-primary" />
                           </div>
-                          Passenger {index + 1} {index === 0 && '(Lead Passenger)'}
+                          {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadPassenger')}` : ''}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* Row 1 — First + Last name */}
                         <div className="grid md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor={`fullName-${index}`}>Full Name (as on passport) *</Label>
+                            <Label htmlFor={`firstName-${index}`}>{t('labels.firstName')} *</Label>
                             <Input
-                              id={`fullName-${index}`}
-                              placeholder="John Doe"
-                              value={passenger.fullName}
-                              onChange={(e) => updatePassenger(index, 'fullName', e.target.value)}
-                              className={errors[`passenger-${index}-name`] ? 'border-destructive' : ''}
+                              id={`firstName-${index}`}
+                              placeholder={t('placeholders.firstName')}
+                              value={passenger.firstName}
+                              onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
+                              className={errors[`passenger-${index}-firstName`] ? 'border-destructive' : ''}
                             />
-                            {errors[`passenger-${index}-name`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-name`]}</p>
+                            {errors[`passenger-${index}-firstName`] && (
+                              <p className="text-sm text-destructive">{errors[`passenger-${index}-firstName`]}</p>
                             )}
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor={`birthDate-${index}`}>Date of Birth *</Label>
+                            <Label htmlFor={`lastName-${index}`}>{t('labels.lastName')} *</Label>
+                            <Input
+                              id={`lastName-${index}`}
+                              placeholder={t('placeholders.lastName')}
+                              value={passenger.lastName}
+                              onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
+                              className={errors[`passenger-${index}-lastName`] ? 'border-destructive' : ''}
+                            />
+                            {errors[`passenger-${index}-lastName`] && (
+                              <p className="text-sm text-destructive">{errors[`passenger-${index}-lastName`]}</p>
+                            )}
+                          </div>
+                        </div>
+                        {/* Row 2 — Date of Birth + Gender */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`birthDate-${index}`}>{t('labels.birthDate')} *</Label>
                             <Input
                               id={`birthDate-${index}`}
                               type="date"
@@ -262,13 +305,36 @@ export default function PassengerDetailsPage() {
                               <p className="text-sm text-destructive">{errors[`passenger-${index}-birthDate`]}</p>
                             )}
                           </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`gender-${index}`}>{t('labels.gender')} *</Label>
+                            <Select
+                              value={passenger.gender}
+                              onValueChange={(value) => updatePassenger(index, 'gender', value)}
+                            >
+                              <SelectTrigger
+                                id={`gender-${index}`}
+                                className={errors[`passenger-${index}-gender`] ? 'border-destructive' : ''}
+                              >
+                                <SelectValue placeholder={t('labels.genderPlaceholder')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="male">{t('labels.genderMale')}</SelectItem>
+                                <SelectItem value="female">{t('labels.genderFemale')}</SelectItem>
+                                <SelectItem value="unspecified">{t('labels.genderUnspecified')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors[`passenger-${index}-gender`] && (
+                              <p className="text-sm text-destructive">{errors[`passenger-${index}-gender`]}</p>
+                            )}
+                          </div>
                         </div>
+                        {/* Row 3 — Passport Number + Passport Expiry (optional) */}
                         <div className="grid md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor={`passport-${index}`}>Passport Number *</Label>
+                            <Label htmlFor={`passport-${index}`}>{t('labels.passportNumber')} *</Label>
                             <Input
                               id={`passport-${index}`}
-                              placeholder="U12345678"
+                              placeholder={t('placeholders.passport')}
                               value={passenger.passportNumber}
                               onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
                               className={errors[`passenger-${index}-passport`] ? 'border-destructive' : ''}
@@ -278,17 +344,33 @@ export default function PassengerDetailsPage() {
                             )}
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor={`nationality-${index}`}>Nationality *</Label>
+                            <Label htmlFor={`passportExpiry-${index}`}>{t('labels.passportExpiry')}</Label>
+                            <Input
+                              id={`passportExpiry-${index}`}
+                              type="date"
+                              value={passenger.passportExpiryDate ?? ''}
+                              onChange={(e) => updatePassenger(index, 'passportExpiryDate', e.target.value)}
+                              className={errors[`passenger-${index}-passportExpiry`] ? 'border-destructive' : ''}
+                            />
+                            {errors[`passenger-${index}-passportExpiry`] && (
+                              <p className="text-sm text-destructive">{errors[`passenger-${index}-passportExpiry`]}</p>
+                            )}
+                          </div>
+                        </div>
+                        {/* Row 4 — Nationality */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`nationality-${index}`}>{t('labels.nationality')} *</Label>
                             <Select
                               value={passenger.nationality}
                               onValueChange={(value) => updatePassenger(index, 'nationality', value)}
                             >
                               <SelectTrigger className={errors[`passenger-${index}-nationality`] ? 'border-destructive' : ''}>
-                                <SelectValue placeholder="Select nationality" />
+                                <SelectValue placeholder={t('labels.nationalityPlaceholder')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {nationalities.map((nat) => (
-                                  <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                  <SelectItem key={nat} value={nat}>{t(`nationalities.${nat}`)}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -314,20 +396,20 @@ export default function PassengerDetailsPage() {
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <Shield className="h-5 w-5 text-primary" />
                         </div>
-                        Contact Information
+                        {t('contact.title')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        We&apos;ll send your tickets and booking confirmation to this contact
+                        {t('contact.subtitle')}
                       </p>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="contactEmail">Email Address *</Label>
+                          <Label htmlFor="contactEmail">{t('contact.email')} *</Label>
                           <Input
                             id="contactEmail"
                             type="email"
-                            placeholder="your@email.com"
+                            placeholder={t('placeholders.email')}
                             value={contactEmail}
                             onChange={(e) => setContactEmail(e.target.value)}
                             className={errors['contactEmail'] ? 'border-destructive' : ''}
@@ -337,11 +419,11 @@ export default function PassengerDetailsPage() {
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="contactPhone">Phone Number *</Label>
+                          <Label htmlFor="contactPhone">{t('contact.phone')} *</Label>
                           <Input
                             id="contactPhone"
                             type="tel"
-                            placeholder="+90 5XX XXX XX XX"
+                            placeholder={t('placeholders.phone')}
                             value={contactPhone}
                             onChange={(e) => setContactPhone(e.target.value)}
                             className={errors['contactPhone'] ? 'border-destructive' : ''}
@@ -361,13 +443,13 @@ export default function PassengerDetailsPage() {
                 <div className="sticky top-24">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-foreground mb-6">Booking Summary</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-6">{t('summary.title')}</h3>
                       
                       <div className="space-y-4">
                         <div className="p-4 bg-secondary/50 rounded-xl">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <Ship className="h-4 w-4" />
-                            <span>Outbound</span>
+                            <span>{t('summary.outbound')}</span>
                           </div>
                           <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
                           <p className="text-sm text-muted-foreground">{state.searchParams.date}</p>
@@ -379,7 +461,7 @@ export default function PassengerDetailsPage() {
                           <div className="p-4 bg-secondary/50 rounded-xl">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                               <Ship className="h-4 w-4" />
-                              <span>Return</span>
+                              <span>{t('summary.return')}</span>
                             </div>
                             <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
                             <p className="text-sm text-muted-foreground">{state.searchParams.returnDate}</p>
@@ -390,15 +472,15 @@ export default function PassengerDetailsPage() {
                         
                         <div className="pt-4 border-t border-border/50">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-muted-foreground">Passengers</span>
+                            <span className="text-muted-foreground">{t('summary.passengers')}</span>
                             <span className="text-foreground">{state.searchParams.passengers}</span>
                           </div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-muted-foreground">Ferry Tickets</span>
+                            <span className="text-muted-foreground">{t('summary.ferryTickets')}</span>
                             <span className="text-foreground">€{selectTotalPrice(state)}</span>
                           </div>
                           <div className="flex items-center justify-between text-lg font-bold pt-2 border-t border-border/50">
-                            <span className="text-foreground">Total</span>
+                            <span className="text-foreground">{t('summary.total')}</span>
                             <span className="text-primary">€{selectTotalPrice(state)}</span>
                           </div>
                         </div>
@@ -407,7 +489,7 @@ export default function PassengerDetailsPage() {
                           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={handleContinue}
                         >
-                          Continue to Payment
+                          {t('summary.continue')}
                           <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </div>
@@ -416,15 +498,15 @@ export default function PassengerDetailsPage() {
                         <div className="flex items-start gap-3">
                           <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-foreground">Secure Booking</p>
-                            <p className="text-xs text-muted-foreground">256-bit SSL encryption</p>
+                            <p className="text-sm font-medium text-foreground">{t('trust.secureBooking')}</p>
+                            <p className="text-xs text-muted-foreground">{t('trust.ssl')}</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-foreground">Instant Confirmation</p>
-                            <p className="text-xs text-muted-foreground">Tickets sent to your email</p>
+                            <p className="text-sm font-medium text-foreground">{t('trust.instantConfirmation')}</p>
+                            <p className="text-xs text-muted-foreground">{t('trust.ticketsEmail')}</p>
                           </div>
                         </div>
                       </div>

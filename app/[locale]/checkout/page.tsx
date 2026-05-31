@@ -64,9 +64,12 @@ export default function CheckoutPage() {
         ),
         passengerCount: state.searchParams.passengers,
         passengers: state.passengers.map((p, idx) => ({
-          fullName: p.fullName,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          gender: p.gender,
           birthDate: p.birthDate,
           passportNumber: p.passportNumber,
+          passportExpiryDate: p.passportExpiryDate,
           nationality: p.nationality,
           isLead: idx === 0,
         })),
@@ -265,7 +268,7 @@ export default function CheckoutPage() {
                           className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                         >
                           <div>
-                            <p className="font-medium text-foreground">{passenger.fullName}</p>
+                            <p className="font-medium text-foreground">{passenger.firstName} {passenger.lastName}</p>
                             <p className="text-sm text-muted-foreground">
                               {passenger.nationality} · Passport: {passenger.passportNumber}
                             </p>

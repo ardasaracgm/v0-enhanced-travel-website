@@ -308,8 +308,10 @@ export interface Passenger {
   first_name: string
   last_name: string
   birth_date?: string | null
+  gender?: 'male' | 'female' | 'unspecified' | null
   passport_number?: string | null
   passport_country?: string | null
+  passport_expiry?: string | null   // ISO date (YYYY-MM-DD); Dentur optional field
   nationality?: string | null
   type: PassengerType
   is_lead: boolean

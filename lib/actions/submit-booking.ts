@@ -19,6 +19,7 @@ import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
+import { makePassengerSchema, derivePassengerType } from '@/lib/validation/booking'
 import { z } from 'zod'
 
 // ============================================================
@@ -43,9 +44,13 @@ export interface SubmitBookingInput {
 
   /** Passenger details (server validates required fields) */
   passengers: Array<{
-    fullName: string
+    firstName: string
+    lastName: string
+    // '' tolerated at the type boundary; the Zod gate rejects it (defense in depth).
+    gender: '' | 'male' | 'female' | 'unspecified'
     birthDate: string
     passportNumber: string
+    passportExpiryDate?: string
     nationality: string
     /** Lead passenger has the contact info; others may share the email/phone */
     isLead?: boolean
@@ -92,26 +97,30 @@ const CarItemSchema = z.object({
   dropoffAt: z.string().optional(),
 })
 
-const PassengerSchema = z.object({
-  fullName:       z.string().trim().min(2),
-  birthDate:      z.string().refine(isReasonableDOB, { message: 'Invalid date of birth' }),
-  passportNumber: z.string().trim().regex(/^[A-Z0-9]{5,20}$/i, 'Invalid passport number'),
-  nationality:    z.string().trim().min(2),
-  isLead:         z.boolean().optional(),
-})
-
-const SubmitBookingSchema = z.object({
+// Structural schema — everything EXCEPT detailed passenger validation, which
+// is run separately below because it needs the (now-trusted) travel dates.
+const SubmitBookingStructureSchema = z.object({
   idempotencyKey: z.string().min(8),
   locale:         z.enum(['en', 'tr', 'el']),
   items:          z.array(z.discriminatedUnion('type', [FerryItemSchema, CarItemSchema])).min(1),
   passengerCount: z.number().int().min(1).max(9),
-  passengers:     z.array(PassengerSchema).min(1),
   contactEmail:   z.string().email(),
   contactPhone:   z.string().trim().min(7),
   notesCustomer:  z.string().max(500).optional(),
 }).refine(
   data => data.items.some(i => i.type === 'ferry' && i.leg === 'outbound'),
   { message: 'Booking must include an outbound ferry leg', path: ['items'] }
+).refine(
+  data => {
+    const ferryLegs = data.items.filter(i => i.type === 'ferry')
+    const outbound = ferryLegs.find(i => i.leg === 'outbound')
+    const ret = ferryLegs.find(i => i.leg === 'return')
+    // One-way (no return leg) is exempt. Lexical YYYY-MM-DD compare; >= allows
+    // same-day round trips (Dentur returnSameDaySalesAmount is a real product).
+    if (!ret || !outbound) return true
+    return ret.date >= outbound.date
+  },
+  { message: 'Return date cannot be before the outbound date', path: ['items'] }
 )
 
 // ============================================================
@@ -119,10 +128,32 @@ const SubmitBookingSchema = z.object({
 // ============================================================
 
 export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBookingResult> {
-  // 1. Schema validation
-  const parsed = SubmitBookingSchema.safeParse(input)
-  if (!parsed.success) {
-    return { ok: false, code: 'validation_failed', error: formatZodError(parsed.error) }
+  // 1a. Validate structure + items + contact. Passenger detail is validated
+  //     separately below because it needs the (now-trusted) travel dates.
+  const structural = SubmitBookingStructureSchema.safeParse(input)
+  if (!structural.success) {
+    return { ok: false, code: 'validation_failed', error: formatZodError(structural.error) }
+  }
+
+  // 1b. Authoritative travel dates = the validated outbound/return ferry legs.
+  //     item.date is already YYYY-MM-DD and Zod-checked as future-dated; ferry
+  //     schedules are mocked, so there is no independent server source — the
+  //     server validates the user-chosen date, then uses it.
+  const ferryLegs = structural.data.items.filter(
+    (i): i is Extract<(typeof structural.data.items)[number], { type: 'ferry' }> =>
+      i.type === 'ferry'
+  )
+  const outboundDate = ferryLegs.find((i) => i.leg === 'outbound')?.date
+  const returnDate = ferryLegs.find((i) => i.leg === 'return')?.date
+
+  // 1c. Validate passengers with a travel-date-aware schema (passport-expiry
+  //     floor = return ?? outbound). Zod rejects '' gender, bad passports, etc.
+  const passengersResult = z
+    .array(makePassengerSchema({ outboundDate, returnDate }))
+    .min(1)
+    .safeParse(input.passengers)
+  if (!passengersResult.success) {
+    return { ok: false, code: 'validation_failed', error: formatZodError(passengersResult.error) }
   }
 
   // 2. Resolve items and build createTrip list
@@ -201,30 +232,47 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     }
   }
 
-  // 3. Find lead passenger (or fallback to first — Zod guarantees min 1)
+  // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND
+  //    date (sail-out) — never returnDate, never a client-sent type. The
+  //    structural schema guarantees an outbound leg, so outboundDate is set.
+  const outboundTravelDate = outboundDate as string
+
   const leadPassenger =
     input.passengers.find((p) => p.isLead) ?? input.passengers[0]
 
-  // 4. Companion passengers — everyone except the lead
+  // 4. Companions — everyone except the lead. Names arrive pre-split (no splitName).
   const companions = input.passengers
     .filter((p) => p !== leadPassenger)
     .map((p) => ({
-      firstName: splitName(p.fullName).first,
-      lastName: splitName(p.fullName).last,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      gender: p.gender,
       birthDate: p.birthDate || null,
       passportNumber: p.passportNumber || null,
       passportCountry: p.nationality || null,
+      passportExpiryDate: p.passportExpiryDate || null,
       nationality: p.nationality || null,
-      type: 'adult' as const,
+      type: derivePassengerType(p.birthDate, outboundTravelDate),
     }))
 
-  // 5. Create trip in DB (sets state = pending_payment)
+  // 5. Create trip in DB (sets state = pending_payment). The lead carries its
+  //    FULL identity now (birthDate/gender/passport no longer dropped here);
+  //    fullName is synthesized for the customers table + email greeting.
+  const leadFullName = `${leadPassenger.firstName} ${leadPassenger.lastName}`.trim()
+
   const tripResult = await createTrip({
     idempotencyKey: input.idempotencyKey,
     locale: input.locale,
     source: 'web',
     customer: {
-      fullName: leadPassenger.fullName,
+      fullName: leadFullName,
+      firstName: leadPassenger.firstName,
+      lastName: leadPassenger.lastName,
+      gender: leadPassenger.gender,
+      birthDate: leadPassenger.birthDate || null,
+      passportNumber: leadPassenger.passportNumber || null,
+      passportExpiryDate: leadPassenger.passportExpiryDate || null,
+      type: derivePassengerType(leadPassenger.birthDate, outboundTravelDate),
       email: input.contactEmail,
       phone: input.contactPhone,
       nationality: leadPassenger.nationality || undefined,
@@ -267,14 +315,6 @@ function isDateInFuture(date: string): boolean {
   return date >= today
 }
 
-function isReasonableDOB(date: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false
-  const d = new Date(date)
-  if (isNaN(d.getTime())) return false
-  const age = (new Date().getTime() - d.getTime()) / (365.25 * 24 * 3600 * 1000)
-  return age >= 0 && age <= 120
-}
-
 function formatZodError(err: z.ZodError): string {
   const flat = err.flatten()
   const fieldLines = Object.entries(flat.fieldErrors)
@@ -288,9 +328,3 @@ function combineDateAndTime(date: string, time: string): string {
   return `${date}T${time}:00+03:00`
 }
 
-function splitName(fullName: string): { first: string; last: string } {
-  const parts = (fullName || '').trim().split(/\s+/)
-  if (parts.length === 0) return { first: '', last: '' }
-  if (parts.length === 1) return { first: parts[0], last: parts[0] }
-  return { first: parts[0], last: parts.slice(1).join(' ') }
-}

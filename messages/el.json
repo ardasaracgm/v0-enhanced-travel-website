@@ -192,6 +192,103 @@
     "packageDescription": "Σύντομη περιγραφή των αντικειμένων"
   },
 
+  "passengerDetails": {
+    "labels": {
+      "firstName": "Όνομα (όπως στο διαβατήριο)",
+      "lastName": "Επώνυμο (όπως στο διαβατήριο)",
+      "birthDate": "Ημερομηνία Γέννησης",
+      "gender": "Φύλο",
+      "genderPlaceholder": "Επιλέξτε φύλο",
+      "genderMale": "Άνδρας",
+      "genderFemale": "Γυναίκα",
+      "genderUnspecified": "Απροσδιόριστο",
+      "passportNumber": "Αριθμός Διαβατηρίου",
+      "passportExpiry": "Λήξη Διαβατηρίου (προαιρετικό)",
+      "nationality": "Υπηκοότητα",
+      "nationalityPlaceholder": "Επιλέξτε υπηκοότητα"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "passport": "U12345678",
+      "email": "your@email.com",
+      "phone": "+90 5XX XXX XX XX"
+    },
+    "heading": "Στοιχεία Επιβατών",
+    "subheading": "Παρακαλούμε εισαγάγετε τα στοιχεία ακριβώς όπως αναγράφονται στα διαβατήρια",
+    "passengerNumber": "Επιβάτης {number}",
+    "leadPassenger": "(Κύριος Επιβάτης)",
+    "totalPrice": "Συνολική Τιμή",
+    "steps": {
+      "selectFerry": "Επιλογή Πλοίου",
+      "extras": "Έξτρα",
+      "passengers": "Επιβάτες",
+      "payment": "Πληρωμή"
+    },
+    "contact": {
+      "title": "Στοιχεία Επικοινωνίας",
+      "subtitle": "Θα στείλουμε τα εισιτήριά σας και την επιβεβαίωση κράτησης σε αυτά τα στοιχεία επικοινωνίας",
+      "email": "Διεύθυνση Email",
+      "phone": "Αριθμός Τηλεφώνου"
+    },
+    "summary": {
+      "title": "Σύνοψη Κράτησης",
+      "outbound": "Μετάβαση",
+      "return": "Επιστροφή",
+      "passengers": "Επιβάτες",
+      "ferryTickets": "Εισιτήρια Πλοίου",
+      "total": "Σύνολο",
+      "continue": "Συνέχεια στην Πληρωμή"
+    },
+    "trust": {
+      "secureBooking": "Ασφαλής Κράτηση",
+      "ssl": "Κρυπτογράφηση SSL 256-bit",
+      "instantConfirmation": "Άμεση Επιβεβαίωση",
+      "ticketsEmail": "Τα εισιτήρια αποστέλλονται στο email σας"
+    },
+    "noFerry": {
+      "title": "Δεν Επιλέχθηκε Πλοίο",
+      "body": "Παρακαλούμε επιλέξτε ένα πλοίο πριν εισαγάγετε τα στοιχεία των επιβατών.",
+      "cta": "Αναζήτηση Πλοίων"
+    },
+    "nationalities": {
+      "Turkey": "Τουρκία",
+      "Germany": "Γερμανία",
+      "United Kingdom": "Ηνωμένο Βασίλειο",
+      "Netherlands": "Ολλανδία",
+      "France": "Γαλλία",
+      "Belgium": "Βέλγιο",
+      "Austria": "Αυστρία",
+      "Switzerland": "Ελβετία",
+      "Italy": "Ιταλία",
+      "Spain": "Ισπανία",
+      "Greece": "Ελλάδα",
+      "United States": "Ηνωμένες Πολιτείες",
+      "Other": "Άλλο"
+    },
+    "errors": {
+      "firstName": { "required": "Το όνομα είναι υποχρεωτικό" },
+      "lastName": { "required": "Το επώνυμο είναι υποχρεωτικό" },
+      "gender": { "required": "Παρακαλούμε επιλέξτε φύλο" },
+      "birthDate": {
+        "invalid": "Παρακαλούμε εισαγάγετε έγκυρη ημερομηνία γέννησης",
+        "future": "Η ημερομηνία γέννησης δεν μπορεί να είναι στο μέλλον",
+        "tooOld": "Παρακαλούμε ελέγξτε την ημερομηνία γέννησης"
+      },
+      "passport": { "invalid": "Ο αριθμός διαβατηρίου πρέπει να έχει 5–20 γράμματα ή ψηφία" },
+      "passportExpiry": {
+        "invalid": "Παρακαλούμε εισαγάγετε έγκυρη ημερομηνία λήξης διαβατηρίου",
+        "beforeTravel": "Το διαβατήριο πρέπει να ισχύει έως την ημερομηνία επιστροφής σας"
+      },
+      "nationality": { "required": "Η υπηκοότητα είναι υποχρεωτική" },
+      "email": {
+        "required": "Το email είναι υποχρεωτικό",
+        "invalid": "Παρακαλούμε εισαγάγετε έγκυρη διεύθυνση email"
+      },
+      "phone": { "invalid": "Παρακαλούμε εισαγάγετε έγκυρο αριθμό τηλεφώνου" }
+    }
+  },
+
   "privacy": {
     "title": "Πολιτική Απορρήτου",
     "lastUpdated": "Τελευταία ενημέρωση"

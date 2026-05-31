@@ -192,6 +192,103 @@
     "packageDescription": "Brief description of items"
   },
 
+  "passengerDetails": {
+    "labels": {
+      "firstName": "First Name (as on passport)",
+      "lastName": "Last Name (as on passport)",
+      "birthDate": "Date of Birth",
+      "gender": "Gender",
+      "genderPlaceholder": "Select gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderUnspecified": "Unspecified",
+      "passportNumber": "Passport Number",
+      "passportExpiry": "Passport Expiry (optional)",
+      "nationality": "Nationality",
+      "nationalityPlaceholder": "Select nationality"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "passport": "U12345678",
+      "email": "your@email.com",
+      "phone": "+90 5XX XXX XX XX"
+    },
+    "heading": "Passenger Details",
+    "subheading": "Please enter details exactly as they appear on passports",
+    "passengerNumber": "Passenger {number}",
+    "leadPassenger": "(Lead Passenger)",
+    "totalPrice": "Total Price",
+    "steps": {
+      "selectFerry": "Select Ferry",
+      "extras": "Extras",
+      "passengers": "Passengers",
+      "payment": "Payment"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "subtitle": "We'll send your tickets and booking confirmation to this contact",
+      "email": "Email Address",
+      "phone": "Phone Number"
+    },
+    "summary": {
+      "title": "Booking Summary",
+      "outbound": "Outbound",
+      "return": "Return",
+      "passengers": "Passengers",
+      "ferryTickets": "Ferry Tickets",
+      "total": "Total",
+      "continue": "Continue to Payment"
+    },
+    "trust": {
+      "secureBooking": "Secure Booking",
+      "ssl": "256-bit SSL encryption",
+      "instantConfirmation": "Instant Confirmation",
+      "ticketsEmail": "Tickets sent to your email"
+    },
+    "noFerry": {
+      "title": "No Ferry Selected",
+      "body": "Please select a ferry before entering passenger details.",
+      "cta": "Search Ferries"
+    },
+    "nationalities": {
+      "Turkey": "Turkey",
+      "Germany": "Germany",
+      "United Kingdom": "United Kingdom",
+      "Netherlands": "Netherlands",
+      "France": "France",
+      "Belgium": "Belgium",
+      "Austria": "Austria",
+      "Switzerland": "Switzerland",
+      "Italy": "Italy",
+      "Spain": "Spain",
+      "Greece": "Greece",
+      "United States": "United States",
+      "Other": "Other"
+    },
+    "errors": {
+      "firstName": { "required": "First name is required" },
+      "lastName": { "required": "Last name is required" },
+      "gender": { "required": "Please select a gender" },
+      "birthDate": {
+        "invalid": "Please enter a valid date of birth",
+        "future": "Date of birth cannot be in the future",
+        "tooOld": "Please check the date of birth"
+      },
+      "passport": { "invalid": "Passport number must be 5–20 letters or digits" },
+      "passportExpiry": {
+        "invalid": "Please enter a valid passport expiry date",
+        "beforeTravel": "Passport must be valid through your return date"
+      },
+      "nationality": { "required": "Nationality is required" },
+      "email": {
+        "required": "Email is required",
+        "invalid": "Please enter a valid email address"
+      },
+      "phone": { "invalid": "Please enter a valid phone number" }
+    }
+  },
+
   "privacy": {
     "title": "Privacy Policy",
     "lastUpdated": "Last updated"

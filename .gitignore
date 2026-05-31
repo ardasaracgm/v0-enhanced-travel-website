@@ -22,6 +22,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# docs / handover notes (not tracked going forward)
+docs/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

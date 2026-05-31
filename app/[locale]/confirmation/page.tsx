@@ -548,7 +548,7 @@ export default function ConfirmationPage() {
                       className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
                       <div>
-                        <p className="font-medium text-foreground">{p.fullName}</p>
+                        <p className="font-medium text-foreground">{p.firstName} {p.lastName}</p>
                         <p className="text-sm text-muted-foreground">
                           {p.nationality} · Passport: {p.passportNumber}
                         </p>

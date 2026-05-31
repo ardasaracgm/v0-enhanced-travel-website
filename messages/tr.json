@@ -192,6 +192,103 @@
     "packageDescription": "Eşyaların kısa açıklaması"
   },
 
+  "passengerDetails": {
+    "labels": {
+      "firstName": "Ad (pasaportta yazdığı gibi)",
+      "lastName": "Soyad (pasaportta yazdığı gibi)",
+      "birthDate": "Doğum Tarihi",
+      "gender": "Cinsiyet",
+      "genderPlaceholder": "Cinsiyet seçin",
+      "genderMale": "Erkek",
+      "genderFemale": "Kadın",
+      "genderUnspecified": "Belirtilmemiş",
+      "passportNumber": "Pasaport Numarası",
+      "passportExpiry": "Pasaport Geçerlilik Tarihi (isteğe bağlı)",
+      "nationality": "Uyruk",
+      "nationalityPlaceholder": "Uyruk seçin"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "passport": "U12345678",
+      "email": "ornek@eposta.com",
+      "phone": "+90 5XX XXX XX XX"
+    },
+    "heading": "Yolcu Bilgileri",
+    "subheading": "Lütfen bilgileri pasaportta göründüğü şekilde girin",
+    "passengerNumber": "Yolcu {number}",
+    "leadPassenger": "(Ana Yolcu)",
+    "totalPrice": "Toplam Fiyat",
+    "steps": {
+      "selectFerry": "Feribot Seçimi",
+      "extras": "Ekstralar",
+      "passengers": "Yolcular",
+      "payment": "Ödeme"
+    },
+    "contact": {
+      "title": "İletişim Bilgileri",
+      "subtitle": "Biletlerinizi ve rezervasyon onayınızı bu iletişim bilgilerine göndereceğiz",
+      "email": "E-posta Adresi",
+      "phone": "Telefon Numarası"
+    },
+    "summary": {
+      "title": "Rezervasyon Özeti",
+      "outbound": "Gidiş",
+      "return": "Dönüş",
+      "passengers": "Yolcular",
+      "ferryTickets": "Feribot Biletleri",
+      "total": "Toplam",
+      "continue": "Ödemeye Devam Et"
+    },
+    "trust": {
+      "secureBooking": "Güvenli Rezervasyon",
+      "ssl": "256-bit SSL şifreleme",
+      "instantConfirmation": "Anında Onay",
+      "ticketsEmail": "Biletler e-posta adresinize gönderilir"
+    },
+    "noFerry": {
+      "title": "Feribot Seçilmedi",
+      "body": "Yolcu bilgilerini girmeden önce lütfen bir feribot seçin.",
+      "cta": "Feribot Ara"
+    },
+    "nationalities": {
+      "Turkey": "Türkiye",
+      "Germany": "Almanya",
+      "United Kingdom": "Birleşik Krallık",
+      "Netherlands": "Hollanda",
+      "France": "Fransa",
+      "Belgium": "Belçika",
+      "Austria": "Avusturya",
+      "Switzerland": "İsviçre",
+      "Italy": "İtalya",
+      "Spain": "İspanya",
+      "Greece": "Yunanistan",
+      "United States": "Amerika Birleşik Devletleri",
+      "Other": "Diğer"
+    },
+    "errors": {
+      "firstName": { "required": "Ad gerekli" },
+      "lastName": { "required": "Soyad gerekli" },
+      "gender": { "required": "Lütfen bir cinsiyet seçin" },
+      "birthDate": {
+        "invalid": "Lütfen geçerli bir doğum tarihi girin",
+        "future": "Doğum tarihi gelecekte olamaz",
+        "tooOld": "Lütfen doğum tarihini kontrol edin"
+      },
+      "passport": { "invalid": "Pasaport numarası 5–20 harf veya rakamdan oluşmalıdır" },
+      "passportExpiry": {
+        "invalid": "Lütfen geçerli bir pasaport geçerlilik tarihi girin",
+        "beforeTravel": "Pasaport, dönüş tarihinize kadar geçerli olmalıdır"
+      },
+      "nationality": { "required": "Uyruk gerekli" },
+      "email": {
+        "required": "E-posta gerekli",
+        "invalid": "Lütfen geçerli bir e-posta adresi girin"
+      },
+      "phone": { "invalid": "Lütfen geçerli bir telefon numarası girin" }
+    }
+  },
+
   "privacy": {
     "title": "Gizlilik Politikası",
     "lastUpdated": "Son güncelleme"

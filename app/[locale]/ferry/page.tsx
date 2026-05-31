@@ -220,7 +220,13 @@ export default function FerryTicketsPage() {
                       className="h-10"
                       min={todayAthens}
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => {
+                        const newDate = e.target.value
+                        setDate(newDate)
+                        // Clear a now-invalid return date — the min attribute
+                        // won't retroactively wipe an already-selected value.
+                        if (returnDate && returnDate < newDate) setReturnDate('')
+                      }}
                     />
                   </div>
                   {tripType === 'round-trip' && (

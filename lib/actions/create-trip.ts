@@ -56,6 +56,13 @@ export interface CreateTripInput {
   /** Customer / lead passenger */
   customer: {
     fullName: string
+    firstName?: string
+    lastName?: string
+    gender?: '' | 'male' | 'female' | 'unspecified'
+    birthDate?: string | null
+    passportNumber?: string | null
+    passportExpiryDate?: string | null
+    type?: PassengerType
     email: string
     phone: string
     nationality?: string
@@ -80,9 +87,11 @@ export interface CreateTripInput {
   additionalPassengers?: Array<{
     firstName: string
     lastName: string
+    gender?: '' | 'male' | 'female' | 'unspecified'
     birthDate?: string | null
     passportNumber?: string | null
     passportCountry?: string | null
+    passportExpiryDate?: string | null
     nationality?: string | null
     type?: PassengerType
   }>
@@ -437,16 +446,27 @@ function buildPassengerRows(
   tripId: string,
   input: CreateTripInput
 ): Array<Record<string, unknown>> {
-  // Lead passenger from the customer fields
-  const [leadFirst, ...leadRest] = input.customer.fullName.trim().split(' ')
-  const leadLast = leadRest.join(' ') || leadFirst
+  // Lead passenger from the customer fields. Prefer the structured split-name
+  // fields (passed by submitBooking); fall back to splitting the synthesized
+  // fullName for any caller that only provides it (firstName/lastName optional).
+  // validateInput guarantees fullName is non-empty, so first_name (NOT NULL) is
+  // always populated.
+  const fallbackParts = input.customer.fullName.trim().split(/\s+/)
+  const leadFirst = input.customer.firstName?.trim() || fallbackParts[0] || ''
+  const leadLast =
+    input.customer.lastName?.trim() || fallbackParts.slice(1).join(' ') || leadFirst
   const lead = {
     trip_id: tripId,
     first_name: leadFirst,
     last_name: leadLast,
-    type: 'adult' as PassengerType,
-    is_lead: true,
+    gender: input.customer.gender || null,            // '' / undefined → null (CHECK allows only the 3 values or NULL)
+    birth_date: input.customer.birthDate ?? null,
+    passport_number: input.customer.passportNumber ?? null,
+    passport_country: input.customer.nationality ?? null,
+    passport_expiry: input.customer.passportExpiryDate || null,  // '' → null (date column)
     nationality: input.customer.nationality ?? null,
+    type: input.customer.type ?? ('adult' as PassengerType),     // server-derived; no re-derive here
+    is_lead: true,
     email: input.customer.email,
     phone: input.customer.phone,
   }
@@ -456,9 +476,11 @@ function buildPassengerRows(
       trip_id: tripId,
       first_name: p.firstName,
       last_name: p.lastName,
+      gender: p.gender || null,
       birth_date: p.birthDate ?? null,
       passport_number: p.passportNumber ?? null,
       passport_country: p.passportCountry ?? null,
+      passport_expiry: p.passportExpiryDate || null,
       nationality: p.nationality ?? null,
       type: p.type ?? ('adult' as PassengerType),
       is_lead: false,

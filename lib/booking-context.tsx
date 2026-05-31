@@ -23,9 +23,13 @@ export {
 import type { FerryRoute } from '@/lib/ferry-mock-data'
 
 export interface Passenger {
-  fullName: string
+  firstName: string
+  lastName: string
+  // '' = not yet selected; the Zod enum forces a real choice on submit.
+  gender: '' | 'male' | 'female' | 'unspecified'
   birthDate: string
   passportNumber: string
+  passportExpiryDate?: string   // optional; validated "after return date" by the schema
   nationality: string
 }
 
