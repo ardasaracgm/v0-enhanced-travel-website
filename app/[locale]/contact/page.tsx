@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -13,6 +14,7 @@ import { TrustBar } from '@/components/islandbee/trust-bar'
 import { ContactForm } from '@/components/islandbee/contact-form'
 
 export default function ContactPage() {
+  const t = useTranslations('contactPage')
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -27,10 +29,10 @@ export default function ContactPage() {
               className="text-center max-w-2xl mx-auto"
             >
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-                Contact Us
+                {t('title')}
               </h1>
               <p className="text-muted-foreground text-lg">
-                Have questions about your Greek island trip? Our Turkish-speaking team is here to help.
+                {t('subtitle')}
               </p>
             </motion.div>
           </div>
@@ -54,8 +56,8 @@ export default function ContactPage() {
                         <MessageCircle className="h-6 w-6 text-[#25D366]" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">WhatsApp</h3>
-                        <p className="text-muted-foreground text-sm mb-2">Fastest way to reach us</p>
+                        <h3 className="font-semibold text-foreground mb-1">{t('whatsappTitle')}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">{t('whatsappDesc')}</p>
                         <a 
                           href="https://wa.me/302242050009" 
                           target="_blank" 
@@ -76,8 +78,8 @@ export default function ContactPage() {
                         <Phone className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                        <p className="text-muted-foreground text-sm mb-2">Call our Kos office</p>
+                        <h3 className="font-semibold text-foreground mb-1">{t('phoneCardTitle')}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">{t('phoneDesc')}</p>
                         <a 
                           href="tel:+302242050008" 
                           className="text-primary font-medium hover:underline"
@@ -96,13 +98,13 @@ export default function ContactPage() {
                         <Mail className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                        <p className="text-muted-foreground text-sm mb-2">We reply within 24 hours</p>
-                        <a 
-                          href="mailto:info@islandbee.com" 
+                        <h3 className="font-semibold text-foreground mb-1">{t('emailTitle')}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">{t('emailDesc')}</p>
+                        <a
+                          href="mailto:info@travelbeez.gr"
                           className="text-primary font-medium hover:underline"
                         >
-                          info@islandbee.com
+                          info@travelbeez.gr
                         </a>
                       </div>
                     </div>
@@ -116,11 +118,11 @@ export default function ContactPage() {
                         <MapPin className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Kos Port Office</h3>
-                        <p className="text-muted-foreground text-sm mb-2">Visit us in person</p>
+                        <h3 className="font-semibold text-foreground mb-1">{t('addressTitle')}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">{t('officeDesc')}</p>
                         <p className="text-foreground text-sm">
-                          G Averos 4, Kos, Greece<br />
-                          <span className="text-muted-foreground">Under Achilleas Hotel, at port exit</span>
+                          {t('officeAddress')}<br />
+                          <span className="text-muted-foreground">{t('officeNote')}</span>
                         </p>
                       </div>
                     </div>
@@ -134,10 +136,10 @@ export default function ContactPage() {
                         <Clock className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Office Hours</h3>
-                        <p className="text-muted-foreground text-sm mb-2">Peak Season (Apr-Oct)</p>
+                        <h3 className="font-semibold text-foreground mb-1">{t('hoursTitle')}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">{t('hoursSeason')}</p>
                         <p className="text-foreground text-sm">
-                          Daily: 08:00 - 20:00
+                          {t('hoursValue')}
                         </p>
                       </div>
                     </div>
@@ -154,9 +156,9 @@ export default function ContactPage() {
               >
                 <Card className="border-border/50">
                   <CardContent className="p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Send us a Message</h2>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">{t('formTitle')}</h2>
                     <p className="text-muted-foreground mb-6">
-                      Fill out the form below and we will get back to you as soon as possible.
+                      {t('formIntro')}
                     </p>
                     <ContactForm />
                   </CardContent>
@@ -170,8 +172,8 @@ export default function ContactPage() {
         <section className="w-full py-12 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Find Us at Kos Port</h2>
-              <p className="text-muted-foreground">Located at the first shop after the port exit, under Achilleas Hotel</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t('mapTitle')}</h2>
+              <p className="text-muted-foreground">{t('mapSubtitle')}</p>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg">
               <iframe
@@ -182,7 +184,7 @@ export default function ContactPage() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="TravelBeez Kos Office Location"
+                title={t('mapTitle')}
               />
             </div>
           </div>

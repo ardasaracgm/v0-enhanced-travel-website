@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,16 +22,19 @@ interface ContactFormProps {
   className?: string
 }
 
+// `value` is the stable slug persisted to Supabase (locale-independent);
+// `labelKey` resolves the displayed label under contactPage.form.subjects.
 const subjects = [
-  { value: 'ferry', label: 'Ferry Booking Inquiry' },
-  { value: 'car-rental', label: 'Car Rental Question' },
-  { value: 'tours', label: 'Tours & Excursions' },
-  { value: 'visa', label: 'Visa Support' },
-  { value: 'general', label: 'General Inquiry' },
-  { value: 'complaint', label: 'Feedback / Complaint' },
+  { value: 'ferry', labelKey: 'ferry' },
+  { value: 'car-rental', labelKey: 'carRental' },
+  { value: 'tours', labelKey: 'tours' },
+  { value: 'visa', labelKey: 'visa' },
+  { value: 'general', labelKey: 'general' },
+  { value: 'complaint', labelKey: 'complaint' },
 ]
 
 export function ContactForm({ className }: ContactFormProps) {
+  const t = useTranslations('contactPage')
   const [formData, setFormData] = React.useState({
     name: '',
     email: '',
@@ -46,7 +50,7 @@ export function ContactForm({ className }: ContactFormProps) {
     
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       setStatus('error')
-      setErrorMessage('Please fill in all required fields')
+      setErrorMessage(t('form.requiredError'))
       return
     }
 
@@ -56,7 +60,9 @@ export function ContactForm({ className }: ContactFormProps) {
       name: formData.name,
       email: formData.email,
       phone: formData.phone || undefined,
-      subject: subjects.find(s => s.value === formData.subject)?.label || formData.subject,
+      // Persist the stable slug (locale-independent) — admin/DB stay canonical
+      // regardless of the user's UI language.
+      subject: formData.subject,
       message: formData.message,
     })
 
@@ -65,7 +71,7 @@ export function ContactForm({ className }: ContactFormProps) {
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
     } else {
       setStatus('error')
-      setErrorMessage(result.error || 'Failed to submit your request. Please try again.')
+      setErrorMessage(result.error || t('form.genericError'))
     }
   }
 
@@ -74,18 +80,17 @@ export function ContactForm({ className }: ContactFormProps) {
       <div className={className}>
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-5 w-5 text-green-600" />
-          <AlertTitle className="text-green-800">Message Sent Successfully!</AlertTitle>
+          <AlertTitle className="text-green-800">{t('form.successTitle')}</AlertTitle>
           <AlertDescription className="text-green-700">
-            Thank you for contacting us. Our team will respond within 24 hours. 
-            For urgent inquiries, please reach us via WhatsApp.
+            {t('form.successBody')}
           </AlertDescription>
         </Alert>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="mt-4"
           onClick={() => setStatus('idle')}
         >
-          Send Another Message
+          {t('form.sendAnother')}
         </Button>
       </div>
     )
@@ -96,7 +101,7 @@ export function ContactForm({ className }: ContactFormProps) {
       {status === 'error' && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Submission Failed</AlertTitle>
+          <AlertTitle>{t('form.errorTitle')}</AlertTitle>
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
@@ -105,11 +110,11 @@ export function ContactForm({ className }: ContactFormProps) {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-foreground">
-              Full Name <span className="text-destructive">*</span>
+              {t('form.nameLabel')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
-              placeholder="Your full name"
+              placeholder={t('form.namePlaceholder')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -117,7 +122,7 @@ export function ContactForm({ className }: ContactFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-foreground">
-              Email <span className="text-destructive">*</span>
+              {t('form.emailLabel')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="email"
@@ -133,7 +138,7 @@ export function ContactForm({ className }: ContactFormProps) {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="phone" className="text-foreground">
-              Phone (WhatsApp)
+              {t('form.phoneLabel')}
             </Label>
             <Input
               id="phone"
@@ -145,19 +150,19 @@ export function ContactForm({ className }: ContactFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="subject" className="text-foreground">
-              Subject <span className="text-destructive">*</span>
+              {t('subjectLabel')} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.subject}
               onValueChange={(value) => setFormData({ ...formData, subject: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a subject" />
+                <SelectValue placeholder={t('form.subjectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subject) => (
                   <SelectItem key={subject.value} value={subject.value}>
-                    {subject.label}
+                    {t(`form.subjects.${subject.labelKey}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -167,11 +172,11 @@ export function ContactForm({ className }: ContactFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="message" className="text-foreground">
-            Message <span className="text-destructive">*</span>
+            {t('messageLabel')} <span className="text-destructive">*</span>
           </Label>
           <Textarea
             id="message"
-            placeholder="How can we help you? Please include any relevant details about your trip."
+            placeholder={t('form.messagePlaceholder')}
             rows={5}
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -187,12 +192,12 @@ export function ContactForm({ className }: ContactFormProps) {
           {status === 'submitting' ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Sending...
+              {t('form.submittingButton')}
             </>
           ) : (
             <>
               <Send className="h-4 w-4 mr-2" />
-              Send Message
+              {t('form.submitButton')}
             </>
           )}
         </Button>

@@ -340,7 +340,44 @@
     "addressTitle": "Ofisimiz",
     "phoneTitle": "Telefon & WhatsApp",
     "emailTitle": "E-posta",
-    "hoursTitle": "Çalışma Saatleri"
+    "hoursTitle": "Çalışma Saatleri",
+    "whatsappTitle": "WhatsApp",
+    "whatsappDesc": "Bize ulaşmanın en hızlı yolu",
+    "phoneCardTitle": "Telefon",
+    "phoneDesc": "Kos ofisimizi arayın",
+    "emailDesc": "24 saat içinde yanıt veriyoruz",
+    "officeDesc": "Bizi şahsen ziyaret edin",
+    "officeAddress": "G Averos 4, Kos, Yunanistan",
+    "officeNote": "Achilleas Hotel'in altında, liman çıkışında",
+    "hoursSeason": "Yoğun Sezon (Nis–Eki)",
+    "hoursValue": "Her gün: 08:00 – 20:00",
+    "formIntro": "Aşağıdaki formu doldurun, en kısa sürede size geri döneceğiz.",
+    "mapTitle": "Bizi Kos Limanı'nda Bulun",
+    "mapSubtitle": "Liman çıkışından sonraki ilk dükkân, Achilleas Hotel'in altında",
+    "form": {
+      "nameLabel": "Ad Soyad",
+      "namePlaceholder": "Adınız ve soyadınız",
+      "emailLabel": "E-posta",
+      "phoneLabel": "Telefon (WhatsApp)",
+      "subjectPlaceholder": "Bir konu seçin",
+      "messagePlaceholder": "Size nasıl yardımcı olabiliriz? Lütfen seyahatinizle ilgili önemli ayrıntıları ekleyin.",
+      "submitButton": "Mesaj Gönder",
+      "submittingButton": "Gönderiliyor…",
+      "successTitle": "Mesajınız Başarıyla Gönderildi!",
+      "successBody": "Bizimle iletişime geçtiğiniz için teşekkürler. Ekibimiz 24 saat içinde yanıt verecektir. Acil talepler için lütfen WhatsApp üzerinden bize ulaşın.",
+      "sendAnother": "Yeni Mesaj Gönder",
+      "errorTitle": "Gönderim Başarısız",
+      "requiredError": "Lütfen tüm zorunlu alanları doldurun",
+      "genericError": "Talebiniz gönderilemedi. Lütfen tekrar deneyin.",
+      "subjects": {
+        "ferry": "Feribot Rezervasyon Talebi",
+        "carRental": "Araç Kiralama Sorusu",
+        "tours": "Turlar ve Geziler",
+        "visa": "Vize Desteği",
+        "general": "Genel Talep",
+        "complaint": "Geri Bildirim / Şikayet"
+      }
+    }
   },
 
   "packagePickupPage": {
