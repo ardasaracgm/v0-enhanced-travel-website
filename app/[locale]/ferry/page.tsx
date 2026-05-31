@@ -2,9 +2,10 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -28,7 +29,6 @@ import {
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
-import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { useBooking } from '@/lib/booking-context'
@@ -40,34 +40,11 @@ const routes = [
   { from: 'Kusadasi', to: 'Samos', duration: '1.5 hours', price: '€40', frequency: 'Daily', operator: 'Meander Travel' },
 ]
 
-const faqs = [
-  {
-    question: 'What documents do I need for the ferry crossing?',
-    answer: 'You need a valid passport (at least 6 months validity). Turkish citizens traveling to Greece for tourism (up to 90 days in 180 days) may need a Schengen visa depending on current regulations. We recommend checking the latest requirements before booking.',
-  },
-  {
-    question: 'Can I bring my car on the ferry?',
-    answer: 'Most ferries between Turkey and the Greek islands are passenger-only. If you need a vehicle on the island, we recommend booking a car rental with us - we offer port pickup service in Kos.',
-  },
-  {
-    question: 'What is the baggage allowance?',
-    answer: 'Generally, you can bring hand luggage and 1-2 suitcases per person. There are no strict weight limits, but large or excessive luggage may incur additional fees. Contact us for specific ferry operator policies.',
-  },
-  {
-    question: 'Can I change or cancel my ferry ticket?',
-    answer: 'Yes, most tickets can be changed or cancelled up to 24 hours before departure with a small fee. Full refunds are available if cancelled 48+ hours in advance. Travel insurance can cover last-minute cancellations.',
-  },
-  {
-    question: 'Is the ferry comfortable for families with children?',
-    answer: 'Yes! Ferries have comfortable seating, air conditioning, and snack bars. The journey is relatively short (1-3 hours depending on route). Children under 4 often travel free or at reduced rates.',
-  },
-  {
-    question: 'Do you offer round-trip tickets?',
-    answer: 'Yes, we offer both one-way and round-trip tickets. Round-trip tickets are typically 10-15% cheaper than booking two one-way tickets separately.',
-  },
-]
+// FAQ content lives in i18n (ferryPage.faq{n}Q / faq{n}A).
+const FAQ_COUNT = 6
 
 export default function FerryTicketsPage() {
+  const t = useTranslations('ferryPage')
   const router = useRouter()
   const { state, dispatch } = useBooking()
   const [tripType, setTripType] = React.useState<'one-way' | 'round-trip'>('one-way')
@@ -104,7 +81,7 @@ export default function FerryTicketsPage() {
           <div className="absolute inset-0">
             <Image
               src="https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=1920&q=80"
-              alt="Ferry sailing in the Aegean Sea"
+              alt={t('heroImageAlt')}
               fill
               className="object-cover"
               priority
@@ -119,7 +96,7 @@ export default function FerryTicketsPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6"
               >
                 <Ship className="h-4 w-4" />
-                Turkey to Greek Islands
+                {t('heroBadge')}
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -127,7 +104,7 @@ export default function FerryTicketsPage() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance"
               >
-                Ferry Tickets to Greek Islands
+                {t('title')}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -135,7 +112,7 @@ export default function FerryTicketsPage() {
                 transition={{ delay: 0.2 }}
                 className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
               >
-                Book your ferry crossing from Bodrum, Turgutreis, Marmaris, and Kusadasi to Kos, Rhodes, and Samos. Fast booking, best prices, Turkish support.
+                {t('subtitle')}
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -145,15 +122,15 @@ export default function FerryTicketsPage() {
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Instant Confirmation</span>
+                  <span>{t('bullet1')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Best Price Guarantee</span>
+                  <span>{t('bullet2')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Free Cancellation</span>
+                  <span>{t('bullet3')}</span>
                 </div>
               </motion.div>
             </div>
@@ -166,7 +143,7 @@ export default function FerryTicketsPage() {
             <Card className="border-0 shadow-2xl bg-card">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                  <h2 className="text-xl font-bold text-foreground">Search Ferry Tickets</h2>
+                  <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>
                   <RadioGroup
                     value={tripType}
                     onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
@@ -174,47 +151,47 @@ export default function FerryTicketsPage() {
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="one-way" id="one-way" />
-                      <Label htmlFor="one-way" className="cursor-pointer">One-way</Label>
+                      <Label htmlFor="one-way" className="cursor-pointer">{t('oneWay')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="round-trip" id="round-trip" />
                       <Label htmlFor="round-trip" className="cursor-pointer flex items-center gap-1">
                         <ArrowLeftRight className="h-4 w-4" />
-                        Round-trip
+                        {t('roundTrip')}
                       </Label>
                     </div>
                   </RadioGroup>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">From</label>
+                    <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
                     <Select value={from} onValueChange={setFrom}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Departure" />
+                        <SelectValue placeholder={t('fromPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="bodrum">Bodrum, Turkey</SelectItem>
-                        <SelectItem value="turgutreis">Turgutreis, Turkey</SelectItem>
-                        <SelectItem value="marmaris">Marmaris, Turkey</SelectItem>
-                        <SelectItem value="kusadasi">Kusadasi, Turkey</SelectItem>
+                        <SelectItem value="bodrum">{t('portBodrum')}</SelectItem>
+                        <SelectItem value="turgutreis">{t('portTurgutreis')}</SelectItem>
+                        <SelectItem value="marmaris">{t('portMarmaris')}</SelectItem>
+                        <SelectItem value="kusadasi">{t('portKusadasi')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">To</label>
+                    <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
                     <Select value={to} onValueChange={setTo}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Destination" />
+                        <SelectValue placeholder={t('toPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kos">Kos, Greece</SelectItem>
-                        <SelectItem value="rhodes">Rhodes, Greece</SelectItem>
-                        <SelectItem value="samos">Samos, Greece</SelectItem>
+                        <SelectItem value="kos">{t('portKos')}</SelectItem>
+                        <SelectItem value="rhodes">{t('portRhodes')}</SelectItem>
+                        <SelectItem value="samos">{t('portSamos')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Departure Date</label>
+                    <label className="text-sm font-medium text-foreground">{t('departDate')}</label>
                     <Input
                       type="date"
                       className="h-10"
@@ -231,7 +208,7 @@ export default function FerryTicketsPage() {
                   </div>
                   {tripType === 'round-trip' && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Return Date</label>
+                      <label className="text-sm font-medium text-foreground">{t('returnDate')}</label>
                       <Input
                         type="date"
                         className="h-10"
@@ -242,27 +219,27 @@ export default function FerryTicketsPage() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Passengers</label>
+                    <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
                     <Select value={passengers} onValueChange={setPassengers}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Passengers" />
+                        <SelectValue placeholder={t('passengersLabel')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">1 Passenger</SelectItem>
-                        <SelectItem value="2">2 Passengers</SelectItem>
-                        <SelectItem value="3">3 Passengers</SelectItem>
-                        <SelectItem value="4">4 Passengers</SelectItem>
-                        <SelectItem value="5">5 Passengers</SelectItem>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <SelectItem key={n} value={String(n)}>
+                            {t('passengerOption', { count: n })}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">&nbsp;</label>
-                    <Button 
+                    <Button
                       className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
                       onClick={handleSearch}
                     >
-                      Search Ferries
+                      {t('searchButton')}
                     </Button>
                   </div>
                 </div>
@@ -275,8 +252,8 @@ export default function FerryTicketsPage() {
         <section className="w-full py-16 md:py-24">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Popular Ferry Routes</h2>
-              <p className="text-muted-foreground text-lg">Direct connections from Turkish coast to Greek islands</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('popularRoutes')}</h2>
+              <p className="text-muted-foreground text-lg">{t('popularRoutesSubtitle')}</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {routes.map((route, index) => (
@@ -296,13 +273,13 @@ export default function FerryTicketsPage() {
                           </div>
                           <div>
                             <p className="font-bold text-foreground">{route.from}</p>
-                            <p className="text-xs text-muted-foreground">Turkey</p>
+                            <p className="text-xs text-muted-foreground">{t('countryTurkey')}</p>
                           </div>
                         </div>
                         <ArrowRight className="h-5 w-5 text-primary" />
                         <div className="text-right">
                           <p className="font-bold text-foreground">{route.to}</p>
-                          <p className="text-xs text-muted-foreground">Greece</p>
+                          <p className="text-xs text-muted-foreground">{t('countryGreece')}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between py-4 border-t border-b border-border/50 mb-4">
@@ -317,9 +294,9 @@ export default function FerryTicketsPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-sm text-muted-foreground">From </span>
+                          <span className="text-sm text-muted-foreground">{t('fromPrice')} </span>
                           <span className="text-2xl font-bold text-primary">{route.price}</span>
-                          <span className="text-sm text-muted-foreground">/person</span>
+                          <span className="text-sm text-muted-foreground">{t('perPerson')}</span>
                         </div>
                         <Button 
                           size="sm" 
@@ -330,7 +307,7 @@ export default function FerryTicketsPage() {
                             window.scrollTo({ top: 0, behavior: 'smooth' })
                           }}
                         >
-                          Book
+                          {t('bookButton')}
                         </Button>
                       </div>
                     </CardContent>
@@ -347,8 +324,8 @@ export default function FerryTicketsPage() {
         <section className="w-full py-16 md:py-24 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Book Ferry Tickets With Us?</h2>
-              <p className="text-muted-foreground text-lg">The trusted choice for Turkish travelers to Greek islands</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('whyTitle')}</h2>
+              <p className="text-muted-foreground text-lg">{t('whySubtitle')}</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="bg-card border-border/50 text-center">
@@ -356,8 +333,8 @@ export default function FerryTicketsPage() {
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
                     <Star className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Best Prices</h3>
-                  <p className="text-muted-foreground">We compare all ferry operators to offer you the best available prices. No hidden fees.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-3">{t('why1Title')}</h3>
+                  <p className="text-muted-foreground">{t('why1Desc')}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border/50 text-center">
@@ -365,8 +342,8 @@ export default function FerryTicketsPage() {
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
                     <Anchor className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Local Expertise</h3>
-                  <p className="text-muted-foreground">Our office in Kos Port means we know every route, schedule, and operator firsthand.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-3">{t('why2Title')}</h3>
+                  <p className="text-muted-foreground">{t('why2Desc')}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border/50 text-center">
@@ -374,8 +351,8 @@ export default function FerryTicketsPage() {
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
                     <Users className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Turkish Support</h3>
-                  <p className="text-muted-foreground">Our Turkish-speaking team assists you before, during, and after your journey.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-3">{t('why3Title')}</h3>
+                  <p className="text-muted-foreground">{t('why3Desc')}</p>
                 </CardContent>
               </Card>
             </div>
@@ -387,17 +364,17 @@ export default function FerryTicketsPage() {
           <div className="container px-4 md:px-6">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-                <p className="text-muted-foreground text-lg">Everything you need to know about ferry travel</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('faqTitle')}</h2>
+                <p className="text-muted-foreground text-lg">{t('faqSubtitle')}</p>
               </div>
               <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                {Array.from({ length: FAQ_COUNT }, (_, i) => i + 1).map((n) => (
+                  <AccordionItem key={n} value={`item-${n}`} className="border-border/50">
                     <AccordionTrigger className="text-left text-foreground hover:text-primary">
-                      {faq.question}
+                      {t(`faq${n}Q`)}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
+                      {t(`faq${n}A`)}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -408,9 +385,9 @@ export default function FerryTicketsPage() {
 
         <SecurePaymentBanner />
         
-        <WhatsAppCTA 
-          title="Need Help With Ferry Booking?"
-          description="Our team speaks Turkish and can help you find the perfect ferry schedule and best prices."
+        <WhatsAppCTA
+          title={t('ctaTitle')}
+          description={t('ctaDescription')}
         />
       </main>
 
