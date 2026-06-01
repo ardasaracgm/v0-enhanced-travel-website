@@ -68,9 +68,8 @@
   },
 
   "hero": {
-    "kicker": "YOUR GATEWAY TO GREEK ISLANDS",
-    "titleStart": "Discover the Magic",
-    "titleHighlight": "of the Aegean",
+    "kicker": "Your Gateway to Greek Islands",
+    "title": "Discover the Magic of the <hl>Aegean</hl>",
     "subtitle": "Ferry tickets, car rentals, hotels, and tours to Kos, Rhodes, Samos, Leros, and Patmos. Trusted by thousands of Turkish travelers.",
     "rating": "4.9/5 Google Reviews",
     "officeBadge": "Office at Kos Port",

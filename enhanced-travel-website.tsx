@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Calendar,
   ChevronRight,
@@ -49,6 +50,7 @@ import {
 } from "@/components/ui/select";
 
 export default function TravelBeez() {
+  const t = useTranslations("hero");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -269,7 +271,7 @@ export default function TravelBeez() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-sm md:text-base text-primary font-semibold tracking-wider uppercase"
               >
-                Your Gateway to Greek Islands
+                {t("kicker")}
               </motion.span>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -277,8 +279,11 @@ export default function TravelBeez() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground text-balance"
               >
-                Discover the Magic of the{" "}
-                <span className="text-primary">Aegean</span>
+                {t.rich("title", {
+                  hl: (chunks) => (
+                    <span className="text-primary">{chunks}</span>
+                  ),
+                })}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -286,9 +291,7 @@ export default function TravelBeez() {
                 transition={{ delay: 0.2 }}
                 className="text-muted-foreground max-w-xl md:text-lg text-pretty"
               >
-                Ferry tickets, car rentals, hotels, and tours to Kos, Rhodes,
-                Samos, Leros, and Patmos. Trusted by thousands of Turkish
-                travelers.
+                {t("subtitle")}
               </motion.p>
 
               {/* Hero Trust Indicators */}
@@ -300,15 +303,15 @@ export default function TravelBeez() {
               >
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
                   <Star className="h-4 w-4 text-accent fill-current" />
-                  <span>4.9/5 Google Reviews</span>
+                  <span>{t("rating")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span>Office at Kos Port</span>
+                  <span>{t("officeBadge")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
                   <BadgeCheck className="h-4 w-4 text-primary" />
-                  <span>Licensed Greek Agency</span>
+                  <span>{t("licensedBadge")}</span>
                 </div>
               </motion.div>
             </div>
@@ -329,28 +332,28 @@ export default function TravelBeez() {
                         className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none first:rounded-tl-lg"
                       >
                         <Ship className="h-4 w-4" />
-                        <span className="hidden sm:inline">Ferry</span>
+                        <span className="hidden sm:inline">{t("tabs.ferry")}</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="cars"
                         className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none"
                       >
                         <Car className="h-4 w-4" />
-                        <span className="hidden sm:inline">Cars</span>
+                        <span className="hidden sm:inline">{t("tabs.cars")}</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="hotels"
                         className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none"
                       >
                         <Hotel className="h-4 w-4" />
-                        <span className="hidden sm:inline">Hotels</span>
+                        <span className="hidden sm:inline">{t("tabs.hotels")}</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="tours"
                         className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none last:rounded-tr-lg"
                       >
                         <Compass className="h-4 w-4" />
-                        <span className="hidden sm:inline">Tours</span>
+                        <span className="hidden sm:inline">{t("tabs.tours")}</span>
                       </TabsTrigger>
                     </TabsList>
                     <div className="p-6">
