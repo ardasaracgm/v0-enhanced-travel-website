@@ -524,6 +524,29 @@
     "title": "Υποστήριξη Βίζας",
     "subtitle": "Σύμβουλοι Schengen βίζας για Τούρκους ταξιδιώτες. Καθοδήγηση αίτησης, έλεγχος εγγράφων, κλείσιμο ραντεβού.",
     "leadIntro": "Μοιραστείτε τα στοιχεία σας και ένας ειδικός βίζας θα επικοινωνήσει εντός μίας εργάσιμης ημέρας.",
+    "documents": {
+      "title": "Upload Your Documents",
+      "subtitle": "Upload the documents required for your Schengen visa application.",
+      "requiredGroup": "Required Documents",
+      "optionalGroup": "Optional Documents",
+      "badgeRequired": "Required",
+      "badgeOptional": "Optional",
+      "selectFile": "Select File",
+      "change": "Change",
+      "uploading": "Uploading…",
+      "uploaded": "Uploaded",
+      "errType": "Only {formats} files are allowed.",
+      "errSize": "File size must be between {min} and {max}.",
+      "errUpload": "Upload failed. Please try again.",
+      "formatHint": "Accepted formats: {formats} · Size: {min} – {max}",
+      "summary": "{uploaded} of {total} required documents uploaded",
+      "missingWarning": "{count} required document(s) missing",
+      "submitting": "Submitting…",
+      "submitError": "Submission failed. Please try again.",
+      "successTitle": "Documents received",
+      "successBody": "Your documents were uploaded successfully. Our visa team will review your application.",
+      "submit": "Submit"
+    },
     "form": {
       "heading": "Schengen Visa Application",
       "intro": "Complete all five steps. All fields are required.",
@@ -564,6 +587,7 @@
         "livesInOtherCountry": "Do you live in a country different from your nationality?",
         "occupation": "Occupation",
         "travelPurpose": "Purpose of Travel",
+        "fundingSource": "Who is covering the travel expenses?",
         "stayDuration": "Length of Stay (days)",
         "schengenLast3Years": "Have you held a Schengen visa in the last 3 years?",
         "fingerprintsTaken": "Have your fingerprints been taken previously?",
@@ -592,6 +616,7 @@
           "special": "Special passport"
         },
         "travelPurpose": { "tourism": "Tourism", "business": "Business" },
+        "fundingSource": { "self": "Myself", "sponsor": "Sponsor" },
         "yesNo": { "true": "Yes", "false": "No" },
         "occupation": {
           "architect": "Architect",
@@ -665,6 +690,7 @@
         "livesInOtherCountry": { "required": "Please answer this question." },
         "occupation": { "required": "Please select an occupation." },
         "travelPurpose": { "required": "Please select a purpose of travel." },
+        "fundingSource": { "required": "Please select who is covering the expenses." },
         "stayDuration": { "range": "Length of stay must be between 1 and 7 days." },
         "schengenLast3Years": { "required": "Please answer this question." },
         "fingerprintsTaken": { "required": "Please answer this question." },
@@ -682,6 +708,7 @@
       "success": {
         "title": "Application Received",
         "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "documentsCta": "Upload Your Documents",
         "whatsapp": "Message us on WhatsApp"
       }
     }

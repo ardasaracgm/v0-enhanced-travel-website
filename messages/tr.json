@@ -524,6 +524,29 @@
     "title": "Vize Desteği",
     "subtitle": "Türk gezginler için Schengen vize danışmanlığı. Başvuru rehberliği, belge incelemesi, randevu alma.",
     "leadIntro": "Bilgilerinizi paylaşın, bir iş günü içinde vize uzmanımız sizinle iletişime geçsin.",
+    "documents": {
+      "title": "Belgelerinizi Yükleyin",
+      "subtitle": "Schengen vize başvurunuz için gerekli belgeleri yükleyin.",
+      "requiredGroup": "Zorunlu Belgeler",
+      "optionalGroup": "İsteğe Bağlı Belgeler",
+      "badgeRequired": "Zorunlu",
+      "badgeOptional": "İsteğe bağlı",
+      "selectFile": "Dosya Seç",
+      "change": "Değiştir",
+      "uploading": "Yükleniyor…",
+      "uploaded": "Yüklendi",
+      "errType": "Yalnızca {formats} dosyası yükleyebilirsiniz.",
+      "errSize": "Dosya boyutu {min} – {max} arasında olmalıdır.",
+      "errUpload": "Yükleme başarısız oldu. Lütfen tekrar deneyin.",
+      "formatHint": "Kabul edilen formatlar: {formats} · Boyut: {min} – {max}",
+      "summary": "{total} zorunlu belgeden {uploaded} tanesi yüklendi",
+      "missingWarning": "{count} zorunlu belge eksik",
+      "submitting": "Gönderiliyor…",
+      "submitError": "Gönderim başarısız oldu. Lütfen tekrar deneyin.",
+      "successTitle": "Belgeleriniz alındı",
+      "successBody": "Belgeleriniz başarıyla yüklendi. Vize ekibimiz başvurunuzu inceleyecek.",
+      "submit": "Gönder"
+    },
     "form": {
       "heading": "Schengen Vize Başvurusu",
       "intro": "Beş adımı da tamamlayın. Tüm alanlar zorunludur.",
@@ -564,6 +587,7 @@
         "livesInOtherCountry": "Vatandaşı olduğunuz ülkeden farklı bir ülkede mi yaşıyorsunuz?",
         "occupation": "Meslek",
         "travelPurpose": "Seyahat Amacı",
+        "fundingSource": "Seyahat masraflarını kim karşılıyor?",
         "stayDuration": "Kalış Süresi (gün)",
         "schengenLast3Years": "Son 3 yılda Schengen vizeniz oldu mu?",
         "fingerprintsTaken": "Daha önce parmak iziniz alındı mı?",
@@ -592,6 +616,7 @@
           "special": "Hususi pasaport"
         },
         "travelPurpose": { "tourism": "Turizm", "business": "İş" },
+        "fundingSource": { "self": "Kendim", "sponsor": "Sponsor" },
         "yesNo": { "true": "Evet", "false": "Hayır" },
         "occupation": {
           "architect": "Mimar",
@@ -665,6 +690,7 @@
         "livesInOtherCountry": { "required": "Lütfen bu soruyu yanıtlayın." },
         "occupation": { "required": "Lütfen bir meslek seçin." },
         "travelPurpose": { "required": "Lütfen seyahat amacı seçin." },
+        "fundingSource": { "required": "Lütfen masrafları kimin karşıladığını seçin." },
         "stayDuration": { "range": "Kalış süresi 1 ile 7 gün arasında olmalıdır." },
         "schengenLast3Years": { "required": "Lütfen bu soruyu yanıtlayın." },
         "fingerprintsTaken": { "required": "Lütfen bu soruyu yanıtlayın." },
@@ -682,6 +708,7 @@
       "success": {
         "title": "Başvurunuz Alındı",
         "body": "Teşekkürler. Vize ekibimiz başvurunuzu inceleyecek ve bir iş günü içinde sizinle iletişime geçecektir.",
+        "documentsCta": "Belgelerinizi Yükleyin",
         "whatsapp": "WhatsApp'tan bize yazın"
       }
     }
