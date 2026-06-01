@@ -146,6 +146,23 @@
     "locatedBadge": "Βρισκόμαστε στην Έξοδο του Λιμένα Κω"
   },
 
+  "kosOffice": {
+    "officeName": "TravelBeez Kos Office",
+    "address": "G Averos 4, Kos (under Achilleas Hotel)",
+    "meetTitle": "Meet Us When You Arrive",
+    "description": "Our office is located directly at Kos Port exit, under Achilleas Hotel & Apartments. Our Turkish-speaking team will greet you, hand over your rental car keys, and help with anything you need.",
+    "b1Title": "Port-side car delivery",
+    "b1Desc": "Your car waits at the ferry terminal",
+    "b2Title": "Turkish-speaking staff",
+    "b2Desc": "Communicate easily in your language",
+    "b3Title": "Local insider tips",
+    "b3Desc": "Best restaurants, beaches, and hidden gems",
+    "b4Title": "Emergency support",
+    "b4Desc": "24/7 help while you're on the island",
+    "getDirections": "Get Directions",
+    "chatWithUs": "Chat with Us"
+  },
+
   "ferryPage": {
     "title": "Εισιτήρια Πλοίων προς τα Ελληνικά Νησιά",
     "subtitle": "Κλείστε το εισιτήριο πλοίου σας από Bodrum, Turgutreis ή Marmaris προς Κω, Ρόδο, Σάμο και άλλα νησιά.",

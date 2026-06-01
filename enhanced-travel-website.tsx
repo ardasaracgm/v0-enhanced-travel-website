@@ -54,6 +54,7 @@ export default function TravelBeez() {
   const tForm = useTranslations("searchForm");
   const tBar = useTranslations("trustBar");
   const tLic = useTranslations("license");
+  const tOffice = useTranslations("kosOffice");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -755,10 +756,10 @@ export default function TravelBeez() {
                       </div>
                       <div>
                         <p className="font-bold text-foreground text-lg">
-                          TravelBeez Kos Office
+                          {tOffice("officeName")}
                         </p>
                         <p className="text-sm text-muted-foreground mb-2">
-                          G Averos 4, Kos (under Achilleas Hotel)
+                          {tOffice("address")}
                         </p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1 text-primary">
@@ -778,26 +779,23 @@ export default function TravelBeez() {
               <div className="order-1 md:order-2 space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent-foreground text-sm font-medium">
                   <Anchor className="h-4 w-4 text-accent" />
-                  Located Directly at Kos Port Exit
+                  {tLic("locatedBadge")}
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
-                  Meet Us When You Arrive
+                  {tOffice("meetTitle")}
                 </h2>
                 <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
-                  Our office is located directly at Kos Port exit, under
-                  Achilleas Hotel & Apartments. Our Turkish-speaking team will
-                  greet you, hand over your rental car keys, and help with
-                  anything you need.
+                  {tOffice("description")}
                 </p>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
                       <span className="font-medium">
-                        Port-side car delivery
+                        {tOffice("b1Title")}
                       </span>
                       <p className="text-sm text-muted-foreground">
-                        Your car waits at the ferry terminal
+                        {tOffice("b1Desc")}
                       </p>
                     </div>
                   </li>
@@ -805,28 +803,28 @@ export default function TravelBeez() {
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
                       <span className="font-medium">
-                        Turkish-speaking staff
+                        {tOffice("b2Title")}
                       </span>
                       <p className="text-sm text-muted-foreground">
-                        Communicate easily in your language
+                        {tOffice("b2Desc")}
                       </p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium">Local insider tips</span>
+                      <span className="font-medium">{tOffice("b3Title")}</span>
                       <p className="text-sm text-muted-foreground">
-                        Best restaurants, beaches, and hidden gems
+                        {tOffice("b3Desc")}
                       </p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium">Emergency support</span>
+                      <span className="font-medium">{tOffice("b4Title")}</span>
                       <p className="text-sm text-muted-foreground">
-                        24/7 help while you&apos;re on the island
+                        {tOffice("b4Desc")}
                       </p>
                     </div>
                   </li>
@@ -834,14 +832,14 @@ export default function TravelBeez() {
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     <MapPin className="h-4 w-4 mr-2" />
-                    Get Directions
+                    {tOffice("getDirections")}
                   </Button>
                   <Button
                     variant="outline"
                     className="border-primary/30 text-foreground hover:bg-primary/5"
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    Chat with Us
+                    {tOffice("chatWithUs")}
                   </Button>
                 </div>
               </div>

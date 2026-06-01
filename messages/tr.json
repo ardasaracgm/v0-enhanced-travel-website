@@ -146,6 +146,23 @@
     "locatedBadge": "Kos Limanı Çıkışında Bulunmaktayız"
   },
 
+  "kosOffice": {
+    "officeName": "TravelBeez Kos Ofisi",
+    "address": "G Averos 4, Kos (Achilleas Hotel altında)",
+    "meetTitle": "Vardığınızda Bizimle Buluşun",
+    "description": "Ofisimiz doğrudan Kos Limanı çıkışında, Achilleas Hotel & Apartments'ın altında yer almaktadır. Türkçe konuşan ekibimiz sizi karşılayacak, kiralık araç anahtarlarınızı teslim edecek ve ihtiyacınız olan her konuda yardımcı olacaktır.",
+    "b1Title": "Limanda Araç Teslimi",
+    "b1Desc": "Aracınız feribot terminalinde sizi bekler",
+    "b2Title": "Türkçe konuşan personel",
+    "b2Desc": "Kendi dilinizde kolayca iletişim kurun",
+    "b3Title": "Yerel İpuçları",
+    "b3Desc": "En iyi restoranlar, plajlar ve gizli köşeler",
+    "b4Title": "Acil destek",
+    "b4Desc": "Adadayken 7/24 yardım",
+    "getDirections": "Yol Tarifi Al",
+    "chatWithUs": "Bizimle Sohbet Edin"
+  },
+
   "ferryPage": {
     "title": "Yunan Adalarına Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",
