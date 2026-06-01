@@ -56,6 +56,7 @@ export default function TravelBeez() {
   const tLic = useTranslations("license");
   const tOffice = useTranslations("kosOffice");
   const tSup = useTranslations("support");
+  const tSvc = useTranslations("services");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -172,38 +173,38 @@ export default function TravelBeez() {
   const services = [
     {
       icon: <Ship className="h-8 w-8" />,
-      title: "Ferry Tickets",
-      description: "Book ferries from Turkey to Greek islands",
+      title: tSvc("s1Title"),
+      description: tSvc("s1Desc"),
       href: "/ferry",
     },
     {
       icon: <Car className="h-8 w-8" />,
-      title: "Car Rental",
-      description: "Explore islands at your own pace",
+      title: tSvc("s2Title"),
+      description: tSvc("s2Desc"),
       href: "/car-rental",
     },
     {
       icon: <Hotel className="h-8 w-8" />,
-      title: "Hotels & Stays",
-      description: "Handpicked accommodations",
+      title: tSvc("s3Title"),
+      description: tSvc("s3Desc"),
       href: "#",
     },
     {
       icon: <Compass className="h-8 w-8" />,
-      title: "Island Tours",
-      description: "Guided experiences and excursions",
+      title: tSvc("s4Title"),
+      description: tSvc("s4Desc"),
       href: "/tours",
     },
     {
       icon: <FileText className="h-8 w-8" />,
-      title: "Visa Support",
-      description: "Schengen visa assistance",
+      title: tSvc("s5Title"),
+      description: tSvc("s5Desc"),
       href: "/visa",
     },
     {
       icon: <Package className="h-8 w-8" />,
-      title: "Package Pickup",
-      description: "Secure delivery address and storage at Kos Port",
+      title: tSvc("s6Title"),
+      description: tSvc("s6Desc"),
       href: "/package-pickup",
     },
   ];
@@ -920,10 +921,10 @@ export default function TravelBeez() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Services
+                {tSvc("title")}
               </h2>
               <p className="text-muted-foreground text-lg">
-                Everything you need for a perfect Greek island getaway
+                {tSvc("subtitle")}
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">

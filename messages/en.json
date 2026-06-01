@@ -180,6 +180,23 @@
     "c4Highlight": "Dedicated team"
   },
 
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Everything you need for a perfect Greek island getaway",
+    "s1Title": "Ferry Tickets",
+    "s1Desc": "Book ferries from Turkey to Greek islands",
+    "s2Title": "Car Rental",
+    "s2Desc": "Explore islands at your own pace",
+    "s3Title": "Hotels & Stays",
+    "s3Desc": "Handpicked accommodations",
+    "s4Title": "Island Tours",
+    "s4Desc": "Guided experiences and excursions",
+    "s5Title": "Visa Support",
+    "s5Desc": "Schengen visa assistance",
+    "s6Title": "Package Pickup",
+    "s6Desc": "Secure delivery address and storage at Kos Port"
+  },
+
   "ferryPage": {
     "title": "Ferry Tickets to Greek Islands",
     "subtitle": "Book your ferry crossing from Bodrum, Turgutreis or Marmaris to Kos, Rhodes, Samos and beyond.",

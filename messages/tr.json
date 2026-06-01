@@ -180,6 +180,23 @@
     "c4Highlight": "Size özel ekip"
   },
 
+  "services": {
+    "title": "Hizmetlerimiz",
+    "subtitle": "Mükemmel bir Yunan adası tatili için ihtiyacınız olan her şey",
+    "s1Title": "Feribot Biletleri",
+    "s1Desc": "Türkiye'den Yunan adalarına feribot rezervasyonu yapın",
+    "s2Title": "Araç Kiralama",
+    "s2Desc": "Adaları kendi hızınızda keşfedin",
+    "s3Title": "Oteller ve Konaklama",
+    "s3Desc": "Özenle seçilmiş konaklama seçenekleri",
+    "s4Title": "Ada Turları",
+    "s4Desc": "Rehberli deneyimler ve geziler",
+    "s5Title": "Vize Desteği",
+    "s5Desc": "Schengen vize yardımı",
+    "s6Title": "Paket Teslim",
+    "s6Desc": "Kos Limanı'nda güvenli teslimat adresi ve depolama"
+  },
+
   "ferryPage": {
     "title": "Yunan Adalarına Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",
