@@ -1028,5 +1028,149 @@
     "operatingAs": "{year} FerryBee Travel IKE - operating as TravelBeez.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"
+  },
+  "eventsPage": {
+    "hero": {
+      "badge": "Events & Group Travel",
+      "title": "Greek Islands Events & Group Travel",
+      "subtitle": "Weddings, private dinners, group stays and unforgettable island experiences planned from Turkey to Greece.",
+      "planBtn": "Plan Your Event"
+    },
+    "services": {
+      "title": "Our Event Services",
+      "intro": "From intimate celebrations to large group gatherings, we handle every detail of your Greek island experience.",
+      "s1Title": "Island Weddings",
+      "s1Desc": "Intimate ceremonies and celebrations on stunning Greek island venues with full coordination.",
+      "s2Title": "Private Dinners",
+      "s2Desc": "Exclusive seaside dining experiences at handpicked restaurants with curated menus.",
+      "s3Title": "Group Accommodation",
+      "s3Desc": "Coordinated hotel bookings and villa rentals for groups of any size.",
+      "s4Title": "Corporate Retreats",
+      "s4Desc": "Team building events, conferences, and business getaways on Greek islands.",
+      "s5Title": "Honeymoon & Celebrations",
+      "s5Desc": "Romantic getaways, anniversaries, and birthday celebrations with special touches.",
+      "s6Title": "Private Boat Experiences",
+      "s6Desc": "Charter yachts and traditional boats for private island hopping adventures."
+    },
+    "hiw": {
+      "title": "How It Works",
+      "intro": "From first contact to unforgettable memories, we guide you through every step.",
+      "s1Title": "Share Your Vision",
+      "s1Desc": "Tell us your group size, dates, and what you have in mind for your event.",
+      "s2Title": "Custom Planning",
+      "s2Desc": "We prepare a tailored island plan with venues, activities, and logistics.",
+      "s3Title": "Full Coordination",
+      "s3Desc": "We handle ferry, hotel, transfers, restaurants, and special experiences.",
+      "s4Title": "Enjoy Seamlessly",
+      "s4Desc": "You arrive and enjoy — we take care of every detail on the ground."
+    },
+    "locations": {
+      "title": "Popular Event Destinations",
+      "intro": "Each Greek island offers unique venues and experiences for your special occasion."
+    },
+    "locItems": {
+      "kos": {
+        "name": "Kos",
+        "desc": "Historic charm meets beach life"
+      },
+      "rhodes": {
+        "name": "Rhodes",
+        "desc": "Medieval grandeur by the sea"
+      },
+      "samos": {
+        "name": "Samos",
+        "desc": "Lush mountains and vineyards"
+      },
+      "leros": {
+        "name": "Leros",
+        "desc": "Authentic and unspoiled"
+      },
+      "patmos": {
+        "name": "Patmos",
+        "desc": "Spiritual and serene"
+      },
+      "kalymnos": {
+        "name": "Kalymnos",
+        "desc": "Adventure and tradition"
+      }
+    },
+    "packages": {
+      "title": "Package Examples",
+      "intro": "Every event is custom-planned, but here are some popular experiences we create.",
+      "p1Title": "Kos Wedding Weekend",
+      "p1Desc": "Ceremony, reception, and 2-night stay for up to 30 guests",
+      "p1Tag": "Full Service",
+      "p2Title": "Private Dinner by the Sea",
+      "p2Desc": "Sunset dinner at exclusive venue with transfers",
+      "p2Tag": "Intimate",
+      "p3Title": "Corporate Island Escape",
+      "p3Desc": "3-day retreat with team activities and accommodation",
+      "p3Tag": "Team Building",
+      "p4Title": "Family Group Holiday",
+      "p4Desc": "Multi-generational trip with coordinated stays and tours",
+      "p4Tag": "All Ages",
+      "p5Title": "Honeymoon in the Aegean",
+      "p5Desc": "Romantic island hopping with luxury touches",
+      "p5Tag": "Romance"
+    },
+    "form": {
+      "title": "Plan Your Event",
+      "intro": "Tell us about your dream Greek island event. We will create a custom proposal tailored to your needs.",
+      "benefit1Title": "Free Consultation",
+      "benefit1Desc": "No commitment required — we will discuss your vision first.",
+      "benefit2Title": "Local Expertise",
+      "benefit2Desc": "6+ years of planning events across the Dodecanese islands.",
+      "benefit3Title": "End-to-End Service",
+      "benefit3Desc": "From ferry tickets to venue decor — we coordinate everything.",
+      "talkTitle": "Prefer to talk directly?",
+      "talkDesc": "Reach us on WhatsApp for immediate assistance.",
+      "fullName": "Full Name *",
+      "fullNamePh": "Your name",
+      "phone": "Phone / WhatsApp *",
+      "phonePh": "+90 5XX XXX XX XX",
+      "email": "Email *",
+      "emailPh": "your@email.com",
+      "eventType": "Event Type *",
+      "eventTypePh": "Select type",
+      "islandPref": "Island Preference *",
+      "islandPrefPh": "Select island",
+      "groupSize": "Group Size *",
+      "groupSizePh": "Number of guests",
+      "dates": "Preferred Dates *",
+      "datesPh": "e.g., July 15-20, 2025",
+      "message": "Tell Us More (Optional)",
+      "messagePh": "Describe your vision, special requests, or any questions...",
+      "sending": "Sending...",
+      "submit": "Send Event Request",
+      "submitAnother": "Submit Another Request",
+      "successTitle": "Request Received!",
+      "successBody": "Thank you for your interest. We will contact you within 24 hours with a custom proposal.",
+      "consent": "By submitting, you agree to be contacted regarding your event inquiry.",
+      "errFallback": "Failed to submit request"
+    },
+    "eventTypes": {
+      "wedding": "Wedding",
+      "privateDinner": "Private Dinner",
+      "corporate": "Corporate Event",
+      "birthday": "Birthday Celebration",
+      "honeymoon": "Honeymoon",
+      "groupHoliday": "Group Holiday",
+      "anniversary": "Anniversary",
+      "other": "Other"
+    },
+    "islandOptions": {
+      "kos": "Kos",
+      "rhodes": "Rhodes",
+      "samos": "Samos",
+      "leros": "Leros",
+      "patmos": "Patmos",
+      "kalymnos": "Kalymnos",
+      "multiple": "Multiple Islands",
+      "notSure": "Not Sure Yet"
+    },
+    "cta": {
+      "title": "Tell us your dream island event",
+      "desc": "We will plan the rest."
+    }
   }
 }

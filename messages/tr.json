@@ -1028,5 +1028,149 @@
     "operatingAs": "{year} FerryBee Travel IKE - TravelBeez olarak faaliyet göstermektedir.",
     "privacy": "Gizlilik Politikası",
     "terms": "Kullanım Koşulları"
+  },
+  "eventsPage": {
+    "hero": {
+      "badge": "Etkinlikler & Grup Seyahati",
+      "title": "Yunan Adaları Etkinlikleri & Grup Seyahati",
+      "subtitle": "Türkiye'den Yunanistan'a planlanan düğünler, özel yemekler, grup konaklamaları ve unutulmaz ada deneyimleri.",
+      "planBtn": "Etkinliğinizi Planlayın"
+    },
+    "services": {
+      "title": "Etkinlik Hizmetlerimiz",
+      "intro": "Samimi kutlamalardan büyük grup toplantılarına kadar Yunan adası deneyiminizin her ayrıntısıyla ilgileniyoruz.",
+      "s1Title": "Ada Düğünleri",
+      "s1Desc": "Tam koordinasyon ile çarpıcı Yunan adası mekanlarında samimi törenler ve kutlamalar.",
+      "s2Title": "Özel Akşam Yemekleri",
+      "s2Desc": "Seçkin menüleriyle özenle seçilmiş restoranlarda deniz kenarında özel yemek deneyimleri.",
+      "s3Title": "Grup Konaklaması",
+      "s3Desc": "Her büyüklükteki grup için koordineli otel rezervasyonları ve villa kiralamaları.",
+      "s4Title": "Kurumsal Geziler",
+      "s4Desc": "Yunan adalarında ekip kurma etkinlikleri, konferanslar ve iş kaçamakları.",
+      "s5Title": "Balayı & Kutlamalar",
+      "s5Desc": "Romantik kaçamaklar, yıldönümleri ve doğum günü kutlamalarına özel dokunuşlar.",
+      "s6Title": "Özel Tekne Deneyimleri",
+      "s6Desc": "Özel ada gezintisi maceraları için yat ve geleneksel tekneler kiralayın."
+    },
+    "hiw": {
+      "title": "Nasıl Çalışır",
+      "intro": "İlk temastan unutulmaz anılara kadar her adımda size rehberlik ediyoruz.",
+      "s1Title": "Vizyonunuzu Paylaşın",
+      "s1Desc": "Bize grup büyüklüğünüzü, tarihlerinizi ve etkinliğiniz için aklınızda ne olduğunu söyleyin.",
+      "s2Title": "Özel Planlama",
+      "s2Desc": "Mekanlar, etkinlikler ve lojistikle birlikte özel bir ada planı hazırlıyoruz.",
+      "s3Title": "Tam Koordinasyon",
+      "s3Desc": "Feribot, otel, transferler, restoranlar ve özel deneyimlerle ilgileniyoruz.",
+      "s4Title": "Sorunsuzca Keyfini Çıkarın",
+      "s4Desc": "Siz varın ve keyfini çıkarın - biz yerdeki her ayrıntıyla ilgileniyoruz."
+    },
+    "locations": {
+      "title": "Popüler Etkinlik Destinasyonları",
+      "intro": "Her Yunan adası, özel günleriniz için benzersiz mekânlar ve deneyimler sunar."
+    },
+    "locItems": {
+      "kos": {
+        "name": "Kos",
+        "desc": "Tarihi cazibe sahil yaşamıyla buluşuyor"
+      },
+      "rhodes": {
+        "name": "Rodos",
+        "desc": "Deniz kenarında Orta Çağ ihtişamı"
+      },
+      "samos": {
+        "name": "Sisam",
+        "desc": "Yemyeşil dağlar ve üzüm bağları"
+      },
+      "leros": {
+        "name": "Leros",
+        "desc": "Otantik ve bozulmamış"
+      },
+      "patmos": {
+        "name": "Patmos",
+        "desc": "Ruhani ve dingin"
+      },
+      "kalymnos": {
+        "name": "Kalimnos",
+        "desc": "Macera ve gelenek"
+      }
+    },
+    "packages": {
+      "title": "Paket Örnekleri",
+      "intro": "Her etkinlik özel olarak planlanır, ancak işte yarattığımız bazı popüler deneyimler.",
+      "p1Title": "Kos Düğün Haftasonu",
+      "p1Desc": "Tören, resepsiyon ve en fazla 30 konuk için 2 gece konaklama",
+      "p1Tag": "Tam Hizmet",
+      "p2Title": "Deniz Kenarında Özel Akşam Yemeği",
+      "p2Desc": "Transferlerle birlikte özel bir mekanda gün batımı akşam yemeği",
+      "p2Tag": "Samimi",
+      "p3Title": "Kurumsal Ada Kaçamağı",
+      "p3Desc": "Ekip aktiviteleri ve konaklama ile 3 günlük inziva",
+      "p3Tag": "Takım Çalışması",
+      "p4Title": "Aile Grup Tatili",
+      "p4Desc": "Koordineli konaklamalar ve turlarla çok kuşaklı gezi",
+      "p4Tag": "Tüm Yaşlar",
+      "p5Title": "Ege'de Balayı",
+      "p5Desc": "Lüks dokunuşlarla romantik ada gezintisi",
+      "p5Tag": "Romantizm"
+    },
+    "form": {
+      "title": "Etkinliğinizi Planlayın",
+      "intro": "Bize hayalinizdeki Yunan adası etkinliğinden bahsedin. İhtiyaçlarınıza göre uyarlanmış özel bir teklif oluşturacağız.",
+      "benefit1Title": "Ücretsiz Danışmanlık",
+      "benefit1Desc": "Taahhüt gerekmez - önce vizyonunuzu tartışacağız.",
+      "benefit2Title": "Yerel Uzmanlık",
+      "benefit2Desc": "Onikiada'da 6+ yıldır etkinlik planlıyoruz.",
+      "benefit3Title": "Uçtan Uca Hizmet",
+      "benefit3Desc": "Feribot biletlerinden mekan dekoruna kadar her şeyi koordine ediyoruz.",
+      "talkTitle": "Doğrudan konuşmayı mı tercih edersiniz?",
+      "talkDesc": "Acil yardım için bize WhatsApp üzerinden ulaşın.",
+      "fullName": "Ad Soyad *",
+      "fullNamePh": "Adınız",
+      "phone": "Telefon / WhatsApp *",
+      "phonePh": "+90 5XX XXX XX XX",
+      "email": "E-posta *",
+      "emailPh": "your@email.com",
+      "eventType": "Etkinlik Türü *",
+      "eventTypePh": "Tür seçin",
+      "islandPref": "Ada Tercihi *",
+      "islandPrefPh": "Ada seçin",
+      "groupSize": "Grup Büyüklüğü *",
+      "groupSizePh": "Misafir sayısı",
+      "dates": "Tercih Edilen Tarihler *",
+      "datesPh": "örn. 15-20 Temmuz 2025",
+      "message": "Bize Daha Fazla Bilgi Verin (İsteğe Bağlı)",
+      "messagePh": "Vizyonunuzu, özel isteklerinizi veya sorularınızı açıklayın...",
+      "sending": "Gönderiliyor...",
+      "submit": "Etkinlik Talebi Gönder",
+      "submitAnother": "Başka Bir Talep Gönder",
+      "successTitle": "Talebiniz Alındı!",
+      "successBody": "İlginiz için teşekkür ederiz. Özel bir teklifle 24 saat içinde sizinle iletişime geçeceğiz.",
+      "consent": "Göndererek, etkinlik talebinizle ilgili olarak sizinle iletişime geçilmesini kabul etmiş olursunuz.",
+      "errFallback": "İstek gönderilemedi"
+    },
+    "eventTypes": {
+      "wedding": "Düğün",
+      "privateDinner": "Özel Akşam Yemeği",
+      "corporate": "Kurumsal Etkinlik",
+      "birthday": "Doğum Günü Kutlaması",
+      "honeymoon": "Balayı",
+      "groupHoliday": "Grup Tatili",
+      "anniversary": "Yıldönümü",
+      "other": "Diğer"
+    },
+    "islandOptions": {
+      "kos": "Kos",
+      "rhodes": "Rodos",
+      "samos": "Sisam",
+      "leros": "Leros",
+      "patmos": "Patmos",
+      "kalymnos": "Kalimnos",
+      "multiple": "Birden Fazla Ada",
+      "notSure": "Henüz Emin Değilim"
+    },
+    "cta": {
+      "title": "Bize hayalinizdeki ada etkinliğini anlatın",
+      "desc": "Gerisini biz planlayacağız."
+    }
   }
 }
