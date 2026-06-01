@@ -221,6 +221,12 @@
     "badgeValue": "Best Value"
   },
 
+  "payment": {
+    "title": "Secure Payments",
+    "subtitle": "256-bit SSL encryption. Your data is always protected.",
+    "bankTransfer": "Bank Transfer (TL/EUR)"
+  },
+
   "ferryPage": {
     "title": "Εισιτήρια Πλοίων προς τα Ελληνικά Νησιά",
     "subtitle": "Κλείστε το εισιτήριο πλοίου σας από Bodrum, Turgutreis ή Marmaris προς Κω, Ρόδο, Σάμο και άλλα νησιά.",

@@ -221,6 +221,12 @@
     "badgeValue": "En İyi Değer"
   },
 
+  "payment": {
+    "title": "Güvenli Ödemeler",
+    "subtitle": "256-bit SSL şifreleme. Verileriniz her zaman korunur.",
+    "bankTransfer": "Banka Havalesi (TL/EUR)"
+  },
+
   "ferryPage": {
     "title": "Yunan Adalarına Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",

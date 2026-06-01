@@ -221,6 +221,12 @@
     "badgeValue": "Best Value"
   },
 
+  "payment": {
+    "title": "Secure Payments",
+    "subtitle": "256-bit SSL encryption. Your data is always protected.",
+    "bankTransfer": "Bank Transfer (TL/EUR)"
+  },
+
   "ferryPage": {
     "title": "Ferry Tickets to Greek Islands",
     "subtitle": "Book your ferry crossing from Bodrum, Turgutreis or Marmaris to Kos, Rhodes, Samos and beyond.",

@@ -58,6 +58,7 @@ export default function TravelBeez() {
   const tSup = useTranslations("support");
   const tSvc = useTranslations("services");
   const tFleet = useTranslations("carFleet");
+  const tPay = useTranslations("payment");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -1083,10 +1084,10 @@ export default function TravelBeez() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground text-lg">
-                    Secure Payments
+                    {tPay("title")}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    256-bit SSL encryption. Your data is always protected.
+                    {tPay("subtitle")}
                   </p>
                 </div>
               </div>
@@ -1101,7 +1102,7 @@ export default function TravelBeez() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <span className="text-sm font-medium">
-                    Bank Transfer (TL/EUR)
+                    {tPay("bankTransfer")}
                   </span>
                 </div>
               </div>
