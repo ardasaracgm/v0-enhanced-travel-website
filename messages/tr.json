@@ -107,7 +107,16 @@
     "checkIn": "Giriş Tarihi",
     "checkOut": "Çıkış Tarihi",
     "guests": "Misafir",
-    "guestCount": "{count, plural, one {# Misafir} other {# Misafir}}"
+    "guestCount": "{count, plural, one {# Misafir} other {# Misafir}}",
+    "tourType": "Tur Tipi",
+    "tourAll": "Tüm Turlar",
+    "tourBoat": "Tekne Turları",
+    "tourCultural": "Kültürel",
+    "tourAdventure": "Macera",
+    "participants": "Katılımcı",
+    "people": "Kişi",
+    "personCount": "{count, plural, one {# Kişi} other {# Kişi}}",
+    "personCountMax": "4+ Kişi"
   },
 
   "trustBar": {

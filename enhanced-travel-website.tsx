@@ -552,11 +552,11 @@ export default function TravelBeez() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Island
+                              {tForm("island")}
                             </label>
                             <Select defaultValue="kos">
                               <SelectTrigger>
-                                <SelectValue placeholder="Select island" />
+                                <SelectValue placeholder={tForm("selectIsland")} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="kos">Kos</SelectItem>
@@ -567,50 +567,50 @@ export default function TravelBeez() {
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Tour Type
+                              {tForm("tourType")}
                             </label>
                             <Select defaultValue="any">
                               <SelectTrigger>
-                                <SelectValue placeholder="Tour type" />
+                                <SelectValue placeholder={tForm("tourType")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="any">All Tours</SelectItem>
-                                <SelectItem value="boat">Boat Tours</SelectItem>
+                                <SelectItem value="any">{tForm("tourAll")}</SelectItem>
+                                <SelectItem value="boat">{tForm("tourBoat")}</SelectItem>
                                 <SelectItem value="cultural">
-                                  Cultural
+                                  {tForm("tourCultural")}
                                 </SelectItem>
                                 <SelectItem value="adventure">
-                                  Adventure
+                                  {tForm("tourAdventure")}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Date
+                              {tForm("date")}
                             </label>
                             <Input type="date" className="h-10" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Participants
+                              {tForm("participants")}
                             </label>
                             <Select defaultValue="2">
                               <SelectTrigger>
-                                <SelectValue placeholder="People" />
+                                <SelectValue placeholder={tForm("people")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="1">1 Person</SelectItem>
-                                <SelectItem value="2">2 People</SelectItem>
-                                <SelectItem value="3">3 People</SelectItem>
-                                <SelectItem value="4">4+ People</SelectItem>
+                                <SelectItem value="1">{tForm("personCount", { count: 1 })}</SelectItem>
+                                <SelectItem value="2">{tForm("personCount", { count: 2 })}</SelectItem>
+                                <SelectItem value="3">{tForm("personCount", { count: 3 })}</SelectItem>
+                                <SelectItem value="4">{tForm("personCountMax")}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
                         <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
                           <Search className="h-4 w-4 mr-2" />
-                          Search Tours
+                          {t("searchTours")}
                         </Button>
                       </TabsContent>
                     </div>

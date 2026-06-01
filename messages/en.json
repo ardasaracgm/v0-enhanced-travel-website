@@ -107,7 +107,16 @@
     "checkIn": "Check-in",
     "checkOut": "Check-out",
     "guests": "Guests",
-    "guestCount": "{count, plural, one {# Guest} other {# Guests}}"
+    "guestCount": "{count, plural, one {# Guest} other {# Guests}}",
+    "tourType": "Tour Type",
+    "tourAll": "All Tours",
+    "tourBoat": "Boat Tours",
+    "tourCultural": "Cultural",
+    "tourAdventure": "Adventure",
+    "participants": "Participants",
+    "people": "People",
+    "personCount": "{count, plural, one {# Person} other {# People}}",
+    "personCountMax": "4+ People"
   },
 
   "trustBar": {
