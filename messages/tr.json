@@ -163,6 +163,23 @@
     "chatWithUs": "Bizimle Sohbet Edin"
   },
 
+  "support": {
+    "title": "Her Zaman Yanınızdayız",
+    "subtitle": "Gerçek insanlardan gerçek destek, Türkçe",
+    "c1Title": "WhatsApp Desteği",
+    "c1Desc": "WhatsApp'ta anında yanıtlar. Türkçe yazın, hızlı cevap alın.",
+    "c1Highlight": "Yanıt < 5 dk",
+    "c2Title": "Telefon Desteği",
+    "c2Desc": "Bizi doğrudan Türkiye veya Yunanistan'dan arayın. Akıcı bir şekilde Türkçe konuşuyoruz.",
+    "c2Highlight": "+90 ve +30 hatları",
+    "c3Title": "7/24 Acil Durum",
+    "c3Desc": "Adada sorun mu yaşıyorsunuz? Acil durumlarla gece veya gündüz her zaman ilgileniyoruz.",
+    "c3Highlight": "Her zaman ulaşılabilir",
+    "c4Title": "Kişisel Hizmet",
+    "c4Desc": "Çağrı merkezi yok. Rezervasyonunuzu bilen ekibimizle konuşursunuz.",
+    "c4Highlight": "Size özel ekip"
+  },
+
   "ferryPage": {
     "title": "Yunan Adalarına Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",

@@ -163,6 +163,23 @@
     "chatWithUs": "Chat with Us"
   },
 
+  "support": {
+    "title": "Always Here For You",
+    "subtitle": "Real support from real people, in Turkish",
+    "c1Title": "WhatsApp Support",
+    "c1Desc": "Instant replies on WhatsApp. Write in Turkish, get answers fast.",
+    "c1Highlight": "Response < 5 min",
+    "c2Title": "Phone Support",
+    "c2Desc": "Call us directly from Turkey or Greece. We speak Turkish fluently.",
+    "c2Highlight": "+90 & +30 lines",
+    "c3Title": "24/7 Emergency",
+    "c3Desc": "Problems on the island? We handle emergencies any time, day or night.",
+    "c3Highlight": "Always available",
+    "c4Title": "Personal Service",
+    "c4Desc": "No call centers. You talk to our team who knows your booking.",
+    "c4Highlight": "Dedicated team"
+  },
+
   "ferryPage": {
     "title": "Ferry Tickets to Greek Islands",
     "subtitle": "Book your ferry crossing from Bodrum, Turgutreis or Marmaris to Kos, Rhodes, Samos and beyond.",

@@ -55,6 +55,7 @@ export default function TravelBeez() {
   const tBar = useTranslations("trustBar");
   const tLic = useTranslations("license");
   const tOffice = useTranslations("kosOffice");
+  const tSup = useTranslations("support");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -852,41 +853,37 @@ export default function TravelBeez() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Always Here For You
+                {tSup("title")}
               </h2>
               <p className="text-muted-foreground text-lg">
-                Real support from real people, in Turkish
+                {tSup("subtitle")}
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
                   icon: <MessageCircle className="h-8 w-8" />,
-                  title: "WhatsApp Support",
-                  description:
-                    "Instant replies on WhatsApp. Write in Turkish, get answers fast.",
-                  highlight: "Response < 5 min",
+                  title: tSup("c1Title"),
+                  description: tSup("c1Desc"),
+                  highlight: tSup("c1Highlight"),
                 },
                 {
                   icon: <Phone className="h-8 w-8" />,
-                  title: "Phone Support",
-                  description:
-                    "Call us directly from Turkey or Greece. We speak Turkish fluently.",
-                  highlight: "+90 & +30 lines",
+                  title: tSup("c2Title"),
+                  description: tSup("c2Desc"),
+                  highlight: tSup("c2Highlight"),
                 },
                 {
                   icon: <Headphones className="h-8 w-8" />,
-                  title: "24/7 Emergency",
-                  description:
-                    "Problems on the island? We handle emergencies any time, day or night.",
-                  highlight: "Always available",
+                  title: tSup("c3Title"),
+                  description: tSup("c3Desc"),
+                  highlight: tSup("c3Highlight"),
                 },
                 {
                   icon: <Heart className="h-8 w-8" />,
-                  title: "Personal Service",
-                  description:
-                    "No call centers. You talk to our team who knows your booking.",
-                  highlight: "Dedicated team",
+                  title: tSup("c4Title"),
+                  description: tSup("c4Desc"),
+                  highlight: tSup("c4Highlight"),
                 },
               ].map((item, index) => (
                 <motion.div
