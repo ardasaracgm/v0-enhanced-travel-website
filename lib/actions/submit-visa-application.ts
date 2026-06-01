@@ -84,6 +84,13 @@ export async function submitVisaApplication(
         fingerprints_taken: v.fingerprintsTaken,
         schengen_entry_date: v.schengenEntryDate,
         schengen_exit_date: v.schengenExitDate,
+
+        // Overflow — funding source lives in metadata (no dedicated column).
+        // Zod already constrained v.fundingSource to 'self'|'sponsor'. Merge
+        // over the table default '{}' so any future metadata keys survive.
+        // lib/visa-documents.ts reads metadata.funding_source to decide whether
+        // the sponsor_id / sponsor_bank documents are required.
+        metadata: { funding_source: v.fundingSource },
       })
       .select('id')
       .single()

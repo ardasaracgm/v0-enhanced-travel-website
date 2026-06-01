@@ -37,10 +37,12 @@ import {
   MARITAL_STATUSES,
   DOC_TYPES,
   TRAVEL_PURPOSES,
+  FUNDING_SOURCES,
   OCCUPATIONS,
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
 import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
+import { Link } from '@/i18n/routing'
 
 // ============================================================
 // Form state — every field is a string in state (select/date/text).
@@ -52,7 +54,7 @@ type FieldName =
   | 'birthPlace' | 'birthCountry' | 'gender' | 'maritalStatus'
   | 'idNumber' | 'docType' | 'docNumber' | 'docIssueDate' | 'docExpiryDate' | 'issuingAuthority'
   | 'residenceAddress' | 'email' | 'phone' | 'livesInOtherCountry' | 'occupation'
-  | 'travelPurpose' | 'stayDuration' | 'schengenLast3Years' | 'fingerprintsTaken'
+  | 'travelPurpose' | 'fundingSource' | 'stayDuration' | 'schengenLast3Years' | 'fingerprintsTaken'
   | 'schengenEntryDate' | 'schengenExitDate'
 
 type FormState = Record<FieldName, string>
@@ -63,7 +65,7 @@ const EMPTY_FORM: FormState = {
   birthPlace: '', birthCountry: '', gender: '', maritalStatus: '',
   idNumber: '', docType: '', docNumber: '', docIssueDate: '', docExpiryDate: '', issuingAuthority: '',
   residenceAddress: '', email: '', phone: '', livesInOtherCountry: '', occupation: '',
-  travelPurpose: '', stayDuration: '', schengenLast3Years: '', fingerprintsTaken: '',
+  travelPurpose: '', fundingSource: '', stayDuration: '', schengenLast3Years: '', fingerprintsTaken: '',
   schengenEntryDate: '', schengenExitDate: '',
 }
 
@@ -74,7 +76,7 @@ const STEP_FIELDS: FieldName[][] = [
   ['lastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'gender', 'maritalStatus'],
   ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
   ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation'],
-  ['travelPurpose', 'stayDuration', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate'],
+  ['travelPurpose', 'fundingSource', 'stayDuration', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate'],
 ]
 const TOTAL_STEPS = STEP_FIELDS.length
 
@@ -97,6 +99,7 @@ export function VisaWizard() {
   const [submitting, setSubmitting] = React.useState(false)
   const [submitError, setSubmitError] = React.useState(false)
   const [done, setDone] = React.useState(false)
+  const [applicationId, setApplicationId] = React.useState<string | null>(null)
 
   const update = (name: FieldName, value: string) => {
     setForm((f) => ({ ...f, [name]: value }))
@@ -175,6 +178,7 @@ export function VisaWizard() {
     try {
       const res = await submitVisaApplication(payload)
       if (res.ok) {
+        setApplicationId(res.id)
         setDone(true)
         scrollToTop()
       } else {
@@ -269,13 +273,22 @@ export function VisaWizard() {
           </div>
           <h3 className="text-2xl font-bold text-foreground mb-3">{t('success.title')}</h3>
           <p className="text-muted-foreground mb-6">{t('success.body')}</p>
-          <a
-            href={buildSupportWhatsAppLink({ locale: locale as Locale })}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline">{t('success.whatsapp')}</Button>
-          </a>
+          <div className="flex flex-col items-center gap-3">
+            {applicationId && (
+              <Link href={`/visa/documents/${applicationId}`}>
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  {t('success.documentsCta')}
+                </Button>
+              </Link>
+            )}
+            <a
+              href={buildSupportWhatsAppLink({ locale: locale as Locale })}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline">{t('success.whatsapp')}</Button>
+            </a>
+          </div>
         </CardContent>
       </Card>
     )
@@ -373,6 +386,7 @@ export function VisaWizard() {
               {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}
               {stayDurationField()}
             </div>
+            {selectField('fundingSource', FUNDING_SOURCES, 'fundingSource')}
             <div className="grid md:grid-cols-2 gap-4">
               {selectField('schengenLast3Years', YES_NO, 'yesNo')}
               {selectField('fingerprintsTaken', YES_NO, 'yesNo')}

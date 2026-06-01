@@ -25,6 +25,7 @@ export const GENDERS           = ['male', 'female'] as const
 export const MARITAL_STATUSES  = ['single', 'married', 'separated', 'divorced', 'widowed'] as const
 export const DOC_TYPES         = ['normal', 'diplomatic', 'service', 'official', 'special'] as const
 export const TRAVEL_PURPOSES   = ['tourism', 'business'] as const
+export const FUNDING_SOURCES   = ['self', 'sponsor'] as const   // jotform item 33 — who pays
 
 // 35 jotform occupation slugs, stored verbatim in the DB.
 export const OCCUPATIONS = [
@@ -133,6 +134,7 @@ const step4Object = z.object({
 
 const step5Object = z.object({
   travelPurpose:      enumField(TRAVEL_PURPOSES, 'travelPurpose.required'),
+  fundingSource:      enumField(FUNDING_SOURCES, 'fundingSource.required'),  // → metadata.funding_source
   stayDuration:       z.coerce.number({ errorMap: () => ({ message: 'stayDuration.range' }) })
                         .int('stayDuration.range').min(1, 'stayDuration.range').max(7, 'stayDuration.range'),
   schengenLast3Years: z.boolean({ errorMap: () => ({ message: 'schengenLast3Years.required' }) }),
