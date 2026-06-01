@@ -442,11 +442,11 @@ export default function TravelBeez() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Island
+                              {tForm("island")}
                             </label>
                             <Select defaultValue="kos">
                               <SelectTrigger>
-                                <SelectValue placeholder="Select island" />
+                                <SelectValue placeholder={tForm("selectIsland")} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="kos">Kos</SelectItem>
@@ -457,34 +457,34 @@ export default function TravelBeez() {
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Pick-up Date
+                              {tForm("pickupDate")}
                             </label>
                             <Input type="date" className="h-10" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Return Date
+                              {tForm("returnDateCar")}
                             </label>
                             <Input type="date" className="h-10" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Car Type
+                              {tForm("carType")}
                             </label>
                             <Select defaultValue="any">
                               <SelectTrigger>
-                                <SelectValue placeholder="Car type" />
+                                <SelectValue placeholder={tForm("carType")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="any">Any</SelectItem>
+                                <SelectItem value="any">{tForm("carAny")}</SelectItem>
                                 <SelectItem value="mini">
-                                  Mini (Citroen Ami)
+                                  {tForm("carMini")}
                                 </SelectItem>
                                 <SelectItem value="economy">
-                                  Economy (Fiat Panda)
+                                  {tForm("carEconomy")}
                                 </SelectItem>
                                 <SelectItem value="compact">
-                                  Compact (DFSK 500)
+                                  {tForm("carCompact")}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -492,7 +492,7 @@ export default function TravelBeez() {
                         </div>
                         <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
                           <Search className="h-4 w-4 mr-2" />
-                          Search Cars
+                          {t("searchCars")}
                         </Button>
                       </TabsContent>
                       <TabsContent value="hotels" className="mt-0">

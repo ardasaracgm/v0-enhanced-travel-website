@@ -94,7 +94,16 @@
     "date": "Date",
     "passengers": "Passengers",
     "passengerCount": "{count, plural, one {# Passenger} other {# Passengers}}",
-    "passengerCountMax": "5+ Passengers"
+    "passengerCountMax": "5+ Passengers",
+    "island": "Island",
+    "selectIsland": "Select island",
+    "pickupDate": "Pick-up Date",
+    "returnDateCar": "Return Date",
+    "carType": "Car Type",
+    "carAny": "Any",
+    "carMini": "Mini (Citroen Ami)",
+    "carEconomy": "Economy (Fiat Panda)",
+    "carCompact": "Compact (DFSK 500)"
   },
 
   "trustBar": {

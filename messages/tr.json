@@ -94,7 +94,16 @@
     "date": "Tarih",
     "passengers": "Yolcu",
     "passengerCount": "{count, plural, one {# Yolcu} other {# Yolcu}}",
-    "passengerCountMax": "5+ Yolcu"
+    "passengerCountMax": "5+ Yolcu",
+    "island": "Ada",
+    "selectIsland": "Ada seçin",
+    "pickupDate": "Alış Tarihi",
+    "returnDateCar": "İade Tarihi",
+    "carType": "Araç Tipi",
+    "carAny": "Farketmez",
+    "carMini": "Mini (Citroen Ami)",
+    "carEconomy": "Ekonomik (Fiat Panda)",
+    "carCompact": "Kompakt (DFSK 500)"
   },
 
   "trustBar": {
