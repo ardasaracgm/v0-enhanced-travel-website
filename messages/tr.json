@@ -692,6 +692,8 @@
   },
 
   "whatsappCta": {
+    "title": "Seyahatinizi Planlamaya Hazır mısınız?",
+    "subtitle": "Anında rezervasyon ve kişiselleştirilmiş seyahat yardımı için WhatsApp üzerinden bize yazın. Türkçe cevap veriyoruz!",
     "buttonShort": "WhatsApp",
     "buttonLong": "WhatsApp'tan Yazın",
     "floatingLabel": "WhatsApp'tan mesaj atın"

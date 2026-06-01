@@ -692,6 +692,8 @@
   },
 
   "whatsappCta": {
+    "title": "Ready to Plan Your Trip?",
+    "subtitle": "Chat with us on WhatsApp for instant booking and personalized travel assistance. We reply in Turkish!",
     "buttonShort": "WhatsApp",
     "buttonLong": "Chat on WhatsApp",
     "floatingLabel": "Message us on WhatsApp"

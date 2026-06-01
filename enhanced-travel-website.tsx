@@ -63,6 +63,7 @@ export default function TravelBeez() {
   const tTours = useTranslations("homeTours");
   const tVI = useTranslations("visaInsurance");
   const tTesti = useTranslations("testimonials");
+  const tWa = useTranslations("whatsappCta");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -1360,11 +1361,10 @@ export default function TravelBeez() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="text-center md:text-left">
                 <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-                  Ready to Plan Your Trip?
+                  {tWa("title")}
                 </h2>
                 <p className="text-primary-foreground/90 text-lg max-w-xl">
-                  Chat with us on WhatsApp for instant booking and personalized
-                  travel assistance. We reply in Turkish!
+                  {tWa("subtitle")}
                 </p>
               </div>
               <Button
@@ -1373,7 +1373,7 @@ export default function TravelBeez() {
                 className="gap-2 text-lg px-8 bg-card text-foreground hover:bg-card/90 shadow-lg"
               >
                 <MessageCircle className="h-5 w-5" />
-                Chat on WhatsApp
+                {tWa("buttonLong")}
               </Button>
             </div>
           </div>
@@ -1389,7 +1389,7 @@ export default function TravelBeez() {
       >
         <MessageCircle className="h-6 w-6" />
         <span className="font-medium hidden sm:inline group-hover:inline">
-          WhatsApp ile Yazın
+          {tWa("floatingLabel")}
         </span>
       </a>
 
@@ -1588,7 +1588,7 @@ export default function TravelBeez() {
       >
         <MessageCircle className="h-6 w-6" />
         <span className="font-semibold hidden sm:inline">
-          WhatsApp ile Yazın
+          {tWa("floatingLabel")}
         </span>
       </motion.a>
     </div>
