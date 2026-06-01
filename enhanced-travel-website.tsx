@@ -52,6 +52,7 @@ import {
 export default function TravelBeez() {
   const t = useTranslations("hero");
   const tForm = useTranslations("searchForm");
+  const tBar = useTranslations("trustBar");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -230,23 +231,23 @@ export default function TravelBeez() {
   const trustBadges = [
     {
       icon: <BadgeCheck className="h-6 w-6" />,
-      title: "Greek Licensed",
-      subtitle: "ΜΗ.Τ.Ε. Registered",
+      title: tBar("greekLicensedTitle"),
+      subtitle: tBar("greekLicensedSub"),
     },
     {
       icon: <Lock className="h-6 w-6" />,
-      title: "Secure Payment",
-      subtitle: "256-bit SSL Encryption",
+      title: tBar("securePaymentTitle"),
+      subtitle: tBar("securePaymentSub"),
     },
     {
       icon: <Globe className="h-6 w-6" />,
-      title: "Türkçe Destek",
-      subtitle: "Turkish Language Support",
+      title: tBar("turkishSupportTitle"),
+      subtitle: tBar("turkishSupportSub"),
     },
     {
       icon: <Shield className="h-6 w-6" />,
-      title: "Insured Trips",
-      subtitle: "Full Travel Protection",
+      title: tBar("insuredTripsTitle"),
+      subtitle: tBar("insuredTripsSub"),
     },
   ];
 
