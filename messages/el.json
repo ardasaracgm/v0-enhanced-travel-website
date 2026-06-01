@@ -790,5 +790,9 @@
       "item3": "Baggage loss coverage",
       "cta": "Get Insurance Quote"
     }
+  },
+  "testimonials": {
+    "title": "What Our Travelers Say",
+    "subtitle": "Real experiences from Turkish travelers"
   }
 }

@@ -62,6 +62,7 @@ export default function TravelBeez() {
   const tIslands = useTranslations("popularIslands");
   const tTours = useTranslations("homeTours");
   const tVI = useTranslations("visaInsurance");
+  const tTesti = useTranslations("testimonials");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -1302,10 +1303,10 @@ export default function TravelBeez() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                What Our Travelers Say
+                {tTesti("title")}
               </h2>
               <p className="text-muted-foreground text-lg">
-                Real experiences from Turkish travelers
+                {tTesti("subtitle")}
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">

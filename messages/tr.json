@@ -790,5 +790,9 @@
       "item3": "Bagaj kaybı teminatı",
       "cta": "Sigorta Teklifi Al"
     }
+  },
+  "testimonials": {
+    "title": "Gezginlerimiz Ne Diyor",
+    "subtitle": "Türk gezginlerden gerçek deneyimler"
   }
 }
