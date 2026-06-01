@@ -53,6 +53,7 @@ export default function TravelBeez() {
   const t = useTranslations("hero");
   const tForm = useTranslations("searchForm");
   const tBar = useTranslations("trustBar");
+  const tLic = useTranslations("license");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -664,43 +665,40 @@ export default function TravelBeez() {
               >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
                   <BadgeCheck className="h-4 w-4" />
-                  Greek Registered Company
+                  {tLic("badge")}
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
-                  Licensed & Registered in Greece
+                  {tLic("title")}
                 </h2>
                 <p className="text-muted-foreground text-lg text-pretty leading-relaxed">
-                  TravelBeez is a fully licensed Greek travel company registered
-                  with the Greek Ministry of Tourism (MH.T.E.). We operate from
-                  our office at Kos Port, ensuring you receive authentic local
-                  service with full legal protection.
+                  {tLic("description")}
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-card border border-border/50">
-                    <p className="text-2xl font-bold text-primary">ΜΗ.Τ.Ε.</p>
+                    <p className="text-2xl font-bold text-primary">{tLic("mhte")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Licensed Tourism Agency
+                      {tLic("mhteSub")}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-card border border-border/50">
-                    <p className="text-2xl font-bold text-primary">GEMI</p>
+                    <p className="text-2xl font-bold text-primary">{tLic("gemi")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Greek Business Registry
+                      {tLic("gemiSub")}
                     </p>
                   </div>
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Full EU consumer protection rights</span>
+                    <span>{tLic("bullet1")}</span>
                   </li>
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Insured business operations</span>
+                    <span>{tLic("bullet2")}</span>
                   </li>
                   <li className="flex items-center gap-3 text-foreground">
                     <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span>Official receipts and invoices</span>
+                    <span>{tLic("bullet3")}</span>
                   </li>
                 </ul>
               </motion.div>
@@ -725,9 +723,9 @@ export default function TravelBeez() {
                       <Award className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">6+ Years</p>
+                      <p className="font-semibold text-foreground">{tLic("yearsTitle")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Serving Turkish Travelers
+                        {tLic("yearsSub")}
                       </p>
                     </div>
                   </div>
