@@ -329,16 +329,16 @@ export default function TravelBeez() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="bodrum">
-                                  Bodrum, Turkey
+                                  {tForm("portBodrum")}
                                 </SelectItem>
                                 <SelectItem value="marmaris">
-                                  Marmaris, Turkey
+                                  {tForm("portMarmaris")}
                                 </SelectItem>
                                 <SelectItem value="kusadasi">
-                                  Kusadasi, Turkey
+                                  {tForm("portKusadasi")}
                                 </SelectItem>
                                 <SelectItem value="fethiye">
-                                  Fethiye, Turkey
+                                  {tForm("portFethiye")}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -352,18 +352,18 @@ export default function TravelBeez() {
                                 <SelectValue placeholder={tForm("destination")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="kos">Kos, Greece</SelectItem>
+                                <SelectItem value="kos">{tForm("destKos")}</SelectItem>
                                 <SelectItem value="rhodes">
-                                  Rhodes, Greece
+                                  {tForm("destRhodes")}
                                 </SelectItem>
                                 <SelectItem value="samos">
-                                  Samos, Greece
+                                  {tForm("destSamos")}
                                 </SelectItem>
                                 <SelectItem value="leros">
-                                  Leros, Greece
+                                  {tForm("destLeros")}
                                 </SelectItem>
                                 <SelectItem value="patmos">
-                                  Patmos, Greece
+                                  {tForm("destPatmos")}
                                 </SelectItem>
                               </SelectContent>
                             </Select>

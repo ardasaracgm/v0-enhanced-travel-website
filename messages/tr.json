@@ -116,7 +116,16 @@
     "participants": "Katılımcı",
     "people": "Kişi",
     "personCount": "{count, plural, one {# Kişi} other {# Kişi}}",
-    "personCountMax": "4+ Kişi"
+    "personCountMax": "4+ Kişi",
+    "portBodrum": "Bodrum, Türkiye",
+    "portMarmaris": "Marmaris, Türkiye",
+    "portKusadasi": "Kuşadası, Türkiye",
+    "portFethiye": "Fethiye, Türkiye",
+    "destKos": "Kos, Yunanistan",
+    "destRhodes": "Rodos, Yunanistan",
+    "destSamos": "Sisam, Yunanistan",
+    "destLeros": "Leros, Yunanistan",
+    "destPatmos": "Patmos, Yunanistan"
   },
 
   "trustBar": {

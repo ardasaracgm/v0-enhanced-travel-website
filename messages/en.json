@@ -116,7 +116,16 @@
     "participants": "Participants",
     "people": "People",
     "personCount": "{count, plural, one {# Person} other {# People}}",
-    "personCountMax": "4+ People"
+    "personCountMax": "4+ People",
+    "portBodrum": "Bodrum, Turkey",
+    "portMarmaris": "Marmaris, Turkey",
+    "portKusadasi": "Kusadasi, Turkey",
+    "portFethiye": "Fethiye, Turkey",
+    "destKos": "Kos, Greece",
+    "destRhodes": "Rhodes, Greece",
+    "destSamos": "Samos, Greece",
+    "destLeros": "Leros, Greece",
+    "destPatmos": "Patmos, Greece"
   },
 
   "trustBar": {
