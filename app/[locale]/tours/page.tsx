@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Compass, Calendar, Clock, Users, MapPin, CheckCircle, Star, Ship, Camera, Sun, Waves } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -29,109 +30,25 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 
 const tours = [
-  { 
-    name: 'Three Islands Cruise', 
-    duration: 'Full Day (8h)', 
-    price: '€89', 
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80',
-    category: 'Boat Tour',
-    islands: ['Kos', 'Kalymnos', 'Pserimos'],
-    description: 'Visit three stunning islands in one day. Swim in crystal-clear waters, explore traditional villages, and enjoy a Greek lunch on board.',
-    includes: ['Boat transfer', 'Greek lunch', 'Swimming stops', 'Guide'],
-    badge: 'Best Seller'
-  },
-  { 
-    name: 'Rhodes Old Town Day Trip', 
-    duration: '10 Hours', 
-    price: '€95', 
-    image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&q=80',
-    category: 'Cultural',
-    islands: ['Rhodes'],
-    description: 'Explore the UNESCO World Heritage medieval old town of Rhodes, the Palace of the Grand Master, and the famous Street of Knights.',
-    includes: ['Ferry tickets', 'Walking tour', 'Free time', 'Guide'],
-    badge: 'Popular'
-  },
-  { 
-    name: 'Sunset Sailing Adventure', 
-    duration: '4 Hours', 
-    price: '€75', 
-    image: 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&q=80',
-    category: 'Sailing',
-    islands: ['Kos Coast'],
-    description: 'Sail along the Kos coastline as the sun sets over the Aegean. Includes swimming, snorkeling, and champagne toast.',
-    includes: ['Sailing yacht', 'Snorkeling gear', 'Drinks & snacks', 'Captain'],
-    badge: null
-  },
-  { 
-    name: 'Ancient Asklepion & Wine Tour', 
-    duration: '5 Hours', 
-    price: '€55', 
-    image: 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=600&q=80',
-    category: 'Cultural',
-    islands: ['Kos'],
-    description: 'Visit the ancient healing temple of Asklepion where Hippocrates taught medicine, followed by wine tasting at a local vineyard.',
-    includes: ['Transport', 'Entrance fees', 'Wine tasting', 'Guide'],
-    badge: null
-  },
-  { 
-    name: 'Nisyros Volcano Excursion', 
-    duration: 'Full Day (9h)', 
-    price: '€85', 
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80',
-    category: 'Adventure',
-    islands: ['Nisyros'],
-    description: 'Journey to the volcanic island of Nisyros. Walk into the crater of an active volcano and explore the picturesque village of Mandraki.',
-    includes: ['Boat transfer', 'Volcano entrance', 'Village tour', 'Guide'],
-    badge: 'Unique'
-  },
-  { 
-    name: 'Beach Hopping BBQ Cruise', 
-    duration: '6 Hours', 
-    price: '€69', 
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
-    category: 'Boat Tour',
-    islands: ['Kos Beaches'],
-    description: 'Cruise to Kos hidden beaches accessible only by boat. Swim in turquoise waters and enjoy a traditional Greek BBQ lunch.',
-    includes: ['Boat cruise', 'BBQ lunch', 'Drinks', 'Swimming'],
-    badge: null
-  },
+  { id: 't1', price: '€89', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80', hasBadge: true },
+  { id: 't2', price: '€95', image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&q=80', hasBadge: true },
+  { id: 't3', price: '€75', image: 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=600&q=80', hasBadge: false },
+  { id: 't4', price: '€55', image: 'https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=600&q=80', hasBadge: false },
+  { id: 't5', price: '€85', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80', hasBadge: true },
+  { id: 't6', price: '€69', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80', hasBadge: false },
 ]
 
 const categories = [
-  { icon: <Ship className="h-5 w-5" />, name: 'Boat Tours', count: 3 },
-  { icon: <Camera className="h-5 w-5" />, name: 'Cultural', count: 2 },
-  { icon: <Sun className="h-5 w-5" />, name: 'Sailing', count: 1 },
-  { icon: <Waves className="h-5 w-5" />, name: 'Adventure', count: 1 },
+  { icon: <Ship className="h-5 w-5" />, id: 'boat', count: 3 },
+  { icon: <Camera className="h-5 w-5" />, id: 'cultural', count: 2 },
+  { icon: <Sun className="h-5 w-5" />, id: 'sailing', count: 1 },
+  { icon: <Waves className="h-5 w-5" />, id: 'adventure', count: 1 },
 ]
 
-const faqs = [
-  {
-    question: 'How do I book a tour?',
-    answer: 'You can book directly through our website, via WhatsApp, or by visiting our office at Kos Port. We recommend booking at least 24-48 hours in advance, especially during peak season (June-August).',
-  },
-  {
-    question: 'What should I bring on a boat tour?',
-    answer: 'We recommend bringing sunscreen, sunglasses, a hat, swimwear, a towel, comfortable shoes for walking, and a camera. Most tours provide lunch and drinks, but you may bring snacks. Cash for souvenirs is also useful.',
-  },
-  {
-    question: 'Are the tours suitable for children?',
-    answer: 'Most of our tours are family-friendly! Children under 4 often travel free, and ages 4-12 receive discounted rates. The Three Islands Cruise and Beach BBQ are particularly popular with families. Let us know the ages of your children when booking.',
-  },
-  {
-    question: 'What happens if weather is bad?',
-    answer: 'Safety is our priority. If a tour is cancelled due to weather, you can choose a full refund or reschedule to another date at no extra cost. We monitor weather conditions closely and will contact you if changes are needed.',
-  },
-  {
-    question: 'Do I need a visa for island-hopping tours?',
-    answer: 'If you already have a valid Schengen visa or are in Greece legally, no additional visa is needed for tours to other Greek islands. For day trips departing from Kos, your existing entry stamp is sufficient.',
-  },
-  {
-    question: 'Are lunch and drinks included?',
-    answer: 'Most full-day tours include lunch and beverages. Half-day tours typically include snacks and water. Check the specific tour details for what is included. Vegetarian and special dietary options are available with advance notice.',
-  },
-]
+const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'] as const
 
 export default function ToursPage() {
+  const t = useTranslations('toursPage')
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -157,7 +74,7 @@ export default function ToursPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6"
               >
                 <Compass className="h-4 w-4" />
-                Guided Experiences
+                {t('hero.badge')}
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -165,7 +82,7 @@ export default function ToursPage() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance"
               >
-                Tours & Excursions
+                {t('hero.title')}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -173,7 +90,7 @@ export default function ToursPage() {
                 transition={{ delay: 0.2 }}
                 className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
               >
-                Discover the magic of the Greek islands with our curated tours. Boat trips, cultural excursions, sunset sailing, and island-hopping adventures led by local experts.
+                {t('hero.subtitle')}
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -183,15 +100,15 @@ export default function ToursPage() {
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Local Expert Guides</span>
+                  <span>{t('hero.chip1')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Small Groups</span>
+                  <span>{t('hero.chip2')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Free Cancellation</span>
+                  <span>{t('hero.chip3')}</span>
                 </div>
               </motion.div>
             </div>
@@ -206,22 +123,22 @@ export default function ToursPage() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap gap-3">
                     {categories.map((cat) => (
-                      <Button key={cat.name} variant="outline" size="sm" className="gap-2 text-foreground">
+                      <Button key={cat.id} variant="outline" size="sm" className="gap-2 text-foreground">
                         {cat.icon}
-                        {cat.name}
+                        {t(`categories.${cat.id}`)}
                         <span className="text-xs text-muted-foreground">({cat.count})</span>
                       </Button>
                     ))}
                   </div>
                   <Select defaultValue="popular">
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Sort by" />
+                      <SelectValue placeholder={t('filter.sortBy')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="popular">Most Popular</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="duration">Duration</SelectItem>
+                      <SelectItem value="popular">{t('filter.sortPopular')}</SelectItem>
+                      <SelectItem value="price-low">{t('filter.sortPriceLow')}</SelectItem>
+                      <SelectItem value="price-high">{t('filter.sortPriceHigh')}</SelectItem>
+                      <SelectItem value="duration">{t('filter.sortDuration')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -236,7 +153,7 @@ export default function ToursPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {tours.map((tour, index) => (
                 <motion.div
-                  key={tour.name}
+                  key={tour.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -247,50 +164,50 @@ export default function ToursPage() {
                       <div className="relative h-56">
                         <Image
                           src={tour.image}
-                          alt={tour.name}
+                          alt={t(`tours.${tour.id}.name`)}
                           fill
                           className="object-cover"
                         />
                         <div className="absolute top-3 left-3 flex gap-2">
                           <span className="px-3 py-1 bg-card/90 backdrop-blur text-foreground text-xs font-medium rounded-full">
-                            {tour.category}
+                            {t(`tours.${tour.id}.category`)}
                           </span>
-                          {tour.badge && (
+                          {tour.hasBadge && (
                             <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
-                              {tour.badge}
+                              {t(`tours.${tour.id}.badge`)}
                             </span>
                           )}
                         </div>
                         <div className="absolute top-3 right-3">
                           <span className="px-3 py-1 bg-card/90 backdrop-blur text-foreground text-xs font-medium rounded-full flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {tour.duration}
+                            {t(`tours.${tour.id}.duration`)}
                           </span>
                         </div>
                       </div>
                       <div className="p-6 flex flex-col flex-1">
-                        <h3 className="font-bold text-xl text-foreground mb-2">{tour.name}</h3>
+                        <h3 className="font-bold text-xl text-foreground mb-2">{t(`tours.${tour.id}.name`)}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                           <MapPin className="h-4 w-4" />
-                          <span>{tour.islands.join(' • ')}</span>
+                          <span>{(t.raw(`tours.${tour.id}.islands`) as string[]).join(' • ')}</span>
                         </div>
-                        <p className="text-muted-foreground text-sm mb-4 flex-1">{tour.description}</p>
-                        
+                        <p className="text-muted-foreground text-sm mb-4 flex-1">{t(`tours.${tour.id}.desc`)}</p>
+
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {tour.includes.map((item) => (
+                          {(t.raw(`tours.${tour.id}.includes`) as string[]).map((item) => (
                             <span key={item} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-lg">
                               {item}
                             </span>
                           ))}
                         </div>
-                        
+
                         <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
                           <div>
-                            <span className="text-sm text-muted-foreground">From </span>
+                            <span className="text-sm text-muted-foreground">{t('card.from')} </span>
                             <span className="text-2xl font-bold text-primary">{tour.price}</span>
-                            <span className="text-sm text-muted-foreground">/person</span>
+                            <span className="text-sm text-muted-foreground">{t('card.perPerson')}</span>
                           </div>
-                          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
+                          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">{t('card.book')}</Button>
                         </div>
                       </div>
                     </CardContent>
@@ -307,8 +224,8 @@ export default function ToursPage() {
         <section className="w-full py-16 md:py-24 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Book Tours With Us?</h2>
-              <p className="text-muted-foreground text-lg">Creating unforgettable experiences in the Greek islands</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('why.title')}</h2>
+              <p className="text-muted-foreground text-lg">{t('why.intro')}</p>
             </div>
             <div className="grid md:grid-cols-4 gap-6">
               <Card className="bg-card border-border/50 text-center">
@@ -316,8 +233,8 @@ export default function ToursPage() {
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Users className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Small Groups</h3>
-                  <p className="text-sm text-muted-foreground">Intimate tours with maximum 15 people for a personal experience</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t('why.c1Title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('why.c1Desc')}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border/50 text-center">
@@ -325,8 +242,8 @@ export default function ToursPage() {
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Star className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Local Experts</h3>
-                  <p className="text-sm text-muted-foreground">Guides who know every hidden gem and local story</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t('why.c2Title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('why.c2Desc')}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border/50 text-center">
@@ -334,8 +251,8 @@ export default function ToursPage() {
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Calendar className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Flexible Booking</h3>
-                  <p className="text-sm text-muted-foreground">Free cancellation up to 24 hours before departure</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t('why.c3Title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('why.c3Desc')}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border/50 text-center">
@@ -343,8 +260,8 @@ export default function ToursPage() {
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Compass className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Turkish Support</h3>
-                  <p className="text-sm text-muted-foreground">Full Turkish language support before and during your tour</p>
+                  <h3 className="font-semibold text-foreground mb-2">{t('why.c4Title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('why.c4Desc')}</p>
                 </CardContent>
               </Card>
             </div>
@@ -356,17 +273,17 @@ export default function ToursPage() {
           <div className="container px-4 md:px-6">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-                <p className="text-muted-foreground text-lg">Everything you need to know about our tours</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('faq.title')}</h2>
+                <p className="text-muted-foreground text-lg">{t('faq.intro')}</p>
               </div>
               <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                {faqKeys.map((q, index) => (
+                  <AccordionItem key={q} value={`item-${index}`} className="border-border/50">
                     <AccordionTrigger className="text-left text-foreground hover:text-primary">
-                      {faq.question}
+                      {t(`faq.${q}`)}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
+                      {t(`faq.a${index + 1}`)}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -377,9 +294,9 @@ export default function ToursPage() {
 
         <SecurePaymentBanner />
         
-        <WhatsAppCTA 
-          title="Need Help Choosing a Tour?"
-          description="Our team can recommend the perfect experience based on your interests, group size, and travel dates."
+        <WhatsAppCTA
+          title={t('cta.title')}
+          description={t('cta.desc')}
         />
       </main>
 

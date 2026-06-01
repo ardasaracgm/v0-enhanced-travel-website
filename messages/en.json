@@ -360,11 +360,164 @@
   },
 
   "toursPage": {
-    "title": "Tours & Experiences",
-    "subtitle": "Curated tours across Kos and the Dodecanese. From sunset cruises to ancient ruins.",
-    "leadIntro": "Tell us what you'd like to experience and we'll prepare a custom quote within 24 hours.",
-    "leadFormTitle": "Tell us about your trip",
-    "submitLead": "Get a Quote"
+    "hero": {
+      "badge": "Guided Experiences",
+      "title": "Tours & Excursions",
+      "subtitle": "Discover the magic of the Greek islands with our curated tours. Boat trips, cultural excursions, sunset sailing, and island-hopping adventures led by local experts.",
+      "chip1": "Local Expert Guides",
+      "chip2": "Small Groups",
+      "chip3": "Free Cancellation"
+    },
+    "filter": {
+      "sortBy": "Sort by",
+      "sortPopular": "Most Popular",
+      "sortPriceLow": "Price: Low to High",
+      "sortPriceHigh": "Price: High to Low",
+      "sortDuration": "Duration"
+    },
+    "categories": {
+      "boat": "Boat Tours",
+      "cultural": "Cultural",
+      "sailing": "Sailing",
+      "adventure": "Adventure"
+    },
+    "card": {
+      "from": "From",
+      "perPerson": "/person",
+      "book": "Book Now"
+    },
+    "tours": {
+      "t1": {
+        "name": "Three Islands Cruise",
+        "duration": "Full Day (8h)",
+        "category": "Boat Tour",
+        "badge": "Best Seller",
+        "islands": [
+          "Kos",
+          "Kalymnos",
+          "Pserimos"
+        ],
+        "desc": "Visit three stunning islands in one day. Swim in crystal-clear waters, explore traditional villages, and enjoy a Greek lunch on board.",
+        "includes": [
+          "Boat transfer",
+          "Greek lunch",
+          "Swimming stops",
+          "Guide"
+        ]
+      },
+      "t2": {
+        "name": "Rhodes Old Town Day Trip",
+        "duration": "10 Hours",
+        "category": "Cultural",
+        "badge": "Popular",
+        "islands": [
+          "Rhodes"
+        ],
+        "desc": "Explore the UNESCO World Heritage medieval old town of Rhodes, the Palace of the Grand Master, and the famous Street of Knights.",
+        "includes": [
+          "Ferry tickets",
+          "Walking tour",
+          "Free time",
+          "Guide"
+        ]
+      },
+      "t3": {
+        "name": "Sunset Sailing Adventure",
+        "duration": "4 Hours",
+        "category": "Sailing",
+        "badge": "",
+        "islands": [
+          "Kos Coast"
+        ],
+        "desc": "Sail along the Kos coastline as the sun sets over the Aegean. Includes swimming, snorkeling, and champagne toast.",
+        "includes": [
+          "Sailing yacht",
+          "Snorkeling gear",
+          "Drinks & snacks",
+          "Captain"
+        ]
+      },
+      "t4": {
+        "name": "Ancient Asklepion & Wine Tour",
+        "duration": "5 Hours",
+        "category": "Cultural",
+        "badge": "",
+        "islands": [
+          "Kos"
+        ],
+        "desc": "Visit the ancient healing temple of Asklepion where Hippocrates taught medicine, followed by wine tasting at a local vineyard.",
+        "includes": [
+          "Transport",
+          "Entrance fees",
+          "Wine tasting",
+          "Guide"
+        ]
+      },
+      "t5": {
+        "name": "Nisyros Volcano Excursion",
+        "duration": "Full Day (9h)",
+        "category": "Adventure",
+        "badge": "Unique",
+        "islands": [
+          "Nisyros"
+        ],
+        "desc": "Journey to the volcanic island of Nisyros. Walk into the crater of an active volcano and explore the picturesque village of Mandraki.",
+        "includes": [
+          "Boat transfer",
+          "Volcano entrance",
+          "Village tour",
+          "Guide"
+        ]
+      },
+      "t6": {
+        "name": "Beach Hopping BBQ Cruise",
+        "duration": "6 Hours",
+        "category": "Boat Tour",
+        "badge": "",
+        "islands": [
+          "Kos Beaches"
+        ],
+        "desc": "Cruise to Kos hidden beaches accessible only by boat. Swim in turquoise waters and enjoy a traditional Greek BBQ lunch.",
+        "includes": [
+          "Boat cruise",
+          "BBQ lunch",
+          "Drinks",
+          "Swimming"
+        ]
+      }
+    },
+    "why": {
+      "title": "Why Book Tours With Us?",
+      "intro": "Creating unforgettable experiences in the Greek islands",
+      "c1Title": "Small Groups",
+      "c1Desc": "Intimate tours with maximum 15 people for a personal experience",
+      "c2Title": "Local Experts",
+      "c2Desc": "Guides who know every hidden gem and local story",
+      "c3Title": "Flexible Booking",
+      "c3Desc": "Free cancellation up to 24 hours before departure",
+      "c4Title": "Turkish Support",
+      "c4Desc": "Full Turkish language support before and during your tour"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "intro": "Everything you need to know about our tours",
+      "q1": "How do I book a tour?",
+      "a1": "You can book directly through our website, via WhatsApp, or by visiting our office at Kos Port. We recommend booking at least 24-48 hours in advance, especially during peak season (June-August).",
+      "q2": "What should I bring on a boat tour?",
+      "a2": "We recommend bringing sunscreen, sunglasses, a hat, swimwear, a towel, comfortable shoes for walking, and a camera. Most tours provide lunch and drinks, but you may bring snacks. Cash for souvenirs is also useful.",
+      "q3": "Are the tours suitable for children?",
+      "a3": "Most of our tours are family-friendly! Children under 4 often travel free, and ages 4-12 receive discounted rates. The Three Islands Cruise and Beach BBQ are particularly popular with families. Let us know the ages of your children when booking.",
+      "q4": "What happens if weather is bad?",
+      "a4": "Safety is our priority. If a tour is cancelled due to weather, you can choose a full refund or reschedule to another date at no extra cost. We monitor weather conditions closely and will contact you if changes are needed.",
+      "q5": "Do I need a visa for island-hopping tours?",
+      "a5": "If you already have a valid Schengen visa or are in Greece legally, no additional visa is needed for tours to other Greek islands. For day trips departing from Kos, your existing entry stamp is sufficient.",
+      "q6": "Are lunch and drinks included?",
+      "a6": "Most full-day tours include lunch and beverages. Half-day tours typically include snacks and water. Check the specific tour details for what is included. Vegetarian and special dietary options are available with advance notice."
+    },
+    "cta": {
+      "title": "Need Help Choosing a Tour?",
+      "desc": "Our team can recommend the perfect experience based on your interests, group size, and travel dates."
+    }
   },
 
   "visaPage": {

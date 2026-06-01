@@ -360,11 +360,164 @@
   },
 
   "toursPage": {
-    "title": "Tur ve Deneyimler",
-    "subtitle": "Kos ve Onikiada genelinde özenle seçilmiş turlar. Gün batımı turlarından antik kalıntılara.",
-    "leadIntro": "Nasıl bir deneyim istediğinizi yazın, 24 saat içinde özel teklif hazırlayalım.",
-    "leadFormTitle": "Yolculuğunuzu anlatın",
-    "submitLead": "Teklif Al"
+    "hero": {
+      "badge": "Rehberli Deneyimler",
+      "title": "Turlar & Geziler",
+      "subtitle": "Seçkin turlarımızla Yunan adalarının büyüsünü keşfedin. Yerel uzmanlar tarafından yönetilen tekne turları, kültürel geziler, gün batımı yelkenciliği ve adalarda gezinti maceraları.",
+      "chip1": "Yerel Uzman Rehberler",
+      "chip2": "Küçük Gruplar",
+      "chip3": "Ücretsiz İptal"
+    },
+    "filter": {
+      "sortBy": "Sırala",
+      "sortPopular": "En Popüler",
+      "sortPriceLow": "Fiyat: Düşükten Yükseğe",
+      "sortPriceHigh": "Fiyat: Yüksekten Düşüğe",
+      "sortDuration": "Süre"
+    },
+    "categories": {
+      "boat": "Tekne Turları",
+      "cultural": "Kültürel",
+      "sailing": "Yelken",
+      "adventure": "Macera"
+    },
+    "card": {
+      "from": "Başlangıç",
+      "perPerson": "/kişi",
+      "book": "Rezervasyon Yap"
+    },
+    "tours": {
+      "t1": {
+        "name": "Üç Ada Tekne Turu",
+        "duration": "Tam Gün (8s)",
+        "category": "Tekne Turu",
+        "badge": "Çok Satan",
+        "islands": [
+          "Kos",
+          "Kalimnos",
+          "Pserimos"
+        ],
+        "desc": "Bir günde üç çarpıcı adayı ziyaret edin. Kristal berraklığındaki sularda yüzün, geleneksel köyleri keşfedin ve gemide bir Yunan öğle yemeğinin tadını çıkarın.",
+        "includes": [
+          "Tekne transferi",
+          "Yunan öğle yemeği",
+          "Yüzme molaları",
+          "Rehber"
+        ]
+      },
+      "t2": {
+        "name": "Rodos Eski Şehir Günübirlik Turu",
+        "duration": "10 Saat",
+        "category": "Kültürel",
+        "badge": "Popüler",
+        "islands": [
+          "Rodos"
+        ],
+        "desc": "UNESCO Dünya Mirası Listesi'nde yer alan Rodos'un Orta Çağ'dan kalma eski kentini, Büyük Üstat Sarayı'nı ve ünlü Şövalyeler Sokağı'nı keşfedin.",
+        "includes": [
+          "Feribot biletleri",
+          "Yürüyüş turu",
+          "Serbest zaman",
+          "Rehber"
+        ]
+      },
+      "t3": {
+        "name": "Gün Batımı Yelken Macerası",
+        "duration": "4 Saat",
+        "category": "Yelken",
+        "badge": "",
+        "islands": [
+          "Kos Sahili"
+        ],
+        "desc": "Güneş Ege üzerinde batarken Kos kıyı şeridi boyunca yelken açın. Yüzme, şnorkelle yüzme ve şampanya kadeh kaldırma dahildir.",
+        "includes": [
+          "Yelkenli yat",
+          "Şnorkel ekipmanı",
+          "İçecek ve atıştırmalıklar",
+          "Kaptan"
+        ]
+      },
+      "t4": {
+        "name": "Antik Asklepion & Şarap Turu",
+        "duration": "5 Saat",
+        "category": "Kültürel",
+        "badge": "",
+        "islands": [
+          "Kos"
+        ],
+        "desc": "Hipokrat'ın tıp eğitimi verdiği antik şifa tapınağı Asklepion'u ziyaret edin ve ardından yerel bir üzüm bağında şarap tadımı yapın.",
+        "includes": [
+          "Ulaşım",
+          "Giriş ücretleri",
+          "Şarap tadımı",
+          "Rehber"
+        ]
+      },
+      "t5": {
+        "name": "Nisyros Yanardağ Gezisi",
+        "duration": "Tam Gün (9s)",
+        "category": "Macera",
+        "badge": "Eşsiz",
+        "islands": [
+          "Nisyros"
+        ],
+        "desc": "Volkanik Nisyros adasına yolculuk. Aktif bir yanardağın kraterinde yürüyün ve pitoresk Mandraki köyünü keşfedin.",
+        "includes": [
+          "Tekne transferi",
+          "Yanardağ girişi",
+          "Köy turu",
+          "Rehber"
+        ]
+      },
+      "t6": {
+        "name": "Plaj Turu & Mangal Teknesi",
+        "duration": "6 Saat",
+        "category": "Tekne Turu",
+        "badge": "",
+        "islands": [
+          "Kos Plajları"
+        ],
+        "desc": "Sadece tekneyle ulaşılabilen Kos'un gizli plajlarına yolculuk. Turkuaz sularda yüzün ve geleneksel Yunan barbekü öğle yemeğinin tadını çıkarın.",
+        "includes": [
+          "Tekne turu",
+          "Mangal öğle yemeği",
+          "İçecekler",
+          "Yüzme"
+        ]
+      }
+    },
+    "why": {
+      "title": "Neden Turları Bizimle Ayırtmalısınız?",
+      "intro": "Yunan adalarında unutulmaz deneyimler yaratmak",
+      "c1Title": "Küçük Gruplar",
+      "c1Desc": "Kişisel bir deneyim için maksimum 15 kişilik samimi turlar",
+      "c2Title": "Yerel Uzmanlar",
+      "c2Desc": "Her gizli mücevheri ve yerel hikayeyi bilen rehberler",
+      "c3Title": "Esnek Rezervasyon",
+      "c3Desc": "Kalkıştan 24 saat öncesine kadar ücretsiz iptal",
+      "c4Title": "Türkçe Destek",
+      "c4Desc": "Turunuz öncesinde ve sırasında tam Türkçe dil desteği"
+    },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "intro": "Turlarımız hakkında bilmeniz gereken her şey",
+      "q1": "Nasıl tur rezervasyonu yapabilirim?",
+      "a1": "Rezervasyonunuzu doğrudan web sitemiz üzerinden, WhatsApp aracılığıyla veya Kos Limanı'ndaki ofisimizi ziyaret ederek yapabilirsiniz. Özellikle yoğun sezonda (Haziran-Ağustos) en az 24-48 saat önceden rezervasyon yaptırmanızı öneririz.",
+      "q2": "Tekne turuna gelirken yanımda ne getirmeliyim?",
+      "a2": "Güneş kremi, güneş gözlüğü, şapka, mayo, havlu, yürüyüş için rahat ayakkabılar ve bir fotoğraf makinesi getirmenizi öneririz. Çoğu turda öğle yemeği ve içecek verilir, ancak atıştırmalıklar getirebilirsiniz. Hediyelik eşyalar için nakit para da yararlıdır.",
+      "q3": "Turlar çocuklar için uygun mu?",
+      "a3": "Turlarımızın çoğu aile dostudur! 4 yaşından küçük çocuklar genellikle ücretsiz seyahat eder ve 4-12 yaş arası çocuklar indirimli fiyatlardan yararlanır. Üç Ada Turu ve Sahilde Barbekü özellikle aileler arasında popülerdir. Rezervasyon yaparken çocuklarınızın yaşlarını bize bildirin.",
+      "q4": "Hava kötü olursa ne olur?",
+      "a4": "Güvenlik bizim önceliğimizdir. Hava koşulları nedeniyle bir tur iptal edilirse, tam bir geri ödeme seçebilir veya ekstra ücret ödemeden başka bir tarihe yeniden planlayabilirsiniz. Hava koşullarını yakından takip ediyoruz ve değişiklik gerekirse sizinle iletişime geçeceğiz.",
+      "q5": "Ada turları için vizeye ihtiyacım var mı?",
+      "a5": "Zaten geçerli bir Schengen vizeniz varsa veya Yunanistan'da yasal olarak bulunuyorsanız, diğer Yunan adalarına yapılacak turlar için ek vizeye gerek yoktur. Kos'tan hareket eden günübirlik geziler için mevcut giriş damganız yeterlidir.",
+      "q6": "Öğle yemeği ve içecekler dahil mi?",
+      "a6": "Tam günlük turların çoğuna öğle yemeği ve içecekler dahildir. Yarım günlük turlar genellikle atıştırmalıklar ve su içerir. Nelerin dahil olduğunu öğrenmek için özel tur detaylarını kontrol edin. Vejetaryen ve özel diyet seçenekleri önceden bildirilmek kaydıyla mevcuttur."
+    },
+    "cta": {
+      "title": "Tur Seçimi İçin Yardıma mı İhtiyacınız Var?",
+      "desc": "Ekibimiz ilgi alanlarınıza, grup büyüklüğünüze ve seyahat tarihlerinize göre mükemmel bir deneyim önerebilir."
+    }
   },
 
   "visaPage": {
