@@ -86,6 +86,17 @@
     "searchTours": "Tur Ara"
   },
 
+  "searchForm": {
+    "from": "Nereden",
+    "to": "Nereye",
+    "departure": "Kalkış",
+    "destination": "Varış",
+    "date": "Tarih",
+    "passengers": "Yolcu",
+    "passengerCount": "{count, plural, one {# Yolcu} other {# Yolcu}}",
+    "passengerCountMax": "5+ Yolcu"
+  },
+
   "trustBar": {
     "greekLicensedTitle": "Yunan Lisanslı",
     "greekLicensedSub": "MH.T.E. Kayıtlı",

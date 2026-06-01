@@ -51,6 +51,7 @@ import {
 
 export default function TravelBeez() {
   const t = useTranslations("hero");
+  const tForm = useTranslations("searchForm");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -361,11 +362,11 @@ export default function TravelBeez() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              From
+                              {tForm("from")}
                             </label>
                             <Select defaultValue="bodrum">
                               <SelectTrigger>
-                                <SelectValue placeholder="Departure" />
+                                <SelectValue placeholder={tForm("departure")} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="bodrum">
@@ -385,11 +386,11 @@ export default function TravelBeez() {
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              To
+                              {tForm("to")}
                             </label>
                             <Select defaultValue="kos">
                               <SelectTrigger>
-                                <SelectValue placeholder="Destination" />
+                                <SelectValue placeholder={tForm("destination")} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="kos">Kos, Greece</SelectItem>
@@ -410,31 +411,31 @@ export default function TravelBeez() {
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Date
+                              {tForm("date")}
                             </label>
                             <Input type="date" className="h-10" min={todayAthens} />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Passengers
+                              {tForm("passengers")}
                             </label>
                             <Select defaultValue="2">
                               <SelectTrigger>
-                                <SelectValue placeholder="Passengers" />
+                                <SelectValue placeholder={tForm("passengers")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="1">1 Passenger</SelectItem>
-                                <SelectItem value="2">2 Passengers</SelectItem>
-                                <SelectItem value="3">3 Passengers</SelectItem>
-                                <SelectItem value="4">4 Passengers</SelectItem>
-                                <SelectItem value="5">5+ Passengers</SelectItem>
+                                <SelectItem value="1">{tForm("passengerCount", { count: 1 })}</SelectItem>
+                                <SelectItem value="2">{tForm("passengerCount", { count: 2 })}</SelectItem>
+                                <SelectItem value="3">{tForm("passengerCount", { count: 3 })}</SelectItem>
+                                <SelectItem value="4">{tForm("passengerCount", { count: 4 })}</SelectItem>
+                                <SelectItem value="5">{tForm("passengerCountMax")}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
                         <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
                           <Search className="h-4 w-4 mr-2" />
-                          Search Ferry Tickets
+                          {t("searchFerry")}
                         </Button>
                       </TabsContent>
                       <TabsContent value="cars" className="mt-0">

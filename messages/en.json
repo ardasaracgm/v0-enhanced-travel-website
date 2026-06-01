@@ -86,6 +86,17 @@
     "searchTours": "Search Tours"
   },
 
+  "searchForm": {
+    "from": "From",
+    "to": "To",
+    "departure": "Departure",
+    "destination": "Destination",
+    "date": "Date",
+    "passengers": "Passengers",
+    "passengerCount": "{count, plural, one {# Passenger} other {# Passengers}}",
+    "passengerCountMax": "5+ Passengers"
+  },
+
   "trustBar": {
     "greekLicensedTitle": "Greek Licensed",
     "greekLicensedSub": "MH.T.E. Registered",
