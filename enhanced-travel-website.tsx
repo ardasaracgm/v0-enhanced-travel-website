@@ -60,6 +60,7 @@ export default function TravelBeez() {
   const tFleet = useTranslations("carFleet");
   const tPay = useTranslations("payment");
   const tIslands = useTranslations("popularIslands");
+  const tTours = useTranslations("homeTours");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -108,39 +109,16 @@ export default function TravelBeez() {
   ];
 
   const tours = [
-    {
-      name: "Three Islands Cruise",
-      duration: "Full Day",
-      price: "€89",
-      image:
-        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80",
-      islands: "Kos, Kalymnos, Pserimos",
-    },
-    {
-      name: "Rhodes Old Town Tour",
-      duration: "6 Hours",
-      price: "€65",
-      image:
-        "https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=80",
-      islands: "Rhodes City",
-    },
-    {
-      name: "Sunset Sailing",
-      duration: "4 Hours",
-      price: "€75",
-      image:
-        "https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=400&q=80",
-      islands: "Kos Coast",
-    },
-    {
-      name: "Ancient Ruins Explorer",
-      duration: "5 Hours",
-      price: "€55",
-      image:
-        "https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=400&q=80",
-      islands: "Kos & Asklepion",
-    },
-  ];
+    { id: "threeIslands", price: "€89", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80" },
+    { id: "rhodesOldTown", price: "€65", image: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=80" },
+    { id: "sunsetSailing", price: "€75", image: "https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=400&q=80" },
+    { id: "ancientRuins", price: "€55", image: "https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=400&q=80" },
+  ].map((t) => ({
+    ...t,
+    name: tTours(`items.${t.id}.name`),
+    duration: tTours(`items.${t.id}.duration`),
+    islands: tTours(`items.${t.id}.islands`),
+  }));
 
   const services = [
     {
@@ -1152,10 +1130,10 @@ export default function TravelBeez() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                  Tours & Experiences
+                  {tTours("title")}
                 </h2>
                 <p className="text-muted-foreground text-lg max-w-xl">
-                  Unforgettable adventures guided by local experts
+                  {tTours("subtitle")}
                 </p>
               </div>
               <Link href="/tours">
@@ -1163,7 +1141,7 @@ export default function TravelBeez() {
                   variant="outline"
                   className="mt-4 md:mt-0 text-foreground border-border"
                 >
-                  View All Tours
+                  {tTours("viewAll")}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
@@ -1171,7 +1149,7 @@ export default function TravelBeez() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {tours.map((tour, index) => (
                 <motion.div
-                  key={tour.name}
+                  key={tour.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -1203,7 +1181,7 @@ export default function TravelBeez() {
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-sm text-muted-foreground">
-                              From{" "}
+                              {tTours("from")}{" "}
                             </span>
                             <span className="text-2xl font-bold text-primary">
                               {tour.price}
@@ -1213,7 +1191,7 @@ export default function TravelBeez() {
                             size="sm"
                             className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
-                            Book
+                            {tTours("book")}
                           </Button>
                         </div>
                       </div>

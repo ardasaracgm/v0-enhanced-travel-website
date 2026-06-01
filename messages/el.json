@@ -743,5 +743,34 @@
         "ferryTime": "4 hours from Bodrum"
       }
     }
+  },
+  "homeTours": {
+    "title": "Tours & Experiences",
+    "subtitle": "Unforgettable adventures guided by local experts",
+    "viewAll": "View All Tours",
+    "from": "From",
+    "book": "Book",
+    "items": {
+      "threeIslands": {
+        "name": "Three Islands Cruise",
+        "duration": "Full Day",
+        "islands": "Kos, Kalymnos, Pserimos"
+      },
+      "rhodesOldTown": {
+        "name": "Rhodes Old Town Tour",
+        "duration": "6 Hours",
+        "islands": "Rhodes City"
+      },
+      "sunsetSailing": {
+        "name": "Sunset Sailing",
+        "duration": "4 Hours",
+        "islands": "Kos Coast"
+      },
+      "ancientRuins": {
+        "name": "Ancient Ruins Explorer",
+        "duration": "5 Hours",
+        "islands": "Kos & Asklepion"
+      }
+    }
   }
 }

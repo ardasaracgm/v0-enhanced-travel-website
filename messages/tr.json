@@ -743,5 +743,34 @@
         "ferryTime": "Bodrum'dan 4 saat"
       }
     }
+  },
+  "homeTours": {
+    "title": "Turlar & Deneyimler",
+    "subtitle": "Yerel uzmanlar eşliğinde unutulmaz maceralar",
+    "viewAll": "Tüm Turları Gör",
+    "from": "Başlangıç",
+    "book": "Rezervasyon",
+    "items": {
+      "threeIslands": {
+        "name": "Üç Ada Tekne Turu",
+        "duration": "Tam Gün",
+        "islands": "Kos, Kalimnos, Pserimos"
+      },
+      "rhodesOldTown": {
+        "name": "Rodos Eski Şehir Turu",
+        "duration": "6 Saat",
+        "islands": "Rodos Şehri"
+      },
+      "sunsetSailing": {
+        "name": "Gün Batımı Yelken Turu",
+        "duration": "4 Saat",
+        "islands": "Kos Sahili"
+      },
+      "ancientRuins": {
+        "name": "Antik Kalıntılar Turu",
+        "duration": "5 Saat",
+        "islands": "Kos ve Asklepion"
+      }
+    }
   }
 }
