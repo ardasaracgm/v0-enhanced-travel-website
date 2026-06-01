@@ -197,6 +197,30 @@
     "s6Desc": "Secure delivery address and storage at Kos Port"
   },
 
+  "carFleet": {
+    "heroBadge": "Kos Island Fleet",
+    "title": "Our Car Fleet",
+    "subtitle": "Perfect cars for island exploration. Pick up at port or your hotel.",
+    "viewAll": "View All Cars",
+    "perDay": "/day",
+    "bookNow": "Book Now",
+    "trust1": "Full insurance included",
+    "trust2": "No hidden fees",
+    "trust3": "Free cancellation 24h before",
+    "trust4": "Port delivery included",
+    "typeMini": "Mini",
+    "typeEconomy": "Economy",
+    "typeCompact": "Compact",
+    "featElectric": "Electric",
+    "featAC": "A/C",
+    "featManual": "Manual",
+    "featCityPerfect": "City Perfect",
+    "seats": "{count} Seats",
+    "badgeEco": "Eco-Friendly",
+    "badgePopular": "Most Popular",
+    "badgeValue": "Best Value"
+  },
+
   "ferryPage": {
     "title": "Εισιτήρια Πλοίων προς τα Ελληνικά Νησιά",
     "subtitle": "Κλείστε το εισιτήριο πλοίου σας από Bodrum, Turgutreis ή Marmaris προς Κω, Ρόδο, Σάμο και άλλα νησιά.",

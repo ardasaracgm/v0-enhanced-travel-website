@@ -57,6 +57,7 @@ export default function TravelBeez() {
   const tOffice = useTranslations("kosOffice");
   const tSup = useTranslations("support");
   const tSvc = useTranslations("services");
+  const tFleet = useTranslations("carFleet");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -107,31 +108,31 @@ export default function TravelBeez() {
 
   const carFleet = [
     {
-      type: "Mini",
+      type: tFleet("typeMini"),
       model: "Citroen Ami",
       price: "€19",
       image:
         "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80",
-      features: ["Electric", "2 Seats", "City Perfect"],
-      badge: "Eco-Friendly",
+      features: [tFleet("featElectric"), tFleet("seats", { count: 2 }), tFleet("featCityPerfect")],
+      badge: tFleet("badgeEco"),
     },
     {
-      type: "Economy",
+      type: tFleet("typeEconomy"),
       model: "Fiat Panda",
       price: "€25",
       image:
         "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&q=80",
-      features: ["A/C", "Manual", "4 Seats"],
-      badge: "Most Popular",
+      features: [tFleet("featAC"), tFleet("featManual"), tFleet("seats", { count: 4 })],
+      badge: tFleet("badgePopular"),
     },
     {
-      type: "Compact",
+      type: tFleet("typeCompact"),
       model: "DFSK 500",
       price: "€29",
       image:
         "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80",
-      features: ["A/C", "Manual", "5 Seats"],
-      badge: "Best Value",
+      features: [tFleet("featAC"), tFleet("featManual"), tFleet("seats", { count: 5 })],
+      badge: tFleet("badgeValue"),
     },
   ];
 
@@ -967,14 +968,13 @@ export default function TravelBeez() {
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
                   <Car className="h-4 w-4" />
-                  Kos Island Fleet
+                  {tFleet("heroBadge")}
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                  Our Car Fleet
+                  {tFleet("title")}
                 </h2>
                 <p className="text-muted-foreground text-lg max-w-xl">
-                  Perfect cars for island exploration. Pick up at port or your
-                  hotel.
+                  {tFleet("subtitle")}
                 </p>
               </div>
               <Link href="/car-rental">
@@ -982,7 +982,7 @@ export default function TravelBeez() {
                   variant="outline"
                   className="mt-4 md:mt-0 text-foreground border-border"
                 >
-                  View All Cars
+                  {tFleet("viewAll")}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
@@ -1036,11 +1036,11 @@ export default function TravelBeez() {
                               {car.price}
                             </span>
                             <span className="text-muted-foreground text-sm">
-                              /day
+                              {tFleet("perDay")}
                             </span>
                           </div>
                           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                            Book Now
+                            {tFleet("bookNow")}
                           </Button>
                         </div>
                       </div>
@@ -1054,19 +1054,19 @@ export default function TravelBeez() {
               <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
                 <div className="flex items-center gap-2 text-foreground">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Full insurance included</span>
+                  <span>{tFleet("trust1")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>No hidden fees</span>
+                  <span>{tFleet("trust2")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Free cancellation 24h before</span>
+                  <span>{tFleet("trust3")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-foreground">
                   <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Port delivery included</span>
+                  <span>{tFleet("trust4")}</span>
                 </div>
               </div>
             </div>

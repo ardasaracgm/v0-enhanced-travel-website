@@ -197,6 +197,30 @@
     "s6Desc": "Kos Limanı'nda güvenli teslimat adresi ve depolama"
   },
 
+  "carFleet": {
+    "heroBadge": "Kos Adası Filosu",
+    "title": "Araç Filomuz",
+    "subtitle": "Ada keşfi için ideal araçlar. Limanda veya otelinizde teslim alın.",
+    "viewAll": "Tüm Araçları Gör",
+    "perDay": "/gün",
+    "bookNow": "Hemen Kirala",
+    "trust1": "Tam sigorta dahil",
+    "trust2": "Gizli ücret yok",
+    "trust3": "24 saat öncesine kadar ücretsiz iptal",
+    "trust4": "Liman teslimatı dahil",
+    "typeMini": "Mini",
+    "typeEconomy": "Ekonomik",
+    "typeCompact": "Kompakt",
+    "featElectric": "Elektrikli",
+    "featAC": "Klima",
+    "featManual": "Manuel",
+    "featCityPerfect": "Şehir İçin İdeal",
+    "seats": "{count} Koltuk",
+    "badgeEco": "Çevre Dostu",
+    "badgePopular": "En Popüler",
+    "badgeValue": "En İyi Değer"
+  },
+
   "ferryPage": {
     "title": "Yunan Adalarına Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",
