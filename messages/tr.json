@@ -103,7 +103,11 @@
     "carAny": "Farketmez",
     "carMini": "Mini (Citroen Ami)",
     "carEconomy": "Ekonomik (Fiat Panda)",
-    "carCompact": "Kompakt (DFSK 500)"
+    "carCompact": "Kompakt (DFSK 500)",
+    "checkIn": "Giriş Tarihi",
+    "checkOut": "Çıkış Tarihi",
+    "guests": "Misafir",
+    "guestCount": "{count, plural, one {# Misafir} other {# Misafir}}"
   },
 
   "trustBar": {

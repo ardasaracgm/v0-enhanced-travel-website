@@ -103,7 +103,11 @@
     "carAny": "Any",
     "carMini": "Mini (Citroen Ami)",
     "carEconomy": "Economy (Fiat Panda)",
-    "carCompact": "Compact (DFSK 500)"
+    "carCompact": "Compact (DFSK 500)",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Guests",
+    "guestCount": "{count, plural, one {# Guest} other {# Guests}}"
   },
 
   "trustBar": {

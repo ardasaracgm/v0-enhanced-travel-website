@@ -499,11 +499,11 @@ export default function TravelBeez() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Island
+                              {tForm("island")}
                             </label>
                             <Select defaultValue="kos">
                               <SelectTrigger>
-                                <SelectValue placeholder="Select island" />
+                                <SelectValue placeholder={tForm("selectIsland")} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="kos">Kos</SelectItem>
@@ -516,36 +516,36 @@ export default function TravelBeez() {
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Check-in
+                              {tForm("checkIn")}
                             </label>
                             <Input type="date" className="h-10" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Check-out
+                              {tForm("checkOut")}
                             </label>
                             <Input type="date" className="h-10" />
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground">
-                              Guests
+                              {tForm("guests")}
                             </label>
                             <Select defaultValue="2">
                               <SelectTrigger>
-                                <SelectValue placeholder="Guests" />
+                                <SelectValue placeholder={tForm("guests")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="1">1 Guest</SelectItem>
-                                <SelectItem value="2">2 Guests</SelectItem>
-                                <SelectItem value="3">3 Guests</SelectItem>
-                                <SelectItem value="4">4 Guests</SelectItem>
+                                <SelectItem value="1">{tForm("guestCount", { count: 1 })}</SelectItem>
+                                <SelectItem value="2">{tForm("guestCount", { count: 2 })}</SelectItem>
+                                <SelectItem value="3">{tForm("guestCount", { count: 3 })}</SelectItem>
+                                <SelectItem value="4">{tForm("guestCount", { count: 4 })}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
                         <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
                           <Search className="h-4 w-4 mr-2" />
-                          Search Hotels
+                          {t("searchHotels")}
                         </Button>
                       </TabsContent>
                       <TabsContent value="tours" className="mt-0">
