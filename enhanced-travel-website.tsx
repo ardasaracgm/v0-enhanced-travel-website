@@ -64,6 +64,7 @@ export default function TravelBeez() {
   const tVI = useTranslations("visaInsurance");
   const tTesti = useTranslations("testimonials");
   const tWa = useTranslations("whatsappCta");
+  const tFooter = useTranslations("homeFooter");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -1409,8 +1410,7 @@ export default function TravelBeez() {
                 </span>
               </Link>
               <p className="text-sm text-muted-foreground mb-4">
-                Your trusted partner for Greek island travel from Turkey.
-                Licensed and registered in Greece (ΜΗ.Τ.Ε.).
+                {tFooter("tagline")}
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1425,24 +1425,24 @@ export default function TravelBeez() {
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="text-foreground font-medium">
-                      G Averos 4, Kos, Greece
+                      {tFooter("addressLine")}
                     </span>
                     <p className="text-xs">
-                      Under Achilleas Hotel, at Port exit
+                      {tFooter("addressSub")}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Services</h4>
+              <h4 className="font-semibold text-foreground mb-4">{tFooter("servicesTitle")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Ferry Tickets
+                    {tFooter("ferryTickets")}
                   </Link>
                 </li>
                 <li>
@@ -1450,7 +1450,7 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Car Rental
+                    {tFooter("carRental")}
                   </Link>
                 </li>
                 <li>
@@ -1458,7 +1458,7 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Hotels
+                    {tFooter("hotels")}
                   </Link>
                 </li>
                 <li>
@@ -1466,65 +1466,35 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Tours
+                    {tFooter("tours")}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Islands</h4>
+              <h4 className="font-semibold text-foreground mb-4">{tFooter("islandsTitle")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Kos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Rhodes
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Samos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Leros
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Patmos
-                  </Link>
-                </li>
+                {islands.map((island) => (
+                  <li key={island.id}>
+                    <Link
+                      href="#"
+                      className="hover:text-primary transition-colors"
+                    >
+                      {island.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Support</h4>
+              <h4 className="font-semibold text-foreground mb-4">{tFooter("supportTitle")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Visa Support
+                    {tFooter("visaSupport")}
                   </Link>
                 </li>
                 <li>
@@ -1532,7 +1502,7 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Travel Insurance
+                    {tFooter("travelInsurance")}
                   </Link>
                 </li>
                 <li>
@@ -1540,7 +1510,7 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    FAQ
+                    {tFooter("faq")}
                   </Link>
                 </li>
                 <li>
@@ -1548,7 +1518,7 @@ export default function TravelBeez() {
                     href="#"
                     className="hover:text-primary transition-colors"
                   >
-                    Contact Us
+                    {tFooter("contactUs")}
                   </Link>
                 </li>
               </ul>
@@ -1558,17 +1528,16 @@ export default function TravelBeez() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span>
-                  {new Date().getFullYear()} FerryBee Travel IKE - operating as
-                  TravelBeez.
+                  {tFooter("operatingAs", { year: new Date().getFullYear() })}
                 </span>
                 <span>ΜΗ.Τ.Ε.: 1471Ε60000074600</span>
               </div>
               <div className="flex gap-6 text-sm text-muted-foreground">
                 <Link href="#" className="hover:text-primary transition-colors">
-                  Privacy Policy
+                  {tFooter("privacy")}
                 </Link>
                 <Link href="#" className="hover:text-primary transition-colors">
-                  Terms of Service
+                  {tFooter("terms")}
                 </Link>
               </div>
             </div>

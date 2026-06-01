@@ -796,5 +796,24 @@
   "testimonials": {
     "title": "What Our Travelers Say",
     "subtitle": "Real experiences from Turkish travelers"
+  },
+  "homeFooter": {
+    "tagline": "Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (ΜΗ.Τ.Ε.).",
+    "addressLine": "G Averos 4, Kos, Greece",
+    "addressSub": "Under Achilleas Hotel, at Port exit",
+    "servicesTitle": "Services",
+    "islandsTitle": "Islands",
+    "supportTitle": "Support",
+    "ferryTickets": "Ferry Tickets",
+    "carRental": "Car Rental",
+    "hotels": "Hotels",
+    "tours": "Tours",
+    "visaSupport": "Visa Support",
+    "travelInsurance": "Travel Insurance",
+    "faq": "FAQ",
+    "contactUs": "Contact Us",
+    "operatingAs": "{year} FerryBee Travel IKE - operating as TravelBeez.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   }
 }

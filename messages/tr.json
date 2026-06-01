@@ -796,5 +796,24 @@
   "testimonials": {
     "title": "Gezginlerimiz Ne Diyor",
     "subtitle": "Türk gezginlerden gerçek deneyimler"
+  },
+  "homeFooter": {
+    "tagline": "Türkiye'den Yunan adalarına seyahat için güvenilir ortağınız. Yunanistan'da lisanslı ve kayıtlı (ΜΗ.Τ.Ε.).",
+    "addressLine": "G Averos 4, Kos, Yunanistan",
+    "addressSub": "Achilleas Hotel altında, Liman çıkışında",
+    "servicesTitle": "Hizmetler",
+    "islandsTitle": "Adalar",
+    "supportTitle": "Destek",
+    "ferryTickets": "Feribot Biletleri",
+    "carRental": "Araç Kiralama",
+    "hotels": "Oteller",
+    "tours": "Turlar",
+    "visaSupport": "Vize Desteği",
+    "travelInsurance": "Seyahat Sigortası",
+    "faq": "SSS",
+    "contactUs": "Bize Ulaşın",
+    "operatingAs": "{year} FerryBee Travel IKE - TravelBeez olarak faaliyet göstermektedir.",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları"
   }
 }
