@@ -772,5 +772,23 @@
         "islands": "Kos & Asklepion"
       }
     }
+  },
+  "visaInsurance": {
+    "visa": {
+      "title": "Visa Support",
+      "desc": "Need a Schengen visa? We provide complete documentation support, appointment scheduling, and travel itinerary preparation.",
+      "item1": "Document checklist and review",
+      "item2": "Travel itinerary preparation",
+      "item3": "Accommodation confirmation",
+      "cta": "Get Visa Help"
+    },
+    "insurance": {
+      "title": "Travel Insurance",
+      "desc": "Travel with peace of mind. Our comprehensive insurance covers medical emergencies, trip cancellations, and more.",
+      "item1": "Medical coverage up to 30,000",
+      "item2": "Trip cancellation protection",
+      "item3": "Baggage loss coverage",
+      "cta": "Get Insurance Quote"
+    }
   }
 }

@@ -772,5 +772,23 @@
         "islands": "Kos ve Asklepion"
       }
     }
+  },
+  "visaInsurance": {
+    "visa": {
+      "title": "Vize Desteği",
+      "desc": "Schengen vizesine mi ihtiyacınız var? Eksiksiz belge desteği, randevu planlaması ve seyahat programı hazırlığı sağlıyoruz.",
+      "item1": "Belge kontrol listesi ve incelemesi",
+      "item2": "Seyahat programı hazırlığı",
+      "item3": "Konaklama onayı",
+      "cta": "Vize Yardımı Al"
+    },
+    "insurance": {
+      "title": "Seyahat Sigortası",
+      "desc": "Gönül rahatlığıyla seyahat edin. Kapsamlı sigortamız tıbbi acil durumları, seyahat iptallerini ve daha fazlasını kapsar.",
+      "item1": "30.000'e kadar tıbbi teminat",
+      "item2": "Seyahat iptal koruması",
+      "item3": "Bagaj kaybı teminatı",
+      "cta": "Sigorta Teklifi Al"
+    }
   }
 }

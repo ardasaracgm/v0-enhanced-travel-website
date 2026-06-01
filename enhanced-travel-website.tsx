@@ -61,6 +61,7 @@ export default function TravelBeez() {
   const tPay = useTranslations("payment");
   const tIslands = useTranslations("popularIslands");
   const tTours = useTranslations("homeTours");
+  const tVI = useTranslations("visaInsurance");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -1224,29 +1225,27 @@ export default function TravelBeez() {
                   </div>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-foreground mb-3">
-                      Visa Support
+                      {tVI("visa.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Need a Schengen visa? We provide complete documentation
-                      support, appointment scheduling, and travel itinerary
-                      preparation.
+                      {tVI("visa.desc")}
                     </p>
                     <ul className="space-y-2 mb-6">
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Document checklist and review
+                        {tVI("visa.item1")}
                       </li>
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Travel itinerary preparation
+                        {tVI("visa.item2")}
                       </li>
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Accommodation confirmation
+                        {tVI("visa.item3")}
                       </li>
                     </ul>
                     <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Get Visa Help
+                      {tVI("visa.cta")}
                     </Button>
                   </div>
                 </CardContent>
@@ -1269,28 +1268,27 @@ export default function TravelBeez() {
                   </div>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-foreground mb-3">
-                      Travel Insurance
+                      {tVI("insurance.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Travel with peace of mind. Our comprehensive insurance
-                      covers medical emergencies, trip cancellations, and more.
+                      {tVI("insurance.desc")}
                     </p>
                     <ul className="space-y-2 mb-6">
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Medical coverage up to 30,000
+                        {tVI("insurance.item1")}
                       </li>
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Trip cancellation protection
+                        {tVI("insurance.item2")}
                       </li>
                       <li className="flex items-center gap-2 text-sm text-foreground">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Baggage loss coverage
+                        {tVI("insurance.item3")}
                       </li>
                     </ul>
                     <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Get Insurance Quote
+                      {tVI("insurance.cta")}
                     </Button>
                   </div>
                 </CardContent>
