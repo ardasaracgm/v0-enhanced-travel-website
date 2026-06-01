@@ -71,10 +71,6 @@ export function SecurePaymentBanner() {
               <span className="text-sm font-medium">Mastercard</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <CreditCard className="h-6 w-6" />
-              <span className="text-sm font-medium">TROY</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
               <span className="text-sm font-medium">Bank Transfer (TL/EUR)</span>
             </div>
           </div>
