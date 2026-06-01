@@ -706,5 +706,42 @@
   "kademeNote": {
     "comingSoon": "Bu özellik yakında aktif olacak. Hemen yardım için WhatsApp'tan iletişime geçebilirsiniz.",
     "contactViaWhatsapp": "WhatsApp'tan İletişim"
+  },
+  "popularIslands": {
+    "title": "Popüler Yunan Adaları",
+    "subtitle": "Ege Denizi'nin en güzel destinasyonlarını keşfedin",
+    "explore": "Keşfet",
+    "items": {
+      "kos": {
+        "name": "Kos",
+        "location": "Onikiada",
+        "description": "Güzel plajlar, antik kalıntılar ve canlı gece hayatı.",
+        "ferryTime": "Bodrum'dan 1 saat"
+      },
+      "rhodes": {
+        "name": "Rodos",
+        "location": "Onikiada",
+        "description": "Ortaçağdan kalma eski şehir, muhteşem plajlar ve zengin tarih.",
+        "ferryTime": "Marmaris'ten 2,5 saat"
+      },
+      "samos": {
+        "name": "Sisam",
+        "location": "Kuzey Ege",
+        "description": "Yemyeşil manzaralar, bozulmamış plajlar ve antik alanlar.",
+        "ferryTime": "Kuşadası'ndan 1,5 saat"
+      },
+      "leros": {
+        "name": "Leros",
+        "location": "Onikiada",
+        "description": "Otantik Yunan cazibesi, sakin koylar ve İtalyan mimarisi.",
+        "ferryTime": "Bodrum'dan 3 saat"
+      },
+      "patmos": {
+        "name": "Patmos",
+        "location": "Onikiada",
+        "description": "Kıyamet Mağarası'nın bulunduğu kutsal ada.",
+        "ferryTime": "Bodrum'dan 4 saat"
+      }
+    }
   }
 }

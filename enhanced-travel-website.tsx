@@ -59,53 +59,23 @@ export default function TravelBeez() {
   const tSvc = useTranslations("services");
   const tFleet = useTranslations("carFleet");
   const tPay = useTranslations("payment");
+  const tIslands = useTranslations("popularIslands");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const islands = [
-    {
-      name: "Kos",
-      location: "Dodecanese",
-      image:
-        "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=800&q=80",
-      description: "Beautiful beaches, ancient ruins, and vibrant nightlife.",
-      ferryTime: "1 hour from Bodrum",
-    },
-    {
-      name: "Rhodes",
-      location: "Dodecanese",
-      image:
-        "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80",
-      description: "Medieval old town, stunning beaches, and rich history.",
-      ferryTime: "2.5 hours from Marmaris",
-    },
-    {
-      name: "Samos",
-      location: "North Aegean",
-      image:
-        "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=800&q=80",
-      description:
-        "Lush green landscapes, pristine beaches, and ancient sites.",
-      ferryTime: "1.5 hours from Kusadasi",
-    },
-    {
-      name: "Leros",
-      location: "Dodecanese",
-      image:
-        "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=800&q=80",
-      description:
-        "Authentic Greek charm, quiet bays, and Italian architecture.",
-      ferryTime: "3 hours from Bodrum",
-    },
-    {
-      name: "Patmos",
-      location: "Dodecanese",
-      image:
-        "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80",
-      description: "Sacred island with the Cave of the Apocalypse.",
-      ferryTime: "4 hours from Bodrum",
-    },
-  ];
+    { id: "kos", image: "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=800&q=80" },
+    { id: "rhodes", image: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80" },
+    { id: "samos", image: "https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=800&q=80" },
+    { id: "leros", image: "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=800&q=80" },
+    { id: "patmos", image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80" },
+  ].map((i) => ({
+    ...i,
+    name: tIslands(`items.${i.id}.name`),
+    location: tIslands(`items.${i.id}.location`),
+    description: tIslands(`items.${i.id}.description`),
+    ferryTime: tIslands(`items.${i.id}.ferryTime`),
+  }));
 
   const carFleet = [
     {
@@ -1115,16 +1085,16 @@ export default function TravelBeez() {
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Popular Greek Islands
+                {tIslands("title")}
               </h2>
               <p className="text-muted-foreground text-lg">
-                Explore the most beautiful destinations in the Aegean Sea
+                {tIslands("subtitle")}
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {islands.map((island, index) => (
                 <motion.div
-                  key={island.name}
+                  key={island.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -1164,7 +1134,7 @@ export default function TravelBeez() {
                             variant="outline"
                             className="text-xs text-foreground border-border"
                           >
-                            Explore
+                            {tIslands("explore")}
                           </Button>
                         </div>
                       </div>

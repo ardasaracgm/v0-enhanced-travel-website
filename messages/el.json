@@ -706,5 +706,42 @@
   "kademeNote": {
     "comingSoon": "Αυτή η λειτουργία ξεκινά σύντομα. Για άμεση υποστήριξη, επικοινωνήστε μέσω WhatsApp.",
     "contactViaWhatsapp": "Επικοινωνία μέσω WhatsApp"
+  },
+  "popularIslands": {
+    "title": "Popular Greek Islands",
+    "subtitle": "Explore the most beautiful destinations in the Aegean Sea",
+    "explore": "Explore",
+    "items": {
+      "kos": {
+        "name": "Kos",
+        "location": "Dodecanese",
+        "description": "Beautiful beaches, ancient ruins, and vibrant nightlife.",
+        "ferryTime": "1 hour from Bodrum"
+      },
+      "rhodes": {
+        "name": "Rhodes",
+        "location": "Dodecanese",
+        "description": "Medieval old town, stunning beaches, and rich history.",
+        "ferryTime": "2.5 hours from Marmaris"
+      },
+      "samos": {
+        "name": "Samos",
+        "location": "North Aegean",
+        "description": "Lush green landscapes, pristine beaches, and ancient sites.",
+        "ferryTime": "1.5 hours from Kusadasi"
+      },
+      "leros": {
+        "name": "Leros",
+        "location": "Dodecanese",
+        "description": "Authentic Greek charm, quiet bays, and Italian architecture.",
+        "ferryTime": "3 hours from Bodrum"
+      },
+      "patmos": {
+        "name": "Patmos",
+        "location": "Dodecanese",
+        "description": "Sacred island with the Cave of the Apocalypse.",
+        "ferryTime": "4 hours from Bodrum"
+      }
+    }
   }
 }
