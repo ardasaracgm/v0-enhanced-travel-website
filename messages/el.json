@@ -584,13 +584,64 @@
   },
 
   "packagePickupPage": {
-    "title": "Παραλαβή Δεμάτων στην Κω",
-    "subtitle": "Στείλτε τα δέματά σας στην αποθήκη μας στην Κω και θα σας τα παραδώσουμε κατά την άφιξή σας. Ιδανικό για αγορές, δώρα ή απαραίτητα είδη.",
-    "comingSoonBadge": "Η υπηρεσία ξεκινά σύντομα",
-    "leadIntro": "Πείτε μας τι περιμένετε και την ημερομηνία άφιξής σας. Θα σας στείλουμε οδηγίες παραλαβής.",
-    "packageCount": "Αριθμός δεμάτων",
-    "expectedArrival": "Η ημερομηνία άφιξής σας",
-    "packageDescription": "Σύντομη περιγραφή των αντικειμένων"
+    "hero": {
+      "badge": "Package Pickup & Kos Storage",
+      "titleLead": "Shop Abroad.",
+      "titleHighlight": "Pick Up in Kos.",
+      "subtitle": "Send your online purchases to our Kos Port office and collect them during your island visit.",
+      "ctaReserve": "Reserve Your Box"
+    },
+    "hiw": {
+      "title": "How It Works",
+      "intro": "Simple 4-step process to receive your international packages in Kos",
+      "step1Title": "Reserve Your Box",
+      "step1Desc": "Contact us via WhatsApp to reserve your package slot or storage box.",
+      "step2Title": "Use Our Address",
+      "step2Desc": "Ship your online purchases to our secure Kos Port office address.",
+      "step3Title": "Get Notified",
+      "step3Desc": "We notify you via WhatsApp when your package arrives safely.",
+      "step4Title": "Pick Up at Kos",
+      "step4Desc": "Collect your packages at Kos Port before returning to Turkey."
+    },
+    "storage": {
+      "title": "Storage Options",
+      "intro": "Flexible storage solutions for packages of all sizes",
+      "popular": "Popular",
+      "perDay": "per day",
+      "perMonth": "per month",
+      "smallName": "Small Box",
+      "smallDesc": "Up to 30x20x15 cm",
+      "mediumName": "Medium Box",
+      "mediumDesc": "Up to 50x40x30 cm",
+      "largeName": "Large Box",
+      "largeDesc": "Up to 80x60x50 cm",
+      "bagName": "Daily Bag Storage",
+      "bagDesc": "Luggage & backpacks",
+      "monthlyName": "Monthly Storage",
+      "monthlyDesc": "Long-term package storage"
+    },
+    "trust": {
+      "title": "Why Trust TravelBeez?",
+      "intro": "Your packages are in safe hands at our Kos Port office",
+      "f1Title": "Physical Office",
+      "f1Desc": "Real office at Kos Port, G Averos 4",
+      "f2Title": "Staff-Controlled",
+      "f2Desc": "Professional team handles all packages",
+      "f3Title": "Camera Monitored",
+      "f3Desc": "24/7 security camera coverage",
+      "f4Title": "WhatsApp Updates",
+      "f4Desc": "Real-time delivery notifications",
+      "f5Title": "Turkish Support",
+      "f5Desc": "Full Turkish language support"
+    },
+    "notice": {
+      "title": "Important Notice",
+      "body": "Customers are responsible for customs duties, taxes, product legality, and all import/export regulations. TravelBeez provides address, storage, and handover services only. We do not inspect package contents and cannot be held responsible for the nature of items shipped. Please ensure your purchases comply with both Greek and Turkish customs regulations."
+    },
+    "cta": {
+      "title": "Ready to Start?",
+      "subtitle": "Contact us on WhatsApp to reserve your package slot or ask any questions. We respond in Turkish!"
+    }
   },
 
   "passengerDetails": {

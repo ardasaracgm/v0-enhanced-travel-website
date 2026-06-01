@@ -584,13 +584,64 @@
   },
 
   "packagePickupPage": {
-    "title": "Kos'ta Paket Teslim Hizmeti",
-    "subtitle": "Eşyalarınızı Kos depomuza gönderin, geldiğinizde size teslim edelim. Alışveriş, hediye veya gerekli eşyalar için ideal.",
-    "comingSoonBadge": "Hizmet yakında",
-    "leadIntro": "Ne beklediğinizi ve geliş tarihinizi yazın. Size teslim talimatlarını gönderelim.",
-    "packageCount": "Paket sayısı",
-    "expectedArrival": "Geliş tarihiniz",
-    "packageDescription": "Eşyaların kısa açıklaması"
+    "hero": {
+      "badge": "Paket Teslim & Kos Depolama",
+      "titleLead": "Yurt Dışından Alışveriş Yapın.",
+      "titleHighlight": "Kos'ta Teslim Alın.",
+      "subtitle": "Online alışverişlerinizi Kos Limanı ofisimize gönderin ve ada ziyaretiniz sırasında teslim alın.",
+      "ctaReserve": "Kutunuzu Ayırtın"
+    },
+    "hiw": {
+      "title": "Nasıl Çalışır",
+      "intro": "Uluslararası paketlerinizi Kos'ta teslim almak için 4 adımlı basit süreç",
+      "step1Title": "Kutunuzu Ayırtın",
+      "step1Desc": "Paket yuvanızı veya saklama kutunuzu rezerve etmek için WhatsApp üzerinden bizimle iletişime geçin.",
+      "step2Title": "Adresimizi Kullanın",
+      "step2Desc": "Online alışverişlerinizi güvenli Kos Limanı ofis adresimize gönderin.",
+      "step3Title": "Bilgilendirilin",
+      "step3Desc": "Paketiniz güvenli bir şekilde ulaştığında sizi WhatsApp üzerinden bilgilendiriyoruz.",
+      "step4Title": "Kos'ta Teslim Alın",
+      "step4Desc": "Türkiye'ye dönmeden önce paketlerinizi Kos Limanı'nda teslim alın."
+    },
+    "storage": {
+      "title": "Depolama Seçenekleri",
+      "intro": "Her boyuttaki paketler için esnek depolama çözümleri",
+      "popular": "Popüler",
+      "perDay": "günlük",
+      "perMonth": "aylık",
+      "smallName": "Küçük Kutu",
+      "smallDesc": "30x20x15 cm'ye kadar",
+      "mediumName": "Orta Kutu",
+      "mediumDesc": "50x40x30 cm'ye kadar",
+      "largeName": "Büyük Kutu",
+      "largeDesc": "80x60x50 cm'ye kadar",
+      "bagName": "Günlük Çanta Deposu",
+      "bagDesc": "Bavul ve sırt çantaları",
+      "monthlyName": "Aylık Depolama",
+      "monthlyDesc": "Uzun süreli paket depolama"
+    },
+    "trust": {
+      "title": "Neden TravelBeez'e Güvenmelisiniz?",
+      "intro": "Paketleriniz Kos Limanı ofisimizde emin ellerde",
+      "f1Title": "Fiziksel Ofis",
+      "f1Desc": "Kos Limanı'nda gerçek ofis, G Averos 4",
+      "f2Title": "Personel Kontrollü",
+      "f2Desc": "Profesyonel ekip tüm paketleri yönetir",
+      "f3Title": "Kamera İzlemeli",
+      "f3Desc": "7/24 güvenlik kamerası kapsamı",
+      "f4Title": "WhatsApp Güncellemeleri",
+      "f4Desc": "Gerçek zamanlı teslimat bildirimleri",
+      "f5Title": "Türkçe Destek",
+      "f5Desc": "Tam Türkçe dil desteği"
+    },
+    "notice": {
+      "title": "Önemli Bilgilendirme",
+      "body": "Gümrük vergileri, vergiler, ürünün yasallığı ve tüm ithalat/ihracat düzenlemelerinden müşteriler sorumludur. TravelBeez yalnızca adres, depolama ve teslim hizmetleri sağlar. Paket içeriğini incelemiyoruz ve gönderilen ürünlerin niteliğinden sorumlu tutulamayız. Lütfen satın alımlarınızın hem Yunan hem de Türk gümrük düzenlemelerine uygun olduğundan emin olun."
+    },
+    "cta": {
+      "title": "Başlamaya Hazır mısınız?",
+      "subtitle": "Paketinizi rezerve etmek veya herhangi bir soru sormak için WhatsApp üzerinden bizimle iletişime geçin. Türkçe cevap veriyoruz!"
+    }
   },
 
   "passengerDetails": {

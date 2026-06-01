@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import {
   Package,
@@ -29,100 +30,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 
 const storageOptions = [
-  {
-    name: 'Small Box',
-    description: 'Up to 30x20x15 cm',
-    price: '5',
-    period: 'per day',
-    icon: <Box className="h-6 w-6" />,
-  },
-  {
-    name: 'Medium Box',
-    description: 'Up to 50x40x30 cm',
-    price: '8',
-    period: 'per day',
-    icon: <Box className="h-7 w-7" />,
-    popular: true,
-  },
-  {
-    name: 'Large Box',
-    description: 'Up to 80x60x50 cm',
-    price: '12',
-    period: 'per day',
-    icon: <Box className="h-8 w-8" />,
-  },
-  {
-    name: 'Daily Bag Storage',
-    description: 'Luggage & backpacks',
-    price: '5',
-    period: 'per day',
-    icon: <Package className="h-6 w-6" />,
-  },
-  {
-    name: 'Monthly Storage',
-    description: 'Long-term package storage',
-    price: '50',
-    period: 'per month',
-    icon: <Calendar className="h-6 w-6" />,
-  },
+  { id: 'small', price: '5', periodKey: 'perDay', icon: <Box className="h-6 w-6" /> },
+  { id: 'medium', price: '8', periodKey: 'perDay', icon: <Box className="h-7 w-7" />, popular: true },
+  { id: 'large', price: '12', periodKey: 'perDay', icon: <Box className="h-8 w-8" /> },
+  { id: 'bag', price: '5', periodKey: 'perDay', icon: <Package className="h-6 w-6" /> },
+  { id: 'monthly', price: '50', periodKey: 'perMonth', icon: <Calendar className="h-6 w-6" /> },
 ]
 
 const howItWorks = [
-  {
-    step: 1,
-    title: 'Reserve Your Box',
-    description: 'Contact us via WhatsApp to reserve your package slot or storage box.',
-    icon: <MessageCircle className="h-6 w-6" />,
-  },
-  {
-    step: 2,
-    title: 'Use Our Address',
-    description: 'Ship your online purchases to our secure Kos Port office address.',
-    icon: <MapPin className="h-6 w-6" />,
-  },
-  {
-    step: 3,
-    title: 'Get Notified',
-    description: 'We notify you via WhatsApp when your package arrives safely.',
-    icon: <Bell className="h-6 w-6" />,
-  },
-  {
-    step: 4,
-    title: 'Pick Up at Kos',
-    description: 'Collect your packages at Kos Port before returning to Turkey.',
-    icon: <CheckCircle className="h-6 w-6" />,
-  },
+  { step: 1, icon: <MessageCircle className="h-6 w-6" /> },
+  { step: 2, icon: <MapPin className="h-6 w-6" /> },
+  { step: 3, icon: <Bell className="h-6 w-6" /> },
+  { step: 4, icon: <CheckCircle className="h-6 w-6" /> },
 ]
 
 const trustFeatures = [
-  {
-    icon: <MapPin className="h-6 w-6" />,
-    title: 'Physical Office',
-    description: 'Real office at Kos Port, G Averos 4',
-  },
-  {
-    icon: <Users className="h-6 w-6" />,
-    title: 'Staff-Controlled',
-    description: 'Professional team handles all packages',
-  },
-  {
-    icon: <Camera className="h-6 w-6" />,
-    title: 'Camera Monitored',
-    description: '24/7 security camera coverage',
-  },
-  {
-    icon: <MessageCircle className="h-6 w-6" />,
-    title: 'WhatsApp Updates',
-    description: 'Real-time delivery notifications',
-  },
-  {
-    icon: <Globe className="h-6 w-6" />,
-    title: 'Turkce Destek',
-    description: 'Full Turkish language support',
-  },
+  { id: 'f1', icon: <MapPin className="h-6 w-6" /> },
+  { id: 'f2', icon: <Users className="h-6 w-6" /> },
+  { id: 'f3', icon: <Camera className="h-6 w-6" /> },
+  { id: 'f4', icon: <MessageCircle className="h-6 w-6" /> },
+  { id: 'f5', icon: <Globe className="h-6 w-6" /> },
 ]
 
 export default function PackagePickupPage() {
+  const t = useTranslations('packagePickupPage')
+  const tWa = useTranslations('whatsappCta')
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -148,7 +80,7 @@ export default function PackagePickupPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
               >
                 <Package className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Package Pickup & Kos Storage</span>
+                <span className="text-sm font-medium text-primary">{t('hero.badge')}</span>
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -156,7 +88,7 @@ export default function PackagePickupPage() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground text-balance"
               >
-                Shop Abroad. <span className="text-primary">Pick Up in Kos.</span>
+                {t('hero.titleLead')} <span className="text-primary">{t('hero.titleHighlight')}</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -164,7 +96,7 @@ export default function PackagePickupPage() {
                 transition={{ delay: 0.2 }}
                 className="text-muted-foreground max-w-xl md:text-lg text-pretty"
               >
-                Send your online purchases to our Kos Port office and collect them during your island visit.
+                {t('hero.subtitle')}
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -175,7 +107,7 @@ export default function PackagePickupPage() {
                 <Link href="https://wa.me/302242050008?text=Merhaba,%20paket%20teslim%20hizmeti%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum" target="_blank">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
                     <MessageCircle className="h-5 w-5" />
-                    Reserve Your Box
+                    {t('hero.ctaReserve')}
                   </Button>
                 </Link>
               </motion.div>
@@ -187,9 +119,9 @@ export default function PackagePickupPage() {
         <section className="w-full py-16 md:py-24 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How It Works</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('hiw.title')}</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Simple 4-step process to receive your international packages in Kos
+                {t('hiw.intro')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -209,8 +141,8 @@ export default function PackagePickupPage() {
                       <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-4">
                         {item.icon}
                       </div>
-                      <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <h3 className="font-semibold text-foreground mb-2">{t(`hiw.step${item.step}Title`)}</h3>
+                      <p className="text-sm text-muted-foreground">{t(`hiw.step${item.step}Desc`)}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -223,15 +155,15 @@ export default function PackagePickupPage() {
         <section className="w-full py-16 md:py-24">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Storage Options</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('storage.title')}</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Flexible storage solutions for packages of all sizes
+                {t('storage.intro')}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {storageOptions.map((option, index) => (
                 <motion.div
-                  key={option.name}
+                  key={option.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -240,18 +172,18 @@ export default function PackagePickupPage() {
                   <Card className={`h-full border-border/50 hover:border-primary/30 transition-colors relative ${option.popular ? 'ring-2 ring-primary' : ''}`}>
                     {option.popular && (
                       <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                        Popular
+                        {t('storage.popular')}
                       </Badge>
                     )}
                     <CardContent className="pt-8 pb-6 text-center">
                       <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mx-auto mb-4">
                         {option.icon}
                       </div>
-                      <h3 className="font-semibold text-foreground mb-1">{option.name}</h3>
-                      <p className="text-xs text-muted-foreground mb-4">{option.description}</p>
+                      <h3 className="font-semibold text-foreground mb-1">{t(`storage.${option.id}Name`)}</h3>
+                      <p className="text-xs text-muted-foreground mb-4">{t(`storage.${option.id}Desc`)}</p>
                       <div className="text-2xl font-bold text-primary">
                         &euro;{option.price}
-                        <span className="text-sm font-normal text-muted-foreground ml-1">{option.period}</span>
+                        <span className="text-sm font-normal text-muted-foreground ml-1">{t(`storage.${option.periodKey}`)}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -265,15 +197,15 @@ export default function PackagePickupPage() {
         <section className="w-full py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Trust TravelBeez?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('trust.title')}</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Your packages are in safe hands at our Kos Port office
+                {t('trust.intro')}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {trustFeatures.map((feature, index) => (
                 <motion.div
-                  key={feature.title}
+                  key={feature.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -283,8 +215,8 @@ export default function PackagePickupPage() {
                   <div className="p-3 rounded-lg bg-primary/10 text-primary mb-4">
                     {feature.icon}
                   </div>
-                  <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <h3 className="font-semibold text-foreground mb-1">{t(`trust.${feature.id}Title`)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(`trust.${feature.id}Desc`)}</p>
                 </motion.div>
               ))}
             </div>
@@ -301,12 +233,9 @@ export default function PackagePickupPage() {
                     <AlertTriangle className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">Important Notice</h3>
+                    <h3 className="font-semibold text-foreground mb-2">{t('notice.title')}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Customers are responsible for customs duties, taxes, product legality, and all import/export regulations. 
-                      TravelBeez provides address, storage, and handover services only. We do not inspect package contents 
-                      and cannot be held responsible for the nature of items shipped. Please ensure your purchases comply 
-                      with both Greek and Turkish customs regulations.
+                      {t('notice.body')}
                     </p>
                   </div>
                 </div>
@@ -320,15 +249,15 @@ export default function PackagePickupPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-                Ready to Start?
+                {t('cta.title')}
               </h2>
               <p className="text-primary-foreground/80 mb-8">
-                Contact us on WhatsApp to reserve your package slot or ask any questions. We respond in Turkish!
+                {t('cta.subtitle')}
               </p>
               <Link href="https://wa.me/302242050008?text=Merhaba,%20paket%20teslim%20hizmeti%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum" target="_blank">
                 <Button size="lg" variant="secondary" className="gap-2">
                   <MessageCircle className="h-5 w-5" />
-                  Chat on WhatsApp
+                  {tWa('buttonLong')}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
