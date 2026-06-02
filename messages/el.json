@@ -590,6 +590,7 @@
         "fundingSource": "Who is covering the travel expenses?",
         "stayDuration": "Length of Stay (days)",
         "schengenLast3Years": "Have you held a Schengen visa in the last 3 years?",
+        "previousSchengenVisaDate": "Previous Schengen Visa — Validity Date",
         "fingerprintsTaken": "Have your fingerprints been taken previously?",
         "schengenEntryDate": "Intended Entry Date",
         "schengenExitDate": "Intended Exit Date"
@@ -697,13 +698,22 @@
         "schengenEntryDate": { "invalid": "Enter a valid entry date." },
         "schengenExitDate": {
           "invalid": "Enter a valid exit date.",
-          "beforeEntry": "Exit date cannot be before the entry date."
+          "beforeEntry": "Exit date must be after the entry date.",
+          "maxStay": "You can stay at most 7 days."
         }
       },
       "submit": {
         "cta": "Submit Application",
         "submitting": "Submitting…",
         "error": "Something went wrong. Please try again or contact us on WhatsApp."
+      },
+      "docs": {
+        "stepHeading": "Documents for This Step",
+        "idCardNote": "Please upload the front and back of your new chip ID card separately.",
+        "gateSummaryTitle": "Complete before submitting",
+        "missingFieldsLabel": "Missing or invalid fields:",
+        "missingDocsLabel": "Missing documents:",
+        "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank."
       },
       "success": {
         "title": "Application Received",

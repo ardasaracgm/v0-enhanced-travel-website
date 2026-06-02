@@ -590,6 +590,7 @@
         "fundingSource": "Seyahat masraflarını kim karşılıyor?",
         "stayDuration": "Kalış Süresi (gün)",
         "schengenLast3Years": "Son 3 yılda Schengen vizeniz oldu mu?",
+        "previousSchengenVisaDate": "Önceki Schengen Vizesi — Geçerlilik Tarihi",
         "fingerprintsTaken": "Daha önce parmak iziniz alındı mı?",
         "schengenEntryDate": "Planlanan Giriş Tarihi",
         "schengenExitDate": "Planlanan Çıkış Tarihi"
@@ -697,13 +698,22 @@
         "schengenEntryDate": { "invalid": "Geçerli bir giriş tarihi girin." },
         "schengenExitDate": {
           "invalid": "Geçerli bir çıkış tarihi girin.",
-          "beforeEntry": "Çıkış tarihi, giriş tarihinden önce olamaz."
+          "beforeEntry": "Çıkış tarihi, giriş tarihinden sonra olmalıdır.",
+          "maxStay": "En fazla 7 gün kalabilirsiniz."
         }
       },
       "submit": {
         "cta": "Başvuruyu Gönder",
         "submitting": "Gönderiliyor…",
         "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin veya WhatsApp'tan bize ulaşın."
+      },
+      "docs": {
+        "stepHeading": "Bu Adım İçin Belgeler",
+        "idCardNote": "Lütfen çipli yeni kimlik kartınızın ön ve arka yüzünü ayrı ayrı yükleyin.",
+        "gateSummaryTitle": "Göndermeden önce tamamlayın",
+        "missingFieldsLabel": "Eksik veya hatalı alanlar:",
+        "missingDocsLabel": "Eksik belgeler:",
+        "previousSchengenVisaDateHint": "İsteğe bağlı — önceki Schengen vizenizin geçerlilik (bitiş) tarihi. Boş bırakabilirsiniz."
       },
       "success": {
         "title": "Başvurunuz Alındı",
