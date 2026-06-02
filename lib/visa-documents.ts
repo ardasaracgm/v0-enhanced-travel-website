@@ -98,21 +98,33 @@ export const VISA_DOCUMENTS: readonly VisaDocSpec[] = [
     required: true,
   },
   {
-    key: 'passport',
-    tr: 'Pasaport (varsa önceki Schengen vizesi)',
-    el: 'Passport (with previous Schengen visa if any)',
+    key: 'passport_main',
+    tr: 'Pasaport İlk Sayfa',
+    el: 'Passport (main page)',
     required: true,
   },
   {
-    key: 'id_card',
-    tr: 'Kimlik Ön ve Arka Yüz',
-    el: 'ID Card (front and back)',
+    key: 'id_card_front',
+    tr: 'Kimlik Ön Yüz',
+    el: 'ID Card (front)',
     required: true,
   },
   {
-    key: 'bank_statement',
-    tr: 'Banka Hesap Hareketleri (ilk/son sayfa)',
-    el: 'Bank Statement (first/last page)',
+    key: 'id_card_back',
+    tr: 'Kimlik Arka Yüz',
+    el: 'ID Card (back)',
+    required: true,
+  },
+  {
+    key: 'bank_statement_first',
+    tr: 'Banka Hesap Hareketleri İlk Sayfa',
+    el: 'Bank Statement (first page)',
+    required: true,
+  },
+  {
+    key: 'bank_statement_last',
+    tr: 'Banka Hesap Hareketleri Son Sayfa',
+    el: 'Bank Statement (last page)',
     required: true,
   },
   {
@@ -139,9 +151,24 @@ export const VISA_DOCUMENTS: readonly VisaDocSpec[] = [
 
   // ----- Conditional -----
   {
-    key: 'credit_card',
-    tr: 'Kredi Kartı Ön ve Arka',
-    el: 'Credit Card (front and back)',
+    // Tied to the step-5 "held a Schengen visa in the last 3 years?" question,
+    // NOT the passport page. The wizard only renders this slot when that answer
+    // is "yes"; here it is always optional (visibility is a UI concern).
+    key: 'previous_schengen_visa',
+    tr: 'Önceki Schengen Vizesi (Görsel)',
+    el: 'Previous Schengen Visa (image)',
+    required: false, // optional — only if the applicant has one
+  },
+  {
+    key: 'credit_card_front',
+    tr: 'Kredi Kartı Ön Yüz',
+    el: 'Credit Card (front)',
+    required: false, // always optional
+  },
+  {
+    key: 'credit_card_back',
+    tr: 'Kredi Kartı Arka Yüz',
+    el: 'Credit Card (back)',
     required: false, // always optional
   },
   {
