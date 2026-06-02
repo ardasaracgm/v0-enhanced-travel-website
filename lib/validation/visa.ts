@@ -76,11 +76,24 @@ function refineSchengenDates(
   data: { schengenEntryDate: string; schengenExitDate: string },
   ctx: z.RefinementCtx,
 ) {
-  if (data.schengenExitDate < data.schengenEntryDate) {
+  const entry = parseISODate(data.schengenEntryDate)
+  const exit = parseISODate(data.schengenExitDate)
+  // Invalid/empty dates are already flagged by the per-field isoDate refine.
+  if (!entry || !exit) return
+  const diffDays = Math.round((exit.getTime() - entry.getTime()) / 86_400_000)
+  if (diffDays < 1) {
+    // Exit must be strictly after entry (same-day = 0 nights is invalid).
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['schengenExitDate'],
       message: 'schengenExitDate.beforeEntry',
+    })
+  } else if (diffDays > 7) {
+    // Door visa: max 7 nights (entry + 7).
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['schengenExitDate'],
+      message: 'schengenExitDate.maxStay',
     })
   }
 }
@@ -135,8 +148,12 @@ const step4Object = z.object({
 const step5Object = z.object({
   travelPurpose:      enumField(TRAVEL_PURPOSES, 'travelPurpose.required'),
   fundingSource:      enumField(FUNDING_SOURCES, 'fundingSource.required'),  // → metadata.funding_source
+  // Removed from the form (Faz 1): the stay length is now derived from the
+  // entry/exit dates (see refineSchengenDates) and written server-side on submit.
+  // Kept optional so a stray client value still validates and the column survives.
   stayDuration:       z.coerce.number({ errorMap: () => ({ message: 'stayDuration.range' }) })
-                        .int('stayDuration.range').min(1, 'stayDuration.range').max(7, 'stayDuration.range'),
+                        .int('stayDuration.range').min(1, 'stayDuration.range').max(7, 'stayDuration.range')
+                        .optional(),
   schengenLast3Years: z.boolean({ errorMap: () => ({ message: 'schengenLast3Years.required' }) }),
   fingerprintsTaken:  z.boolean({ errorMap: () => ({ message: 'fingerprintsTaken.required' }) }),
   schengenEntryDate:  isoDate('schengenEntryDate.invalid'),
