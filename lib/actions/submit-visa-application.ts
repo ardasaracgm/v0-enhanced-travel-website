@@ -3,19 +3,26 @@
 /**
  * Server action: submitVisaApplication
  * ====================================
- * Persists an in-house Schengen door-visa application (Vize-1).
+ * Finalises an in-house Schengen door-visa application (Vize redesign, Faz 1).
  *
- * Phase 1 scope: validate (server-side, non-negotiable) + persist.
- * NO file upload, NO signature, NO payment, NO email/WhatsApp
- * notifications — those arrive with payment in Vize-3. The row lands
- * in state 'pending_payment' to reflect that.
+ * NEW draft model: the row already exists (created in state 'draft' by
+ * POST /api/visa/draft when the wizard opened). This action does NOT insert —
+ * it UPDATEs that draft with the full set of answers and advances its state
+ * draft → pending_payment. Payment itself is wired in Vize-3; NO file upload,
+ * NO signature, NO email/WhatsApp notifications here.
  *
- * The client wizard validates per-step with the same Zod schema, but
- * the authoritative gate is HERE: a client could post anything.
+ * The client wizard validates per-step with the same Zod schema, but the
+ * AUTHORITATIVE "every required field is present + cross-field valid" gate is
+ * HERE: a client could post anything. The DB no longer enforces NOT NULL on the
+ * form columns (migration 008), so Zod is the only completeness check.
+ *
+ * The UPDATE is scoped to state='draft', which also makes a double-submit a
+ * harmless no-op: once advanced past 'draft', the row no longer matches.
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { visaApplicationSchema } from '@/lib/validation/visa'
+import { parseISODate } from '@/lib/validation/dates'
 import { z } from 'zod'
 
 export type SubmitVisaApplicationResult =
@@ -23,29 +30,67 @@ export type SubmitVisaApplicationResult =
   | { ok: false; error: string; code: SubmitVisaErrorCode }
 
 export type SubmitVisaErrorCode =
+  | 'missing_draft'
   | 'validation_failed'
+  | 'draft_not_found'
   | 'database_error'
   | 'unexpected'
+
+// The draft id travels alongside the form fields. visaApplicationSchema strips
+// unknown keys, so we pull it out before validating the rest.
+function extractApplicationId(input: unknown): string | null {
+  if (input && typeof input === 'object' && 'application_id' in input) {
+    const id = (input as { application_id?: unknown }).application_id
+    if (typeof id === 'string' && id.trim().length > 0) return id.trim()
+  }
+  return null
+}
+
+// Optional previous-Schengen-visa date (metadata.previous_schengen_visa_date).
+// Travels outside visaApplicationSchema (which strips it). Optional + free: a
+// missing/blank/unparseable value yields null and never blocks the submit.
+function extractPreviousSchengenVisaDate(input: unknown): string | null {
+  if (input && typeof input === 'object' && 'previous_schengen_visa_date' in input) {
+    const raw = (input as { previous_schengen_visa_date?: unknown }).previous_schengen_visa_date
+    if (typeof raw === 'string' && parseISODate(raw.trim()) !== null) return raw.trim()
+  }
+  return null
+}
 
 export async function submitVisaApplication(
   input: unknown,   // trust boundary — Zod is the sole gate
 ): Promise<SubmitVisaApplicationResult> {
-  // ----- 1. Validate (full schema, incl. cross-field refines) -----
+  // ----- 0. The draft to finalise must be identified -----
+  const applicationId = extractApplicationId(input)
+  if (!applicationId) {
+    return { ok: false, code: 'missing_draft', error: 'application_id is required' }
+  }
+
+  // ----- 1. Validate (full schema, incl. cross-field refines). Authoritative:
+  //          a NULL-filled draft only becomes pending_payment if EVERY required
+  //          field is present and valid here. -----
   const parsed = visaApplicationSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, code: 'validation_failed', error: formatZodError(parsed.error) }
   }
   const v = parsed.data
 
-  // ----- 2. Insert (service-role; RLS bypassed) -----
+  // Optional, non-blocking — null when absent/invalid (see helper).
+  const previousSchengenVisaDate = extractPreviousSchengenVisaDate(input)
+
+  // stay_duration is no longer a form field — derive it (nights = exit − entry).
+  // Validation guarantees both dates parse and the diff is within 1..7, so this
+  // always lands inside the BETWEEN 1 AND 7 CHECK.
+  const stayDuration = deriveStayNights(v.schengenEntryDate, v.schengenExitDate)
+
+  // ----- 2. UPDATE the draft (service-role; RLS bypassed) -----
   try {
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('visa_applications')
-      .insert({
-        state: 'pending_payment',          // payment wired in Vize-3
+      .update({
+        state: 'pending_payment',          // draft → pending_payment (payment in Vize-3)
         locale: v.locale,
-        source: 'web',
 
         // Step 1 · Travel
         entry_point: v.entryPoint,
@@ -79,25 +124,41 @@ export async function submitVisaApplication(
 
         // Step 5 · Trip
         travel_purpose: v.travelPurpose,
-        stay_duration: v.stayDuration,
+        stay_duration: stayDuration,
         schengen_last_3_years: v.schengenLast3Years,
         fingerprints_taken: v.fingerprintsTaken,
         schengen_entry_date: v.schengenEntryDate,
         schengen_exit_date: v.schengenExitDate,
 
         // Overflow — funding source lives in metadata (no dedicated column).
-        // Zod already constrained v.fundingSource to 'self'|'sponsor'. Merge
-        // over the table default '{}' so any future metadata keys survive.
+        // Zod already constrained v.fundingSource to 'self'|'sponsor'.
         // lib/visa-documents.ts reads metadata.funding_source to decide whether
-        // the sponsor_id / sponsor_bank documents are required.
-        metadata: { funding_source: v.fundingSource },
-      })
-      .select('id')
-      .single()
+        // the sponsor_id / sponsor_bank documents are required. The optional
+        // previous-Schengen-visa date is parked here too (only when provided) —
+        // no dedicated column, no impact on the required-docs engine.
+        metadata: {
+          funding_source: v.fundingSource,
+          ...(previousSchengenVisaDate
+            ? { previous_schengen_visa_date: previousSchengenVisaDate }
+            : {}),
+        },
 
-    if (error || !data) {
-      console.error('[submitVisaApplication] insert failed:', error)
+        updated_at: new Date().toISOString(),
+      })
+      // Scope to the draft: guards against finalising an already-submitted row
+      // and makes a double-submit a harmless 0-row no-op.
+      .eq('id', applicationId)
+      .eq('state', 'draft')
+      .select('id')
+      .maybeSingle()
+
+    if (error) {
+      console.error('[submitVisaApplication] update failed:', error)
       return { ok: false, code: 'database_error', error: 'Could not save application' }
+    }
+    if (!data) {
+      // No row matched id + state='draft': unknown id, or already finalised.
+      return { ok: false, code: 'draft_not_found', error: 'Draft not found or already submitted' }
     }
 
     return { ok: true, id: data.id }
@@ -114,6 +175,14 @@ export async function submitVisaApplication(
 // ============================================================
 // Helpers
 // ============================================================
+
+/** Nights between two YYYY-MM-DD dates (exit − entry). null if either won't parse. */
+function deriveStayNights(entryDate: string, exitDate: string): number | null {
+  const entry = parseISODate(entryDate)
+  const exit = parseISODate(exitDate)
+  if (!entry || !exit) return null
+  return Math.round((exit.getTime() - entry.getTime()) / 86_400_000)
+}
 
 // Mirrors formatZodError in submit-booking.ts (kept local so this action
 // doesn't import the booking flow). Flattens issues into one string.
