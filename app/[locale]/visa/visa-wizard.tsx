@@ -81,10 +81,13 @@ const EMPTY_FORM: FormState = {
 // Which fields live on which step — used to jump back to the earliest step
 // that has an error after the full-form submit parse.
 const STEP_FIELDS: FieldName[][] = [
-  ['entryPoint', 'vesselType'],
-  ['lastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'gender', 'maritalStatus'],
+  // Step 1 — Travel + Personal (merged)
+  ['entryPoint', 'vesselType', 'lastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'gender', 'maritalStatus'],
+  // Step 2 — Travel Document
   ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
+  // Step 3 — Contact & Occupation
   ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation'],
+  // Step 4 — Trip Details
   ['travelPurpose', 'fundingSource', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate'],
 ]
 const TOTAL_STEPS = STEP_FIELDS.length
@@ -469,14 +472,11 @@ export function VisaWizard() {
 
       <CardContent className="space-y-4">
         {step === 0 && (
-          <div className="grid md:grid-cols-2 gap-4">
-            {selectField('entryPoint', ENTRY_POINTS, 'entryPoint')}
-            {selectField('vesselType', VESSEL_TYPES, 'vesselType')}
-          </div>
-        )}
-
-        {step === 1 && (
           <>
+            <div className="grid md:grid-cols-2 gap-4">
+              {selectField('entryPoint', ENTRY_POINTS, 'entryPoint')}
+              {selectField('vesselType', VESSEL_TYPES, 'vesselType')}
+            </div>
             <div className="grid md:grid-cols-2 gap-4">
               {textField('lastName')}
               {textField('firstName')}
@@ -501,7 +501,7 @@ export function VisaWizard() {
           </>
         )}
 
-        {step === 2 && (
+        {step === 1 && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
               {textField('idNumber')}
@@ -526,7 +526,7 @@ export function VisaWizard() {
           </>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <>
             {textField('residenceAddress')}
             <div className="grid md:grid-cols-2 gap-4">
@@ -540,7 +540,7 @@ export function VisaWizard() {
           </>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
               {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}

@@ -161,17 +161,20 @@ const step5Object = z.object({
 })
 
 // ============================================================
-// Per-step schemas (the wizard validates one step at a time)
+// Per-step schemas (the wizard validates one step at a time).
+// Wizard step 1 MERGES the old Travel + Personal steps into one, so the array
+// has 4 entries. There is no cross-field rule spanning travel↔personal, so the
+// merge is a plain shape union. The full schema below still composes ALL raw
+// shapes, so every field stays validated on final submit.
 // ============================================================
-export const visaStep1Schema = step1Object
-export const visaStep2Schema = step2Object
-export const visaStep3Schema = step3Object.superRefine(refineDocDates)
-export const visaStep4Schema = step4Object
-export const visaStep5Schema = step5Object.superRefine(refineSchengenDates)
+export const visaStep1Schema = step1Object.merge(step2Object)              // Travel + Personal
+export const visaStep2Schema = step3Object.superRefine(refineDocDates)     // Travel Document
+export const visaStep3Schema = step4Object                                 // Contact & Occupation
+export const visaStep4Schema = step5Object.superRefine(refineSchengenDates) // Trip Details
 
 // The per-step schema array the wizard iterates for next/back validation.
 export const VISA_STEP_SCHEMAS = [
-  visaStep1Schema, visaStep2Schema, visaStep3Schema, visaStep4Schema, visaStep5Schema,
+  visaStep1Schema, visaStep2Schema, visaStep3Schema, visaStep4Schema,
 ] as const
 
 // ============================================================

@@ -552,11 +552,10 @@
       "intro": "Beş adımı da tamamlayın. Tüm alanlar zorunludur.",
       "selectPlaceholder": "Seçiniz…",
       "sections": {
-        "step1": "Seyahat",
-        "step2": "Kişisel Bilgiler",
-        "step3": "Seyahat Belgesi",
-        "step4": "İletişim ve Meslek",
-        "step5": "Seyahat Detayları"
+        "step1": "Seyahat ve Kişisel Bilgiler",
+        "step2": "Seyahat Belgesi",
+        "step3": "İletişim ve Meslek",
+        "step4": "Seyahat Detayları"
       },
       "nav": {
         "next": "İleri",

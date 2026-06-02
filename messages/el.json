@@ -552,11 +552,10 @@
       "intro": "Complete all five steps. All fields are required.",
       "selectPlaceholder": "Select…",
       "sections": {
-        "step1": "Travel",
-        "step2": "Personal Details",
-        "step3": "Travel Document",
-        "step4": "Contact & Occupation",
-        "step5": "Trip Details"
+        "step1": "Travel & Personal Details",
+        "step2": "Travel Document",
+        "step3": "Contact & Occupation",
+        "step4": "Trip Details"
       },
       "nav": {
         "next": "Next",
