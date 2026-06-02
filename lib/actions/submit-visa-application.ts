@@ -98,12 +98,15 @@ export async function submitVisaApplication(
 
         // Step 2 · Personal
         last_name: v.lastName,
+        previous_last_name: v.previousLastName?.trim() || null,       // Jotform 2 · optional
         first_name: v.firstName,
         father_name: v.fatherName,
         mother_name: v.motherName,
         birth_date: v.birthDate,
         birth_place: v.birthPlace,
         birth_country: v.birthCountry,
+        nationality: v.nationality,                                   // Jotform 7 · required
+        previous_nationality: v.previousNationality?.trim() || null,  // Jotform 7A · optional
         gender: v.gender,
         marital_status: v.maritalStatus,
 

@@ -108,18 +108,21 @@ const step1Object = z.object({
 })
 
 const step2Object = z.object({
-  lastName:      requiredText('lastName.required'),
-  firstName:     requiredText('firstName.required'),
-  fatherName:    requiredText('fatherName.required'),
-  motherName:    requiredText('motherName.required'),
-  birthDate:     isoDate('birthDate.invalid').refine(
-                   (v) => v < todayAthensISO(),
-                   { message: 'birthDate.past' },          // strictly before today
-                 ),
-  birthPlace:    requiredText('birthPlace.required'),
-  birthCountry:  requiredText('birthCountry.required'),
-  gender:        enumField(GENDERS, 'gender.required'),
-  maritalStatus: enumField(MARITAL_STATUSES, 'maritalStatus.required'),
+  lastName:           requiredText('lastName.required'),
+  previousLastName:   z.string().trim().optional(),       // Jotform 2 · optional
+  firstName:          requiredText('firstName.required'),
+  fatherName:         requiredText('fatherName.required'),
+  motherName:         requiredText('motherName.required'),
+  birthDate:          isoDate('birthDate.invalid').refine(
+                        (v) => v < todayAthensISO(),
+                        { message: 'birthDate.past' },     // strictly before today
+                      ),
+  birthPlace:         requiredText('birthPlace.required'),
+  birthCountry:       requiredText('birthCountry.required'),
+  nationality:        requiredText('nationality.required'),    // Jotform 7 · required (Schengen)
+  previousNationality:z.string().trim().optional(),            // Jotform 7A · optional
+  gender:             enumField(GENDERS, 'gender.required'),
+  maritalStatus:      enumField(MARITAL_STATUSES, 'maritalStatus.required'),
 })
 
 const step3Object = z.object({

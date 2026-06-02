@@ -59,8 +59,8 @@ import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whats
 // ============================================================
 type FieldName =
   | 'entryPoint' | 'vesselType'
-  | 'lastName' | 'firstName' | 'fatherName' | 'motherName' | 'birthDate'
-  | 'birthPlace' | 'birthCountry' | 'gender' | 'maritalStatus'
+  | 'lastName' | 'previousLastName' | 'firstName' | 'fatherName' | 'motherName' | 'birthDate'
+  | 'birthPlace' | 'birthCountry' | 'nationality' | 'previousNationality' | 'gender' | 'maritalStatus'
   | 'idNumber' | 'docType' | 'docNumber' | 'docIssueDate' | 'docExpiryDate' | 'issuingAuthority'
   | 'residenceAddress' | 'email' | 'phone' | 'livesInOtherCountry' | 'occupation'
   | 'travelPurpose' | 'fundingSource' | 'schengenLast3Years' | 'fingerprintsTaken'
@@ -70,8 +70,8 @@ type FormState = Record<FieldName, string>
 
 const EMPTY_FORM: FormState = {
   entryPoint: '', vesselType: '',
-  lastName: '', firstName: '', fatherName: '', motherName: '', birthDate: '',
-  birthPlace: '', birthCountry: '', gender: '', maritalStatus: '',
+  lastName: '', previousLastName: '', firstName: '', fatherName: '', motherName: '', birthDate: '',
+  birthPlace: '', birthCountry: '', nationality: '', previousNationality: '', gender: '', maritalStatus: '',
   idNumber: '', docType: '', docNumber: '', docIssueDate: '', docExpiryDate: '', issuingAuthority: '',
   residenceAddress: '', email: '', phone: '', livesInOtherCountry: '', occupation: '',
   travelPurpose: '', fundingSource: '', schengenLast3Years: '', fingerprintsTaken: '',
@@ -82,7 +82,7 @@ const EMPTY_FORM: FormState = {
 // that has an error after the full-form submit parse.
 const STEP_FIELDS: FieldName[][] = [
   // Step 1 — Travel + Personal (merged)
-  ['entryPoint', 'vesselType', 'lastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'gender', 'maritalStatus'],
+  ['entryPoint', 'vesselType', 'lastName', 'previousLastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'nationality', 'previousNationality', 'gender', 'maritalStatus'],
   // Step 2 — Travel Document
   ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
   // Step 3 — Contact & Occupation
@@ -365,9 +365,9 @@ export function VisaWizard() {
   }
 
   // ----- Field renderers -----
-  const textField = (name: FieldName, type: 'text' | 'email' | 'tel' = 'text') => (
+  const textField = (name: FieldName, type: 'text' | 'email' | 'tel' = 'text', optional = false) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{t(`labels.${name}`)} *</Label>
+      <Label htmlFor={name}>{t(`labels.${name}`)}{optional ? '' : ' *'}</Label>
       <Input
         id={name}
         type={type}
@@ -479,21 +479,28 @@ export function VisaWizard() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {textField('lastName')}
+              {textField('previousLastName', 'text', true)}
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
               {textField('firstName')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
               {textField('fatherName')}
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
               {textField('motherName')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
               {dateField('birthDate', { max: today })}
-              {textField('birthPlace')}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
+              {textField('birthPlace')}
               {textField('birthCountry')}
-              {selectField('gender', GENDERS, 'gender')}
             </div>
-            {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
+            <div className="grid md:grid-cols-2 gap-4">
+              {textField('nationality')}
+              {textField('previousNationality', 'text', true)}
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {selectField('gender', GENDERS, 'gender')}
+              {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
+            </div>
             <DocsSection title={t('docs.stepHeading')}>
               {renderDocSlot('biometric_photo')}
               {applicantIsMinor && renderDocSlot('consent_form')}
@@ -553,6 +560,19 @@ export function VisaWizard() {
             <div className="grid md:grid-cols-2 gap-4">
               {dateField('schengenEntryDate', { min: today, onChange: handleEntryDateChange })}
               {dateField('schengenExitDate', { min: form.schengenEntryDate || today, onChange: handleExitDateChange })}
+            </div>
+            {/* Destination + first-entry country are FIXED to Greece (door visa).
+                Read-only, never user-editable, not submitted — shown only for
+                transparency; the value is hardcoded in the future PDF printout. */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="destinationCountry">{t('labels.destinationCountry')}</Label>
+                <Input id="destinationCountry" value={t('fixedGreece')} disabled readOnly />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstEntryCountry">{t('labels.firstEntryCountry')}</Label>
+                <Input id="firstEntryCountry" value={t('fixedGreece')} disabled readOnly />
+              </div>
             </div>
             <DocsSection title={t('docs.stepHeading')}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
