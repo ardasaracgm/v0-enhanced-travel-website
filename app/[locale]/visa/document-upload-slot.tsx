@@ -22,7 +22,7 @@
 
 import * as React from 'react'
 import { useTranslations } from 'next-intl'
-import { CheckCircle2, FileText, Loader2, Upload } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileText, Loader2, Upload } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -36,7 +36,19 @@ import {
   VISA_DOC_MAX_BYTES,
   VISA_DOC_MIN_BYTES,
 } from '@/lib/visa/upload-constants'
+import {
+  analyzeImageQuality,
+  type ImageQualityWarning,
+} from '@/lib/visa/image-quality-checks'
 import type { ResolvedVisaDoc } from '@/lib/visa-documents'
+
+// Quality-warning code → i18n key under visaPage.documents.
+const QUALITY_WARNING_KEY: Record<ImageQualityWarning, string> = {
+  corrupt: 'qualityCorrupt',
+  lowResolution: 'qualityLowResolution',
+  tooDark: 'qualityTooDark',
+  blurry: 'qualityBlurry',
+}
 
 // MIME → human extension, for the accepted-formats hint + error.
 const MIME_EXT: Record<string, string> = {
@@ -115,6 +127,11 @@ export function DocumentUploadSlot({
       : { status: 'idle', filename: null, progress: 0, error: null },
   )
 
+  // Advisory image-quality warnings for the picked file. Independent of the
+  // upload lifecycle: they never block upload or the submit gate, and they
+  // persist into the 'uploaded' state so the user still sees the nudge.
+  const [warnings, setWarnings] = React.useState<ImageQualityWarning[]>([])
+
   // Report status transitions up (e.g. to recompute the parent's submit gate).
   React.useEffect(() => {
     onStatusChange?.(state.status)
@@ -122,6 +139,9 @@ export function DocumentUploadSlot({
 
   const handleFile = React.useCallback(
     async (file: File) => {
+      // A fresh pick clears any stale advisory warnings from a prior file.
+      setWarnings([])
+
       // 1. Client-side validation (server re-checks; this is just fast UX).
       if (!isAllowedVisaDocMime(file.type)) {
         setState({ status: 'error', filename: null, progress: 0, error: t('errType', { formats: FORMAT_LABEL }) })
@@ -131,6 +151,10 @@ export function DocumentUploadSlot({
         setState({ status: 'error', filename: null, progress: 0, error: t('errSize', { min: MIN_LABEL, max: MAX_LABEL }) })
         return
       }
+
+      // Advisory image-quality pre-check. Runs in parallel with the upload and
+      // only sets warnings — it never blocks or delays the upload below.
+      void analyzeImageQuality(file).then(setWarnings)
 
       setState({ status: 'uploading', filename: file.name, progress: 0, error: null })
 
@@ -253,6 +277,21 @@ export function DocumentUploadSlot({
           <p className="text-xs text-muted-foreground">
             {t('formatHint', { formats: FORMAT_LABEL, min: MIN_LABEL, max: MAX_LABEL })}
           </p>
+        )}
+
+        {/* Advisory quality warnings (amber, not red) — never a blocker. */}
+        {warnings.length > 0 && (
+          <ul className="space-y-1 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700/50 dark:bg-amber-950/30">
+            {warnings.map((code) => (
+              <li
+                key={code}
+                className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400"
+              >
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>{t(QUALITY_WARNING_KEY[code])}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </CardContent>
     </Card>
