@@ -14,7 +14,7 @@
  */
 
 import { z } from 'zod'
-import { parseISODate, todayAthensISO } from './dates'
+import { ageOn, parseISODate, todayAthensISO } from './dates'
 
 // ============================================================
 // Canonical option sets (keep in lockstep with the DB CHECKs + i18n)
@@ -26,6 +26,22 @@ export const MARITAL_STATUSES  = ['single', 'married', 'separated', 'divorced', 
 export const DOC_TYPES         = ['normal', 'diplomatic', 'service', 'official', 'special'] as const
 export const TRAVEL_PURPOSES   = ['tourism', 'business'] as const
 export const FUNDING_SOURCES   = ['self', 'sponsor'] as const   // jotform item 33 — who pays
+
+// Jotform item 33A — means of subsistence (multi-select, at least one required).
+export const FINANCING_MEANS = [
+  'cash', 'travellers_cheque', 'credit_card',
+  'prepaid_accommodation', 'prepaid_transport',
+] as const
+
+// Occupations that do NOT require employer/school details (jotform item 20):
+// the applicant has no employer to name.
+export const EMPLOYER_EXEMPT_OCCUPATIONS: ReadonlySet<string> = new Set([
+  'pensioner', 'student', 'housewife', 'househusband', 'noOccupation',
+])
+
+// Age (on the Athens "today") below which a legal guardian's details are
+// required (jotform item 10).
+export const GUARDIAN_AGE_THRESHOLD = 18
 
 // 35 jotform occupation slugs, stored verbatim in the DB.
 export const OCCUPATIONS = [
@@ -98,6 +114,108 @@ function refineSchengenDates(
   }
 }
 
+/** Push a `<field>.required` issue when a conditionally-required value is blank. */
+function requireWhen(
+  ctx: z.RefinementCtx,
+  value: string | undefined,
+  field: string,
+  message: string,
+) {
+  if (!value || value.trim() === '') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [field], message })
+  }
+}
+
+// Jotform 10 — legal guardian. Required only when the applicant is a minor
+// (age < 18 on the Athens "today"); every guardian field is then mandatory.
+function refineGuardian(
+  data: {
+    birthDate: string
+    guardianName?: string
+    guardianAddress?: string
+    guardianCity?: string
+    guardianProvince?: string
+    guardianPostalCode?: string
+    guardianNationality?: string
+  },
+  ctx: z.RefinementCtx,
+) {
+  const age = ageOn(data.birthDate, todayAthensISO())
+  if (!Number.isFinite(age) || age >= GUARDIAN_AGE_THRESHOLD) return
+  requireWhen(ctx, data.guardianName, 'guardianName', 'guardianName.required')
+  requireWhen(ctx, data.guardianAddress, 'guardianAddress', 'guardianAddress.required')
+  requireWhen(ctx, data.guardianCity, 'guardianCity', 'guardianCity.required')
+  requireWhen(ctx, data.guardianProvince, 'guardianProvince', 'guardianProvince.required')
+  requireWhen(ctx, data.guardianPostalCode, 'guardianPostalCode', 'guardianPostalCode.required')
+  requireWhen(ctx, data.guardianNationality, 'guardianNationality', 'guardianNationality.required')
+}
+
+// Jotform 18 — residence permit. Required only when the applicant lives in a
+// country other than their nationality; both the number and a valid expiry date.
+function refineResidencePermit(
+  data: {
+    livesInOtherCountry: boolean
+    residencePermitNumber?: string
+    residencePermitExpiry?: string
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (data.livesInOtherCountry !== true) return
+  requireWhen(ctx, data.residencePermitNumber, 'residencePermitNumber', 'residencePermitNumber.required')
+  const expiry = data.residencePermitExpiry?.trim()
+  if (!expiry) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['residencePermitExpiry'],
+      message: 'residencePermitExpiry.required',
+    })
+  } else if (parseISODate(expiry) === null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['residencePermitExpiry'],
+      message: 'residencePermitExpiry.invalid',
+    })
+  }
+}
+
+// Jotform 20 — employer / school. Required for every occupation EXCEPT the
+// exempt set (pensioner, student, housewife/husband, no occupation).
+function refineEmployer(
+  data: {
+    occupation: string
+    employerName?: string
+    employerAddress?: string
+    employerCity?: string
+    employerProvince?: string
+    employerPostalCode?: string
+    employerEmail?: string
+    employerPhone?: string
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (EMPLOYER_EXEMPT_OCCUPATIONS.has(data.occupation)) return
+  requireWhen(ctx, data.employerName, 'employerName', 'employerName.required')
+  requireWhen(ctx, data.employerAddress, 'employerAddress', 'employerAddress.required')
+  requireWhen(ctx, data.employerCity, 'employerCity', 'employerCity.required')
+  requireWhen(ctx, data.employerProvince, 'employerProvince', 'employerProvince.required')
+  requireWhen(ctx, data.employerPostalCode, 'employerPostalCode', 'employerPostalCode.required')
+  requireWhen(ctx, data.employerPhone, 'employerPhone', 'employerPhone.required')
+  const email = data.employerEmail?.trim()
+  if (!email) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['employerEmail'],
+      message: 'employerEmail.required',
+    })
+  } else if (!z.string().email().safeParse(email).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['employerEmail'],
+      message: 'employerEmail.invalid',
+    })
+  }
+}
+
 // ============================================================
 // Raw per-step object shapes (no refine). The full schema composes these
 // via `.shape`; the exported step schemas below attach the refines.
@@ -123,6 +241,15 @@ const step2Object = z.object({
   previousNationality:z.string().trim().optional(),            // Jotform 7A · optional
   gender:             enumField(GENDERS, 'gender.required'),
   maritalStatus:      enumField(MARITAL_STATUSES, 'maritalStatus.required'),
+
+  // Jotform 10 · legal guardian — optional here, conditionally required for
+  // minors via refineGuardian (which also reads birthDate above).
+  guardianName:        z.string().trim().optional(),
+  guardianAddress:     z.string().trim().optional(),
+  guardianCity:        z.string().trim().optional(),
+  guardianProvince:    z.string().trim().optional(),
+  guardianPostalCode:  z.string().trim().optional(),
+  guardianNationality: z.string().trim().optional(),
 })
 
 const step3Object = z.object({
@@ -146,6 +273,21 @@ const step4Object = z.object({
   phone:               z.string().trim().min(7, 'phone.invalid'),   // REQUIRED, format-only
   livesInOtherCountry: z.boolean({ errorMap: () => ({ message: 'livesInOtherCountry.required' }) }),
   occupation:          enumField(OCCUPATIONS, 'occupation.required'),
+
+  // Jotform 18 · residence permit — conditionally required (lives abroad) via
+  // refineResidencePermit; written to dedicated columns (migration 009).
+  residencePermitNumber: z.string().trim().optional(),
+  residencePermitExpiry: z.string().trim().optional(),
+
+  // Jotform 20 · employer / school — conditionally required (non-exempt
+  // occupation) via refineEmployer; written to metadata.employer.
+  employerName:        z.string().trim().optional(),
+  employerAddress:     z.string().trim().optional(),
+  employerCity:        z.string().trim().optional(),
+  employerProvince:    z.string().trim().optional(),
+  employerPostalCode:  z.string().trim().optional(),
+  employerEmail:       z.string().trim().optional(),
+  employerPhone:       z.string().trim().optional(),
 })
 
 const step5Object = z.object({
@@ -171,8 +313,11 @@ const step5Object = z.object({
 // shapes, so every field stays validated on final submit.
 // ============================================================
 export const visaStep1Schema = step1Object.merge(step2Object)              // Travel + Personal
+  .superRefine(refineGuardian)
 export const visaStep2Schema = step3Object.superRefine(refineDocDates)     // Travel Document
 export const visaStep3Schema = step4Object                                 // Contact & Occupation
+  .superRefine(refineResidencePermit)
+  .superRefine(refineEmployer)
 export const visaStep4Schema = step5Object.superRefine(refineSchengenDates) // Trip Details
 
 // The per-step schema array the wizard iterates for next/back validation.
@@ -194,5 +339,8 @@ export const visaApplicationSchema = z
   .extend(step5Object.shape)
   .superRefine(refineDocDates)
   .superRefine(refineSchengenDates)
+  .superRefine(refineGuardian)
+  .superRefine(refineResidencePermit)
+  .superRefine(refineEmployer)
 
 export type VisaApplicationInput = z.infer<typeof visaApplicationSchema>

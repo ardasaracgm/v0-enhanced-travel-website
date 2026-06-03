@@ -559,7 +559,10 @@
         "step1": "Travel & Personal Details",
         "step2": "Travel Document",
         "step3": "Contact & Occupation",
-        "step4": "Trip Details"
+        "step4": "Trip Details",
+        "guardian": "Legal Guardian Details",
+        "residencePermit": "Residence Permit",
+        "employer": "Employer / School Details"
       },
       "nav": {
         "next": "Next",
@@ -601,7 +604,22 @@
         "previousSchengenVisaDate": "Previous Schengen Visa — Validity Date",
         "fingerprintsTaken": "Have your fingerprints been taken previously?",
         "schengenEntryDate": "Intended Entry Date",
-        "schengenExitDate": "Intended Exit Date"
+        "schengenExitDate": "Intended Exit Date",
+        "guardianName": "Guardian Full Name",
+        "guardianAddress": "Guardian Address",
+        "guardianCity": "Guardian City",
+        "guardianProvince": "Guardian Province",
+        "guardianPostalCode": "Guardian Postal Code",
+        "guardianNationality": "Guardian Nationality",
+        "residencePermitNumber": "Residence Permit Number",
+        "residencePermitExpiry": "Residence Permit Expiry Date",
+        "employerName": "Employer / School Name",
+        "employerAddress": "Employer / School Address",
+        "employerCity": "City",
+        "employerProvince": "Province",
+        "employerPostalCode": "Postal Code",
+        "employerEmail": "Employer / School Email",
+        "employerPhone": "Employer / School Phone"
       },
       "options": {
         "entryPoint": { "kos": "Kos", "kalymnos": "Kalymnos", "rhodos": "Rhodes" },
@@ -709,6 +727,27 @@
           "invalid": "Enter a valid exit date.",
           "beforeEntry": "Exit date must be after the entry date.",
           "maxStay": "You can stay at most 7 days."
+        },
+        "guardianName": { "required": "Guardian full name is required." },
+        "guardianAddress": { "required": "Guardian address is required." },
+        "guardianCity": { "required": "Guardian city is required." },
+        "guardianProvince": { "required": "Guardian province is required." },
+        "guardianPostalCode": { "required": "Guardian postal code is required." },
+        "guardianNationality": { "required": "Guardian nationality is required." },
+        "residencePermitNumber": { "required": "Residence permit number is required." },
+        "residencePermitExpiry": {
+          "required": "Residence permit expiry date is required.",
+          "invalid": "Enter a valid date."
+        },
+        "employerName": { "required": "Employer / school name is required." },
+        "employerAddress": { "required": "Employer / school address is required." },
+        "employerCity": { "required": "City is required." },
+        "employerProvince": { "required": "Province is required." },
+        "employerPostalCode": { "required": "Postal code is required." },
+        "employerPhone": { "required": "Employer / school phone is required." },
+        "employerEmail": {
+          "required": "Employer / school email is required.",
+          "invalid": "Enter a valid email address."
         }
       },
       "submit": {
@@ -722,7 +761,9 @@
         "gateSummaryTitle": "Complete before submitting",
         "missingFieldsLabel": "Missing or invalid fields:",
         "missingDocsLabel": "Missing documents:",
-        "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank."
+        "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank.",
+        "employerRequiredNote": "Employer / school details are required for your occupation.",
+        "employerOptionalNote": "Employer / school details are optional for your occupation."
       },
       "success": {
         "title": "Application Received",

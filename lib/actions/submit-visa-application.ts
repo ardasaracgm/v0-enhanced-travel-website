@@ -21,8 +21,8 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { visaApplicationSchema } from '@/lib/validation/visa'
-import { parseISODate } from '@/lib/validation/dates'
+import { visaApplicationSchema, GUARDIAN_AGE_THRESHOLD } from '@/lib/validation/visa'
+import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { z } from 'zod'
 
 export type SubmitVisaApplicationResult =
@@ -83,6 +83,38 @@ export async function submitVisaApplication(
   // always lands inside the BETWEEN 1 AND 7 CHECK.
   const stayDuration = deriveStayNights(v.schengenEntryDate, v.schengenExitDate)
 
+  // ----- Grup B conditional blocks -----
+  // Guardian (jotform 10) — only persisted for minors. Validation already
+  // guaranteed every guardian field is present when the applicant is a minor.
+  const age = ageOn(v.birthDate, todayAthensISO())
+  const isMinor = Number.isFinite(age) && age < GUARDIAN_AGE_THRESHOLD
+  const guardian = isMinor
+    ? cleanObject({
+        name: v.guardianName,
+        address: v.guardianAddress,
+        city: v.guardianCity,
+        province: v.guardianProvince,
+        postal_code: v.guardianPostalCode,
+        nationality: v.guardianNationality,
+      })
+    : null
+
+  // Employer / school (jotform 20) — kept whenever any field is filled (required
+  // for non-exempt occupations, optional otherwise).
+  const employer = cleanObject({
+    name: v.employerName,
+    address: v.employerAddress,
+    city: v.employerCity,
+    province: v.employerProvince,
+    postal_code: v.employerPostalCode,
+    email: v.employerEmail,
+    phone: v.employerPhone,
+  })
+
+  // Residence permit (jotform 18) — dedicated columns; only when lives abroad.
+  const residencePermitNumber = v.livesInOtherCountry ? v.residencePermitNumber?.trim() || null : null
+  const residencePermitExpiry = v.livesInOtherCountry ? v.residencePermitExpiry?.trim() || null : null
+
   // ----- 2. UPDATE the draft (service-role; RLS bypassed) -----
   try {
     const supabase = getSupabaseAdmin()
@@ -125,6 +157,10 @@ export async function submitVisaApplication(
         lives_in_other_country: v.livesInOtherCountry,
         occupation: v.occupation,
 
+        // Jotform 18 · residence permit (conditional: lives abroad) — migration 009
+        residence_permit_number: residencePermitNumber,
+        residence_permit_expiry: residencePermitExpiry,
+
         // Step 5 · Trip
         travel_purpose: v.travelPurpose,
         stay_duration: stayDuration,
@@ -144,6 +180,8 @@ export async function submitVisaApplication(
           ...(previousSchengenVisaDate
             ? { previous_schengen_visa_date: previousSchengenVisaDate }
             : {}),
+          ...(guardian ? { guardian } : {}),    // jotform 10 (minors)
+          ...(employer ? { employer } : {}),    // jotform 20 (employer/school)
         },
 
         updated_at: new Date().toISOString(),
@@ -178,6 +216,19 @@ export async function submitVisaApplication(
 // ============================================================
 // Helpers
 // ============================================================
+
+/** Trim a record of optional strings, dropping blanks. Returns null if nothing
+ *  remains — used to omit empty metadata sub-objects (guardian, employer, …). */
+function cleanObject(
+  entries: Record<string, string | undefined>,
+): Record<string, string> | null {
+  const out: Record<string, string> = {}
+  for (const [key, raw] of Object.entries(entries)) {
+    const trimmed = raw?.trim()
+    if (trimmed) out[key] = trimmed
+  }
+  return Object.keys(out).length > 0 ? out : null
+}
 
 /** Nights between two YYYY-MM-DD dates (exit − entry). null if either won't parse. */
 function deriveStayNights(entryDate: string, exitDate: string): number | null {

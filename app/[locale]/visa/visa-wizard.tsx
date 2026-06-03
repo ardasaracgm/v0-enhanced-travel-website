@@ -49,6 +49,7 @@ import {
   TRAVEL_PURPOSES,
   FUNDING_SOURCES,
   OCCUPATIONS,
+  EMPLOYER_EXEMPT_OCCUPATIONS,
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
 import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
@@ -65,6 +66,14 @@ type FieldName =
   | 'residenceAddress' | 'email' | 'phone' | 'livesInOtherCountry' | 'occupation'
   | 'travelPurpose' | 'fundingSource' | 'schengenLast3Years' | 'fingerprintsTaken'
   | 'schengenEntryDate' | 'schengenExitDate'
+  // Jotform 10 — legal guardian (minors)
+  | 'guardianName' | 'guardianAddress' | 'guardianCity' | 'guardianProvince'
+  | 'guardianPostalCode' | 'guardianNationality'
+  // Jotform 18 — residence permit (lives abroad)
+  | 'residencePermitNumber' | 'residencePermitExpiry'
+  // Jotform 20 — employer / school
+  | 'employerName' | 'employerAddress' | 'employerCity' | 'employerProvince'
+  | 'employerPostalCode' | 'employerEmail' | 'employerPhone'
 
 type FormState = Record<FieldName, string>
 
@@ -76,17 +85,22 @@ const EMPTY_FORM: FormState = {
   residenceAddress: '', email: '', phone: '', livesInOtherCountry: '', occupation: '',
   travelPurpose: '', fundingSource: '', schengenLast3Years: '', fingerprintsTaken: '',
   schengenEntryDate: '', schengenExitDate: '',
+  guardianName: '', guardianAddress: '', guardianCity: '', guardianProvince: '',
+  guardianPostalCode: '', guardianNationality: '',
+  residencePermitNumber: '', residencePermitExpiry: '',
+  employerName: '', employerAddress: '', employerCity: '', employerProvince: '',
+  employerPostalCode: '', employerEmail: '', employerPhone: '',
 }
 
 // Which fields live on which step — used to jump back to the earliest step
 // that has an error after the full-form submit parse.
 const STEP_FIELDS: FieldName[][] = [
-  // Step 1 — Travel + Personal (merged)
-  ['entryPoint', 'vesselType', 'lastName', 'previousLastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'nationality', 'previousNationality', 'gender', 'maritalStatus'],
+  // Step 1 — Travel + Personal (merged) + guardian (minors)
+  ['entryPoint', 'vesselType', 'lastName', 'previousLastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'nationality', 'previousNationality', 'gender', 'maritalStatus', 'guardianName', 'guardianAddress', 'guardianCity', 'guardianProvince', 'guardianPostalCode', 'guardianNationality'],
   // Step 2 — Travel Document
   ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
-  // Step 3 — Contact & Occupation
-  ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation'],
+  // Step 3 — Contact & Occupation + residence permit + employer/school
+  ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation', 'residencePermitNumber', 'residencePermitExpiry', 'employerName', 'employerAddress', 'employerCity', 'employerProvince', 'employerPostalCode', 'employerEmail', 'employerPhone'],
   // Step 4 — Trip Details
   ['travelPurpose', 'fundingSource', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate'],
 ]
@@ -201,6 +215,9 @@ export function VisaWizard() {
   const applicantAge = form.birthDate ? ageOn(form.birthDate, today) : NaN
   const applicantIsMinor = Number.isFinite(applicantAge) && applicantAge < 18
   const isSponsor = form.fundingSource === 'sponsor'
+  const livesAbroad = form.livesInOtherCountry === 'true'
+  // Employer/school details are optional only for occupations with no employer.
+  const employerExempt = EMPLOYER_EXEMPT_OCCUPATIONS.has(form.occupation)
 
   // Render one inline slot by catalogue key (null if the doc isn't in scope).
   const renderDocSlot = (key: string) => {
@@ -506,6 +523,22 @@ export function VisaWizard() {
               {selectField('gender', GENDERS, 'gender')}
               {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
             </div>
+            {/* Jotform 10 — legal guardian. Appears only for minors; all fields
+                become required (refineGuardian). */}
+            {applicantIsMinor && (
+              <FieldGroup title={t('sections.guardian')}>
+                {textField('guardianName')}
+                {textField('guardianAddress')}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('guardianCity')}
+                  {textField('guardianProvince')}
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('guardianPostalCode')}
+                  {textField('guardianNationality')}
+                </div>
+              </FieldGroup>
+            )}
             <DocsSection title={t('docs.stepHeading')}>
               {renderDocSlot('biometric_photo')}
               {applicantIsMinor && renderDocSlot('consent_form')}
@@ -549,6 +582,34 @@ export function VisaWizard() {
               {selectField('livesInOtherCountry', YES_NO, 'yesNo')}
               {selectField('occupation', OCCUPATIONS, 'occupation')}
             </div>
+            {/* Jotform 18 — residence permit. Appears only when the applicant
+                lives abroad; both fields required (refineResidencePermit). */}
+            {livesAbroad && (
+              <FieldGroup title={t('sections.residencePermit')}>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('residencePermitNumber')}
+                  {dateField('residencePermitExpiry')}
+                </div>
+              </FieldGroup>
+            )}
+            {/* Jotform 20 — employer / school. Always shown; required unless the
+                occupation is in the exempt set (refineEmployer). */}
+            <FieldGroup title={t('sections.employer')}>
+              <p className="text-xs text-muted-foreground">
+                {employerExempt ? t('docs.employerOptionalNote') : t('docs.employerRequiredNote')}
+              </p>
+              {textField('employerName', 'text', employerExempt)}
+              {textField('employerAddress', 'text', employerExempt)}
+              <div className="grid md:grid-cols-2 gap-4">
+                {textField('employerCity', 'text', employerExempt)}
+                {textField('employerProvince', 'text', employerExempt)}
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {textField('employerPostalCode', 'text', employerExempt)}
+                {textField('employerPhone', 'tel', employerExempt)}
+              </div>
+              {textField('employerEmail', 'email', employerExempt)}
+            </FieldGroup>
           </>
         )}
 
@@ -691,6 +752,17 @@ export function VisaWizard() {
 // ============================================================
 // Subcomponents
 // ============================================================
+
+/** Labelled, set-off block for a group of conditional/related form fields
+ *  (guardian, residence permit, employer, sponsor). */
+function FieldGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-4 rounded-lg border border-border/50 bg-muted/20 p-4 mt-2">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {children}
+    </div>
+  )
+}
 
 /** Wraps the inline document slots within a step under a labelled, set-off block. */
 function DocsSection({ title, children }: { title: string; children: React.ReactNode }) {

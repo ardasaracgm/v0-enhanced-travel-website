@@ -559,7 +559,10 @@
         "step1": "Seyahat ve Kişisel Bilgiler",
         "step2": "Seyahat Belgesi",
         "step3": "İletişim ve Meslek",
-        "step4": "Seyahat Detayları"
+        "step4": "Seyahat Detayları",
+        "guardian": "Vasi Bilgileri",
+        "residencePermit": "Oturma İzni",
+        "employer": "İşveren / Okul Bilgileri"
       },
       "nav": {
         "next": "İleri",
@@ -601,7 +604,22 @@
         "previousSchengenVisaDate": "Önceki Schengen Vizesi — Geçerlilik Tarihi",
         "fingerprintsTaken": "Daha önce parmak iziniz alındı mı?",
         "schengenEntryDate": "Planlanan Giriş Tarihi",
-        "schengenExitDate": "Planlanan Çıkış Tarihi"
+        "schengenExitDate": "Planlanan Çıkış Tarihi",
+        "guardianName": "Vasi Ad Soyad",
+        "guardianAddress": "Vasi Adresi",
+        "guardianCity": "Vasi Şehir",
+        "guardianProvince": "Vasi İl",
+        "guardianPostalCode": "Vasi Posta Kodu",
+        "guardianNationality": "Vasi Tabiiyeti",
+        "residencePermitNumber": "Oturma İzni Numarası",
+        "residencePermitExpiry": "Oturma İzni Geçerlilik Tarihi",
+        "employerName": "İşveren / Okul Adı",
+        "employerAddress": "İşveren / Okul Adresi",
+        "employerCity": "Şehir",
+        "employerProvince": "İl",
+        "employerPostalCode": "Posta Kodu",
+        "employerEmail": "İşveren / Okul E-posta",
+        "employerPhone": "İşveren / Okul Telefon"
       },
       "options": {
         "entryPoint": { "kos": "Kos", "kalymnos": "Kalimnos", "rhodos": "Rodos" },
@@ -709,6 +727,27 @@
           "invalid": "Geçerli bir çıkış tarihi girin.",
           "beforeEntry": "Çıkış tarihi, giriş tarihinden sonra olmalıdır.",
           "maxStay": "En fazla 7 gün kalabilirsiniz."
+        },
+        "guardianName": { "required": "Vasi ad soyad zorunludur." },
+        "guardianAddress": { "required": "Vasi adresi zorunludur." },
+        "guardianCity": { "required": "Vasi şehir zorunludur." },
+        "guardianProvince": { "required": "Vasi il zorunludur." },
+        "guardianPostalCode": { "required": "Vasi posta kodu zorunludur." },
+        "guardianNationality": { "required": "Vasi tabiiyeti zorunludur." },
+        "residencePermitNumber": { "required": "Oturma izni numarası zorunludur." },
+        "residencePermitExpiry": {
+          "required": "Oturma izni geçerlilik tarihi zorunludur.",
+          "invalid": "Geçerli bir tarih girin."
+        },
+        "employerName": { "required": "İşveren / okul adı zorunludur." },
+        "employerAddress": { "required": "İşveren / okul adresi zorunludur." },
+        "employerCity": { "required": "Şehir zorunludur." },
+        "employerProvince": { "required": "İl zorunludur." },
+        "employerPostalCode": { "required": "Posta kodu zorunludur." },
+        "employerPhone": { "required": "İşveren / okul telefonu zorunludur." },
+        "employerEmail": {
+          "required": "İşveren / okul e-postası zorunludur.",
+          "invalid": "Geçerli bir e-posta adresi girin."
         }
       },
       "submit": {
@@ -722,7 +761,9 @@
         "gateSummaryTitle": "Göndermeden önce tamamlayın",
         "missingFieldsLabel": "Eksik veya hatalı alanlar:",
         "missingDocsLabel": "Eksik belgeler:",
-        "previousSchengenVisaDateHint": "İsteğe bağlı — önceki Schengen vizenizin geçerlilik (bitiş) tarihi. Boş bırakabilirsiniz."
+        "previousSchengenVisaDateHint": "İsteğe bağlı — önceki Schengen vizenizin geçerlilik (bitiş) tarihi. Boş bırakabilirsiniz.",
+        "employerRequiredNote": "Mesleğiniz nedeniyle işveren / okul bilgileri zorunludur.",
+        "employerOptionalNote": "Mesleğiniz nedeniyle işveren / okul bilgileri isteğe bağlıdır."
       },
       "success": {
         "title": "Başvurunuz Alındı",
