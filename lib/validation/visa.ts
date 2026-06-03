@@ -33,10 +33,13 @@ export const FINANCING_MEANS = [
   'prepaid_accommodation', 'prepaid_transport',
 ] as const
 
-// Occupations that do NOT require employer/school details (jotform item 20):
-// the applicant has no employer to name.
-export const EMPLOYER_EXEMPT_OCCUPATIONS: ReadonlySet<string> = new Set([
-  'pensioner', 'student', 'housewife', 'househusband', 'noOccupation',
+// Occupations for which the employer/school block (jotform item 20) is HIDDEN
+// entirely — the applicant has no employer/school to name. ('noOccupation' is
+// the jotform "no occupation / unemployed" slug; there is no separate
+// "unemployed" option.) For every other occupation the block is SHOWN but
+// fully OPTIONAL (no field is required); students get school-oriented labels.
+export const EMPLOYER_HIDDEN_OCCUPATIONS: ReadonlySet<string> = new Set([
+  'pensioner', 'housewife', 'househusband', 'noOccupation',
 ])
 
 // Age (on the Athens "today") below which a legal guardian's details are
@@ -178,43 +181,10 @@ function refineResidencePermit(
   }
 }
 
-// Jotform 20 — employer / school. Required for every occupation EXCEPT the
-// exempt set (pensioner, student, housewife/husband, no occupation).
-function refineEmployer(
-  data: {
-    occupation: string
-    employerName?: string
-    employerAddress?: string
-    employerCity?: string
-    employerProvince?: string
-    employerPostalCode?: string
-    employerEmail?: string
-    employerPhone?: string
-  },
-  ctx: z.RefinementCtx,
-) {
-  if (EMPLOYER_EXEMPT_OCCUPATIONS.has(data.occupation)) return
-  requireWhen(ctx, data.employerName, 'employerName', 'employerName.required')
-  requireWhen(ctx, data.employerAddress, 'employerAddress', 'employerAddress.required')
-  requireWhen(ctx, data.employerCity, 'employerCity', 'employerCity.required')
-  requireWhen(ctx, data.employerProvince, 'employerProvince', 'employerProvince.required')
-  requireWhen(ctx, data.employerPostalCode, 'employerPostalCode', 'employerPostalCode.required')
-  requireWhen(ctx, data.employerPhone, 'employerPhone', 'employerPhone.required')
-  const email = data.employerEmail?.trim()
-  if (!email) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['employerEmail'],
-      message: 'employerEmail.required',
-    })
-  } else if (!z.string().email().safeParse(email).success) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['employerEmail'],
-      message: 'employerEmail.invalid',
-    })
-  }
-}
+// Jotform 20 — employer / school. NOT validated: the block is hidden for the
+// exempt occupations (EMPLOYER_HIDDEN_OCCUPATIONS) and fully optional for every
+// other occupation, so there is no required-ness rule. The employer columns are
+// still persisted verbatim from whatever the applicant chose to enter.
 
 // Jotform 31–32B — sponsor / invitation. Required only when the funding source
 // is a sponsor; of the whole block ONLY the inviter/hotel name (31) is mandatory.
@@ -303,8 +273,8 @@ const step4Object = z.object({
   residencePermitNumber: z.string().trim().optional(),
   residencePermitExpiry: z.string().trim().optional(),
 
-  // Jotform 20 · employer / school — conditionally required (non-exempt
-  // occupation) via refineEmployer; written to metadata.employer.
+  // Jotform 20 · employer / school — always optional (block hidden for the
+  // exempt occupations); written to metadata.employer when filled.
   employerName:        z.string().trim().optional(),
   employerAddress:     z.string().trim().optional(),
   employerCity:        z.string().trim().optional(),
@@ -362,7 +332,6 @@ export const visaStep1Schema = step1Object.merge(step2Object)              // Tr
 export const visaStep2Schema = step3Object.superRefine(refineDocDates)     // Travel Document
 export const visaStep3Schema = step4Object                                 // Contact & Occupation
   .superRefine(refineResidencePermit)
-  .superRefine(refineEmployer)
 export const visaStep4Schema = step5Object.superRefine(refineSchengenDates) // Trip Details
   .superRefine(refineSponsor)
   .superRefine(refineFinancing)
@@ -388,7 +357,6 @@ export const visaApplicationSchema = z
   .superRefine(refineSchengenDates)
   .superRefine(refineGuardian)
   .superRefine(refineResidencePermit)
-  .superRefine(refineEmployer)
   .superRefine(refineSponsor)
   .superRefine(refineFinancing)
 

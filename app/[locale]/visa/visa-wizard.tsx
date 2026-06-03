@@ -50,7 +50,7 @@ import {
   TRAVEL_PURPOSES,
   FUNDING_SOURCES,
   OCCUPATIONS,
-  EMPLOYER_EXEMPT_OCCUPATIONS,
+  EMPLOYER_HIDDEN_OCCUPATIONS,
   FINANCING_MEANS,
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
@@ -244,8 +244,11 @@ export function VisaWizard() {
   const applicantIsMinor = Number.isFinite(applicantAge) && applicantAge < 18
   const isSponsor = form.fundingSource === 'sponsor'
   const livesAbroad = form.livesInOtherCountry === 'true'
-  // Employer/school details are optional only for occupations with no employer.
-  const employerExempt = EMPLOYER_EXEMPT_OCCUPATIONS.has(form.occupation)
+  // Employer/school block (jotform 20): hidden entirely for occupations with no
+  // employer/school; shown but fully optional otherwise. Students get
+  // school/faculty-oriented labels (jotform 20 wording).
+  const employerHidden = EMPLOYER_HIDDEN_OCCUPATIONS.has(form.occupation)
+  const isStudent = form.occupation === 'student'
 
   // Render one inline slot by catalogue key (null if the doc isn't in scope).
   const renderDocSlot = (key: string) => {
@@ -416,9 +419,14 @@ export function VisaWizard() {
   }
 
   // ----- Field renderers -----
-  const textField = (name: FieldName, type: 'text' | 'email' | 'tel' = 'text', optional = false) => (
+  const textField = (
+    name: FieldName,
+    type: 'text' | 'email' | 'tel' = 'text',
+    optional = false,
+    labelKey: string = name,
+  ) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{t(`labels.${name}`)}{optional ? '' : ' *'}</Label>
+      <Label htmlFor={name}>{t(`labels.${labelKey}`)}{optional ? '' : ' *'}</Label>
       <Input
         id={name}
         type={type}
@@ -621,24 +629,25 @@ export function VisaWizard() {
                 </div>
               </FieldGroup>
             )}
-            {/* Jotform 20 — employer / school. Always shown; required unless the
-                occupation is in the exempt set (refineEmployer). */}
-            <FieldGroup title={t('sections.employer')}>
-              <p className="text-xs text-muted-foreground">
-                {employerExempt ? t('docs.employerOptionalNote') : t('docs.employerRequiredNote')}
-              </p>
-              {textField('employerName', 'text', employerExempt)}
-              {textField('employerAddress', 'text', employerExempt)}
-              <div className="grid md:grid-cols-2 gap-4">
-                {textField('employerCity', 'text', employerExempt)}
-                {textField('employerProvince', 'text', employerExempt)}
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                {textField('employerPostalCode', 'text', employerExempt)}
-                {textField('employerPhone', 'tel', employerExempt)}
-              </div>
-              {textField('employerEmail', 'email', employerExempt)}
-            </FieldGroup>
+            {/* Jotform 20 — employer / school. Hidden entirely for the exempt
+                occupations; shown but fully OPTIONAL otherwise. Students see
+                school/faculty labels, everyone else employer labels. */}
+            {!employerHidden && (
+              <FieldGroup title={isStudent ? t('sections.school') : t('sections.employer')}>
+                <p className="text-xs text-muted-foreground">{t('docs.employerOptionalNote')}</p>
+                {textField('employerName', 'text', true, isStudent ? 'schoolName' : 'employerName')}
+                {textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('employerCity', 'text', true, isStudent ? 'schoolCity' : 'employerCity')}
+                  {textField('employerProvince', 'text', true, isStudent ? 'schoolProvince' : 'employerProvince')}
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('employerPostalCode', 'text', true, isStudent ? 'schoolPostalCode' : 'employerPostalCode')}
+                  {textField('employerPhone', 'tel', true, isStudent ? 'schoolPhone' : 'employerPhone')}
+                </div>
+                {textField('employerEmail', 'email', true, isStudent ? 'schoolEmail' : 'employerEmail')}
+              </FieldGroup>
+            )}
           </>
         )}
 

@@ -21,7 +21,11 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { visaApplicationSchema, GUARDIAN_AGE_THRESHOLD } from '@/lib/validation/visa'
+import {
+  visaApplicationSchema,
+  GUARDIAN_AGE_THRESHOLD,
+  EMPLOYER_HIDDEN_OCCUPATIONS,
+} from '@/lib/validation/visa'
 import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { z } from 'zod'
 
@@ -99,17 +103,21 @@ export async function submitVisaApplication(
       })
     : null
 
-  // Employer / school (jotform 20) — kept whenever any field is filled (required
-  // for non-exempt occupations, optional otherwise).
-  const employer = cleanObject({
-    name: v.employerName,
-    address: v.employerAddress,
-    city: v.employerCity,
-    province: v.employerProvince,
-    postal_code: v.employerPostalCode,
-    email: v.employerEmail,
-    phone: v.employerPhone,
-  })
+  // Employer / school (jotform 20) — fully optional; persisted whenever any
+  // field is filled. Dropped entirely for the hidden occupations (the block is
+  // never shown for them), so stale values can't leak in if the applicant
+  // changed occupation after typing.
+  const employer = EMPLOYER_HIDDEN_OCCUPATIONS.has(v.occupation)
+    ? null
+    : cleanObject({
+        name: v.employerName,
+        address: v.employerAddress,
+        city: v.employerCity,
+        province: v.employerProvince,
+        postal_code: v.employerPostalCode,
+        email: v.employerEmail,
+        phone: v.employerPhone,
+      })
 
   // Residence permit (jotform 18) — dedicated columns; only when lives abroad.
   const residencePermitNumber = v.livesInOtherCountry ? v.residencePermitNumber?.trim() || null : null
