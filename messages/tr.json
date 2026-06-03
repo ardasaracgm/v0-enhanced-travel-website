@@ -552,6 +552,9 @@
       "intro": "Beş adımı da tamamlayın. Tüm alanlar zorunludur.",
       "selectPlaceholder": "Seçiniz…",
       "fixedGreece": "Yunanistan",
+      "defaults": {
+        "nationality": "Türkiye"
+      },
       "sections": {
         "step1": "Seyahat ve Kişisel Bilgiler",
         "step2": "Seyahat Belgesi",

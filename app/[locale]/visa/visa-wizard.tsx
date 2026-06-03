@@ -116,7 +116,12 @@ export function VisaWizard() {
   const today = todayAthensISO()
 
   const [step, setStep] = React.useState(0)
-  const [form, setForm] = React.useState<FormState>(EMPTY_FORM)
+  // nationality is pre-filled with the locale's word for Turkey (editable, still
+  // required) — the overwhelming majority of applicants are Turkish citizens.
+  const [form, setForm] = React.useState<FormState>(() => ({
+    ...EMPTY_FORM,
+    nationality: t('defaults.nationality'),
+  }))
   const [errors, setErrors] = React.useState<Partial<Record<FieldName, string>>>({})
   const [submitting, setSubmitting] = React.useState(false)
   const [submitError, setSubmitError] = React.useState(false)

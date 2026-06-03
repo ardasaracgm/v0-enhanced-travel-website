@@ -552,6 +552,9 @@
       "intro": "Complete all five steps. All fields are required.",
       "selectPlaceholder": "Select…",
       "fixedGreece": "Greece",
+      "defaults": {
+        "nationality": "Turkey"
+      },
       "sections": {
         "step1": "Travel & Personal Details",
         "step2": "Travel Document",
