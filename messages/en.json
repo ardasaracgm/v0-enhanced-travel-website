@@ -562,7 +562,9 @@
         "step4": "Trip Details",
         "guardian": "Legal Guardian Details",
         "residencePermit": "Residence Permit",
-        "employer": "Employer / School Details"
+        "employer": "Employer / School Details",
+        "sponsor": "Invitation / Sponsor Details",
+        "financingMeans": "How Will Expenses Be Covered?"
       },
       "nav": {
         "next": "Next",
@@ -619,7 +621,21 @@
         "employerProvince": "Province",
         "employerPostalCode": "Postal Code",
         "employerEmail": "Employer / School Email",
-        "employerPhone": "Employer / School Phone"
+        "employerPhone": "Employer / School Phone",
+        "inviterOrHotelName": "Inviting Person / Hotel Name",
+        "accommodationAddress": "Accommodation Address",
+        "accommodationEmail": "Accommodation Email",
+        "accommodationPhone": "Accommodation Phone",
+        "inviterCompanyName": "Inviting Company Name",
+        "inviterCompanyAddress": "Company Address",
+        "companyPhone": "Company Phone",
+        "companyFax": "Company Fax",
+        "contactName": "Contact Person Name",
+        "contactAddress": "Contact Person Address",
+        "contactPhone": "Contact Person Phone",
+        "contactFax": "Contact Person Fax",
+        "contactEmail": "Contact Person Email",
+        "financingMeans": "Means of Subsistence"
       },
       "options": {
         "entryPoint": { "kos": "Kos", "kalymnos": "Kalymnos", "rhodos": "Rhodes" },
@@ -681,6 +697,13 @@
           "companyExecutive": "Company executive",
           "housewife": "Housewife",
           "househusband": "Househusband"
+        },
+        "financingMeans": {
+          "cash": "Cash",
+          "travellers_cheque": "Traveller's cheque",
+          "credit_card": "Credit card",
+          "prepaid_accommodation": "Prepaid accommodation",
+          "prepaid_transport": "Prepaid transport"
         }
       },
       "errors": {
@@ -748,7 +771,9 @@
         "employerEmail": {
           "required": "Employer / school email is required.",
           "invalid": "Enter a valid email address."
-        }
+        },
+        "inviterOrHotelName": { "required": "Inviting person or hotel name is required." },
+        "financingMeans": { "required": "Please select at least one option." }
       },
       "submit": {
         "cta": "Submit Application",

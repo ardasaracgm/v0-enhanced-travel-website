@@ -216,6 +216,30 @@ function refineEmployer(
   }
 }
 
+// Jotform 31–32B — sponsor / invitation. Required only when the funding source
+// is a sponsor; of the whole block ONLY the inviter/hotel name (31) is mandatory.
+function refineSponsor(
+  data: { fundingSource: string; inviterOrHotelName?: string },
+  ctx: z.RefinementCtx,
+) {
+  if (data.fundingSource !== 'sponsor') return
+  requireWhen(ctx, data.inviterOrHotelName, 'inviterOrHotelName', 'inviterOrHotelName.required')
+}
+
+// Jotform 33A — means of subsistence. Always required: at least one selection.
+function refineFinancing(
+  data: { financingMeans?: string[] },
+  ctx: z.RefinementCtx,
+) {
+  if (!data.financingMeans || data.financingMeans.length < 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['financingMeans'],
+      message: 'financingMeans.required',
+    })
+  }
+}
+
 // ============================================================
 // Raw per-step object shapes (no refine). The full schema composes these
 // via `.shape`; the exported step schemas below attach the refines.
@@ -303,6 +327,27 @@ const step5Object = z.object({
   fingerprintsTaken:  z.boolean({ errorMap: () => ({ message: 'fingerprintsTaken.required' }) }),
   schengenEntryDate:  isoDate('schengenEntryDate.invalid'),
   schengenExitDate:   isoDate('schengenExitDate.invalid'),
+
+  // Jotform 31–32B · sponsor / invitation — conditionally shown (funding =
+  // sponsor) via refineSponsor; only the inviter/hotel name (31) is required,
+  // the rest are free. Persisted to metadata.sponsor.
+  inviterOrHotelName:   z.string().trim().optional(),   // 31
+  accommodationAddress: z.string().trim().optional(),   // 31A
+  accommodationEmail:   z.string().trim().optional(),   // 31A
+  accommodationPhone:   z.string().trim().optional(),   // 31A
+  inviterCompanyName:   z.string().trim().optional(),   // 32
+  inviterCompanyAddress:z.string().trim().optional(),   // 32
+  companyPhone:         z.string().trim().optional(),   // 32A
+  companyFax:           z.string().trim().optional(),   // 32A
+  contactName:          z.string().trim().optional(),   // 32B
+  contactAddress:       z.string().trim().optional(),   // 32B
+  contactPhone:         z.string().trim().optional(),   // 32B
+  contactFax:           z.string().trim().optional(),   // 32B
+  contactEmail:         z.string().trim().optional(),   // 32B
+
+  // Jotform 33A · means of subsistence — always required, at least one option
+  // (refineFinancing). Persisted to metadata.financing_means.
+  financingMeans:       z.array(z.enum(FINANCING_MEANS)).optional(),
 })
 
 // ============================================================
@@ -319,6 +364,8 @@ export const visaStep3Schema = step4Object                                 // Co
   .superRefine(refineResidencePermit)
   .superRefine(refineEmployer)
 export const visaStep4Schema = step5Object.superRefine(refineSchengenDates) // Trip Details
+  .superRefine(refineSponsor)
+  .superRefine(refineFinancing)
 
 // The per-step schema array the wizard iterates for next/back validation.
 export const VISA_STEP_SCHEMAS = [
@@ -342,5 +389,7 @@ export const visaApplicationSchema = z
   .superRefine(refineGuardian)
   .superRefine(refineResidencePermit)
   .superRefine(refineEmployer)
+  .superRefine(refineSponsor)
+  .superRefine(refineFinancing)
 
 export type VisaApplicationInput = z.infer<typeof visaApplicationSchema>

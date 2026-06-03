@@ -562,7 +562,9 @@
         "step4": "Seyahat Detayları",
         "guardian": "Vasi Bilgileri",
         "residencePermit": "Oturma İzni",
-        "employer": "İşveren / Okul Bilgileri"
+        "employer": "İşveren / Okul Bilgileri",
+        "sponsor": "Davet / Sponsor Bilgileri",
+        "financingMeans": "Masraflar Nasıl Karşılanacak?"
       },
       "nav": {
         "next": "İleri",
@@ -619,7 +621,21 @@
         "employerProvince": "İl",
         "employerPostalCode": "Posta Kodu",
         "employerEmail": "İşveren / Okul E-posta",
-        "employerPhone": "İşveren / Okul Telefon"
+        "employerPhone": "İşveren / Okul Telefon",
+        "inviterOrHotelName": "Davet Eden Kişi / Otel Adı",
+        "accommodationAddress": "Konaklama Adresi",
+        "accommodationEmail": "Konaklama E-posta",
+        "accommodationPhone": "Konaklama Telefon",
+        "inviterCompanyName": "Davet Eden Firma Adı",
+        "inviterCompanyAddress": "Firma Adresi",
+        "companyPhone": "Firma Telefon",
+        "companyFax": "Firma Faks",
+        "contactName": "İletişim Kişisi Adı",
+        "contactAddress": "İletişim Kişisi Adresi",
+        "contactPhone": "İletişim Kişisi Telefon",
+        "contactFax": "İletişim Kişisi Faks",
+        "contactEmail": "İletişim Kişisi E-posta",
+        "financingMeans": "Masrafların Karşılanma Şekli"
       },
       "options": {
         "entryPoint": { "kos": "Kos", "kalymnos": "Kalimnos", "rhodos": "Rodos" },
@@ -681,6 +697,13 @@
           "companyExecutive": "Şirket yöneticisi",
           "housewife": "Ev hanımı",
           "househusband": "Ev kocası"
+        },
+        "financingMeans": {
+          "cash": "Nakit",
+          "travellers_cheque": "Seyahat çeki",
+          "credit_card": "Kredi kartı",
+          "prepaid_accommodation": "Önceden ödenmiş konaklama",
+          "prepaid_transport": "Önceden ödenmiş ulaşım"
         }
       },
       "errors": {
@@ -748,7 +771,9 @@
         "employerEmail": {
           "required": "İşveren / okul e-postası zorunludur.",
           "invalid": "Geçerli bir e-posta adresi girin."
-        }
+        },
+        "inviterOrHotelName": { "required": "Davet eden kişi veya otel adı zorunludur." },
+        "financingMeans": { "required": "Lütfen en az bir seçenek işaretleyin." }
       },
       "submit": {
         "cta": "Başvuruyu Gönder",

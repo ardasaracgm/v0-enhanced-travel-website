@@ -17,6 +17,7 @@ import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -50,6 +51,7 @@ import {
   FUNDING_SOURCES,
   OCCUPATIONS,
   EMPLOYER_EXEMPT_OCCUPATIONS,
+  FINANCING_MEANS,
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
 import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
@@ -74,8 +76,16 @@ type FieldName =
   // Jotform 20 — employer / school
   | 'employerName' | 'employerAddress' | 'employerCity' | 'employerProvince'
   | 'employerPostalCode' | 'employerEmail' | 'employerPhone'
+  // Jotform 31–32B — sponsor / invitation
+  | 'inviterOrHotelName' | 'accommodationAddress' | 'accommodationEmail' | 'accommodationPhone'
+  | 'inviterCompanyName' | 'inviterCompanyAddress' | 'companyPhone' | 'companyFax'
+  | 'contactName' | 'contactAddress' | 'contactPhone' | 'contactFax' | 'contactEmail'
 
 type FormState = Record<FieldName, string>
+
+// Validation surfaces issues for non-text fields too (e.g. the financingMeans
+// checkbox group) — those ride alongside the text FieldNames in error maps.
+type ErrorKey = FieldName | 'financingMeans'
 
 const EMPTY_FORM: FormState = {
   entryPoint: '', vesselType: '',
@@ -90,19 +100,22 @@ const EMPTY_FORM: FormState = {
   residencePermitNumber: '', residencePermitExpiry: '',
   employerName: '', employerAddress: '', employerCity: '', employerProvince: '',
   employerPostalCode: '', employerEmail: '', employerPhone: '',
+  inviterOrHotelName: '', accommodationAddress: '', accommodationEmail: '', accommodationPhone: '',
+  inviterCompanyName: '', inviterCompanyAddress: '', companyPhone: '', companyFax: '',
+  contactName: '', contactAddress: '', contactPhone: '', contactFax: '', contactEmail: '',
 }
 
 // Which fields live on which step — used to jump back to the earliest step
 // that has an error after the full-form submit parse.
-const STEP_FIELDS: FieldName[][] = [
+const STEP_FIELDS: ErrorKey[][] = [
   // Step 1 — Travel + Personal (merged) + guardian (minors)
   ['entryPoint', 'vesselType', 'lastName', 'previousLastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'nationality', 'previousNationality', 'gender', 'maritalStatus', 'guardianName', 'guardianAddress', 'guardianCity', 'guardianProvince', 'guardianPostalCode', 'guardianNationality'],
   // Step 2 — Travel Document
   ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
   // Step 3 — Contact & Occupation + residence permit + employer/school
   ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation', 'residencePermitNumber', 'residencePermitExpiry', 'employerName', 'employerAddress', 'employerCity', 'employerProvince', 'employerPostalCode', 'employerEmail', 'employerPhone'],
-  // Step 4 — Trip Details
-  ['travelPurpose', 'fundingSource', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate'],
+  // Step 4 — Trip Details + sponsor/invitation + financing means
+  ['travelPurpose', 'fundingSource', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate', 'inviterOrHotelName', 'accommodationAddress', 'accommodationEmail', 'accommodationPhone', 'inviterCompanyName', 'inviterCompanyAddress', 'companyPhone', 'companyFax', 'contactName', 'contactAddress', 'contactPhone', 'contactFax', 'contactEmail', 'financingMeans'],
 ]
 const TOTAL_STEPS = STEP_FIELDS.length
 
@@ -136,7 +149,7 @@ export function VisaWizard() {
     ...EMPTY_FORM,
     nationality: t('defaults.nationality'),
   }))
-  const [errors, setErrors] = React.useState<Partial<Record<FieldName, string>>>({})
+  const [errors, setErrors] = React.useState<Partial<Record<ErrorKey, string>>>({})
   const [submitting, setSubmitting] = React.useState(false)
   const [submitError, setSubmitError] = React.useState(false)
   const [done, setDone] = React.useState(false)
@@ -188,6 +201,21 @@ export function VisaWizard() {
   // metadata.previous_schengen_visa_date on submit — NOT a Zod field, never
   // blocks the submit gate. Distinct from schengen_entry/exit (the TRAVEL dates).
   const [previousSchengenVisaDate, setPreviousSchengenVisaDate] = React.useState('')
+
+  // Jotform 33A · means of subsistence — multi-select (always required, min 1).
+  // Not a string FieldName (it's an array), so it lives in its own state and is
+  // threaded into buildPayload explicitly.
+  const [financingMeans, setFinancingMeans] = React.useState<string[]>([])
+  const toggleFinancingMeans = (value: string) => {
+    setFinancingMeans((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    )
+    setErrors((e) => {
+      if (!e.financingMeans) return e
+      const { financingMeans: _omit, ...rest } = e
+      return rest
+    })
+  }
 
   // On mount, if a draft already exists (resumed session / prior uploads), load
   // its uploaded documents so slots reopen filled. Keys already known locally
@@ -280,6 +308,7 @@ export function VisaWizard() {
     livesInOtherCountry: toBool(form.livesInOtherCountry),
     schengenLast3Years: toBool(form.schengenLast3Years),
     fingerprintsTaken: toBool(form.fingerprintsTaken),
+    financingMeans,
   })
 
   // ----- Final-step FORM gate (UX). The full schema is the same one the server
@@ -288,15 +317,15 @@ export function VisaWizard() {
   const fullParse = React.useMemo(
     () => visaApplicationSchema.safeParse(buildPayload()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [form, locale],
+    [form, locale, financingMeans],
   )
   const formValid = fullParse.success
-  const missingFormFields = React.useMemo<FieldName[]>(() => {
+  const missingFormFields = React.useMemo<ErrorKey[]>(() => {
     if (fullParse.success) return []
     const seen = new Set<string>()
-    const out: FieldName[] = []
+    const out: ErrorKey[] = []
     for (const issue of fullParse.error.issues) {
-      const f = String(issue.path[0]) as FieldName
+      const f = String(issue.path[0]) as ErrorKey
       if (f && !seen.has(f)) { seen.add(f); out.push(f) }
     }
     return out
@@ -305,9 +334,9 @@ export function VisaWizard() {
   // Map a Zod result's issues → { field: localized message }. First issue per
   // field wins; issue.message is a fragment like 'gender.required'.
   const collectErrors = (issues: { path: (string | number)[]; message: string }[]) => {
-    const next: Partial<Record<FieldName, string>> = {}
+    const next: Partial<Record<ErrorKey, string>> = {}
     for (const issue of issues) {
-      const field = String(issue.path[0]) as FieldName
+      const field = String(issue.path[0]) as ErrorKey
       if (field && !next[field]) next[field] = t(`errors.${issue.message}`)
     }
     return next
@@ -619,6 +648,56 @@ export function VisaWizard() {
               {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}
               {selectField('fundingSource', FUNDING_SOURCES, 'fundingSource')}
             </div>
+            {/* Jotform 31–32B — sponsor / invitation. Shown only when a sponsor
+                covers the trip; only the inviter/hotel name is required. */}
+            {isSponsor && (
+              <FieldGroup title={t('sections.sponsor')}>
+                {textField('inviterOrHotelName')}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('accommodationAddress', 'text', true)}
+                  {textField('accommodationPhone', 'tel', true)}
+                </div>
+                {textField('accommodationEmail', 'email', true)}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('inviterCompanyName', 'text', true)}
+                  {textField('inviterCompanyAddress', 'text', true)}
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('companyPhone', 'tel', true)}
+                  {textField('companyFax', 'tel', true)}
+                </div>
+                {textField('contactName', 'text', true)}
+                {textField('contactAddress', 'text', true)}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {textField('contactPhone', 'tel', true)}
+                  {textField('contactFax', 'tel', true)}
+                </div>
+                {textField('contactEmail', 'email', true)}
+              </FieldGroup>
+            )}
+            {/* Jotform 33A — means of subsistence. Always shown; at least one
+                must be selected (refineFinancing). */}
+            <FieldGroup title={t('sections.financingMeans')}>
+              <div className="space-y-2">
+                {FINANCING_MEANS.map((val) => (
+                  <label
+                    key={val}
+                    htmlFor={`fm-${val}`}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Checkbox
+                      id={`fm-${val}`}
+                      checked={financingMeans.includes(val)}
+                      onCheckedChange={() => toggleFinancingMeans(val)}
+                    />
+                    <span className="text-sm">{t(`options.financingMeans.${val}`)}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.financingMeans && (
+                <p className="text-sm text-destructive">{errors.financingMeans}</p>
+              )}
+            </FieldGroup>
             <div className="grid md:grid-cols-2 gap-4">
               {selectField('schengenLast3Years', YES_NO, 'yesNo')}
               {selectField('fingerprintsTaken', YES_NO, 'yesNo')}

@@ -115,6 +115,30 @@ export async function submitVisaApplication(
   const residencePermitNumber = v.livesInOtherCountry ? v.residencePermitNumber?.trim() || null : null
   const residencePermitExpiry = v.livesInOtherCountry ? v.residencePermitExpiry?.trim() || null : null
 
+  // ----- Grup A sponsor / financing -----
+  // Sponsor / invitation (jotform 31–32B) — only persisted when a sponsor funds
+  // the trip. Validation guaranteed the inviter/hotel name (31) is present then.
+  const sponsor = v.fundingSource === 'sponsor'
+    ? cleanObject({
+        inviter_or_hotel_name: v.inviterOrHotelName,
+        accommodation_address: v.accommodationAddress,
+        accommodation_email: v.accommodationEmail,
+        accommodation_phone: v.accommodationPhone,
+        company_name: v.inviterCompanyName,
+        company_address: v.inviterCompanyAddress,
+        company_phone: v.companyPhone,
+        company_fax: v.companyFax,
+        contact_name: v.contactName,
+        contact_address: v.contactAddress,
+        contact_phone: v.contactPhone,
+        contact_fax: v.contactFax,
+        contact_email: v.contactEmail,
+      })
+    : null
+
+  // Means of subsistence (jotform 33A) — always present (validation enforced ≥1).
+  const financingMeans = v.financingMeans ?? []
+
   // ----- 2. UPDATE the draft (service-role; RLS bypassed) -----
   try {
     const supabase = getSupabaseAdmin()
@@ -182,6 +206,8 @@ export async function submitVisaApplication(
             : {}),
           ...(guardian ? { guardian } : {}),    // jotform 10 (minors)
           ...(employer ? { employer } : {}),    // jotform 20 (employer/school)
+          ...(sponsor ? { sponsor } : {}),      // jotform 31–32B (invitation)
+          financing_means: financingMeans,      // jotform 33A (≥1 selection)
         },
 
         updated_at: new Date().toISOString(),
