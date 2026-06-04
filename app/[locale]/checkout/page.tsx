@@ -56,12 +56,19 @@ export default function CheckoutPage() {
       const result = await submitBooking({
         idempotencyKey: state.idempotencyKey,
         locale,
-        items: state.items.map(item =>
-          item.type === 'ferry'
-            ? { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
-            : { type: 'car_rental' as const, carId: item.carId, days: item.days,
-                pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
-        ),
+        // luggage henüz sunucuya gitmiyor — submitBooking sözleşmesi (ferry|car_rental)
+        // Katman 4'te genişletilecek; o zamana dek bu sınırda type-safe dışlanır.
+        items: state.items
+          .filter(
+            (item): item is Exclude<typeof item, { type: 'luggage' }> =>
+              item.type !== 'luggage'
+          )
+          .map(item =>
+            item.type === 'ferry'
+              ? { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
+              : { type: 'car_rental' as const, carId: item.carId, days: item.days,
+                  pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
+          ),
         passengerCount: state.searchParams.passengers,
         passengers: state.passengers.map((p, idx) => ({
           firstName: p.firstName,

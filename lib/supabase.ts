@@ -64,6 +64,7 @@ export type TripItemType =
   | 'esim'
   | 'visa'
   | 'custom'
+  | 'luggage'
 
 export type TripItemState =
   | 'draft'
@@ -268,6 +269,15 @@ export interface CustomItemMetadata {
   [key: string]: unknown
 }
 
+export interface LuggageItemMetadata {
+  size: 'small' | 'medium' | 'large' | 'bag'
+  drop_off_date: string         // YYYY-MM-DD
+  pickup_date: string           // YYYY-MM-DD
+  piece_count: number
+  daily_rate_cents: number      // server-side sabit tarife (cents)
+  location: string              // liman/ofis kodu, ör. 'kos_port'
+}
+
 export type TripItemMetadata =
   | FerryItemMetadata
   | TransferItemMetadata
@@ -279,6 +289,7 @@ export type TripItemMetadata =
   | ESIMItemMetadata
   | VisaItemMetadata
   | CustomItemMetadata
+  | LuggageItemMetadata
 
 export interface TripItem {
   id: string

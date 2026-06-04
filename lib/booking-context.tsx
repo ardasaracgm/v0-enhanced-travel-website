@@ -76,7 +76,18 @@ export interface CarRentalBookingItem {
   priceAmount: number    // pricePerDay × days, display only
 }
 
-export type BookingItem = FerryBookingItem | CarRentalBookingItem
+export interface LuggageBookingItem {
+  type: 'luggage'
+  size: 'small' | 'medium' | 'large' | 'bag'
+  dropOffDate: string    // YYYY-MM-DD
+  pickupDate: string     // YYYY-MM-DD
+  pieceCount: number
+  location: string       // ör. 'kos_port'
+  title: string          // görüntü etiketi, ör. "Valiz emaneti — 2 parça"
+  priceAmount: number    // gün × tarife × pieceCount, display only
+}
+
+export type BookingItem = FerryBookingItem | CarRentalBookingItem | LuggageBookingItem
 
 export interface BookingState {
   searchParams: {
@@ -139,6 +150,8 @@ type BookingAction =
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
+  | { type: 'SET_LUGGAGE'; payload: Omit<LuggageBookingItem, 'type'> }
+  | { type: 'REMOVE_LUGGAGE' }
   | { type: 'SET_ITEMS'; payload: BookingItem[] }
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
@@ -236,6 +249,24 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         ],
       }
     }
+    case 'SET_LUGGAGE': {
+      const luggageItem: LuggageBookingItem = {
+        type: 'luggage',
+        ...action.payload,
+      }
+      return {
+        ...state,
+        items: [
+          ...state.items.filter(i => i.type !== 'luggage'),
+          luggageItem,
+        ],
+      }
+    }
+    case 'REMOVE_LUGGAGE':
+      return {
+        ...state,
+        items: state.items.filter(i => i.type !== 'luggage'),
+      }
     case 'SET_ITEMS':
       return { ...state, items: action.payload }
     case 'SET_IDEMPOTENCY_KEY':
