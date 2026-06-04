@@ -1017,6 +1017,37 @@
     }
   },
 
+  "extrasPage": {
+    "totalPrice": "Συνολική τιμή",
+    "returnPrefix": "Επιστροφή:",
+    "steps": {
+      "selectFerry": "Επιλογή πλοίου",
+      "extras": "Έξτρα",
+      "passengers": "Επιβάτες",
+      "payment": "Πληρωμή"
+    },
+    "heading": "Προσθέστε αυτοκίνητο στην Kos",
+    "subheading": "Παραλάβετε το αυτοκίνητο από το {location} όταν φτάσετε. Παραλείψτε το αν δεν το χρειάζεστε.",
+    "howManyDays": "Πόσες ημέρες;",
+    "rentalDuration": "Διάρκεια ενοικίασης:",
+    "noCarsTitle": "Δεν υπάρχουν διαθέσιμα αυτοκίνητα αυτή τη στιγμή",
+    "noCarsBody": "Συνεχίστε χωρίς αυτοκίνητο ή επικοινωνήστε μαζί μας μέσω WhatsApp.",
+    "continueWithoutCar": "Συνέχεια χωρίς αυτοκίνητο",
+    "perDay": "/ημέρα",
+    "added": "Προστέθηκε",
+    "add": "Προσθήκη",
+    "bookingSummary": "Σύνοψη κράτησης",
+    "outboundFerry": "Πλοίο μετάβασης",
+    "returnFerry": "Πλοίο επιστροφής",
+    "carRental": "Ενοικίαση αυτοκινήτου",
+    "total": "Σύνολο",
+    "continueToPassengers": "Συνέχεια στους επιβάτες",
+    "skipNoCar": "Παράλειψη — δεν χρειάζομαι αυτοκίνητο",
+    "dayCount": "{count, plural, one {# ημέρα} other {# ημέρες}}",
+    "passengerCount": "{count, plural, one {# επιβάτης} other {# επιβάτες}}",
+    "seatCount": "{count, plural, one {# θέση} other {# θέσεις}}"
+  },
+
   "privacy": {
     "title": "Πολιτική Απορρήτου",
     "lastUpdated": "Τελευταία ενημέρωση"

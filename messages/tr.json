@@ -1017,6 +1017,37 @@
     }
   },
 
+  "extrasPage": {
+    "totalPrice": "Toplam Fiyat",
+    "returnPrefix": "Dönüş:",
+    "steps": {
+      "selectFerry": "Feribot Seçimi",
+      "extras": "Ekstralar",
+      "passengers": "Yolcular",
+      "payment": "Ödeme"
+    },
+    "heading": "Kos'ta araç kiralayın",
+    "subheading": "Vardığınızda aracı {location} noktasından teslim alın. İhtiyacınız yoksa atlayın.",
+    "howManyDays": "Kaç gün?",
+    "rentalDuration": "Kiralama süresi:",
+    "noCarsTitle": "Şu anda müsait araç yok",
+    "noCarsBody": "Araç olmadan devam edin veya WhatsApp üzerinden bize ulaşın.",
+    "continueWithoutCar": "Araçsız devam et",
+    "perDay": "/gün",
+    "added": "Eklendi",
+    "add": "Ekle",
+    "bookingSummary": "Rezervasyon Özeti",
+    "outboundFerry": "Gidiş feribotu",
+    "returnFerry": "Dönüş feribotu",
+    "carRental": "Araç kiralama",
+    "total": "Toplam",
+    "continueToPassengers": "Yolculara Devam Et",
+    "skipNoCar": "Atla — araç istemiyorum",
+    "dayCount": "{count, plural, one {# gün} other {# gün}}",
+    "passengerCount": "{count, plural, one {# yolcu} other {# yolcu}}",
+    "seatCount": "{count, plural, one {# koltuk} other {# koltuk}}"
+  },
+
   "privacy": {
     "title": "Gizlilik Politikası",
     "lastUpdated": "Son güncelleme"

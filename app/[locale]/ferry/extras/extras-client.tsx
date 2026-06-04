@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
 import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -40,6 +41,7 @@ interface ExtrasClientProps {
 export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const router = useRouter()
   const { state, dispatch } = useBooking()
+  const t = useTranslations('extrasPage')
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
   const [oneWayDays, setOneWayDays] = React.useState(3)
 
@@ -146,13 +148,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     <span>{outbound.to}</span>
                   </div>
                   <p className="text-sm text-primary-foreground/80">
-                    {state.searchParams.date} · {state.searchParams.passengers} passenger{state.searchParams.passengers > 1 ? 's' : ''}
-                    {isRoundTrip && ` · Return: ${state.searchParams.returnDate}`}
+                    {state.searchParams.date} · {t('passengerCount', { count: state.searchParams.passengers })}
+                    {isRoundTrip && ` · ${t('returnPrefix')} ${state.searchParams.returnDate}`}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-primary-foreground/80">Total Price</p>
+                <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
                 <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
               </div>
             </div>
@@ -167,28 +169,28 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-medium">
                   <CheckCircle className="h-5 w-5" />
                 </div>
-                <span className="text-sm text-muted-foreground">Select Ferry</span>
+                <span className="text-sm text-muted-foreground">{t('steps.selectFerry')}</span>
               </div>
               <div className="w-10 h-0.5 bg-primary" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                   2
                 </div>
-                <span className="text-sm font-medium text-primary">Extras</span>
+                <span className="text-sm font-medium text-primary">{t('steps.extras')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   3
                 </div>
-                <span className="text-sm text-muted-foreground">Passengers</span>
+                <span className="text-sm text-muted-foreground">{t('steps.passengers')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   4
                 </div>
-                <span className="text-sm text-muted-foreground">Payment</span>
+                <span className="text-sm text-muted-foreground">{t('steps.payment')}</span>
               </div>
             </div>
           </div>
@@ -202,16 +204,16 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
               {/* Left: heading + day selector + car cards */}
               <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-1">Add a car in Kos</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
                   <p className="text-muted-foreground">
-                    Pick up at {DEFAULT_PICKUP_LOCATION} when you arrive. Skip if you don&apos;t need one.
+                    {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
                   </p>
                 </div>
 
                 {/* One-way day selector */}
                 {!isRoundTrip && (
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-foreground">How many days?</span>
+                    <span className="text-sm font-medium text-foreground">{t('howManyDays')}</span>
                     <Select
                       value={String(oneWayDays)}
                       onValueChange={v => handleDaysChange(Number(v))}
@@ -222,7 +224,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <SelectContent>
                         {Array.from({ length: 14 }, (_, i) => i + 1).map(n => (
                           <SelectItem key={n} value={String(n)}>
-                            {n} {n === 1 ? 'day' : 'days'}
+                            {t('dayCount', { count: n })}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -233,9 +235,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {/* Round-trip: computed days, read-only */}
                 {isRoundTrip && returnItem && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Rental duration:</span>
+                    <span>{t('rentalDuration')}</span>
                     <span className="font-medium text-foreground">
-                      {days} {days === 1 ? 'day' : 'days'}
+                      {t('dayCount', { count: days })}
                       <span className="font-normal text-muted-foreground ml-1">
                         ({outboundItem.date} → {returnItem.date})
                       </span>
@@ -248,9 +250,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-8 text-center">
                       <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">No cars available right now</h3>
-                      <p className="text-muted-foreground mb-4">Continue without a car or contact us on WhatsApp.</p>
-                      <Button onClick={handleSkip} variant="outline">Continue without car</Button>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{t('noCarsTitle')}</h3>
+                      <p className="text-muted-foreground mb-4">{t('noCarsBody')}</p>
+                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
                     </CardContent>
                   </Card>
                 )}
@@ -310,7 +312,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                                 </span>
                                 <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
                                   <Users className="h-3 w-3" />
-                                  {car.specs.seats} seats
+                                  {t('seatCount', { count: Number(car.specs.seats) })}
                                 </span>
                                 <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
                                   <Settings className="h-3 w-3" />
@@ -321,9 +323,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                               {/* Pricing */}
                               <div className="flex items-end justify-between pt-1">
                                 <div>
-                                  <p className="text-xl font-bold text-primary">€{car.price}<span className="text-sm font-normal text-muted-foreground">/day</span></p>
+                                  <p className="text-xl font-bold text-primary">€{car.price}<span className="text-sm font-normal text-muted-foreground">{t('perDay')}</span></p>
                                   <p className="text-xs text-muted-foreground">
-                                    {days} {days === 1 ? 'day' : 'days'} = <span className="font-medium text-foreground">€{lineTotal}</span>
+                                    {t('dayCount', { count: days })} = <span className="font-medium text-foreground">€{lineTotal}</span>
                                   </p>
                                 </div>
                                 <Button
@@ -333,9 +335,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                                   onClick={e => { e.stopPropagation(); handleSelectCar(car) }}
                                 >
                                   {isSelected ? (
-                                    <><CheckCircle className="h-3.5 w-3.5 mr-1" />Added</>
+                                    <><CheckCircle className="h-3.5 w-3.5 mr-1" />{t('added')}</>
                                   ) : (
-                                    <><Car className="h-3.5 w-3.5 mr-1" />Add</>
+                                    <><Car className="h-3.5 w-3.5 mr-1" />{t('add')}</>
                                   )}
                                 </Button>
                               </div>
@@ -353,18 +355,18 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="sticky top-24">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6 space-y-4">
-                      <h3 className="text-lg font-bold text-foreground">Booking Summary</h3>
+                      <h3 className="text-lg font-bold text-foreground">{t('bookingSummary')}</h3>
 
                       {/* Ferry lines */}
                       <div className="p-3 bg-secondary/50 rounded-xl">
-                        <p className="text-xs text-muted-foreground mb-1">Outbound ferry</p>
+                        <p className="text-xs text-muted-foreground mb-1">{t('outboundFerry')}</p>
                         <p className="font-medium text-foreground text-sm">{outbound.from} → {outbound.to}</p>
                         <p className="text-xs text-muted-foreground">{outbound.departureTime} · {outbound.operator}</p>
                       </div>
 
                       {returnF && (
                         <div className="p-3 bg-secondary/50 rounded-xl">
-                          <p className="text-xs text-muted-foreground mb-1">Return ferry</p>
+                          <p className="text-xs text-muted-foreground mb-1">{t('returnFerry')}</p>
                           <p className="font-medium text-foreground text-sm">{returnF.from} → {returnF.to}</p>
                           <p className="text-xs text-muted-foreground">{returnF.departureTime} · {returnF.operator}</p>
                         </div>
@@ -373,10 +375,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       {/* Selected car */}
                       {selectedCar && (
                         <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                          <p className="text-xs text-muted-foreground mb-1">Car rental</p>
+                          <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
                           <p className="font-medium text-foreground text-sm">{selectedCar.model}</p>
                           <p className="text-xs text-muted-foreground">
-                            {days} {days === 1 ? 'day' : 'days'} · {DEFAULT_PICKUP_LOCATION}
+                            {t('dayCount', { count: days })} · {DEFAULT_PICKUP_LOCATION}
                           </p>
                           <p className="text-primary text-sm font-semibold mt-1">€{selectedCar.price * days}</p>
                         </div>
@@ -384,7 +386,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       <div className="pt-2 border-t border-border/50">
                         <div className="flex items-center justify-between text-lg font-bold">
-                          <span className="text-foreground">Total</span>
+                          <span className="text-foreground">{t('total')}</span>
                           <span className="text-primary">€{selectTotalPrice(state)}</span>
                         </div>
                       </div>
@@ -393,7 +395,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                         onClick={handleContinue}
                       >
-                        Continue to Passengers
+                        {t('continueToPassengers')}
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
 
@@ -402,7 +404,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         className="w-full text-muted-foreground hover:text-foreground"
                         onClick={handleSkip}
                       >
-                        Skip — no car needed
+                        {t('skipNoCar')}
                       </Button>
                     </CardContent>
                   </Card>
