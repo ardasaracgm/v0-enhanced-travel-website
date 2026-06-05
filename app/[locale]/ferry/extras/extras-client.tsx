@@ -110,8 +110,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date))
     : Math.max(1, oneWayDays)
 
-  // Luggage türetilmiş: toplam parça + canlı toplam fiyat (1 gün; display-only).
-  const luggageTotalPieces = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s], 0)
+  // Luggage türetilmiş: canlı toplam fiyat (1 gün; display-only). Başlıkta koşulsuz gösterilir.
   const luggageTotalPrice = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s] * LUGGAGE_RATES_EUR[s], 0)
 
   // Özet satırı için çok-boyut kırılımı, ör. "2× Küçük, 1× Büyük" (cart'taki item'dan).
@@ -288,6 +287,11 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         </div>
                       </div>
 
+                      {/* Sağ grup: canlı toplam (koşulsuz, Toplam: €0'dan başlar) + (i) boyut rehberi */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                          {t('total')}: <span className="text-primary">€{luggageTotalPrice}</span>
+                        </span>
                       {/* Boyut rehberi — (i) hover (desktop) / tap (mobil); İngilizce hardcode, fiyat YOK */}
                       <Popover open={sizeTipOpen} onOpenChange={setSizeTipOpen}>
                         <PopoverTrigger asChild>
@@ -296,7 +300,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                             aria-label="Luggage size guide"
                             onPointerEnter={e => { if (e.pointerType === 'mouse') setSizeTipOpen(true) }}
                             onPointerLeave={e => { if (e.pointerType === 'mouse') setSizeTipOpen(false) }}
-                            className="shrink-0 text-slate-500 hover:text-primary transition-colors"
+                            className="shrink-0 text-sky-600 hover:text-primary transition-colors"
                           >
                             <Info className="h-5 w-5" />
                           </button>
@@ -324,6 +328,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                           </div>
                         </PopoverContent>
                       </Popover>
+                      </div>
                     </div>
 
                     {/* Tek satır: boyut segment + adet + ekle (mobilde wrap) */}
@@ -357,10 +362,6 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         })}
                       </div>
 
-                      {/* Canlı fiyat (toplam, /gün ALMAZ) — chip'lere göre güncellenir; ayrı Ekle butonu yok */}
-                      {luggageTotalPieces >= 1 && (
-                        <span className="shrink-0 text-lg font-bold text-primary">€{luggageTotalPrice}</span>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
