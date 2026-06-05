@@ -56,19 +56,20 @@ export default function CheckoutPage() {
       const result = await submitBooking({
         idempotencyKey: state.idempotencyKey,
         locale,
-        // luggage henüz sunucuya gitmiyor — submitBooking sözleşmesi (ferry|car_rental)
-        // Katman 4'te genişletilecek; o zamana dek bu sınırda type-safe dışlanır.
-        items: state.items
-          .filter(
-            (item): item is Exclude<typeof item, { type: 'luggage' }> =>
-              item.type !== 'luggage'
-          )
-          .map(item =>
-            item.type === 'ferry'
-              ? { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
-              : { type: 'car_rental' as const, carId: item.carId, days: item.days,
-                  pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
-          ),
+        // IDs/params only — submitBooking resolves every price server-side
+        // (ferry/car from trusted sources, luggage via calculateLuggagePriceCents).
+        items: state.items.map(item => {
+          if (item.type === 'ferry') {
+            return { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
+          }
+          if (item.type === 'car_rental') {
+            return { type: 'car_rental' as const, carId: item.carId, days: item.days,
+                     pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
+          }
+          // luggage — client priceAmount was display-only; server recomputes.
+          return { type: 'luggage' as const, counts: item.counts, dropOffDate: item.dropOffDate,
+                   pickupDate: item.pickupDate, location: item.location }
+        }),
         passengerCount: state.searchParams.passengers,
         passengers: state.passengers.map((p, idx) => ({
           firstName: p.firstName,

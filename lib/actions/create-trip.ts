@@ -118,6 +118,7 @@ export type CreateTripResult =
 export type CreateTripErrorCode =
   | 'validation_failed'
   | 'database_error'
+  | 'invalid_luggage'
   | 'unexpected'
 
 // ============================================================

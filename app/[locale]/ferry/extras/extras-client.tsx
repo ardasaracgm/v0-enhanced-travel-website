@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
-import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings } from 'lucide-react'
+import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
@@ -17,6 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
@@ -29,10 +34,16 @@ import {
   selectCarRental,
   selectTotalPrice,
   type FerryBookingItem,
+  type LuggageBookingItem,
 } from '@/lib/booking-context'
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
+import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
+
+// UI'da gösterilen boyutlar — 'bag' enum'u kasıtlı dışarıda (small'a eşit, gizli).
+const LUGGAGE_SIZES = ['small', 'medium', 'large'] as const
+type LuggageDisplaySize = (typeof LUGGAGE_SIZES)[number]
 
 interface ExtrasClientProps {
   cars: NormalizedCar[]
@@ -44,6 +55,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const t = useTranslations('extrasPage')
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
   const [oneWayDays, setOneWayDays] = React.useState(3)
+
+  // Luggage UI state (display); cart state reducer'da.
+  const luggageItem = state.items.find(
+    (i): i is LuggageBookingItem => i.type === 'luggage'
+  ) ?? null
+  const isLuggageAdded = !!luggageItem
+  const [luggageCounts, setLuggageCounts] = React.useState<LuggageCounts>({ small: 0, medium: 0, large: 0 })
+  const [sizeTipOpen, setSizeTipOpen] = React.useState(false)  // (i) boyut rehberi; mobil tap
 
   const outboundItem = state.items.find(
     (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
@@ -74,12 +93,27 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Luggage seçimini context'ten hydrate et (back-navigation).
+  React.useEffect(() => {
+    const existing = state.items.find(
+      (i): i is LuggageBookingItem => i.type === 'luggage'
+    )
+    if (existing) {
+      setLuggageCounts(existing.counts)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   if (!outboundItem || !outbound) return null
 
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
   const days = isRoundTrip
     ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date))
     : Math.max(1, oneWayDays)
+
+  // Luggage türetilmiş: toplam parça + canlı toplam fiyat (1 gün; display-only).
+  const luggageTotalPieces = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s], 0)
+  const luggageTotalPrice = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s] * LUGGAGE_RATES_EUR[s], 0)
 
   function dispatchCarSelection(car: NormalizedCar, dayCount: number) {
     dispatch({
@@ -122,6 +156,43 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   function handleSkip() {
     dispatch({ type: 'SET_CAR_RENTAL', payload: null })
     router.push('/ferry/passenger-details')
+  }
+
+  // Tarihsiz: drop = pickup = feribot geliş tarihi, 1 gün. priceAmount display-only
+  // (sunucu submitBooking'de calculateLuggageTotalCents ile yeniden hesaplar).
+  function dispatchLuggage(counts: LuggageCounts) {
+    const total = LUGGAGE_SIZES.reduce((sum, s) => sum + counts[s], 0)
+    dispatch({
+      type: 'SET_LUGGAGE',
+      payload: {
+        counts,
+        dropOffDate: outboundItem!.date,
+        pickupDate: outboundItem!.date,
+        location: 'kos_port',
+        priceAmount: LUGGAGE_SIZES.reduce((sum, s) => sum + counts[s] * LUGGAGE_RATES_EUR[s], 0),
+        title: t('luggage.pieceCount', { count: total }),
+      },
+    })
+  }
+
+  // Chip = 0→1→2→…→5→0 döngü. Eklenmişse sepeti senkron tut; toplam 0'a
+  // düşerse sepetten çıkar (Σ<1 geçersiz).
+  function handleCycleLuggageSize(size: LuggageDisplaySize) {
+    const next = { ...luggageCounts, [size]: (luggageCounts[size] + 1) % 6 }
+    setLuggageCounts(next)
+    if (isLuggageAdded) {
+      const total = LUGGAGE_SIZES.reduce((sum, s) => sum + next[s], 0)
+      if (total >= 1) dispatchLuggage(next)
+      else dispatch({ type: 'REMOVE_LUGGAGE' })
+    }
+  }
+
+  function handleToggleLuggage() {
+    if (isLuggageAdded) {
+      dispatch({ type: 'REMOVE_LUGGAGE' })
+      return
+    }
+    if (luggageTotalPieces >= 1) dispatchLuggage(luggageCounts)
   }
 
   const selectedCar = cars.find(c => c.id === selectedCarId) ?? null
@@ -192,6 +263,122 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 </div>
                 <span className="text-sm text-muted-foreground">{t('steps.payment')}</span>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Luggage drop-off — araç bloğunun üstünde; sağ sütun sigortaya rezerve */}
+        <section className="w-full pt-8 md:pt-12">
+          <div className="container px-4 md:px-6">
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <Card className="bg-card border-2 border-border/50">
+                  <CardContent className="p-5 space-y-4">
+                    {/* Heading + slogan — ince üst; sağ üstte (i) boyut rehberi */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Luggage className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-bold text-foreground leading-tight">{t('luggage.heading')}</h2>
+                          <p className="text-xs text-muted-foreground">{t('luggage.subheading')}</p>
+                        </div>
+                      </div>
+
+                      {/* Boyut rehberi — (i) hover (desktop) / tap (mobil); İngilizce hardcode, fiyat YOK */}
+                      <Popover open={sizeTipOpen} onOpenChange={setSizeTipOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Luggage size guide"
+                            onPointerEnter={e => { if (e.pointerType === 'mouse') setSizeTipOpen(true) }}
+                            onPointerLeave={e => { if (e.pointerType === 'mouse') setSizeTipOpen(false) }}
+                            className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                          >
+                            <Info className="h-5 w-5" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          side="left"
+                          align="start"
+                          className="w-auto max-w-sm p-0"
+                          onOpenAutoFocus={e => e.preventDefault()}
+                        >
+                          <div className="divide-y divide-border text-xs">
+                            <div className="px-3 py-2 font-medium text-foreground">Size guide</div>
+                            <div className="px-3 py-2">
+                              <p className="font-semibold text-foreground">Small (S)</p>
+                              <p className="text-muted-foreground">Cabin bag · 55×40×25 cm · Backpack, carry-on</p>
+                            </div>
+                            <div className="px-3 py-2">
+                              <p className="font-semibold text-foreground">Medium (M)</p>
+                              <p className="text-muted-foreground">Checked bag · 70×45×30 cm · 4–7 day suitcase</p>
+                            </div>
+                            <div className="px-3 py-2">
+                              <p className="font-semibold text-foreground">Large (L)</p>
+                              <p className="text-muted-foreground">Large checked · 80×55×35+ cm · Family / long-trip case</p>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* Tek satır: boyut segment + adet + ekle (mobilde wrap) */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Boyut chip'leri — yatay, kendi aralarında eşit esner (flex-1); adet/buton sabit */}
+                      <div className="flex-1 flex items-center gap-2 min-w-[12rem]">
+                        {LUGGAGE_SIZES.map(size => {
+                          const count = luggageCounts[size]
+                          const selected = count >= 1
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => handleCycleLuggageSize(size)}
+                              className={`relative flex-1 flex flex-col items-center rounded-xl border-2 px-3 py-1.5 transition-all ${
+                                selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                              }`}
+                            >
+                              {/* ×N rozeti ilk parçadan itibaren (×1 dahil) */}
+                              {count >= 1 && (
+                                <span className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                  ×{count}
+                                </span>
+                              )}
+                              <span className="text-sm font-medium text-foreground leading-tight whitespace-nowrap">{t(`luggage.size.${size}`)}</span>
+                              <span className="text-xs font-semibold text-primary">
+                                €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Canlı fiyat (toplam, /gün ALMAZ) + ekle — sabit; boş alan chip grubuna gider */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        {luggageTotalPieces >= 1 && (
+                          <span className="text-lg font-bold text-primary">€{luggageTotalPrice}</span>
+                        )}
+                        <Button
+                          onClick={handleToggleLuggage}
+                          disabled={luggageTotalPieces < 1}
+                          variant={isLuggageAdded ? 'default' : 'outline'}
+                          className={isLuggageAdded ? 'bg-primary text-primary-foreground' : ''}
+                        >
+                          {isLuggageAdded ? (
+                            <><CheckCircle className="h-4 w-4 mr-1" />{t('added')}</>
+                          ) : (
+                            <><Luggage className="h-4 w-4 mr-1" />{t('add')}</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              {/* Sağ sütun — sigorta upsell için rezerve (şimdilik boş) */}
+              <div className="lg:col-span-1" aria-hidden />
             </div>
           </div>
         </section>

@@ -1045,7 +1045,19 @@
     "skipNoCar": "Παράλειψη — δεν χρειάζομαι αυτοκίνητο",
     "dayCount": "{count, plural, one {# ημέρα} other {# ημέρες}}",
     "passengerCount": "{count, plural, one {# επιβάτης} other {# επιβάτες}}",
-    "seatCount": "{count, plural, one {# θέση} other {# θέσεις}}"
+    "seatCount": "{count, plural, one {# θέση} other {# θέσεις}}",
+    "luggage": {
+      "heading": "Εξερευνήστε την Kos χωρίς αποσκευές!",
+      "subheading": "Φυλάξτε τις αποσκευές σας με ασφάλεια μέχρι την ώρα του check-in στο ξενοδοχείο σας ή μέχρι την επιστροφή σας με το πλοίο.",
+      "size": {
+        "small": "Μικρή",
+        "medium": "Μεσαία",
+        "large": "Μεγάλη"
+      },
+      "pieceCountLabel": "Πόσα τεμάχια;",
+      "pieceCount": "{count, plural, one {# τεμάχιο} other {# τεμάχια}}",
+      "summaryLabel": "Φύλαξη αποσκευών"
+    }
   },
 
   "privacy": {

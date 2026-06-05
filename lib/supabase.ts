@@ -270,12 +270,15 @@ export interface CustomItemMetadata {
 }
 
 export interface LuggageItemMetadata {
-  size: 'small' | 'medium' | 'large' | 'bag'
+  // Çok-boyut sayaçları — her biri 0..5 tam sayı, Σ ≥ 1.
+  // ('bag' boyutu UI sayacında yok; small'a eşit, gizli kaldı.)
+  count_small: number
+  count_medium: number
+  count_large: number
   drop_off_date: string         // YYYY-MM-DD
   pickup_date: string           // YYYY-MM-DD
-  piece_count: number
-  daily_rate_cents: number      // server-side sabit tarife (cents)
   location: string              // liman/ofis kodu, ör. 'kos_port'
+  daily_total_cents?: number    // opsiyonel audit: günlük toplam Σ(count×tarife), cents
 }
 
 export type TripItemMetadata =

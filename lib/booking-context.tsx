@@ -21,6 +21,7 @@ export {
 } from '@/lib/ferry-mock-data'
 
 import type { FerryRoute } from '@/lib/ferry-mock-data'
+import type { LuggageCounts } from '@/lib/luggage-rates'
 
 export interface Passenger {
   firstName: string
@@ -78,13 +79,12 @@ export interface CarRentalBookingItem {
 
 export interface LuggageBookingItem {
   type: 'luggage'
-  size: 'small' | 'medium' | 'large' | 'bag'
+  counts: LuggageCounts  // {small,medium,large}; her biri 0..5 tam sayı
   dropOffDate: string    // YYYY-MM-DD
   pickupDate: string     // YYYY-MM-DD
-  pieceCount: number
   location: string       // ör. 'kos_port'
-  title: string          // görüntü etiketi, ör. "Valiz emaneti — 2 parça"
-  priceAmount: number    // gün × tarife × pieceCount, display only
+  title: string          // görüntü etiketi, ör. "Valiz emaneti — 3 parça"
+  priceAmount: number    // gün × Σ(counts×tarife), display only
 }
 
 export type BookingItem = FerryBookingItem | CarRentalBookingItem | LuggageBookingItem

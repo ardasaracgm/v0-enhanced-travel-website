@@ -1045,7 +1045,19 @@
     "skipNoCar": "Skip — no car needed",
     "dayCount": "{count, plural, one {# day} other {# days}}",
     "passengerCount": "{count, plural, one {# passenger} other {# passengers}}",
-    "seatCount": "{count, plural, one {# seat} other {# seats}}"
+    "seatCount": "{count, plural, one {# seat} other {# seats}}",
+    "luggage": {
+      "heading": "Explore Kos Without Your Luggage!",
+      "subheading": "Store your luggage safely until your hotel check-in time or until your return ferry.",
+      "size": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "pieceCountLabel": "How many pieces?",
+      "pieceCount": "{count, plural, one {# piece} other {# pieces}}",
+      "summaryLabel": "Luggage storage"
+    }
   },
 
   "privacy": {

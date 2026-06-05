@@ -1045,7 +1045,19 @@
     "skipNoCar": "Atla — araç istemiyorum",
     "dayCount": "{count, plural, one {# gün} other {# gün}}",
     "passengerCount": "{count, plural, one {# yolcu} other {# yolcu}}",
-    "seatCount": "{count, plural, one {# koltuk} other {# koltuk}}"
+    "seatCount": "{count, plural, one {# koltuk} other {# koltuk}}",
+    "luggage": {
+      "heading": "Kos'u Valizsiz Keşfedin!",
+      "subheading": "Valizinizi ister otel giriş saatine kadar, ister dönüş feribotunuza kadar güvenle saklayın.",
+      "size": {
+        "small": "Küçük",
+        "medium": "Orta",
+        "large": "Büyük"
+      },
+      "pieceCountLabel": "Kaç parça?",
+      "pieceCount": "{count, plural, one {# parça} other {# parça}}",
+      "summaryLabel": "Valiz emaneti"
+    }
   },
 
   "privacy": {

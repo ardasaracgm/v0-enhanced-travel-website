@@ -18,6 +18,10 @@ import { createPaymentOrder } from './create-payment-order'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
+import {
+  calculateLuggageTotalCents,
+  type LuggageCounts,
+} from '@/lib/luggage-pricing'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 import { makePassengerSchema, derivePassengerType } from '@/lib/validation/booking'
 import { z } from 'zod'
@@ -37,6 +41,13 @@ export interface SubmitBookingInput {
   items: Array<
     | { type: 'ferry'; leg: 'outbound' | 'return'; ferryId: string; date: string }
     | { type: 'car_rental'; carId: string; days: number; pickupAt?: string; dropoffAt?: string }
+    | {
+        type: 'luggage'
+        counts: LuggageCounts
+        dropOffDate: string   // YYYY-MM-DD
+        pickupDate: string    // YYYY-MM-DD
+        location: string
+      }
   >
 
   /** Number of passengers (used to multiply per-passenger ferry price) */
@@ -97,12 +108,29 @@ const CarItemSchema = z.object({
   dropoffAt: z.string().optional(),
 })
 
+// Luggage drop-off. Client sends only the selection (per-size counts/dates/
+// location); the price is computed server-side in the resolve loop below —
+// never trusted from the client. Dates are shape-checked here; calendar/order
+// validity is enforced by calculateLuggageTotalCents.
+const luggageCountField = z.number().int().min(0).max(5)
+const LuggageItemSchema = z.object({
+  type:        z.literal('luggage'),
+  counts: z
+    .object({ small: luggageCountField, medium: luggageCountField, large: luggageCountField })
+    .refine((c) => c.small + c.medium + c.large >= 1, {
+      message: 'At least one luggage piece required',
+    }),
+  dropOffDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dropOffDate must be YYYY-MM-DD'),
+  pickupDate:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'pickupDate must be YYYY-MM-DD'),
+  location:    z.string().min(1).max(64),
+})
+
 // Structural schema — everything EXCEPT detailed passenger validation, which
 // is run separately below because it needs the (now-trusted) travel dates.
 const SubmitBookingStructureSchema = z.object({
   idempotencyKey: z.string().min(8),
   locale:         z.enum(['en', 'tr', 'el']),
-  items:          z.array(z.discriminatedUnion('type', [FerryItemSchema, CarItemSchema])).min(1),
+  items:          z.array(z.discriminatedUnion('type', [FerryItemSchema, CarItemSchema, LuggageItemSchema])).min(1),
   passengerCount: z.number().int().min(1).max(9),
   contactEmail:   z.string().email(),
   contactPhone:   z.string().trim().min(7),
@@ -229,6 +257,48 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
         console.error('[submitBooking] car lookup failed:', err)
         // Soft failure — proceed without the car item
       }
+    } else if (item.type === 'luggage') {
+      // Server-side price is authoritative. calculateLuggageTotalCents throws
+      // (RangeError) on bad input — pickup<dropOff, bad date, count out of 0..5,
+      // Σcounts<1 — which we surface as a typed 'invalid_luggage' error. The
+      // client's display priceAmount is intentionally ignored.
+      let totalCents: number
+      try {
+        totalCents = calculateLuggageTotalCents(
+          item.counts,
+          item.dropOffDate,
+          item.pickupDate,
+        )
+      } catch (err) {
+        return {
+          ok: false,
+          code: 'invalid_luggage',
+          error: err instanceof Error ? err.message : 'Invalid luggage selection',
+        }
+      }
+
+      const totalPieces = item.counts.small + item.counts.medium + item.counts.large
+      items.push({
+        type: 'luggage',
+        title: `Luggage drop-off — ${totalPieces} ${totalPieces === 1 ? 'piece' : 'pieces'}`,
+        scheduledAt: `${item.dropOffDate}T00:00:00+03:00`,
+        endsAt: `${item.pickupDate}T00:00:00+03:00`,
+        passengerCount: 1,
+        // cents → EUR decimals (rest of the trip works in EUR; rates are whole
+        // euros so this division is always exact).
+        priceAmount: totalCents / 100,
+        priceCurrency: 'EUR',
+        metadata: {
+          // —— camelCase (client) → snake_case (DB LuggageItemMetadata) ——
+          // This is the single boundary where the mapping happens.
+          count_small:  item.counts.small,
+          count_medium: item.counts.medium,
+          count_large:  item.counts.large,
+          drop_off_date: item.dropOffDate,
+          pickup_date: item.pickupDate,
+          location: item.location,
+        },
+      })
     }
   }
 
