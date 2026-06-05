@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
-import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info } from 'lucide-react'
+import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
@@ -60,7 +60,6 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const luggageItem = state.items.find(
     (i): i is LuggageBookingItem => i.type === 'luggage'
   ) ?? null
-  const isLuggageAdded = !!luggageItem
   const [luggageCounts, setLuggageCounts] = React.useState<LuggageCounts>({ small: 0, medium: 0, large: 0 })
   const [sizeTipOpen, setSizeTipOpen] = React.useState(false)  // (i) boyut rehberi; mobil tap
 
@@ -114,6 +113,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   // Luggage türetilmiş: toplam parça + canlı toplam fiyat (1 gün; display-only).
   const luggageTotalPieces = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s], 0)
   const luggageTotalPrice = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s] * LUGGAGE_RATES_EUR[s], 0)
+
+  // Özet satırı için çok-boyut kırılımı, ör. "2× Küçük, 1× Büyük" (cart'taki item'dan).
+  const luggageBreakdown = luggageItem
+    ? LUGGAGE_SIZES.filter(s => luggageItem.counts[s] > 0)
+        .map(s => `${luggageItem.counts[s]}× ${t(`luggage.size.${s}`)}`)
+        .join(', ')
+    : ''
 
   function dispatchCarSelection(car: NormalizedCar, dayCount: number) {
     dispatch({
@@ -175,24 +181,20 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     })
   }
 
-  // Chip = 0→1→2→…→5→0 döngü. Eklenmişse sepeti senkron tut; toplam 0'a
-  // düşerse sepetten çıkar (Σ<1 geçersiz).
+  // Chip = 0→1→2→…→5→0 döngü. Auto-sync: Σ≥1 → sepete upsert, Σ=0 → sepetten
+  // çıkar (Σ<1 geçersiz). Ayrı "Ekle" butonu yok; chip anında Özet'e yansır.
   function handleCycleLuggageSize(size: LuggageDisplaySize) {
     const next = { ...luggageCounts, [size]: (luggageCounts[size] + 1) % 6 }
     setLuggageCounts(next)
-    if (isLuggageAdded) {
-      const total = LUGGAGE_SIZES.reduce((sum, s) => sum + next[s], 0)
-      if (total >= 1) dispatchLuggage(next)
-      else dispatch({ type: 'REMOVE_LUGGAGE' })
-    }
+    const total = LUGGAGE_SIZES.reduce((sum, s) => sum + next[s], 0)
+    if (total >= 1) dispatchLuggage(next)
+    else dispatch({ type: 'REMOVE_LUGGAGE' })
   }
 
-  function handleToggleLuggage() {
-    if (isLuggageAdded) {
-      dispatch({ type: 'REMOVE_LUGGAGE' })
-      return
-    }
-    if (luggageTotalPieces >= 1) dispatchLuggage(luggageCounts)
+  // Özet'teki × — valizi komple kaldır: chip sayaçlarını da sıfırla, cart'tan çıkar.
+  function handleRemoveLuggage() {
+    setLuggageCounts({ small: 0, medium: 0, large: 0 })
+    dispatch({ type: 'REMOVE_LUGGAGE' })
   }
 
   const selectedCar = cars.find(c => c.id === selectedCarId) ?? null
@@ -294,7 +296,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                             aria-label="Luggage size guide"
                             onPointerEnter={e => { if (e.pointerType === 'mouse') setSizeTipOpen(true) }}
                             onPointerLeave={e => { if (e.pointerType === 'mouse') setSizeTipOpen(false) }}
-                            className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                            className="shrink-0 text-slate-500 hover:text-primary transition-colors"
                           >
                             <Info className="h-5 w-5" />
                           </button>
@@ -355,24 +357,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         })}
                       </div>
 
-                      {/* Canlı fiyat (toplam, /gün ALMAZ) + ekle — sabit; boş alan chip grubuna gider */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        {luggageTotalPieces >= 1 && (
-                          <span className="text-lg font-bold text-primary">€{luggageTotalPrice}</span>
-                        )}
-                        <Button
-                          onClick={handleToggleLuggage}
-                          disabled={luggageTotalPieces < 1}
-                          variant={isLuggageAdded ? 'default' : 'outline'}
-                          className={isLuggageAdded ? 'bg-primary text-primary-foreground' : ''}
-                        >
-                          {isLuggageAdded ? (
-                            <><CheckCircle className="h-4 w-4 mr-1" />{t('added')}</>
-                          ) : (
-                            <><Luggage className="h-4 w-4 mr-1" />{t('add')}</>
-                          )}
-                        </Button>
-                      </div>
+                      {/* Canlı fiyat (toplam, /gün ALMAZ) — chip'lere göre güncellenir; ayrı Ekle butonu yok */}
+                      {luggageTotalPieces >= 1 && (
+                        <span className="shrink-0 text-lg font-bold text-primary">€{luggageTotalPrice}</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -568,6 +556,27 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                             {t('dayCount', { count: days })} · {DEFAULT_PICKUP_LOCATION}
                           </p>
                           <p className="text-primary text-sm font-semibold mt-1">€{selectedCar.price * days}</p>
+                        </div>
+                      )}
+
+                      {/* Valiz emaneti — cart'taki item'dan; × ile komple kaldır */}
+                      {luggageItem && (
+                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground mb-1">{t('luggage.summaryLabel')}</p>
+                              <p className="font-medium text-foreground text-sm">{luggageBreakdown}</p>
+                              <p className="text-primary text-sm font-semibold mt-1">€{luggageItem.priceAmount}</p>
+                            </div>
+                            <button
+                              type="button"
+                              aria-label={t('luggage.removeAria')}
+                              onClick={handleRemoveLuggage}
+                              className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                       )}
 

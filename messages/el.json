@@ -1056,7 +1056,8 @@
       },
       "pieceCountLabel": "Πόσα τεμάχια;",
       "pieceCount": "{count, plural, one {# τεμάχιο} other {# τεμάχια}}",
-      "summaryLabel": "Φύλαξη αποσκευών"
+      "summaryLabel": "Φύλαξη αποσκευών",
+      "removeAria": "Αφαίρεση αποσκευών"
     }
   },
 

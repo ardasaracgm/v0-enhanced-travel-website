@@ -1056,7 +1056,8 @@
       },
       "pieceCountLabel": "How many pieces?",
       "pieceCount": "{count, plural, one {# piece} other {# pieces}}",
-      "summaryLabel": "Luggage storage"
+      "summaryLabel": "Luggage storage",
+      "removeAria": "Remove luggage"
     }
   },
 

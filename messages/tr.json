@@ -1056,7 +1056,8 @@
       },
       "pieceCountLabel": "Kaç parça?",
       "pieceCount": "{count, plural, one {# parça} other {# parça}}",
-      "summaryLabel": "Valiz emaneti"
+      "summaryLabel": "Valiz emaneti",
+      "removeAria": "Valizi kaldır"
     }
   },
 
