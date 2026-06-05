@@ -38,6 +38,7 @@ import {
 } from '@/lib/booking-context'
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
+import { isServiceAvailable } from '@/lib/service-availability'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -102,6 +103,19 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Hizmet görünürlük gate'i — varış adasına göre (searchParams.to, lowercase).
+  const dest = state.searchParams.to
+  const carAvailable = isServiceAvailable('car_rental', dest)
+  const luggageAvailable = isServiceAvailable('luggage', dest)
+
+  // Rota artık bu hizmeti sunmuyorsa sepetten temizle (gizli ama sepette kalmış
+  // item checkout'a gitmesin). dispatch stable + flag'ler to'dan türer (extras
+  // içinde sabit) → tek temizlik, döngü yok. Çoklu ada (ferry API) ile asıl önem.
+  React.useEffect(() => {
+    if (!carAvailable) dispatch({ type: 'SET_CAR_RENTAL', payload: null })
+    if (!luggageAvailable) dispatch({ type: 'REMOVE_LUGGAGE' })
+  }, [carAvailable, luggageAvailable, dispatch])
 
   if (!outboundItem || !outbound) return null
 
@@ -268,7 +282,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           </div>
         </section>
 
-        {/* Luggage drop-off — araç bloğunun üstünde; sağ sütun sigortaya rezerve */}
+        {/* Luggage drop-off — yalnız emanet sunulan adalarda (gate). */}
+        {luggageAvailable && (
         <section className="w-full pt-8 md:pt-12">
           <div className="container px-4 md:px-6">
             <div className="grid lg:grid-cols-3 gap-8">
@@ -371,13 +386,15 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
             </div>
           </div>
         </section>
+        )}
 
         {/* Car Grid */}
         <section className="w-full py-8 md:py-12">
           <div className="container px-4 md:px-6">
             <div className="grid lg:grid-cols-3 gap-8">
 
-              {/* Left: heading + day selector + car cards */}
+              {/* Araç — yalnız araç sunulan adalarda (gate). Sidebar (sağ) hep kalır. */}
+              {carAvailable && (
               <div className="lg:col-span-2 space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
@@ -525,6 +542,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   })}
                 </div>
               </div>
+              )}
 
               {/* Sidebar */}
               <div className="lg:col-span-1">
