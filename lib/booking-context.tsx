@@ -147,6 +147,7 @@ type BookingAction =
   | { type: 'SELECT_FERRY'; payload: FerryRoute }
   | { type: 'SELECT_RETURN_FERRY'; payload: FerryRoute }
   | { type: 'CLEAR_RETURN_FERRY' }
+  | { type: 'CLEAR_FERRY_SELECTION' }
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
@@ -212,6 +213,13 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return {
         ...state,
         items: state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
+      }
+    // Tüm ferry item'larını (outbound + return) temizle. Rota veya yolcu sayısı
+    // değişince seçim geçersizleşir; results sayfası bunu çağırır (stale-guard).
+    case 'CLEAR_FERRY_SELECTION':
+      return {
+        ...state,
+        items: state.items.filter(i => i.type !== 'ferry'),
       }
     case 'SET_PASSENGERS':
       return { ...state, passengers: action.payload }
