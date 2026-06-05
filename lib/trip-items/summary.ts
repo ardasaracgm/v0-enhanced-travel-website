@@ -1,0 +1,93 @@
+/**
+ * Trip Item summary — client-safe display facet of the registry
+ * ============================================================
+ * Maps a client BookingItem to a normalized summary row for the checkout
+ * page. This is the CLIENT-SAFE companion to the registry: the main registry
+ * (resolve/clientSchema) transitively imports `server-only` (luggage-pricing),
+ * so it cannot be pulled into a client component. Display config lives here,
+ * keyed by the same BookableItemType (single source of the type list).
+ *
+ * Strings are intentionally the page's existing hardcoded English — checkout
+ * is not internationalized today, and changing ferry/car wording would be a
+ * regression. Full checkout i18n is a separate task. The luggage row uses the
+ * same English style ("Luggage storage", matching extrasPage.luggage key).
+ */
+
+import { assertNever } from './types'
+import type {
+  BookingItem,
+  FerryBookingItem,
+  CarRentalBookingItem,
+  LuggageBookingItem,
+} from '@/lib/booking-context'
+
+export interface ItemSummaryRow {
+  /** Label in the detailed "Your Trip" card (e.g. "Outbound", "Car Rental"). */
+  label: string
+  /** Main line (e.g. "Bodrum → Kos", "Fiat Panda · 4 days"). */
+  title: string
+  /** Optional sub line (e.g. "2026-07-10 · 09:00 - 10:00", "Pickup: Kos Port"). */
+  detail?: string
+  /** Compact label in the "Order Summary" breakdown (e.g. "Outbound (2×)"). */
+  breakdownLabel: string
+  /** EUR amount (= item.priceAmount, same value selectTotalPrice sums). */
+  amount: number
+}
+
+function ferryRow(item: FerryBookingItem): ItemSummaryRow {
+  const label = item.leg === 'outbound' ? 'Outbound' : 'Return'
+  return {
+    label,
+    title: `${item.ferry.from} → ${item.ferry.to}`,
+    detail: `${item.date} · ${item.ferry.departureTime} - ${item.ferry.arrivalTime}`,
+    breakdownLabel: `${label} (${item.passengerCount}×)`,
+    amount: item.priceAmount,
+  }
+}
+
+function carRow(item: CarRentalBookingItem): ItemSummaryRow {
+  const name = item.brand ? `${item.brand} ${item.model}` : item.model
+  return {
+    label: 'Car Rental',
+    title: `${name} · ${item.days} ${item.days === 1 ? 'day' : 'days'}`,
+    detail: `Pickup: ${item.pickupLocation}`,
+    breakdownLabel: `Car (${item.days}d)`,
+    amount: item.priceAmount,
+  }
+}
+
+function luggageRow(item: LuggageBookingItem): ItemSummaryRow {
+  const pieces = item.counts.small + item.counts.medium + item.counts.large
+  return {
+    label: 'Luggage storage',
+    title: `${pieces} ${pieces === 1 ? 'piece' : 'pieces'}`,
+    detail: `${item.dropOffDate} → ${item.pickupDate}`,
+    breakdownLabel: 'Luggage storage',
+    amount: item.priceAmount,
+  }
+}
+
+// Registry of per-type summary formatters — exhaustive over BookableItemType.
+const ITEM_SUMMARY = {
+  ferry: ferryRow,
+  car_rental: carRow,
+  luggage: luggageRow,
+}
+
+/**
+ * Dispatch a BookingItem to its summary row. The switch narrows the union so
+ * each formatter gets its exact type; assertNever closes it — a new item type
+ * without a row fails at compile time.
+ */
+export function summarizeItem(item: BookingItem): ItemSummaryRow {
+  switch (item.type) {
+    case 'ferry':
+      return ITEM_SUMMARY.ferry(item)
+    case 'car_rental':
+      return ITEM_SUMMARY.car_rental(item)
+    case 'luggage':
+      return ITEM_SUMMARY.luggage(item)
+    default:
+      return assertNever(item, 'summary booking item')
+  }
+}

@@ -28,11 +28,11 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import {
   useBooking,
   selectOutboundFerry,
-  selectReturnFerry,
-  selectCarRental,
   selectTotalPrice,
 } from '@/lib/booking-context'
 import { submitBooking } from '@/lib/actions/submit-booking'
+import { assertNever } from '@/lib/trip-items/types'
+import { summarizeItem } from '@/lib/trip-items/summary'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 export default function CheckoutPage() {
@@ -40,8 +40,6 @@ export default function CheckoutPage() {
   const locale = useLocale() as Locale
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
-  const returnF = selectReturnFerry(state)
-  const car = selectCarRental(state)
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
 
@@ -66,9 +64,14 @@ export default function CheckoutPage() {
             return { type: 'car_rental' as const, carId: item.carId, days: item.days,
                      pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
           }
-          // luggage — client priceAmount was display-only; server recomputes.
-          return { type: 'luggage' as const, counts: item.counts, dropOffDate: item.dropOffDate,
-                   pickupDate: item.pickupDate, location: item.location }
+          if (item.type === 'luggage') {
+            // client priceAmount was display-only; server recomputes.
+            return { type: 'luggage' as const, counts: item.counts, dropOffDate: item.dropOffDate,
+                     pickupDate: item.pickupDate, location: item.location }
+          }
+          // Exhaustiveness: a new BookingItem type without a branch here fails
+          // at compile time (item: never). No more silent "unknown = luggage".
+          return assertNever(item, 'checkout booking item')
         }),
         passengerCount: state.searchParams.passengers,
         passengers: state.passengers.map((p, idx) => ({
@@ -202,61 +205,28 @@ export default function CheckoutPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Outbound</p>
-                        <p className="font-semibold text-foreground">
-                          {outbound.from} → {outbound.to}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {state.searchParams.date} · {outbound.departureTime} -{' '}
-                          {outbound.arrivalTime}
-                        </p>
-                      </div>
-                      <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                        €{outbound.price * state.searchParams.passengers}
-                      </p>
-                    </div>
-
-                    {returnF && (
-                      <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Return</p>
-                          <p className="font-semibold text-foreground">
-                            {returnF.from} → {returnF.to}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {state.searchParams.returnDate} ·{' '}
-                            {returnF.departureTime} -{' '}
-                            {returnF.arrivalTime}
+                    {/* Generic per-item rows (registry summary facet). Luggage
+                        now appears here too — was previously only in the total. */}
+                    {state.items.map((item, i) => {
+                      const row = summarizeItem(item)
+                      return (
+                        <div
+                          key={i}
+                          className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl"
+                        >
+                          <div>
+                            <p className="text-sm text-muted-foreground">{row.label}</p>
+                            <p className="font-semibold text-foreground">{row.title}</p>
+                            {row.detail && (
+                              <p className="text-sm text-muted-foreground">{row.detail}</p>
+                            )}
+                          </div>
+                          <p className="text-lg font-bold text-primary mt-2 md:mt-0">
+                            €{row.amount}
                           </p>
                         </div>
-                        <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                          €{returnF.price * state.searchParams.passengers}
-                        </p>
-                      </div>
-                    )}
-
-                    {car && (
-                      <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Car Rental</p>
-                          <p className="font-semibold text-foreground">
-                            {car.brand
-                              ? `${car.brand} ${car.model}`
-                              : car.model}{' '}
-                            · {car.days}{' '}
-                            {car.days === 1 ? 'day' : 'days'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Pickup: {car.pickupLocation}
-                          </p>
-                        </div>
-                        <p className="text-lg font-bold text-primary mt-2 md:mt-0">
-                          €{car.pricePerDay * car.days}
-                        </p>
-                      </div>
-                    )}
+                      )
+                    })}
                   </CardContent>
                 </Card>
 
@@ -365,34 +335,16 @@ export default function CheckoutPage() {
 
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                              Outbound ({state.searchParams.passengers}×)
-                            </span>
-                            <span className="text-foreground">
-                              €{outbound.price * state.searchParams.passengers}
-                            </span>
-                          </div>
-                          {returnF && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                Return ({state.searchParams.passengers}×)
-                              </span>
-                              <span className="text-foreground">
-                                €{returnF.price * state.searchParams.passengers}
-                              </span>
-                            </div>
-                          )}
-                          {car && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                Car ({car.days}d)
-                              </span>
-                              <span className="text-foreground">
-                                €{car.pricePerDay * car.days}
-                              </span>
-                            </div>
-                          )}
+                          {/* Generic breakdown — one line per item incl. luggage. */}
+                          {state.items.map((item, i) => {
+                            const row = summarizeItem(item)
+                            return (
+                              <div key={i} className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">{row.breakdownLabel}</span>
+                                <span className="text-foreground">€{row.amount}</span>
+                              </div>
+                            )
+                          })}
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Booking Fee</span>
                             <span className="text-green-600">Free</span>

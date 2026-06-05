@@ -1,0 +1,89 @@
+{
+  "ferry/outbound-2pax": {
+    "type": "ferry",
+    "title": "Bodrum → Kos (Bodrum Express Lines)",
+    "scheduledAt": "2026-07-10T09:00:00+03:00",
+    "endsAt": "2026-07-10T10:00:00+03:00",
+    "passengerCount": 2,
+    "priceAmount": 70,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "from_port": "Bodrum",
+      "to_port": "Kos",
+      "operator": "Bodrum Express Lines",
+      "vessel": "Bodrum Express I",
+      "departure_time": "09:00",
+      "arrival_time": "10:00",
+      "ferry_id": "bk-1",
+      "per_passenger_price": 35
+    }
+  },
+  "car/one-way-4days": {
+    "type": "car_rental",
+    "title": "Fiat Panda (4 days)",
+    "scheduledAt": "2026-07-10",
+    "endsAt": "2026-07-14",
+    "passengerCount": 2,
+    "priceAmount": 120,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "car_id": "car-test-1",
+      "model": "Fiat Panda",
+      "days": 4,
+      "per_day_price": 30,
+      "pickup_at": "2026-07-10",
+      "dropoff_at": "2026-07-14"
+    }
+  },
+  "car/round-trip-7days": {
+    "type": "car_rental",
+    "title": "Fiat Panda (7 days)",
+    "scheduledAt": "2026-07-10",
+    "endsAt": "2026-07-17",
+    "passengerCount": 2,
+    "priceAmount": 210,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "car_id": "car-test-1",
+      "model": "Fiat Panda",
+      "days": 7,
+      "per_day_price": 30,
+      "pickup_at": "2026-07-10",
+      "dropoff_at": "2026-07-17"
+    }
+  },
+  "luggage/3-pieces-3-days": {
+    "type": "luggage",
+    "title": "Luggage drop-off — 3 pieces",
+    "scheduledAt": "2026-07-10T00:00:00+03:00",
+    "endsAt": "2026-07-12T00:00:00+03:00",
+    "passengerCount": 1,
+    "priceAmount": 51,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "count_small": 2,
+      "count_medium": 1,
+      "count_large": 0,
+      "drop_off_date": "2026-07-10",
+      "pickup_date": "2026-07-12",
+      "location": "kos_port"
+    }
+  },
+  "luggage/1-piece-same-day": {
+    "type": "luggage",
+    "title": "Luggage drop-off — 1 piece",
+    "scheduledAt": "2026-07-10T00:00:00+03:00",
+    "endsAt": "2026-07-10T00:00:00+03:00",
+    "passengerCount": 1,
+    "priceAmount": 5,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "count_small": 1,
+      "count_medium": 0,
+      "count_large": 0,
+      "drop_off_date": "2026-07-10",
+      "pickup_date": "2026-07-10",
+      "location": "kos_port"
+    }
+  }
+}

@@ -18,10 +18,14 @@ import { createPaymentOrder } from './create-payment-order'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
+import { type LuggageCounts } from '@/lib/luggage-pricing'
 import {
-  calculateLuggageTotalCents,
-  type LuggageCounts,
-} from '@/lib/luggage-pricing'
+  resolveFerryItem,
+  resolveCarRentalItem,
+  resolveLuggageItem,
+} from '@/lib/trip-items/resolvers'
+import { submitItemSchema } from '@/lib/trip-items/registry'
+import { assertNever } from '@/lib/trip-items/types'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 import { makePassengerSchema, derivePassengerType } from '@/lib/validation/booking'
 import { z } from 'zod'
@@ -92,45 +96,16 @@ export type SubmitBookingResult =
 // ============================================================
 // Validation schemas (Zod)
 // ============================================================
-
-const FerryItemSchema = z.object({
-  type:    z.literal('ferry'),
-  leg:     z.enum(['outbound', 'return']),
-  ferryId: z.string().min(1),
-  date:    z.string().refine(isDateInFuture, { message: 'Ferry date must be in the future' }),
-})
-
-const CarItemSchema = z.object({
-  type:      z.literal('car_rental'),
-  carId:     z.string().min(1),
-  days:      z.number().int().positive().max(90),
-  pickupAt:  z.string().optional(),
-  dropoffAt: z.string().optional(),
-})
-
-// Luggage drop-off. Client sends only the selection (per-size counts/dates/
-// location); the price is computed server-side in the resolve loop below —
-// never trusted from the client. Dates are shape-checked here; calendar/order
-// validity is enforced by calculateLuggageTotalCents.
-const luggageCountField = z.number().int().min(0).max(5)
-const LuggageItemSchema = z.object({
-  type:        z.literal('luggage'),
-  counts: z
-    .object({ small: luggageCountField, medium: luggageCountField, large: luggageCountField })
-    .refine((c) => c.small + c.medium + c.large >= 1, {
-      message: 'At least one luggage piece required',
-    }),
-  dropOffDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dropOffDate must be YYYY-MM-DD'),
-  pickupDate:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'pickupDate must be YYYY-MM-DD'),
-  location:    z.string().min(1).max(64),
-})
+// Per-item variants live on the registry descriptors (single source);
+// submitItemSchema is the discriminatedUnion built from them. See
+// lib/trip-items/registry.ts.
 
 // Structural schema — everything EXCEPT detailed passenger validation, which
 // is run separately below because it needs the (now-trusted) travel dates.
 const SubmitBookingStructureSchema = z.object({
   idempotencyKey: z.string().min(8),
   locale:         z.enum(['en', 'tr', 'el']),
-  items:          z.array(z.discriminatedUnion('type', [FerryItemSchema, CarItemSchema, LuggageItemSchema])).min(1),
+  items:          z.array(submitItemSchema).min(1),
   passengerCount: z.number().int().min(1).max(9),
   contactEmail:   z.string().email(),
   contactPhone:   z.string().trim().min(7),
@@ -193,25 +168,8 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       if (!ferry) {
         return { ok: false, code: 'validation_failed', error: `Ferry not found: ${item.ferryId}` }
       }
-      items.push({
-        type: 'ferry',
-        title: `${ferry.from} → ${ferry.to} (${ferry.operator})`,
-        scheduledAt: combineDateAndTime(item.date, ferry.departureTime),
-        endsAt: combineDateAndTime(item.date, ferry.arrivalTime),
-        passengerCount: input.passengerCount,
-        priceAmount: ferry.price * input.passengerCount,
-        priceCurrency: 'EUR',
-        metadata: {
-          from_port: ferry.from,
-          to_port: ferry.to,
-          operator: ferry.operator,
-          vessel: ferry.vessel,
-          departure_time: ferry.departureTime,
-          arrival_time: ferry.arrivalTime,
-          ferry_id: ferry.id,
-          per_passenger_price: ferry.price,
-        },
-      })
+      // I/O (getFerryById) stays here; pure assembly lives in the registry resolver.
+      items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount }))
     } else if (item.type === 'car_rental') {
       try {
         // Recompute days server-side from ferry dates when both legs are present
@@ -233,42 +191,28 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           .eq('id', item.carId)
           .maybeSingle()
         if (data) {
-          const carName = [data.brand, data.model].filter(Boolean).join(' ') || 'Car rental'
-          const pricePerDay = Number(data.price_per_day ?? 0)
-          items.push({
-            type: 'car_rental',
-            title: `${carName} (${authorizedDays} ${authorizedDays === 1 ? 'day' : 'days'})`,
-            scheduledAt: item.pickupAt ?? null,
-            endsAt: item.dropoffAt ?? null,
-            passengerCount: input.passengerCount,
-            priceAmount: pricePerDay * authorizedDays,
-            priceCurrency: 'EUR',
-            metadata: {
-              car_id: data.id,
-              model: carName,
-              days: authorizedDays,
-              per_day_price: pricePerDay,
-              pickup_at: item.pickupAt,
-              dropoff_at: item.dropoffAt,
-            },
-          })
+          // I/O (cars fetch + authorizedDays) stays here; pure assembly in resolver.
+          items.push(
+            resolveCarRentalItem({
+              item,
+              car: data,
+              authorizedDays,
+              passengerCount: input.passengerCount,
+            }),
+          )
         }
       } catch (err) {
         console.error('[submitBooking] car lookup failed:', err)
         // Soft failure — proceed without the car item
       }
     } else if (item.type === 'luggage') {
-      // Server-side price is authoritative. calculateLuggageTotalCents throws
-      // (RangeError) on bad input — pickup<dropOff, bad date, count out of 0..5,
-      // Σcounts<1 — which we surface as a typed 'invalid_luggage' error. The
-      // client's display priceAmount is intentionally ignored.
-      let totalCents: number
+      // Server-side price is authoritative. resolveLuggageItem (via
+      // calculateLuggageTotalCents) throws RangeError on bad input —
+      // pickup<dropOff, bad date, count out of 0..5, Σcounts<1 — which we
+      // surface as a typed 'invalid_luggage' error. The client's display
+      // priceAmount is intentionally ignored.
       try {
-        totalCents = calculateLuggageTotalCents(
-          item.counts,
-          item.dropOffDate,
-          item.pickupDate,
-        )
+        items.push(resolveLuggageItem({ item }))
       } catch (err) {
         return {
           ok: false,
@@ -276,29 +220,10 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           error: err instanceof Error ? err.message : 'Invalid luggage selection',
         }
       }
-
-      const totalPieces = item.counts.small + item.counts.medium + item.counts.large
-      items.push({
-        type: 'luggage',
-        title: `Luggage drop-off — ${totalPieces} ${totalPieces === 1 ? 'piece' : 'pieces'}`,
-        scheduledAt: `${item.dropOffDate}T00:00:00+03:00`,
-        endsAt: `${item.pickupDate}T00:00:00+03:00`,
-        passengerCount: 1,
-        // cents → EUR decimals (rest of the trip works in EUR; rates are whole
-        // euros so this division is always exact).
-        priceAmount: totalCents / 100,
-        priceCurrency: 'EUR',
-        metadata: {
-          // —— camelCase (client) → snake_case (DB LuggageItemMetadata) ——
-          // This is the single boundary where the mapping happens.
-          count_small:  item.counts.small,
-          count_medium: item.counts.medium,
-          count_large:  item.counts.large,
-          drop_off_date: item.dropOffDate,
-          pickup_date: item.pickupDate,
-          location: item.location,
-        },
-      })
+    } else {
+      // Exhaustiveness: a new item type without a branch fails here at compile
+      // time (item: never) and at runtime. Replaces the old silent skip.
+      return assertNever(item, 'submit booking item')
     }
   }
 
@@ -379,22 +304,10 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
 // Helpers
 // ============================================================
 
-function isDateInFuture(date: string): boolean {
-  // date >= today in Greece timezone prevents bookings for past departures
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
-  return date >= today
-}
-
 function formatZodError(err: z.ZodError): string {
   const flat = err.flatten()
   const fieldLines = Object.entries(flat.fieldErrors)
     .map(([field, msgs]) => `${field}: ${(msgs ?? []).join(', ')}`)
   return [...fieldLines, ...flat.formErrors].join(' | ') || err.message
-}
-
-function combineDateAndTime(date: string, time: string): string {
-  // date: "2026-06-15", time: "09:00" → "2026-06-15T09:00:00+03:00"
-  // Use Greece timezone (EET, +03 in summer)
-  return `${date}T${time}:00+03:00`
 }
 
