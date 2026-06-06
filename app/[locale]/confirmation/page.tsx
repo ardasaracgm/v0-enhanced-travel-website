@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
+import { useLocale } from 'next-intl'
 import {
   Ship,
   CheckCircle,
@@ -644,6 +645,7 @@ export default function ConfirmationPage() {
 // gönderir, link /hub'a döner (middleware locale prefix'ini ekler). Misafir akışı
 // bundan etkilenmez — buton tıklanmazsa hiçbir auth çağrısı olmaz.
 function HubAccessCard({ presetEmail }: { presetEmail?: string }) {
+  const locale = useLocale()
   const [email, setEmail] = React.useState(presetEmail ?? '')
   const [status, setStatus] =
     React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -654,7 +656,9 @@ function HubAccessCard({ presetEmail }: { presetEmail?: string }) {
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/hub` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/${locale}/hub`,
+      },
     })
     setStatus(error ? 'error' : 'sent')
   }

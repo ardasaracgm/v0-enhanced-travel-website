@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/routing'
 import {
   Ship, Car, MapPinned, Hotel, FileCheck, Package,
-  ShieldCheck, Smartphone, Luggage, BusFront, Lock,
+  ShieldCheck, Smartphone, Luggage, BusFront, Lock, AlertCircle,
 } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
@@ -32,7 +32,13 @@ const TABS: HubTab[] = [
   { key: 'luggage',       label: 'Luggage',        icon: Luggage,     locked: true },
 ] as const
 
-export default async function HubPage() {
+export default async function HubPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error } = await searchParams
+
   // SSR auth-aware client — RLS geçerli. Misafirde user=null.
   const supabase = await createSupabaseServerClient()
   const {
@@ -43,6 +49,17 @@ export default async function HubPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
+        {error === 'auth_failed' && (
+          <div className="w-full bg-destructive/10 border-b border-destructive/30">
+            <div className="container px-4 md:px-6 py-3 flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>
+                Your sign-in link expired or was already used. Request a new one
+                from your booking confirmation.
+              </span>
+            </div>
+          </div>
+        )}
         <section className="w-full py-10 bg-gradient-to-b from-primary/5 to-background">
           <div className="container px-4 md:px-6">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
