@@ -181,7 +181,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
         const returnFerryItem   = ferryItems.find(i => i.leg === 'return')
         const authorizedDays =
           outboundFerryItem && returnFerryItem
-            ? Math.max(1, dateDiffInDays(outboundFerryItem.date, returnFerryItem.date))
+            ? Math.max(1, dateDiffInDays(outboundFerryItem.date, returnFerryItem.date) + 1)
             : Math.max(1, item.days)
 
         const supabase = getSupabaseAdmin()

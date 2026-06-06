@@ -121,7 +121,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
   const days = isRoundTrip
-    ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date))
+    ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
     : Math.max(1, oneWayDays)
 
   // Luggage türetilmiş: canlı toplam fiyat (1 gün; display-only). Başlıkta koşulsuz gösterilir.
