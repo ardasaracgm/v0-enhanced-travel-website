@@ -20,6 +20,7 @@ import {
   selectReturnFerry,
   selectTotalPrice,
   type FerryRoute,
+  type FerryBookingItem,
 } from '@/lib/booking-context'
 
 const cityNames: Record<string, string> = {
@@ -40,6 +41,34 @@ export default function FerryResultsPage() {
   const [isSelectingReturn, setIsSelectingReturn] = React.useState(false)
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
+
+  // Özet/fiyat tek kaynağı: seçili ferry BOOKING ITEM'ları (priceAmount +
+  // passengerCount saklı). Özet satırı bunlardan beslenir → Total ile her zaman
+  // tutarlı (selectTotalPrice de priceAmount'ı toplar).
+  const outboundItem = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
+  ) ?? null
+  const returnItem = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
+  ) ?? null
+
+  // Stale seçim koruması: seçili ferry artık güncel rota/yolcu-sayısıyla
+  // eşleşmiyorsa geçersiz → temizle. "0 sefer" rota değişiminde özetin hayalet
+  // (eski Kos) veri göstermesini ve fiyat sapmasını kökten engeller. Tek kez
+  // temizler: dispatch sonrası item gider → effect tekrar çalışır → out yok → çıkar.
+  React.useEffect(() => {
+    const out = state.items.find(
+      (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
+    )
+    if (!out) return
+    const routeOk = out.ferry.from.toLowerCase() === state.searchParams.from
+                 && out.ferry.to.toLowerCase() === state.searchParams.to
+    const paxOk = out.passengerCount === state.searchParams.passengers
+    if (!routeOk || !paxOk) {
+      dispatch({ type: 'CLEAR_FERRY_SELECTION' })
+      setIsSelectingReturn(false)
+    }
+  }, [state.items, state.searchParams, dispatch])
 
   React.useEffect(() => {
     const outboundFerries = getFerriesForRoute(state.searchParams.from, state.searchParams.to)
@@ -373,7 +402,7 @@ export default function FerryResultsPage() {
                             <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{outbound.operator}</p>
-                            <p className="text-primary font-medium mt-2">{outbound.price} x {state.searchParams.passengers} = {outbound.price * state.searchParams.passengers}</p>
+                            <p className="text-primary font-medium mt-2">€{outboundItem!.ferry.price} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
                           </div>
 
                           {returnF && (
@@ -385,7 +414,7 @@ export default function FerryResultsPage() {
                               <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                               <p className="text-sm text-muted-foreground">{returnF.operator}</p>
-                              <p className="text-primary font-medium mt-2">{returnF.price} x {state.searchParams.passengers} = {returnF.price * state.searchParams.passengers}</p>
+                              <p className="text-primary font-medium mt-2">€{returnItem!.ferry.price} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
                             </div>
                           )}
 
