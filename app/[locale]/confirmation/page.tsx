@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Copy,
   Check,
+  Sparkles,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
@@ -25,6 +26,7 @@ import { Separator } from '@/components/ui/separator'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import {
   useBooking,
   clearBookingStorage,
@@ -322,6 +324,9 @@ export default function ConfirmationPage() {
                 </CardContent>
               </Card>
 
+              {/* Hub erişim CTA — email saklanmadığı için input ile */}
+              <HubAccessCard />
+
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
                   <Home className="h-4 w-4 mr-2" />
@@ -611,6 +616,9 @@ export default function ConfirmationPage() {
               </CardContent>
             </Card>
 
+            {/* Hub erişim CTA — email zaten elimizde */}
+            <HubAccessCard presetEmail={snapshot.contactEmail} />
+
             {/* New booking CTA */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
@@ -628,5 +636,72 @@ export default function ConfirmationPage() {
       <Footer />
       <FloatingWhatsApp />
     </div>
+  )
+}
+
+// ── Hub access (lazy-reg, OTP) ─────────────────────────────────────────────────
+// Üyelik CHECKOUT'ta zorlanmaz; booking sonrası opt-in. signInWithOtp magic-link
+// gönderir, link /hub'a döner (middleware locale prefix'ini ekler). Misafir akışı
+// bundan etkilenmez — buton tıklanmazsa hiçbir auth çağrısı olmaz.
+function HubAccessCard({ presetEmail }: { presetEmail?: string }) {
+  const [email, setEmail] = React.useState(presetEmail ?? '')
+  const [status, setStatus] =
+    React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  const handleSend = async () => {
+    if (!email || status === 'sending') return
+    setStatus('sending')
+    const supabase = createSupabaseBrowserClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/hub` },
+    })
+    setStatus(error ? 'error' : 'sent')
+  }
+
+  return (
+    <Card className="border-primary/30 mb-6">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-foreground mb-1">
+              Track everything in your Hub
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Get a one-tap link to manage this booking, visa and more — no password.
+            </p>
+
+            {status === 'sent' ? (
+              <p className="text-sm font-medium text-green-700">
+                Link sent to {email}. Check your inbox.
+              </p>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-2">
+                {!presetEmail && (
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                )}
+                <Button type="button" onClick={handleSend} disabled={status === 'sending'}>
+                  {status === 'sending' ? 'Sending…' : 'Access Hub'}
+                </Button>
+              </div>
+            )}
+            {status === 'error' && (
+              <p className="text-sm text-destructive mt-2">
+                Couldn&apos;t send the link. Please try again.
+              </p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -1,24 +1,61 @@
 import createMiddleware from 'next-intl/middleware'
+import { createServerClient } from '@supabase/ssr'
+import type { NextRequest } from 'next/server'
 import { routing } from './i18n/routing'
 
 /**
- * Locale detection & redirect middleware.
+ * Locale detection & redirect middleware  +  Supabase oturum yenileme.
  *
- * Behavior:
- *  1. If URL already has a valid locale prefix (/en/..., /tr/..., /el/...), pass through.
- *  2. If user has a `NEXT_LOCALE` cookie, use that.
- *  3. Otherwise inspect `Accept-Language` header:
- *       - Turkish browser → /tr
- *       - Greek browser   → /el
- *       - Anything else   → /en  (defaultLocale)
- *  4. Set the cookie so next visit skips detection.
+ * SIRA (kritik):
+ *  1) next-intl ÖNCE çalışır ve KENDİ response'unu üretir. Locale
+ *     redirect'i (307) ve NEXT_LOCALE cookie'si bu objeye yazılır.
+ *  2) Supabase, oturumu yeniler ve YENİLENEN auth cookie'lerini AYNI
+ *     response objesine ekler — asla yeni bir NextResponse YARATMAZ.
+ *     Böylece intl'in NEXT_LOCALE cookie'si ve redirect'i EZİLMEZ;
+ *     iki cookie kümesi birleşir.
  *
- * `localeDetection: true` is the default; spelled out here for clarity.
+ * Neden bu sıra: tersine (önce supabase response yaratıp sonra intl
+ * çalıştırırsak) intl yeni bir response döndürür ve supabase'in auth
+ * cookie'leri kaybolur → oturum sürekli düşer. intl response'u "sahip"
+ * olduğu için ona EKLEME yapıyoruz.
+ *
+ * getUser() (getSession DEĞİL): access token'ı auth sunucusunda
+ * doğrular; süresi geçmişse refresh token ile tazeler ve setAll
+ * tetiklenir. Misafirde user=null döner → redirect/gate YOK, response
+ * intl'in ürettiği gibi geçer.
  */
-export default createMiddleware({
+const handleIntl = createMiddleware({
   ...routing,
   localeDetection: true,
 })
+
+export default async function middleware(request: NextRequest) {
+  // 1) next-intl response'u üretir (locale cookie + olası redirect).
+  const response = handleIntl(request)
+
+  // 2) Supabase auth cookie'lerini AYNI response'a yazar.
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          )
+        },
+      },
+    },
+  )
+
+  // Oturumu yenile. Misafirde sessizce null → akış değişmez.
+  await supabase.auth.getUser()
+
+  return response
+}
 
 export const config = {
   /**
