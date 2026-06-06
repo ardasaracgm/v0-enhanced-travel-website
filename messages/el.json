@@ -1061,6 +1061,36 @@
     }
   },
 
+  "ferryResults": {
+    "passengers": "{count, plural, one {# επιβάτης} other {# επιβάτες}}",
+    "returnPrefix": "Επιστροφή:",
+    "totalPrice": "Συνολική Τιμή",
+    "steps": { "selectFerry": "Επιλογή πλοίου", "extras": "Έξτρα", "passengers": "Επιβάτες", "payment": "Πληρωμή" },
+    "outboundHeading": "Μετάβαση: {from} → {to}",
+    "ferriesFound": "{count, plural, one {# δρομολόγιο βρέθηκε} other {# δρομολόγια βρέθηκαν}}",
+    "noFerries": {
+      "title": "Δεν βρέθηκαν δρομολόγια",
+      "body": "Δεν υπάρχουν διαθέσιμα δρομολόγια για αυτή τη διαδρομή. Δοκιμάστε διαφορετική διαδρομή ή ημερομηνία.",
+      "cta": "Αλλαγή αναζήτησης"
+    },
+    "direct": "Απευθείας",
+    "perPerson": "ανά άτομο",
+    "seatsLeft": "{count, plural, one {# θέση διαθέσιμη} other {# θέσεις διαθέσιμες}}",
+    "selected": "Επιλέχθηκε",
+    "select": "Επιλογή",
+    "backToOutbound": "Πίσω στη μετάβαση",
+    "returnHeading": "Επιστροφή: {to} → {from}",
+    "bookingSummary": "Σύνοψη κράτησης",
+    "outbound": "Μετάβαση",
+    "return": "Επιστροφή",
+    "passengersLabel": "Επιβάτες",
+    "total": "Σύνολο",
+    "continueToPassengers": "Συνέχεια στους επιβάτες",
+    "selectReturnHint": "Επιλέξτε πλοίο επιστροφής για να συνεχίσετε",
+    "summaryEmpty": "Επιλέξτε ένα πλοίο για να δείτε τη σύνοψη κράτησης",
+    "freeCancellation": { "title": "Δωρεάν ακύρωση", "body": "Έως 48 ώρες πριν την αναχώρηση" }
+  },
+
   "privacy": {
     "title": "Πολιτική Απορρήτου",
     "lastUpdated": "Τελευταία ενημέρωση"

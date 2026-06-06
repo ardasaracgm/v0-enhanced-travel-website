@@ -1061,6 +1061,36 @@
     }
   },
 
+  "ferryResults": {
+    "passengers": "{count, plural, one {# passenger} other {# passengers}}",
+    "returnPrefix": "Return:",
+    "totalPrice": "Total Price",
+    "steps": { "selectFerry": "Select Ferry", "extras": "Extras", "passengers": "Passengers", "payment": "Payment" },
+    "outboundHeading": "Outbound: {from} to {to}",
+    "ferriesFound": "{count, plural, one {# ferry found} other {# ferries found}}",
+    "noFerries": {
+      "title": "No ferries found",
+      "body": "No ferries available for this route. Please try a different route or date.",
+      "cta": "Change Search"
+    },
+    "direct": "Direct",
+    "perPerson": "per person",
+    "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
+    "selected": "Selected",
+    "select": "Select",
+    "backToOutbound": "Back to outbound",
+    "returnHeading": "Return: {to} to {from}",
+    "bookingSummary": "Booking Summary",
+    "outbound": "Outbound",
+    "return": "Return",
+    "passengersLabel": "Passengers",
+    "total": "Total",
+    "continueToPassengers": "Continue to Passengers",
+    "selectReturnHint": "Please select a return ferry to continue",
+    "summaryEmpty": "Select a ferry to see your booking summary",
+    "freeCancellation": { "title": "Free Cancellation", "body": "Up to 48 hours before departure" }
+  },
+
   "privacy": {
     "title": "Privacy Policy",
     "lastUpdated": "Last updated"

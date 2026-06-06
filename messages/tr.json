@@ -1061,6 +1061,36 @@
     }
   },
 
+  "ferryResults": {
+    "passengers": "{count, plural, one {# yolcu} other {# yolcu}}",
+    "returnPrefix": "Dönüş:",
+    "totalPrice": "Toplam Fiyat",
+    "steps": { "selectFerry": "Feribot Seçimi", "extras": "Ekstralar", "passengers": "Yolcular", "payment": "Ödeme" },
+    "outboundHeading": "Gidiş: {from} → {to}",
+    "ferriesFound": "{count, plural, one {# sefer bulundu} other {# sefer bulundu}}",
+    "noFerries": {
+      "title": "Sefer bulunamadı",
+      "body": "Bu rota için sefer bulunmuyor. Lütfen farklı bir rota veya tarih deneyin.",
+      "cta": "Aramayı Değiştir"
+    },
+    "direct": "Direkt",
+    "perPerson": "kişi başı",
+    "seatsLeft": "{count, plural, one {# koltuk kaldı} other {# koltuk kaldı}}",
+    "selected": "Seçildi",
+    "select": "Seç",
+    "backToOutbound": "Gidişe dön",
+    "returnHeading": "Dönüş: {to} → {from}",
+    "bookingSummary": "Rezervasyon Özeti",
+    "outbound": "Gidiş",
+    "return": "Dönüş",
+    "passengersLabel": "Yolcular",
+    "total": "Toplam",
+    "continueToPassengers": "Yolcu Bilgilerine Geç",
+    "selectReturnHint": "Devam etmek için lütfen bir dönüş feribotu seçin",
+    "summaryEmpty": "Rezervasyon özetini görmek için bir feribot seçin",
+    "freeCancellation": { "title": "Ücretsiz İptal", "body": "Kalkıştan 48 saat öncesine kadar" }
+  },
+
   "privacy": {
     "title": "Gizlilik Politikası",
     "lastUpdated": "Son güncelleme"

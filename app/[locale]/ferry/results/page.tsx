@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { Ship, Clock, Users, ArrowRight, ChevronLeft, CheckCircle, Anchor, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -35,6 +36,7 @@ const cityNames: Record<string, string> = {
 
 export default function FerryResultsPage() {
   const router = useRouter()
+  const t = useTranslations('ferryResults')
   const { state, dispatch } = useBooking()
   const [ferries, setFerries] = React.useState<FerryRoute[]>([])
   const [returnFerries, setReturnFerries] = React.useState<FerryRoute[]>([])
@@ -130,14 +132,14 @@ export default function FerryResultsPage() {
                     )}
                   </div>
                   <p className="text-sm text-primary-foreground/80">
-                    {state.searchParams.date} · {state.searchParams.passengers} passenger{state.searchParams.passengers > 1 ? 's' : ''}
-                    {state.searchParams.tripType === 'round-trip' && ` · Return: ${state.searchParams.returnDate}`}
+                    {state.searchParams.date} · {t('passengers', { count: state.searchParams.passengers })}
+                    {state.searchParams.tripType === 'round-trip' && ` · ${t('returnPrefix')} ${state.searchParams.returnDate}`}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-sm text-primary-foreground/80">Total Price</p>
+                  <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
                   <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
                 </div>
               </div>
@@ -153,28 +155,28 @@ export default function FerryResultsPage() {
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                   1
                 </div>
-                <span className="text-sm font-medium text-primary">Select Ferry</span>
+                <span className="text-sm font-medium text-primary">{t('steps.selectFerry')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   2
                 </div>
-                <span className="text-sm text-muted-foreground">Extras</span>
+                <span className="text-sm text-muted-foreground">{t('steps.extras')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   3
                 </div>
-                <span className="text-sm text-muted-foreground">Passengers</span>
+                <span className="text-sm text-muted-foreground">{t('steps.passengers')}</span>
               </div>
               <div className="w-10 h-0.5 bg-border" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                   4
                 </div>
-                <span className="text-sm text-muted-foreground">Payment</span>
+                <span className="text-sm text-muted-foreground">{t('steps.payment')}</span>
               </div>
             </div>
           </div>
@@ -190,19 +192,19 @@ export default function FerryResultsPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-bold text-foreground">
-                        Outbound: {fromCity} to {toCity}
+                        {t('outboundHeading', { from: fromCity, to: toCity })}
                       </h2>
-                      <Badge variant="secondary">{ferries.length} ferries found</Badge>
+                      <Badge variant="secondary">{t('ferriesFound', { count: ferries.length })}</Badge>
                     </div>
                     
                     {ferries.length === 0 ? (
                       <Card className="bg-card border-border/50">
                         <CardContent className="p-8 text-center">
                           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-foreground mb-2">No ferries found</h3>
-                          <p className="text-muted-foreground mb-4">No ferries available for this route. Please try a different route or date.</p>
+                          <h3 className="text-lg font-semibold text-foreground mb-2">{t('noFerries.title')}</h3>
+                          <p className="text-muted-foreground mb-4">{t('noFerries.body')}</p>
                           <Link href="/ferry">
-                            <Button variant="outline">Change Search</Button>
+                            <Button variant="outline">{t('noFerries.cta')}</Button>
                           </Link>
                         </CardContent>
                       </Card>
@@ -246,7 +248,7 @@ export default function FerryResultsPage() {
                                         <span className="text-sm">{ferry.duration}</span>
                                         <div className="w-8 h-0.5 bg-border" />
                                       </div>
-                                      <p className="text-xs text-muted-foreground mt-1">Direct</p>
+                                      <p className="text-xs text-muted-foreground mt-1">{t('direct')}</p>
                                     </div>
                                     <div className="text-center">
                                       <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
@@ -256,11 +258,11 @@ export default function FerryResultsPage() {
                                   <div className="flex items-center gap-4">
                                     <div className="text-right">
                                       <p className="text-2xl font-bold text-primary">{ferry.price}</p>
-                                      <p className="text-sm text-muted-foreground">per person</p>
+                                      <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
                                     </div>
                                     <div className="flex flex-col gap-2 items-end">
                                       <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                        {ferry.availableSeats} seats left
+                                        {t('seatsLeft', { count: ferry.availableSeats })}
                                       </Badge>
                                       <Button 
                                         size="sm" 
@@ -269,10 +271,10 @@ export default function FerryResultsPage() {
                                         {outbound?.id === ferry.id ? (
                                           <>
                                             <CheckCircle className="h-4 w-4 mr-1" />
-                                            Selected
+                                            {t('selected')}
                                           </>
                                         ) : (
-                                          'Select'
+                                          t('select')
                                         )}
                                       </Button>
                                     </div>
@@ -296,13 +298,13 @@ export default function FerryResultsPage() {
                           className="text-muted-foreground"
                         >
                           <ChevronLeft className="h-4 w-4 mr-1" />
-                          Back to outbound
+                          {t('backToOutbound')}
                         </Button>
                         <h2 className="text-xl font-bold text-foreground">
-                          Return: {toCity} to {fromCity}
+                          {t('returnHeading', { to: toCity, from: fromCity })}
                         </h2>
                       </div>
-                      <Badge variant="secondary">{returnFerries.length} ferries found</Badge>
+                      <Badge variant="secondary">{t('ferriesFound', { count: returnFerries.length })}</Badge>
                     </div>
                     
                     <div className="space-y-4">
@@ -354,23 +356,23 @@ export default function FerryResultsPage() {
                                 <div className="flex items-center gap-4">
                                   <div className="text-right">
                                     <p className="text-2xl font-bold text-primary">{ferry.price}</p>
-                                    <p className="text-sm text-muted-foreground">per person</p>
+                                    <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
                                   </div>
                                   <div className="flex flex-col gap-2 items-end">
                                     <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                      {ferry.availableSeats} seats left
+                                      {t('seatsLeft', { count: ferry.availableSeats })}
                                     </Badge>
-                                    <Button 
-                                      size="sm" 
+                                    <Button
+                                      size="sm"
                                       className={returnF?.id === ferry.id ? 'bg-primary' : 'bg-primary/80'}
                                     >
                                       {returnF?.id === ferry.id ? (
                                         <>
                                           <CheckCircle className="h-4 w-4 mr-1" />
-                                          Selected
+                                          {t('selected')}
                                         </>
                                       ) : (
-                                        'Select'
+                                        t('select')
                                       )}
                                     </Button>
                                   </div>
@@ -390,14 +392,14 @@ export default function FerryResultsPage() {
                 <div className="sticky top-24">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-foreground mb-6">Booking Summary</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-6">{t('bookingSummary')}</h3>
                       
                       {outbound ? (
                         <div className="space-y-4">
                           <div className="p-4 bg-secondary/50 rounded-xl">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                               <Ship className="h-4 w-4" />
-                              <span>Outbound</span>
+                              <span>{t('outbound')}</span>
                             </div>
                             <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
@@ -409,7 +411,7 @@ export default function FerryResultsPage() {
                             <div className="p-4 bg-secondary/50 rounded-xl">
                               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                                 <Ship className="h-4 w-4" />
-                                <span>Return</span>
+                                <span>{t('return')}</span>
                               </div>
                               <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
@@ -420,11 +422,11 @@ export default function FerryResultsPage() {
 
                           <div className="pt-4 border-t border-border/50">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-muted-foreground">Passengers</span>
+                              <span className="text-muted-foreground">{t('passengersLabel')}</span>
                               <span className="text-foreground">{state.searchParams.passengers}</span>
                             </div>
                             <div className="flex items-center justify-between text-lg font-bold">
-                              <span className="text-foreground">Total</span>
+                              <span className="text-foreground">{t('total')}</span>
                               <span className="text-primary">€{selectTotalPrice(state)}</span>
                             </div>
                           </div>
@@ -434,20 +436,20 @@ export default function FerryResultsPage() {
                             onClick={handleContinue}
                             disabled={state.searchParams.tripType === 'round-trip' && !returnF}
                           >
-                            Continue to Passengers
+                            {t('continueToPassengers')}
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
 
                           {state.searchParams.tripType === 'round-trip' && !returnF && (
                             <p className="text-sm text-muted-foreground text-center">
-                              Please select a return ferry to continue
+                              {t('selectReturnHint')}
                             </p>
                           )}
                         </div>
                       ) : (
                         <div className="text-center py-8">
                           <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <p className="text-muted-foreground">Select a ferry to see your booking summary</p>
+                          <p className="text-muted-foreground">{t('summaryEmpty')}</p>
                         </div>
                       )}
                       
@@ -455,8 +457,8 @@ export default function FerryResultsPage() {
                         <div className="flex items-start gap-3">
                           <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-foreground">Free Cancellation</p>
-                            <p className="text-xs text-muted-foreground">Up to 48 hours before departure</p>
+                            <p className="text-sm font-medium text-foreground">{t('freeCancellation.title')}</p>
+                            <p className="text-xs text-muted-foreground">{t('freeCancellation.body')}</p>
                           </div>
                         </div>
                       </div>
