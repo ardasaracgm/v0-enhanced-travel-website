@@ -100,15 +100,16 @@ function refineSchengenDates(
   // Invalid/empty dates are already flagged by the per-field isoDate refine.
   if (!entry || !exit) return
   const diffDays = Math.round((exit.getTime() - entry.getTime()) / 86_400_000)
-  if (diffDays < 1) {
-    // Exit must be strictly after entry (same-day = 0 nights is invalid).
+  if (diffDays < 0) {
+    // Exit may equal entry (same-day day-trip = 0 nights, valid); it just
+    // cannot precede entry.
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['schengenExitDate'],
       message: 'schengenExitDate.beforeEntry',
     })
-  } else if (diffDays > 7) {
-    // Door visa: max 7 nights (entry + 7).
+  } else if (diffDays > 6) {
+    // Door visa: max 6 nights / 7 days (entry day inclusive).
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['schengenExitDate'],

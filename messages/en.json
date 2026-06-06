@@ -549,7 +549,13 @@
       "submitError": "Submission failed. Please try again.",
       "successTitle": "Documents received",
       "successBody": "Your documents were uploaded successfully. Our visa team will review your application.",
-      "submit": "Submit"
+      "submit": "Submit",
+      "signatureHint": "Please sign in the area below using your finger, stylus, or mouse.",
+      "signatureClear": "Clear",
+      "signatureConfirm": "Confirm Signature",
+      "signatureSaved": "Signature saved",
+      "signatureEmpty": "Please draw your signature first.",
+      "signatureError": "Could not save the signature. Please try again."
     },
     "form": {
       "heading": "Schengen Visa Application",

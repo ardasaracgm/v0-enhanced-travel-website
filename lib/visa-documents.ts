@@ -189,6 +189,17 @@ export const VISA_DOCUMENTS: readonly VisaDocSpec[] = [
     el: 'Sponsor Bank Statement',
     required: isSponsored,
   },
+  // ----- Drawn signature -----
+  // Not a file upload: the applicant signs on a canvas (SignaturePad). The
+  // resulting image goes through the SAME presign/confirm pipeline as every
+  // other doc, stored with doc_type 'applicant_signature', and is rendered on
+  // the final step.
+  {
+    key: 'applicant_signature',
+    tr: 'Başvuru Sahibi İmzası',
+    el: 'Applicant Signature',
+    required: true,
+  },
 ] as const
 
 // ============================================================

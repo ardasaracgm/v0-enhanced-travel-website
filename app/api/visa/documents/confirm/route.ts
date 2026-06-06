@@ -21,6 +21,7 @@ import {
   VISA_DOC_ALLOWED_MIME_TYPES,
   VISA_DOC_MAX_BYTES,
   VISA_DOC_MIN_BYTES,
+  VISA_SIGNATURE_MIN_BYTES,
 } from '@/lib/visa/upload-constants'
 
 export const runtime = 'nodejs'
@@ -71,9 +72,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   // ----- 3. Defence-in-depth: re-check limits (presign already gated, but the
   //          confirm body is independent and equally untrusted). -----
-  if (!isAllowedVisaDocSize(sizeBytes)) {
+  const minBytes = docType === 'applicant_signature' ? VISA_SIGNATURE_MIN_BYTES : VISA_DOC_MIN_BYTES
+  if (!isAllowedVisaDocSize(sizeBytes, minBytes)) {
     return NextResponse.json(
-      { error: 'invalid_size', min: VISA_DOC_MIN_BYTES, max: VISA_DOC_MAX_BYTES },
+      { error: 'invalid_size', min: minBytes, max: VISA_DOC_MAX_BYTES },
       { status: 400 },
     )
   }

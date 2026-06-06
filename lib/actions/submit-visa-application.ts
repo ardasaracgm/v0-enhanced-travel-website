@@ -82,10 +82,11 @@ export async function submitVisaApplication(
   // Optional, non-blocking — null when absent/invalid (see helper).
   const previousSchengenVisaDate = extractPreviousSchengenVisaDate(input)
 
-  // stay_duration is no longer a form field — derive it (nights = exit − entry).
-  // Validation guarantees both dates parse and the diff is within 1..7, so this
-  // always lands inside the BETWEEN 1 AND 7 CHECK.
-  const stayDuration = deriveStayNights(v.schengenEntryDate, v.schengenExitDate)
+  // stay_duration is no longer a form field — derive it. Stored as DAYS (entry
+  // day inclusive): 0 nights = 1 day, 6 nights = 7 days. Validation guarantees
+  // both dates parse and nights are within 0..6, so this always lands inside
+  // the BETWEEN 1 AND 7 CHECK.
+  const stayDuration = deriveStayDays(v.schengenEntryDate, v.schengenExitDate)
 
   // ----- Grup B conditional blocks -----
   // Guardian (jotform 10) — only persisted for minors. Validation already
@@ -264,12 +265,12 @@ function cleanObject(
   return Object.keys(out).length > 0 ? out : null
 }
 
-/** Nights between two YYYY-MM-DD dates (exit − entry). null if either won't parse. */
-function deriveStayNights(entryDate: string, exitDate: string): number | null {
+/** Inclusive day count ((exit − entry) + 1). Same-day = 1 day, 6 nights = 7 days. null if either won't parse. */
+function deriveStayDays(entryDate: string, exitDate: string): number | null {
   const entry = parseISODate(entryDate)
   const exit = parseISODate(exitDate)
   if (!entry || !exit) return null
-  return Math.round((exit.getTime() - entry.getTime()) / 86_400_000)
+  return Math.round((exit.getTime() - entry.getTime()) / 86_400_000) + 1
 }
 
 // Mirrors formatZodError in submit-booking.ts (kept local so this action

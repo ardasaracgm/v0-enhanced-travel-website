@@ -549,7 +549,13 @@
       "submitError": "Gönderim başarısız oldu. Lütfen tekrar deneyin.",
       "successTitle": "Belgeleriniz alındı",
       "successBody": "Belgeleriniz başarıyla yüklendi. Vize ekibimiz başvurunuzu inceleyecek.",
-      "submit": "Gönder"
+      "submit": "Gönder",
+      "signatureHint": "Lütfen aşağıdaki alana parmağınızla, kaleminizle veya farenizle imzanızı atın.",
+      "signatureClear": "Temizle",
+      "signatureConfirm": "İmzayı Onayla",
+      "signatureSaved": "İmza kaydedildi",
+      "signatureEmpty": "Lütfen önce imzanızı atın.",
+      "signatureError": "İmza kaydedilemedi. Lütfen tekrar deneyin."
     },
     "form": {
       "heading": "Schengen Vize Başvurusu",

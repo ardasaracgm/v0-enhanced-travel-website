@@ -38,6 +38,7 @@ import {
   DocumentUploadSlot,
   type DocumentUploadSlotStatus,
 } from '@/app/[locale]/visa/document-upload-slot'
+import { SignaturePad } from '@/components/visa/signature-pad'
 import { ensureDraft, getDraftId, clearDraft } from '@/lib/visa/use-draft-application'
 import {
   VISA_STEP_SCHEMAS,
@@ -121,8 +122,8 @@ const TOTAL_STEPS = STEP_FIELDS.length
 
 const YES_NO = ['true', 'false'] as const
 
-/** Door-visa max stay: exit auto-fills to entry + this many nights. */
-const MAX_STAY_NIGHTS = 7
+/** Door-visa max stay: 6 nights (7 days, entry inclusive). Exit auto-fills to entry + this many nights. */
+const MAX_STAY_NIGHTS = 6
 
 /** '' → undefined (triggers required), else 'true' → true / 'false' → false. */
 function toBool(v: string): boolean | undefined {
@@ -766,6 +767,19 @@ export function VisaWizard() {
               )}
             </DocsSection>
           </>
+        )}
+
+        {isLastStep && (
+          <div className="mt-6">
+            <SignaturePad
+              label={docByKey['applicant_signature']?.label ?? ''}
+              isRequired={docByKey['applicant_signature']?.isRequired ?? true}
+              ensureApplicationId={ensureApplicationId}
+              initialSigned={Boolean(uploadedDocs['applicant_signature'])}
+              onStatusChange={(status) => handleDocStatus('applicant_signature', status)}
+              onUploaded={(filename) => handleDocUploaded('applicant_signature', filename)}
+            />
+          </div>
         )}
 
         {/* Final-step gate summary: missing form fields + missing docs, sticky to the

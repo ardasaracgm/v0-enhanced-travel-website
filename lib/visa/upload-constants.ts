@@ -17,6 +17,12 @@
 // --- Size bounds (bytes) ---
 export const VISA_DOC_MIN_BYTES = 50 * 1024 // 50 KB — reject empty / truncated files
 export const VISA_DOC_MAX_BYTES = 10 * 1024 * 1024 // 10 MB
+// The applicant signature is a canvas-drawn PNG, not a photo/scan. A sparse
+// signature on an opaque-white 1200x400 canvas can come in under the 50 KB
+// document floor (observed ~46 KB). It gets its own, much lower minimum; the
+// SignaturePad already rejects a blank canvas, so this only catches a truly
+// degenerate/truncated upload.
+export const VISA_SIGNATURE_MIN_BYTES = 2 * 1024 // 2 KB
 
 // --- Allowed content types ---
 export const VISA_DOC_ALLOWED_MIME_TYPES = [
@@ -30,10 +36,13 @@ export function isAllowedVisaDocMime(mime: string): mime is VisaDocMimeType {
   return (VISA_DOC_ALLOWED_MIME_TYPES as readonly string[]).includes(mime)
 }
 
-export function isAllowedVisaDocSize(sizeBytes: number): boolean {
+export function isAllowedVisaDocSize(
+  sizeBytes: number,
+  minBytes: number = VISA_DOC_MIN_BYTES,
+): boolean {
   return (
     Number.isFinite(sizeBytes) &&
-    sizeBytes >= VISA_DOC_MIN_BYTES &&
+    sizeBytes >= minBytes &&
     sizeBytes <= VISA_DOC_MAX_BYTES
   )
 }
