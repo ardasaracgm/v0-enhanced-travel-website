@@ -252,7 +252,7 @@
     "heroImageAlt": "Ege Denizi'nde seyreden feribot",
     "bullet1": "Anında Onay",
     "bullet2": "En İyi Fiyat Garantisi",
-    "bullet3": "Ücretsiz İptal",
+    "bullet3": "Tarih Değişikliği",
     "fromPlaceholder": "Kalkış",
     "toPlaceholder": "Varış",
     "portBodrum": "Bodrum, Türkiye",
@@ -286,8 +286,8 @@
     "faq2A": "Türkiye ile Yunan adaları arasındaki feribotların çoğu yalnızca yolcu taşır. Adada araca ihtiyacınız varsa, bizden araç kiralamanızı öneririz - Kos'ta limanda teslim hizmeti sunuyoruz.",
     "faq3Q": "Bagaj hakkı nedir?",
     "faq3A": "Genellikle kişi başı el bagajı ve 1-2 valiz getirebilirsiniz. Katı ağırlık sınırı yoktur, ancak büyük veya fazla bagaj için ek ücret alınabilir. Operatöre özel kurallar için bizimle iletişime geçin.",
-    "faq4Q": "Feribot biletimi değiştirebilir veya iptal edebilir miyim?",
-    "faq4A": "Evet, çoğu bilet kalkıştan 24 saat öncesine kadar küçük bir ücretle değiştirilebilir veya iptal edilebilir. 48 saat ve öncesinde iptal edilirse tam iade yapılır. Seyahat sigortası son dakika iptallerini karşılayabilir.",
+    "faq4Q": "Feribot biletimin tarihini değiştirebilir miyim?",
+    "faq4A": "Kalkıştan 48 saat öncesine kadar, müsaitliğe bağlı olarak tarih değişikliği talep edebilirsiniz. Biletler iade veya iptal edilemez. Beklenmedik durumlar için seyahat sigortası öneririz.",
     "faq5Q": "Feribot çocuklu aileler için konforlu mu?",
     "faq5A": "Evet! Feribotlarda konforlu koltuklar, klima ve büfeler bulunur. Yolculuk nispeten kısadır (güzergaha bağlı olarak 1-3 saat). 4 yaş altı çocuklar genellikle ücretsiz veya indirimli seyahat eder.",
     "faq6Q": "Gidiş-dönüş bileti sunuyor musunuz?",
@@ -1088,7 +1088,7 @@
     "continueToPassengers": "Yolcu Bilgilerine Geç",
     "selectReturnHint": "Devam etmek için lütfen bir dönüş feribotu seçin",
     "summaryEmpty": "Rezervasyon özetini görmek için bir feribot seçin",
-    "freeCancellation": { "title": "Ücretsiz İptal", "body": "Kalkıştan 48 saat öncesine kadar" }
+    "dateChange": { "title": "Tarih Değişikliği", "body": "48 saat öncesine kadar tarih değişikliği için bize ulaşabilirsiniz." }
   },
 
   "privacy": {

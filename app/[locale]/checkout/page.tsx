@@ -9,9 +9,9 @@ import {
   User,
   CheckCircle,
   Lock,
-  Shield,
   AlertCircle,
   MessageCircle,
+  CalendarClock,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -390,7 +390,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
-                        <TrustItem icon={Shield} title="Buyer Protection" desc="Full refund if cancelled" />
+                        <TrustItem icon={CalendarClock} title="Flexible Date Change" desc="Up to 48 hours before departure" />
                         <TrustItem icon={MessageCircle} title="WhatsApp Support" desc="Talk to us anytime" />
                         <TrustItem icon={CheckCircle} title="Instant Confirmation" desc="Reference sent immediately" />
                       </div>

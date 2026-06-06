@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
-import { Ship, Clock, Users, ArrowRight, ChevronLeft, CheckCircle, Anchor, AlertCircle } from 'lucide-react'
+import { Ship, Clock, Users, ArrowRight, ChevronLeft, CheckCircle, Anchor, AlertCircle, CalendarClock } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -455,10 +455,10 @@ export default function FerryResultsPage() {
                       
                       <div className="mt-6 pt-6 border-t border-border/50">
                         <div className="flex items-start gap-3">
-                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                          <CalendarClock className="h-5 w-5 text-primary mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-foreground">{t('freeCancellation.title')}</p>
-                            <p className="text-xs text-muted-foreground">{t('freeCancellation.body')}</p>
+                            <p className="text-sm font-medium text-foreground">{t('dateChange.title')}</p>
+                            <p className="text-xs text-muted-foreground">{t('dateChange.body')}</p>
                           </div>
                         </div>
                       </div>

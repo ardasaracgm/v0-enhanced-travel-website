@@ -252,7 +252,7 @@
     "heroImageAlt": "Ferry sailing in the Aegean Sea",
     "bullet1": "Instant Confirmation",
     "bullet2": "Best Price Guarantee",
-    "bullet3": "Free Cancellation",
+    "bullet3": "Date Change",
     "fromPlaceholder": "Departure",
     "toPlaceholder": "Destination",
     "portBodrum": "Bodrum, Turkey",
@@ -286,8 +286,8 @@
     "faq2A": "Most ferries between Turkey and the Greek islands are passenger-only. If you need a vehicle on the island, we recommend booking a car rental with us - we offer port pickup service in Kos.",
     "faq3Q": "What is the baggage allowance?",
     "faq3A": "Generally, you can bring hand luggage and 1-2 suitcases per person. There are no strict weight limits, but large or excessive luggage may incur additional fees. Contact us for specific ferry operator policies.",
-    "faq4Q": "Can I change or cancel my ferry ticket?",
-    "faq4A": "Yes, most tickets can be changed or cancelled up to 24 hours before departure with a small fee. Full refunds are available if cancelled 48+ hours in advance. Travel insurance can cover last-minute cancellations.",
+    "faq4Q": "Can I change my ferry ticket date?",
+    "faq4A": "Date changes can be requested up to 48 hours before departure, subject to availability. Tickets are non-refundable and cannot be cancelled. We recommend travel insurance to cover unforeseen circumstances.",
     "faq5Q": "Is the ferry comfortable for families with children?",
     "faq5A": "Yes! Ferries have comfortable seating, air conditioning, and snack bars. The journey is relatively short (1-3 hours depending on route). Children under 4 often travel free or at reduced rates.",
     "faq6Q": "Do you offer round-trip tickets?",
@@ -1088,7 +1088,7 @@
     "continueToPassengers": "Continue to Passengers",
     "selectReturnHint": "Please select a return ferry to continue",
     "summaryEmpty": "Select a ferry to see your booking summary",
-    "freeCancellation": { "title": "Free Cancellation", "body": "Up to 48 hours before departure" }
+    "dateChange": { "title": "Date Change", "body": "Contact us for date changes up to 48 hours before departure." }
   },
 
   "privacy": {
