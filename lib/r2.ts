@@ -86,12 +86,24 @@ export async function getUploadUrl(key: string, contentType: string): Promise<st
 
 /**
  * Presigned GET URL for an admin download. Short TTL — these reference PII.
+ * `filename` verilirse tarayıcıyı İNDİRMEYE zorlar (inline yerine):
+ * response-content-disposition presigned imzaya girer → cross-origin R2'de de
+ * çalışır (download attribute'una güvenmez). Verilmezse inline (Open) davranışı.
  */
-export async function getDownloadUrl(key: string): Promise<string> {
+export async function getDownloadUrl(key: string, filename?: string): Promise<string> {
   const client = getR2Client()
   const command = new GetObjectCommand({
     Bucket: getVisaBucket(),
     Key: key,
+    // RFC 6266: ascii-temiz filename + UTF-8 filename* (TR/EL adlar için).
+    ...(filename
+      ? {
+          ResponseContentDisposition: `attachment; filename="${filename.replace(
+            /["\\]/g,
+            '',
+          )}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        }
+      : {}),
   })
   return getSignedUrl(client, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS })
 }
