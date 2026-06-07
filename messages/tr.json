@@ -605,6 +605,7 @@
         "docIssueDate": "Veriliş Tarihi",
         "docExpiryDate": "Son Geçerlilik Tarihi",
         "issuingAuthority": "Veren Makam",
+        "promoCode": "Promosyon / referans kodu (opsiyonel)",
         "residenceAddress": "İkamet Adresi",
         "email": "E-posta",
         "phone": "Telefon",
@@ -808,10 +809,13 @@
         "employerOptionalNote": "Bu bilgiler isteğe bağlıdır."
       },
       "uploading": "Belge yükleniyor…",
+      "promoInvalid": "Geçersiz kod. Kontrol edin veya alanı boş bırakın.",
       "success": {
         "title": "Başvurunuz Alındı",
+        "titleFree": "Başvurunuz Alındı",
         "titlePending": "Başvurunuz Alındı — Ödeme Bekleniyor",
         "body": "Teşekkürler. Vize ekibimiz başvurunuzu inceleyecek ve bir iş günü içinde sizinle iletişime geçecektir.",
+        "bodyFree": "Evraklarınız bize ulaştı, herhangi bir ücret alınmadı. Vize ekibimiz başvurunuzu inceleyip bir iş günü içinde sizinle iletişime geçecek.",
         "bodyPayment": "Başvurunuz için €90 ödeme gerekiyor. Ödeme linkinizi WhatsApp'tan almak için aşağıya dokunun.",
         "documentsCta": "Belgelerinizi Yükleyin",
         "whatsapp": "WhatsApp'tan bize yazın",

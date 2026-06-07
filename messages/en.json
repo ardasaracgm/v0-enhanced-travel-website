@@ -605,6 +605,7 @@
         "docIssueDate": "Issue Date",
         "docExpiryDate": "Expiry Date",
         "issuingAuthority": "Issuing Authority",
+        "promoCode": "Promo / referral code (optional)",
         "residenceAddress": "Residence Address",
         "email": "Email",
         "phone": "Phone",
@@ -808,10 +809,13 @@
         "employerOptionalNote": "These details are optional."
       },
       "uploading": "Uploading document…",
+      "promoInvalid": "Invalid code. Check it or leave the field empty.",
       "success": {
         "title": "Application Received",
+        "titleFree": "Application Received",
         "titlePending": "Application Received — Payment Pending",
         "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "bodyFree": "Your documents have reached us and no fee was charged. Our visa team will review your application and contact you within one business day.",
         "bodyPayment": "Your application requires a €90 payment. Tap below to get your payment link on WhatsApp.",
         "documentsCta": "Upload Your Documents",
         "whatsapp": "Message us on WhatsApp",

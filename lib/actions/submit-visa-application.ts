@@ -23,7 +23,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
 import { createPaymentOrder } from '@/lib/actions/create-payment-order'
-import { VISA_FEE_EUR } from '@/lib/visa-pricing'
+import { VISA_FEE_EUR, isValidPromoCode } from '@/lib/visa-pricing'
 import {
   visaApplicationSchema,
   GUARDIAN_AGE_THRESHOLD,
@@ -33,7 +33,7 @@ import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { z } from 'zod'
 
 export type SubmitVisaApplicationResult =
-  | { ok: true; id: string; tripId?: string; redirectUrl?: string; paymentWhatsAppUrl?: string }
+  | { ok: true; id: string; tripId?: string; redirectUrl?: string; paymentWhatsAppUrl?: string; free?: boolean }
   | { ok: false; error: string; code: SubmitVisaErrorCode }
 
 export type SubmitVisaErrorCode =
@@ -41,6 +41,7 @@ export type SubmitVisaErrorCode =
   | 'validation_failed'
   | 'draft_not_found'
   | 'database_error'
+  | 'invalid_promo'
   | 'unexpected'
 
 // The draft id travels alongside the form fields. visaApplicationSchema strips
@@ -60,6 +61,16 @@ function extractPreviousSchengenVisaDate(input: unknown): string | null {
   if (input && typeof input === 'object' && 'previous_schengen_visa_date' in input) {
     const raw = (input as { previous_schengen_visa_date?: unknown }).previous_schengen_visa_date
     if (typeof raw === 'string' && parseISODate(raw.trim()) !== null) return raw.trim()
+  }
+  return null
+}
+
+// promoCode form alanlarıyla gelir; visaApplicationSchema strip eder → ham
+// input'tan çek (extractApplicationId kalıbı).
+function extractPromoCode(input: unknown): string | null {
+  if (input && typeof input === 'object' && 'promoCode' in input) {
+    const c = (input as { promoCode?: unknown }).promoCode
+    if (typeof c === 'string' && c.trim().length > 0) return c.trim()
   }
   return null
 }
@@ -151,9 +162,85 @@ export async function submitVisaApplication(
   // Means of subsistence (jotform 33A) — always present (validation enforced ≥1).
   const financingMeans = v.financingMeans ?? []
 
-  // ----- 2. UPDATE the draft (service-role; RLS bypassed) -----
+  // Cevap kolonları — kuponlu (ücretsiz) ve €90 dallarının ORTAK gövdesi.
+  // Branch'ler yalnız state/trip_id/promo_code/updated_at ekler/değiştirir.
+  const answerColumns = {
+    locale: v.locale,
+    entry_point: v.entryPoint,
+    vessel_type: v.vesselType,
+    last_name: v.lastName,
+    previous_last_name: v.previousLastName?.trim() || null,
+    first_name: v.firstName,
+    father_name: v.fatherName,
+    mother_name: v.motherName,
+    birth_date: v.birthDate,
+    birth_place: v.birthPlace,
+    birth_country: v.birthCountry,
+    nationality: v.nationality,
+    previous_nationality: v.previousNationality?.trim() || null,
+    gender: v.gender,
+    marital_status: v.maritalStatus,
+    id_number: v.idNumber,
+    doc_type: v.docType,
+    doc_number: v.docNumber,
+    doc_issue_date: v.docIssueDate,
+    doc_expiry_date: v.docExpiryDate,
+    issuing_authority: v.issuingAuthority,
+    residence_address: v.residenceAddress,
+    email: v.email,
+    phone: v.phone,
+    lives_in_other_country: v.livesInOtherCountry,
+    occupation: v.occupation,
+    residence_permit_number: residencePermitNumber,
+    residence_permit_expiry: residencePermitExpiry,
+    travel_purpose: v.travelPurpose,
+    stay_duration: stayDuration,
+    schengen_last_3_years: v.schengenLast3Years,
+    fingerprints_taken: v.fingerprintsTaken,
+    schengen_entry_date: v.schengenEntryDate,
+    schengen_exit_date: v.schengenExitDate,
+    metadata: {
+      funding_source: v.fundingSource,
+      ...(previousSchengenVisaDate ? { previous_schengen_visa_date: previousSchengenVisaDate } : {}),
+      ...(guardian ? { guardian } : {}),
+      ...(employer ? { employer } : {}),
+      ...(sponsor ? { sponsor } : {}),
+      financing_means: financingMeans,
+    },
+  }
+
+  // ----- 2. Submit (service-role; RLS bypassed) -----
   try {
     const supabase = getSupabaseAdmin()
+
+    // ----- Kuponlu dal: geçerli kod → ÜCRETSİZ; createTrip/Viva ATLA, state=documents_submitted. -----
+    const promoCode = extractPromoCode(input)
+    if (promoCode) {
+      if (!isValidPromoCode(promoCode)) {
+        // Geçersiz kod: draft 'draft'ta kalır → kullanıcı düzeltip retry edebilir.
+        return { ok: false, code: 'invalid_promo', error: 'Invalid promo code' }
+      }
+      const { data, error } = await supabase
+        .from('visa_applications')
+        .update({
+          ...answerColumns,
+          state: 'documents_submitted', // ücret yok → ödeme atlanır (CHECK'te mevcut)
+          promo_code: promoCode,        // migration 015
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', applicationId)
+        .eq('state', 'draft')
+        .select('id')
+        .maybeSingle()
+      if (error) {
+        console.error('[submitVisaApplication] promo update failed:', error)
+        return { ok: false, code: 'database_error', error: 'Could not save application' }
+      }
+      if (!data) {
+        return { ok: false, code: 'draft_not_found', error: 'Draft not found or already submitted' }
+      }
+      return { ok: true, id: data.id, free: true }
+    }
 
     // ----- 2. createTrip FIRST — draft HÂLÂ 'draft'. Fail ederse state ilerlemez,
     //          başvuru retry edilebilir (kilit yok). idempotencyKey=application_id
@@ -197,72 +284,9 @@ export async function submitVisaApplication(
     const { data, error } = await supabase
       .from('visa_applications')
       .update({
+        ...answerColumns,
         state: 'pending_payment',          // draft → pending_payment
         trip_id: tripResult.tripId,        // vize ↔ trip bağı (migration 014)
-        locale: v.locale,
-
-        // Step 1 · Travel
-        entry_point: v.entryPoint,
-        vessel_type: v.vesselType,
-
-        // Step 2 · Personal
-        last_name: v.lastName,
-        previous_last_name: v.previousLastName?.trim() || null,       // Jotform 2 · optional
-        first_name: v.firstName,
-        father_name: v.fatherName,
-        mother_name: v.motherName,
-        birth_date: v.birthDate,
-        birth_place: v.birthPlace,
-        birth_country: v.birthCountry,
-        nationality: v.nationality,                                   // Jotform 7 · required
-        previous_nationality: v.previousNationality?.trim() || null,  // Jotform 7A · optional
-        gender: v.gender,
-        marital_status: v.maritalStatus,
-
-        // Step 3 · Document
-        id_number: v.idNumber,
-        doc_type: v.docType,
-        doc_number: v.docNumber,
-        doc_issue_date: v.docIssueDate,
-        doc_expiry_date: v.docExpiryDate,
-        issuing_authority: v.issuingAuthority,
-
-        // Step 4 · Contact
-        residence_address: v.residenceAddress,
-        email: v.email,
-        phone: v.phone,
-        lives_in_other_country: v.livesInOtherCountry,
-        occupation: v.occupation,
-
-        // Jotform 18 · residence permit (conditional: lives abroad) — migration 009
-        residence_permit_number: residencePermitNumber,
-        residence_permit_expiry: residencePermitExpiry,
-
-        // Step 5 · Trip
-        travel_purpose: v.travelPurpose,
-        stay_duration: stayDuration,
-        schengen_last_3_years: v.schengenLast3Years,
-        fingerprints_taken: v.fingerprintsTaken,
-        schengen_entry_date: v.schengenEntryDate,
-        schengen_exit_date: v.schengenExitDate,
-
-        // Overflow — funding source lives in metadata (no dedicated column).
-        // Zod already constrained v.fundingSource to 'self'|'sponsor'.
-        // lib/visa-documents.ts reads metadata.funding_source to decide whether
-        // the sponsor_id / sponsor_bank documents are required. The optional
-        // previous-Schengen-visa date is parked here too (only when provided) —
-        // no dedicated column, no impact on the required-docs engine.
-        metadata: {
-          funding_source: v.fundingSource,
-          ...(previousSchengenVisaDate
-            ? { previous_schengen_visa_date: previousSchengenVisaDate }
-            : {}),
-          ...(guardian ? { guardian } : {}),    // jotform 10 (minors)
-          ...(employer ? { employer } : {}),    // jotform 20 (employer/school)
-          ...(sponsor ? { sponsor } : {}),      // jotform 31–32B (invitation)
-          financing_means: financingMeans,      // jotform 33A (≥1 selection)
-        },
-
         updated_at: new Date().toISOString(),
       })
       // Scope to the draft: guards against finalising an already-submitted row

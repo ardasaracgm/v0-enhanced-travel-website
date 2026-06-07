@@ -599,6 +599,7 @@
         "docIssueDate": "Issue Date",
         "docExpiryDate": "Expiry Date",
         "issuingAuthority": "Issuing Authority",
+        "promoCode": "Κωδικός προσφοράς / παραπομπής (προαιρετικό)",
         "residenceAddress": "Residence Address",
         "email": "Email",
         "phone": "Phone",
@@ -802,10 +803,13 @@
         "employerOptionalNote": "These details are optional."
       },
       "uploading": "Μεταφόρτωση εγγράφου…",
+      "promoInvalid": "Μη έγκυρος κωδικός. Ελέγξτε τον ή αφήστε το πεδίο κενό.",
       "success": {
         "title": "Application Received",
+        "titleFree": "Η αίτηση ελήφθη",
         "titlePending": "Η αίτηση ελήφθη — Εκκρεμεί πληρωμή",
         "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "bodyFree": "Τα έγγραφά σας έφτασαν και δεν χρεώθηκε καμία αμοιβή. Η ομάδα μας θα εξετάσει την αίτησή σας και θα επικοινωνήσει εντός μίας εργάσιμης ημέρας.",
         "bodyPayment": "Η αίτησή σας απαιτεί πληρωμή €90. Πατήστε παρακάτω για να λάβετε τον σύνδεσμο πληρωμής στο WhatsApp.",
         "documentsCta": "Upload Your Documents",
         "whatsapp": "Message us on WhatsApp",

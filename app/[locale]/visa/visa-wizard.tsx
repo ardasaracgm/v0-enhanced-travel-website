@@ -159,6 +159,9 @@ export function VisaWizard() {
   // Son adım gate'i (amber banner + inline kırmızılar) yalnız submit denendikten
   // sonra görünsün — kullanıcı 4. adıma varır varmaz "eksik" basmasın.
   const [submitAttempted, setSubmitAttempted] = React.useState(false)
+  const [promoCode, setPromoCode] = React.useState('')          // gate-DIŞI kupon kodu
+  const [invalidPromo, setInvalidPromo] = React.useState(false) // geçersiz kod uyarısı
+  const [freeApplication, setFreeApplication] = React.useState(false) // ücretsiz (kuponlu) success
 
   // ----- Inline document slots (Vize redesign, Faz 1) -----
   // Documents attach to a lazily-created draft: the first upload calls ensureDraft.
@@ -444,6 +447,7 @@ export function VisaWizard() {
       const res = await submitVisaApplication({
         ...payload,
         application_id: draftId,
+        promoCode: promoCode.trim() || undefined,
         previous_schengen_visa_date:
           form.schengenLast3Years === 'true' && previousSchengenVisaDate
             ? previousSchengenVisaDate
@@ -457,9 +461,21 @@ export function VisaWizard() {
           window.location.assign(res.redirectUrl)
           return
         }
+        if (res.free) {
+          // Kuponlu/ücretsiz: ödeme yok → free success kartı.
+          setFreeApplication(true)
+          setDone(true)
+          scrollToTop()
+          return
+        }
         // Viva yok → WhatsApp ödeme fallback: success kartı + €90 ödeme linki.
         setPaymentLink(res.paymentWhatsAppUrl ?? null)
         setDone(true)
+        scrollToTop()
+      } else if (res.code === 'invalid_promo') {
+        // Kod geçersiz → step 0'daki uyarıyı göster (draft 'draft', retry açık).
+        setInvalidPromo(true)
+        setStep(0)
         scrollToTop()
       } else {
         setSubmitError(true)
@@ -536,14 +552,16 @@ export function VisaWizard() {
   // ----- Success screen -----
   if (done) {
     const pending = Boolean(paymentLink) // ödeme bekleniyorsa ödeme-odaklı metin
+    const title = freeApplication ? t('success.titleFree') : pending ? t('success.titlePending') : t('success.title')
+    const body  = freeApplication ? t('success.bodyFree')  : pending ? t('success.bodyPayment') : t('success.body')
     return (
       <Card className="max-w-2xl mx-auto border-primary/30">
         <CardContent className="p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">{pending ? t('success.titlePending') : t('success.title')}</h3>
-          <p className="text-muted-foreground mb-6">{pending ? t('success.bodyPayment') : t('success.body')}</p>
+          <h3 className="text-2xl font-bold text-foreground mb-3">{title}</h3>
+          <p className="text-muted-foreground mb-6">{body}</p>
           <div className="flex flex-col items-center gap-3">
             <a
               href={paymentLink ?? buildSupportWhatsAppLink({ locale: locale as Locale })}
@@ -634,6 +652,17 @@ export function VisaWizard() {
               {renderDocSlot('biometric_photo')}
               {applicantIsMinor && renderDocSlot('consent_form')}
             </DocsSection>
+            <div className="space-y-2">
+              <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
+              <Input
+                id="promoCode"
+                type="text"
+                value={promoCode}
+                onChange={(e) => { setPromoCode(e.target.value); setInvalidPromo(false) }}
+                className={invalidPromo ? 'border-destructive' : ''}
+              />
+              {invalidPromo && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
+            </div>
           </>
         )}
 
