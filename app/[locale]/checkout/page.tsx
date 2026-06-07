@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import {
   Ship,
   ChevronLeft,
@@ -38,6 +38,7 @@ import type { Locale } from '@/lib/notifications/whatsapp-link'
 export default function CheckoutPage() {
   const router = useRouter()
   const locale = useLocale() as Locale
+  const t = useTranslations('checkout')
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
   const [isProcessing, setIsProcessing] = React.useState(false)
@@ -89,7 +90,8 @@ export default function CheckoutPage() {
       })
 
       if (!result.ok) {
-        dispatch({ type: 'SET_SUBMIT_ERROR', payload: result.error })
+        const message = result.code === 'car_unavailable' ? t('error.carUnavailable') : result.error
+        dispatch({ type: 'SET_SUBMIT_ERROR', payload: message })
         setIsProcessing(false)
         return
       }

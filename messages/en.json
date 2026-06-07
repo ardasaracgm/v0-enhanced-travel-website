@@ -1023,6 +1023,12 @@
     }
   },
 
+  "checkout": {
+    "error": {
+      "carUnavailable": "The car you selected is not available for these dates. Please choose different dates or another car."
+    }
+  },
+
   "extrasPage": {
     "totalPrice": "Total Price",
     "returnPrefix": "Return:",
@@ -1039,6 +1045,10 @@
     "noCarsTitle": "No cars available right now",
     "noCarsBody": "Continue without a car or contact us on WhatsApp.",
     "continueWithoutCar": "Continue without car",
+    "car": {
+      "unavailable": "Not available",
+      "allRented": "All our cars are currently rented. Please contact us upon arrival."
+    },
     "perDay": "/day",
     "added": "Added",
     "add": "Add",

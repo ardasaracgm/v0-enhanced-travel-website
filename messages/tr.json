@@ -1023,6 +1023,12 @@
     }
   },
 
+  "checkout": {
+    "error": {
+      "carUnavailable": "Seçtiğiniz araç bu tarihlerde müsait değil, lütfen başka tarih veya araç seçin."
+    }
+  },
+
   "extrasPage": {
     "totalPrice": "Toplam Fiyat",
     "returnPrefix": "Dönüş:",
@@ -1039,6 +1045,10 @@
     "noCarsTitle": "Şu anda müsait araç yok",
     "noCarsBody": "Araç olmadan devam edin veya WhatsApp üzerinden bize ulaşın.",
     "continueWithoutCar": "Araçsız devam et",
+    "car": {
+      "unavailable": "Müsait değil",
+      "allRented": "Tüm araçlarımız kiralanmıştır, lütfen indiğinizde bizden bilgi alın."
+    },
     "perDay": "/gün",
     "added": "Eklendi",
     "add": "Ekle",

@@ -84,3 +84,48 @@ export async function isAvailable(
 ): Promise<boolean> {
   return (await getAvailableQuantity(carId, pickupDate, days)) > 0
 }
+
+// Tüm araçların müsait adedini TEK turda hesaplar (liste UX için). Per-araç
+// getAvailableQuantity ile AYNI overlap + state kuralı; sadece toplu sorgu.
+// Dönen Record her aracın id'sini içerir: { [carId]: kalan_adet }.
+export async function getAvailabilityForDates(
+  pickupDate: string,
+  days: number,
+): Promise<Record<string, number>> {
+  if (!Number.isInteger(days) || days < 1) {
+    throw new RangeError(`car-availability: days must be a positive integer, got ${days}`)
+  }
+  const supabase = getSupabaseAdmin()
+
+  // computeEndDate → addDaysUtc pickupDate formatını da doğrular (YYYY-MM-DD).
+  const endDate = computeEndDate(pickupDate, days)
+
+  // 1) Tüm araçların toplam adedi.
+  const { data: cars, error: carsErr } = await supabase
+    .from('cars')
+    .select('id, quantity')
+  if (carsErr) throw carsErr
+
+  // 2) Çakışan + aktif TÜM booking'ler tek sorguda (per-araç ile aynı predicate).
+  const holdThreshold = new Date(Date.now() - HOLD_EXPIRY_MINUTES * 60_000).toISOString()
+  const { data: bookings, error: bookErr } = await supabase
+    .from('car_bookings')
+    .select('car_id')
+    .lte('start_date', endDate)
+    .gte('end_date', pickupDate)
+    .or(`state.eq.confirmed,and(state.eq.held,created_at.gt.${holdThreshold})`)
+  if (bookErr) throw bookErr
+
+  // 3) car_id'ye göre çakışmayı say.
+  const usedByCar = new Map<string, number>()
+  for (const b of bookings ?? []) {
+    usedByCar.set(b.car_id, (usedByCar.get(b.car_id) ?? 0) + 1)
+  }
+
+  const result: Record<string, number> = {}
+  for (const car of cars ?? []) {
+    const quantity = Number(car.quantity ?? 0)
+    result[car.id] = Math.max(0, quantity - (usedByCar.get(car.id) ?? 0))
+  }
+  return result
+}

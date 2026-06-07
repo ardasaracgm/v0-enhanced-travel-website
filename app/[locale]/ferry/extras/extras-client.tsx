@@ -39,6 +39,7 @@ import {
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
+import { checkCarAvailability } from '@/lib/actions/car-availability-action'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -56,6 +57,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const t = useTranslations('extrasPage')
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
   const [oneWayDays, setOneWayDays] = React.useState(3)
+  // Tarih-bazlı müsaitlik: server'dan { carId: kalan_adet }. null = henüz gelmedi.
+  const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
+  const [availLoading, setAvailLoading] = React.useState(false)
 
   // Luggage UI state (display); cart state reducer'da.
   const luggageItem = state.items.find(
@@ -117,12 +121,41 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     if (!luggageAvailable) dispatch({ type: 'REMOVE_LUGGAGE' })
   }, [carAvailable, luggageAvailable, dispatch])
 
-  if (!outboundItem || !outbound) return null
-
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
-  const days = isRoundTrip
-    ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
-    : Math.max(1, oneWayDays)
+  // outboundItem null iken de türetilebilsin diye guard'dan önce; null'da 1
+  // (zaten aşağıda return null). round-trip = takvim günü dahil; one-way = seçici.
+  const days = !outboundItem
+    ? 1
+    : isRoundTrip
+      ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
+      : Math.max(1, oneWayDays)
+
+  // Pickup tarihi / gün sayısı değişince müsaitliği server'dan çek. Race koruması:
+  // hızlı gün değişiminde eski cevap yenisini ezmesin (cancelled flag).
+  React.useEffect(() => {
+    if (!outboundItem || !carAvailable) return
+    let cancelled = false
+    setAvailLoading(true)
+    checkCarAvailability(outboundItem.date, days)
+      .then(res => {
+        if (cancelled) return
+        if (res.ok) setAvailability(res.availability)
+      })
+      .finally(() => { if (!cancelled) setAvailLoading(false) })
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outboundItem?.date, days, carAvailable])
+
+  // Seçili araç bu tarihlerde dolduysa seçimi geri al (context'ten de çıkar).
+  React.useEffect(() => {
+    if (!availability || !selectedCarId) return
+    if (availability[selectedCarId] === 0) {
+      setSelectedCarId(null)
+      dispatch({ type: 'SET_CAR_RENTAL', payload: null })
+    }
+  }, [availability, selectedCarId, dispatch])
+
+  if (!outboundItem || !outbound) return null
 
   // Luggage türetilmiş: canlı toplam fiyat (1 gün; display-only). Başlıkta koşulsuz gösterilir.
   const luggageTotalPrice = LUGGAGE_SIZES.reduce((sum, s) => sum + luggageCounts[s] * LUGGAGE_RATES_EUR[s], 0)
@@ -450,11 +483,24 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </Card>
                 )}
 
+                {/* Tüm araçlar bu tarihlerde dolu — boş-state pattern'iyle bilgilendir */}
+                {cars.length > 0 && availability != null && cars.every(c => (availability[c.id] ?? 0) === 0) && (
+                  <Card className="bg-card border-border/50">
+                    <CardContent className="p-8 text-center">
+                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">{t('car.allRented')}</p>
+                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Car cards */}
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className={`grid sm:grid-cols-2 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
                   {cars.map((car, index) => {
                     const isSelected = selectedCarId === car.id
                     const lineTotal = car.price * days
+                    const qty = availability?.[car.id]
+                    const isUnavailable = availability != null && qty === 0
                     return (
                       <motion.div
                         key={car.id}
@@ -463,12 +509,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         transition={{ delay: index * 0.08 }}
                       >
                         <Card
-                          className={`bg-card border-2 transition-all cursor-pointer hover:shadow-lg ${
-                            isSelected
-                              ? 'border-primary shadow-lg'
-                              : 'border-border/50 hover:border-primary/50'
+                          className={`bg-card border-2 transition-all ${
+                            isUnavailable
+                              ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
+                              : isSelected
+                                ? 'border-primary shadow-lg cursor-pointer hover:shadow-lg'
+                                : 'border-border/50 hover:border-primary/50 cursor-pointer hover:shadow-lg'
                           }`}
-                          onClick={() => handleSelectCar(car)}
+                          onClick={() => { if (!isUnavailable) handleSelectCar(car) }}
                         >
                           <CardContent className="p-0">
                             <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
@@ -487,6 +535,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                               {isSelected && (
                                 <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
                                   <CheckCircle className="h-4 w-4 text-primary-foreground" />
+                                </div>
+                              )}
+                              {isUnavailable && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                                  <Badge variant="secondary" className="bg-background/90 text-foreground gap-1">
+                                    <AlertCircle className="h-3.5 w-3.5" />
+                                    {t('car.unavailable')}
+                                  </Badge>
                                 </div>
                               )}
                             </div>
