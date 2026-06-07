@@ -807,11 +807,15 @@
         "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank.",
         "employerOptionalNote": "These details are optional."
       },
+      "uploading": "Uploading document…",
       "success": {
         "title": "Application Received",
+        "titlePending": "Application Received — Payment Pending",
         "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "bodyPayment": "Your application requires a €90 payment. Tap below to get your payment link on WhatsApp.",
         "documentsCta": "Upload Your Documents",
-        "whatsapp": "Message us on WhatsApp"
+        "whatsapp": "Message us on WhatsApp",
+        "payButton": "Pay €90 on WhatsApp"
       }
     }
   },

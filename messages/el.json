@@ -801,11 +801,15 @@
         "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank.",
         "employerOptionalNote": "These details are optional."
       },
+      "uploading": "Μεταφόρτωση εγγράφου…",
       "success": {
         "title": "Application Received",
+        "titlePending": "Η αίτηση ελήφθη — Εκκρεμεί πληρωμή",
         "body": "Thank you. Our visa team will review your application and contact you within one business day.",
+        "bodyPayment": "Η αίτησή σας απαιτεί πληρωμή €90. Πατήστε παρακάτω για να λάβετε τον σύνδεσμο πληρωμής στο WhatsApp.",
         "documentsCta": "Upload Your Documents",
-        "whatsapp": "Message us on WhatsApp"
+        "whatsapp": "Message us on WhatsApp",
+        "payButton": "Πληρώστε €90 στο WhatsApp"
       }
     }
   },

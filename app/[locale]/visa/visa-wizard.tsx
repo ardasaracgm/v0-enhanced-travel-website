@@ -154,6 +154,11 @@ export function VisaWizard() {
   const [submitting, setSubmitting] = React.useState(false)
   const [submitError, setSubmitError] = React.useState(false)
   const [done, setDone] = React.useState(false)
+  // Viva yoksa (fallback) success kartında gösterilecek WhatsApp ödeme linki.
+  const [paymentLink, setPaymentLink] = React.useState<string | null>(null)
+  // Son adım gate'i (amber banner + inline kırmızılar) yalnız submit denendikten
+  // sonra görünsün — kullanıcı 4. adıma varır varmaz "eksik" basmasın.
+  const [submitAttempted, setSubmitAttempted] = React.useState(false)
 
   // ----- Inline document slots (Vize redesign, Faz 1) -----
   // Documents attach to a lazily-created draft: the first upload calls ensureDraft.
@@ -218,26 +223,49 @@ export function VisaWizard() {
     })
   }
 
-  // On mount, if a draft already exists (resumed session / prior uploads), load
-  // its uploaded documents so slots reopen filled. Keys already known locally
-  // (fresher) win over the DB snapshot.
-  React.useEffect(() => {
+  // uploadedDocs'u DB'den (otoritatif) seed/refresh et. Mount'ta VE son adıma
+  // girişte çağrılır: onUploaded sinyali kaybolan (slot mid-flight unmount) bir
+  // yükleme, gate çalışmadan ÖNCE kalıcı satırdan kurtarılır.
+  const refreshUploadedDocs = React.useCallback(async () => {
     const id = getDraftId()
     if (!id) return
-    let cancelled = false
-    fetch(`/api/visa/documents/list?application_id=${encodeURIComponent(id)}`)
-      .then((r) => (r.ok ? r.json() : { documents: [] }))
-      .then((data: { documents: { doc_type: string; original_filename: string }[] }) => {
-        if (cancelled) return
-        const fromDb: Record<string, string> = {}
-        for (const d of data.documents) fromDb[d.doc_type] = d.original_filename
-        setUploadedDocs((prev) => ({ ...fromDb, ...prev }))
+    try {
+      const res = await fetch(`/api/visa/documents/list?application_id=${encodeURIComponent(id)}`)
+      if (!res.ok) return
+      const data = (await res.json()) as { documents: { doc_type: string; original_filename: string }[] }
+      const fromDb: Record<string, string> = {}
+      for (const d of data.documents) fromDb[d.doc_type] = d.original_filename
+      // Local (taze) kazanır; DB boşlukları doldurur (kayıp onUploaded dahil).
+      setUploadedDocs((prev) => ({ ...fromDb, ...prev }))
+      // DB'de teyitli bir belgenin takılı 'uploading'ini temizle — yoksa dosya
+      // confirmed olsa bile isDocSatisfied false kalır.
+      setDocStatuses((prev) => {
+        let changed = false
+        const next = { ...prev }
+        for (const key of Object.keys(fromDb)) {
+          if (next[key] === undefined || next[key] === 'uploading') {
+            next[key] = 'uploaded'
+            changed = true
+          }
+        }
+        return changed ? next : prev
       })
-      .catch(() => {})
-    return () => {
-      cancelled = true
+    } catch {
+      /* non-fatal */
     }
   }, [])
+
+  // Mount (resumed session / önceki upload'lar).
+  React.useEffect(() => {
+    refreshUploadedDocs()
+  }, [refreshUploadedDocs])
+
+  // Son adıma GİRİŞTE — submit gate allRequiredDocsUploaded'ı okumadan ÖNCE
+  // kayıp sinyali kurtar (state bu tick güncellenir, kullanıcı submit'e basmadan
+  // görür). handleSubmit içinde await EDİLMEZ (aynı-tick state bayatlaması).
+  React.useEffect(() => {
+    if (step === TOTAL_STEPS - 1) refreshUploadedDocs()
+  }, [step, refreshUploadedDocs])
 
   // Conditional slot visibility — drives whether the slot is rendered at all (the
   // catalogue's predicate only toggles isRequired). Mirrors lib/visa-documents.
@@ -275,6 +303,11 @@ export function VisaWizard() {
   const requiredDocs = resolvedDocs.filter((d) => d.isRequired)
   const missingRequiredDocs = requiredDocs.filter((d) => !isDocSatisfied(d.key))
   const allRequiredDocsUploaded = missingRequiredDocs.length === 0
+
+  // "Next"i, herhangi bir slot yüklerken blokla → slot, onUploaded fire etmeden
+  // step değişiminde unmount olamaz (kayıp-sinyal bug'ı). Global yeterli: mounted
+  // bir slot 'uploading' raporlar; biri havadayken asla ilerlemeyiz.
+  const isUploading = Object.values(docStatuses).some((s) => s === 'uploading')
 
   const update = (name: FieldName, value: string) => {
     setForm((f) => ({ ...f, [name]: value }))
@@ -323,7 +356,6 @@ export function VisaWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [form, locale, financingMeans],
   )
-  const formValid = fullParse.success
   const missingFormFields = React.useMemo<ErrorKey[]>(() => {
     if (fullParse.success) return []
     const seen = new Set<string>()
@@ -352,22 +384,34 @@ export function VisaWizard() {
 
   const handleNext = async () => {
     const payload = buildPayload()
+    const lastStep = step === TOTAL_STEPS - 1
+    // Son adımda her tık = bir submit denemesi → gate'i görünür kıl.
+    if (lastStep) setSubmitAttempted(true)
+
     const result = VISA_STEP_SCHEMAS[step].safeParse(payload)
     if (!result.success) {
       setErrors(collectErrors(result.error.issues))
       return
     }
     setErrors({})
-    if (step < TOTAL_STEPS - 1) {
+    if (!lastStep) {
+      setSubmitAttempted(false) // ileri giderken sonraki adım sessiz başlasın
       setStep(step + 1)
       scrollToTop()
       return
+    }
+    // Son adım: tüm-form + zorunlu-belge gate'i. Hepsi geçerliyse submit.
+    if (!fullParse.success || !allRequiredDocsUploaded) {
+      if (!fullParse.success) setErrors(collectErrors(fullParse.error.issues)) // inline kırmızılar
+      scrollToTop()
+      return // submit ETME
     }
     await handleSubmit(payload)
   }
 
   const handleBack = () => {
     setErrors({})
+    setSubmitAttempted(false) // geri gidip dönünce banner tekrar sessiz başlasın
     setStep((s) => Math.max(0, s - 1))
     scrollToTop()
   }
@@ -407,6 +451,14 @@ export function VisaWizard() {
       })
       if (res.ok) {
         clearDraft() // finalised — next application starts fresh
+        if (res.redirectUrl) {
+          // Viva Smart Checkout'a devret (checkout'taki dalın aynısı). Sayfa
+          // unmount olacağı için spinner'ı temizlemiyoruz, çift-submit imkânsız.
+          window.location.assign(res.redirectUrl)
+          return
+        }
+        // Viva yok → WhatsApp ödeme fallback: success kartı + €90 ödeme linki.
+        setPaymentLink(res.paymentWhatsAppUrl ?? null)
         setDone(true)
         scrollToTop()
       } else {
@@ -483,21 +535,22 @@ export function VisaWizard() {
 
   // ----- Success screen -----
   if (done) {
+    const pending = Boolean(paymentLink) // ödeme bekleniyorsa ödeme-odaklı metin
     return (
       <Card className="max-w-2xl mx-auto border-primary/30">
         <CardContent className="p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-2xl font-bold text-foreground mb-3">{t('success.title')}</h3>
-          <p className="text-muted-foreground mb-6">{t('success.body')}</p>
+          <h3 className="text-2xl font-bold text-foreground mb-3">{pending ? t('success.titlePending') : t('success.title')}</h3>
+          <p className="text-muted-foreground mb-6">{pending ? t('success.bodyPayment') : t('success.body')}</p>
           <div className="flex flex-col items-center gap-3">
             <a
-              href={buildSupportWhatsAppLink({ locale: locale as Locale })}
+              href={paymentLink ?? buildSupportWhatsAppLink({ locale: locale as Locale })}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="outline">{t('success.whatsapp')}</Button>
+              <Button variant="outline">{pending ? t('success.payButton') : t('success.whatsapp')}</Button>
             </a>
           </div>
         </CardContent>
@@ -784,7 +837,7 @@ export function VisaWizard() {
 
         {/* Final-step gate summary: missing form fields + missing docs, sticky to the
             viewport bottom so the user sees what's left without scrolling the long step. */}
-        {isLastStep && (missingFormFields.length > 0 || missingRequiredDocs.length > 0) && (
+        {isLastStep && submitAttempted && (missingFormFields.length > 0 || missingRequiredDocs.length > 0) && (
           <div className="sticky bottom-4 z-10 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm shadow-lg">
             <p className="font-medium text-amber-800">{t('docs.gateSummaryTitle')}</p>
             {missingFormFields.length > 0 && (
@@ -828,7 +881,7 @@ export function VisaWizard() {
 
           <Button
             onClick={handleNext}
-            disabled={submitting || (isLastStep && !(formValid && allRequiredDocsUploaded))}
+            disabled={submitting || isUploading}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {submitting ? (
@@ -846,6 +899,9 @@ export function VisaWizard() {
             )}
           </Button>
         </div>
+        {isUploading && (
+          <p className="pt-2 text-right text-xs text-muted-foreground">{t('uploading')}</p>
+        )}
       </CardContent>
     </Card>
   )

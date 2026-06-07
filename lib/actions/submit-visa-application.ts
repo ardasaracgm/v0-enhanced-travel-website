@@ -21,6 +21,9 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { createTrip } from '@/lib/actions/create-trip'
+import { createPaymentOrder } from '@/lib/actions/create-payment-order'
+import { VISA_FEE_EUR } from '@/lib/visa-pricing'
 import {
   visaApplicationSchema,
   GUARDIAN_AGE_THRESHOLD,
@@ -30,7 +33,7 @@ import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { z } from 'zod'
 
 export type SubmitVisaApplicationResult =
-  | { ok: true; id: string }
+  | { ok: true; id: string; tripId?: string; redirectUrl?: string; paymentWhatsAppUrl?: string }
   | { ok: false; error: string; code: SubmitVisaErrorCode }
 
 export type SubmitVisaErrorCode =
@@ -151,10 +154,51 @@ export async function submitVisaApplication(
   // ----- 2. UPDATE the draft (service-role; RLS bypassed) -----
   try {
     const supabase = getSupabaseAdmin()
+
+    // ----- 2. createTrip FIRST — draft HÂLÂ 'draft'. Fail ederse state ilerlemez,
+    //          başvuru retry edilebilir (kilit yok). idempotencyKey=application_id
+    //          (UUID, ≥16) → retry'da createTrip mevcut trip'i döndürür, çift trip yok.
+    //          Katman A: makePassengerSchema DEĞİL — kimlik alanları opsiyonel passthrough.
+    const tripResult = await createTrip({
+      idempotencyKey: applicationId,
+      locale: v.locale,
+      source: 'visa',
+      customer: {
+        fullName: `${v.firstName} ${v.lastName}`.trim(),
+        email: v.email,
+        phone: v.phone,
+        firstName: v.firstName,
+        lastName: v.lastName,
+        gender: v.gender,                  // 'male'|'female' ⊂ izinli küme
+        birthDate: v.birthDate,
+        passportNumber: v.docNumber,
+        passportExpiryDate: v.docExpiryDate,
+        nationality: v.nationality,
+      },
+      items: [{
+        type: 'visa',
+        title: 'Visa Application',         // i18n sonra; şimdilik sabit
+        priceAmount: VISA_FEE_EUR,         // EUR decimal (90) — cents DEĞİL
+        passengerCount: 1,
+        metadata: { application_id: applicationId },
+      }],
+    })
+    if (!tripResult.ok) {
+      // Draft 'draft'ta kaldı → retry edilebilir. createTrip kodlarından yalnız
+      // ikisi vize'de oluşabilir (validation_failed/database_error); gerisi 'unexpected'.
+      const code = tripResult.code === 'validation_failed' || tripResult.code === 'database_error'
+        ? tripResult.code
+        : 'unexpected'
+      return { ok: false, code, error: tripResult.error }
+    }
+
+    // ----- 3. TEK atomik UPDATE: cevaplar + state + trip_id, .eq('state','draft')
+    //          ile scope'lu (createTrip başarısı = state ilerletmenin ön koşulu). -----
     const { data, error } = await supabase
       .from('visa_applications')
       .update({
-        state: 'pending_payment',          // draft → pending_payment (payment in Vize-3)
+        state: 'pending_payment',          // draft → pending_payment
+        trip_id: tripResult.tripId,        // vize ↔ trip bağı (migration 014)
         locale: v.locale,
 
         // Step 1 · Travel
@@ -237,7 +281,23 @@ export async function submitVisaApplication(
       return { ok: false, code: 'draft_not_found', error: 'Draft not found or already submitted' }
     }
 
-    return { ok: true, id: data.id }
+    // ----- 4. Viva ödeme siparişi (non-fatal — ulaşılamazsa WhatsApp fallback). -----
+    let redirectUrl: string | undefined
+    try {
+      const pay = await createPaymentOrder({ tripId: tripResult.tripId, locale: v.locale })
+      if (pay.ok) redirectUrl = pay.redirectUrl
+      else console.warn('[submitVisaApplication] Viva order failed, WhatsApp fallback:', pay.error)
+    } catch (err) {
+      console.error('[submitVisaApplication] createPaymentOrder threw:', err)
+    }
+
+    return {
+      ok: true,
+      id: data.id,
+      tripId: tripResult.tripId,
+      redirectUrl,
+      paymentWhatsAppUrl: tripResult.paymentWhatsAppUrl,
+    }
   } catch (err) {
     console.error('[submitVisaApplication] unexpected error:', err)
     return {

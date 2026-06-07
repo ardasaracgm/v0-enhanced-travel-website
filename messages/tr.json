@@ -807,11 +807,15 @@
         "previousSchengenVisaDateHint": "İsteğe bağlı — önceki Schengen vizenizin geçerlilik (bitiş) tarihi. Boş bırakabilirsiniz.",
         "employerOptionalNote": "Bu bilgiler isteğe bağlıdır."
       },
+      "uploading": "Belge yükleniyor…",
       "success": {
         "title": "Başvurunuz Alındı",
+        "titlePending": "Başvurunuz Alındı — Ödeme Bekleniyor",
         "body": "Teşekkürler. Vize ekibimiz başvurunuzu inceleyecek ve bir iş günü içinde sizinle iletişime geçecektir.",
+        "bodyPayment": "Başvurunuz için €90 ödeme gerekiyor. Ödeme linkinizi WhatsApp'tan almak için aşağıya dokunun.",
         "documentsCta": "Belgelerinizi Yükleyin",
-        "whatsapp": "WhatsApp'tan bize yazın"
+        "whatsapp": "WhatsApp'tan bize yazın",
+        "payButton": "WhatsApp'tan €90 öde"
       }
     }
   },
