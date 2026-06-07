@@ -55,6 +55,7 @@ import {
   FINANCING_MEANS,
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
+import { checkPromoCode } from '@/lib/actions/check-promo-code-action'
 import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
 
 // ============================================================
@@ -162,6 +163,8 @@ export function VisaWizard() {
   const [promoCode, setPromoCode] = React.useState('')          // gate-DIŞI kupon kodu
   const [invalidPromo, setInvalidPromo] = React.useState(false) // geçersiz kod uyarısı
   const [freeApplication, setFreeApplication] = React.useState(false) // ücretsiz (kuponlu) success
+  const [docMissing, setDocMissing] = React.useState(false)        // step 0 belge eksik uyarısı
+  const [checkingPromo, setCheckingPromo] = React.useState(false)  // promo await kilidi (çift-tık)
 
   // ----- Inline document slots (Vize redesign, Faz 1) -----
   // Documents attach to a lazily-created draft: the first upload calls ensureDraft.
@@ -203,6 +206,8 @@ export function VisaWizard() {
   const [uploadedDocs, setUploadedDocs] = React.useState<Record<string, string>>({})
   const handleDocUploaded = React.useCallback((key: string, filename: string) => {
     setUploadedDocs((prev) => ({ ...prev, [key]: filename }))
+    if (['biometric_photo', 'consent_form', 'id_card_front', 'id_card_back', 'passport_main'].includes(key))
+      setDocMissing(false)
   }, [])
 
   // Optional, free-form date tied to the previous_schengen_visa slot (step 5):
@@ -398,6 +403,37 @@ export function VisaWizard() {
     }
     setErrors({})
     if (!lastStep) {
+      // Step 0 kapıları: zorunlu belge + (varsa) promo kodu erken kontrol.
+      if (step === 0) {
+        const docsOk =
+          isDocSatisfied('biometric_photo') &&
+          (!applicantIsMinor || isDocSatisfied('consent_form'))
+        if (!docsOk) {
+          setDocMissing(true)
+          scrollToTop()
+          return
+        }
+        if (promoCode.trim()) {
+          setCheckingPromo(true)
+          const { valid } = await checkPromoCode(promoCode.trim())
+          setCheckingPromo(false)
+          if (!valid) {
+            setInvalidPromo(true)
+            return
+          }
+        }
+      }
+      if (step === 1) {
+        const docsOk =
+          isDocSatisfied('id_card_front') &&
+          isDocSatisfied('id_card_back') &&
+          isDocSatisfied('passport_main')
+        if (!docsOk) {
+          setDocMissing(true)
+          scrollToTop()
+          return
+        }
+      }
       setSubmitAttempted(false) // ileri giderken sonraki adım sessiz başlasın
       setStep(step + 1)
       scrollToTop()
@@ -488,6 +524,13 @@ export function VisaWizard() {
   }
 
   // ----- Field renderers -----
+  // Native type=date yıl alanı 6 haneye kadar kabul eder (maxLength geçmez).
+  // Yıl >4 hane gelirse ilk 4'e kes — Zod zaten reddeder; bu UX guard'ı.
+  const clampYear = (v: string): string => {
+    const m = /^(\d+)-(\d{2})-(\d{2})$/.exec(v)
+    return m && m[1].length > 4 ? `${m[1].slice(0, 4)}-${m[2]}-${m[3]}` : v
+  }
+
   const textField = (
     name: FieldName,
     type: 'text' | 'email' | 'tel' = 'text',
@@ -519,7 +562,11 @@ export function VisaWizard() {
         min={opts.min}
         max={opts.max}
         value={form[name]}
-        onChange={(e) => (opts.onChange ? opts.onChange(e.target.value) : update(name, e.target.value))}
+        onChange={(e) => {
+          const val = clampYear(e.target.value)
+          if (opts.onChange) opts.onChange(val)
+          else update(name, val)
+        }}
         className={errors[name] ? 'border-destructive' : ''}
       />
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
@@ -652,6 +699,7 @@ export function VisaWizard() {
               {renderDocSlot('biometric_photo')}
               {applicantIsMinor && renderDocSlot('consent_form')}
             </DocsSection>
+            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
             <div className="space-y-2">
               <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
               <Input
@@ -688,6 +736,7 @@ export function VisaWizard() {
                 {renderDocSlot('passport_main')}
               </div>
             </DocsSection>
+            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
           </>
         )}
 
@@ -708,7 +757,7 @@ export function VisaWizard() {
               <FieldGroup title={t('sections.residencePermit')}>
                 <div className="grid md:grid-cols-2 gap-4">
                   {textField('residencePermitNumber')}
-                  {dateField('residencePermitExpiry')}
+                  {dateField('residencePermitExpiry', { min: '1900-01-01', max: '2100-12-31' })}
                 </div>
               </FieldGroup>
             )}
@@ -837,8 +886,10 @@ export function VisaWizard() {
                       <Input
                         id="previousSchengenVisaDate"
                         type="date"
+                        min="1900-01-01"
+                        max={today}
                         value={previousSchengenVisaDate}
-                        onChange={(e) => setPreviousSchengenVisaDate(e.target.value)}
+                        onChange={(e) => setPreviousSchengenVisaDate(clampYear(e.target.value))}
                       />
                       <p className="text-xs text-muted-foreground">
                         {t('docs.previousSchengenVisaDateHint')}
@@ -910,7 +961,7 @@ export function VisaWizard() {
 
           <Button
             onClick={handleNext}
-            disabled={submitting || isUploading}
+            disabled={submitting || isUploading || checkingPromo}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {submitting ? (

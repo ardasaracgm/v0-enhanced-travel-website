@@ -810,6 +810,7 @@
       },
       "uploading": "Uploading document…",
       "promoInvalid": "Invalid code. Check it or leave the field empty.",
+      "docMissing": "Please upload the required documents for this step.",
       "success": {
         "title": "Application Received",
         "titleFree": "Application Received",

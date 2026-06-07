@@ -810,6 +810,7 @@
       },
       "uploading": "Belge yükleniyor…",
       "promoInvalid": "Geçersiz kod. Kontrol edin veya alanı boş bırakın.",
+      "docMissing": "Bu adımdaki zorunlu belgeleri yükleyin.",
       "success": {
         "title": "Başvurunuz Alındı",
         "titleFree": "Başvurunuz Alındı",
