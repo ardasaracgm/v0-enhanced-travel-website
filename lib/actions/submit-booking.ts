@@ -18,6 +18,7 @@ import { createPaymentOrder } from './create-payment-order'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
+import { isAvailable, computeEndDate } from '@/lib/car-availability'
 import { type LuggageCounts } from '@/lib/luggage-pricing'
 import {
   resolveFerryItem,
@@ -44,7 +45,7 @@ export interface SubmitBookingInput {
   /** Booking line items — IDs only; server resolves prices */
   items: Array<
     | { type: 'ferry'; leg: 'outbound' | 'return'; ferryId: string; date: string }
-    | { type: 'car_rental'; carId: string; days: number; pickupAt?: string; dropoffAt?: string }
+    | { type: 'car_rental'; carId: string; days: number; pickupAt: string; dropoffAt?: string }
     | {
         type: 'luggage'
         counts: LuggageCounts
@@ -161,6 +162,9 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
 
   // 2. Resolve items and build createTrip list
   const items: CreateTripInput['items'] = []
+  // car_bookings hold kayıtları: trip_id Faz 5'te doğduğu için burada
+  // biriktirilir, trip insert'ten SONRA yazılır.
+  const carBookingDrafts: { car_id: string; start_date: string; end_date: string }[] = []
 
   for (const item of input.items) {
     if (item.type === 'ferry') {
@@ -191,6 +195,18 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           .eq('id', item.carId)
           .maybeSingle()
         if (data) {
+          // Müsaitlik + hold. "Araç var ama tarih aralığı DOLU" → HARD reject.
+          // ("Araç bulunamadı" = data yok → aşağıdaki soft-skip korunur; ikisi ayrı.)
+          // pickupAt artık şemada zorunlu (YYYY-MM-DD) → guard gerekmez.
+          const free = await isAvailable(item.carId, item.pickupAt, authorizedDays)
+          if (!free) {
+            return { ok: false, code: 'car_unavailable', error: `Car unavailable: ${item.carId}` }
+          }
+          carBookingDrafts.push({
+            car_id: item.carId,
+            start_date: item.pickupAt,
+            end_date: computeEndDate(item.pickupAt, authorizedDays),
+          })
           // I/O (cars fetch + authorizedDays) stays here; pure assembly in resolver.
           items.push(
             resolveCarRentalItem({
@@ -278,6 +294,26 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   })
 
   if (!tripResult.ok) return tripResult
+
+  // 5b. car_rental hold kayıtları (trip_id artık var). NON-FATAL: insert
+  //     hatası booking'i bozmaz — Viva fallback kalıbı gibi sadece loglanır.
+  if (carBookingDrafts.length > 0) {
+    try {
+      const admin = getSupabaseAdmin()
+      const { error } = await admin.from('car_bookings').insert(
+        carBookingDrafts.map((d) => ({
+          trip_id: tripResult.tripId,
+          car_id: d.car_id,
+          start_date: d.start_date,
+          end_date: d.end_date,
+          state: 'held',
+        })),
+      )
+      if (error) console.error('[submitBooking] car_bookings insert failed:', error)
+    } catch (err) {
+      console.error('[submitBooking] car_bookings insert threw:', err)
+    }
+  }
 
   // 6. Attempt Viva payment order. Non-fatal — if Viva is unreachable or returns
   //    an error, the trip is already safely in pending_payment and the WhatsApp

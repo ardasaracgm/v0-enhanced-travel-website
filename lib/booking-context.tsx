@@ -42,8 +42,8 @@ export interface CarRentalSelection {
   days: number
   pickupLocation: string
   dropoffLocation: string
-  pickupAt: string // ISO timestamp
-  dropoffAt: string // ISO timestamp
+  pickupAt: string // YYYY-MM-DD (date-only)
+  dropoffAt: string // YYYY-MM-DD (date-only)
 }
 
 // ============================================================
@@ -72,8 +72,8 @@ export interface CarRentalBookingItem {
   days: number
   pickupLocation: string
   dropoffLocation: string
-  pickupAt: string       // ISO timestamp
-  dropoffAt: string      // ISO timestamp
+  pickupAt: string       // YYYY-MM-DD (date-only)
+  dropoffAt: string      // YYYY-MM-DD (date-only)
   priceAmount: number    // pricePerDay × days, display only
 }
 

@@ -54,7 +54,7 @@ const carSchema = z.object({
   type:      z.literal('car_rental'),
   carId:     z.string().min(1),
   days:      z.number().int().positive().max(90),
-  pickupAt:  z.string().optional(),
+  pickupAt:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'pickupAt must be YYYY-MM-DD'),
   dropoffAt: z.string().optional(),
 })
 
