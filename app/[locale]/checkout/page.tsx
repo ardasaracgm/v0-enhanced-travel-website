@@ -64,6 +64,15 @@ export default function CheckoutPage() {
   const [insTariffs, setInsTariffs] = React.useState<InsuranceTariff[]>([])
   const [insLoading, setInsLoading] = React.useState(false)
   const [insFailed, setInsFailed] = React.useState(false)
+  // Forced active choice (AB Madde 22): mount'ta hiçbiri seçili değil; kullanıcı
+  // none/tier'den birini seçmeli. 'none' de geçerli aktif seçimdir.
+  const [insuranceChoiceMade, setInsuranceChoiceMade] = React.useState(false)
+  // Hydrate'le gelen tier de yapılmış seçim sayılır (back-navigation).
+  const insuranceChosen = insuranceChoiceMade || !!insuranceItem
+  // Sigorta SADECE quote yüklenirken VEYA tier'lar gösterilip henüz seçilmemişken
+  // kilitler. insFailed (kart gizli) → kilitlemez (bypass; checkout kilitlenmesin).
+  const insuranceBlocking =
+    insLoading || (!insFailed && insTariffs.length > 0 && !insuranceChosen)
 
   // DOB içeriği değişince (sessionStorage hydration boş→dolu) effect'i yeniden
   // tetikler — length tek başına yetmez (SET_ITEMS/SET_PASSENGERS ayrı dispatch).
@@ -95,6 +104,7 @@ export default function CheckoutPage() {
   }, [outboundItem?.date, returnItem?.date, passengerDobKey])
 
   function handleInsuranceChange(value: string) {
+    setInsuranceChoiceMade(true) // none de tier de geçerli aktif seçim
     if (value === 'none') { dispatch({ type: 'REMOVE_INSURANCE' }); return }
     const tariff = insTariffs.find((tf) => String(tf.tariffId) === value)
     if (!tariff || !outboundItem) return
@@ -113,7 +123,7 @@ export default function CheckoutPage() {
   }
 
   const handleConfirm = async () => {
-    if (!acceptTerms || isProcessing) return
+    if (!acceptTerms || isProcessing || insuranceBlocking) return
     if (!outbound) return
 
     setIsProcessing(true)
@@ -432,7 +442,7 @@ export default function CheckoutPage() {
                           </div>
                         ) : (
                           <RadioGroup
-                            value={insuranceItem ? String(insuranceItem.tariffId) : 'none'}
+                            value={insuranceItem ? String(insuranceItem.tariffId) : (insuranceChoiceMade ? 'none' : '')}
                             onValueChange={handleInsuranceChange}
                             className="space-y-2"
                           >
@@ -440,7 +450,7 @@ export default function CheckoutPage() {
                             <label
                               htmlFor="ins-none"
                               className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2 cursor-pointer transition-all ${
-                                !insuranceItem ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                                !insuranceItem && insuranceChoiceMade ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
                               }`}
                             >
                               <RadioGroupItem value="none" id="ins-none" />
@@ -507,7 +517,7 @@ export default function CheckoutPage() {
                         <Button
                           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
                           onClick={handleConfirm}
-                          disabled={!acceptTerms || isProcessing}
+                          disabled={!acceptTerms || isProcessing || insuranceBlocking}
                         >
                           {isProcessing ? (
                             <>
@@ -529,6 +539,11 @@ export default function CheckoutPage() {
                         {!acceptTerms && (
                           <p className="text-sm text-muted-foreground text-center">
                             Please accept the terms to continue
+                          </p>
+                        )}
+                        {acceptTerms && insuranceBlocking && (
+                          <p className="text-sm text-muted-foreground text-center">
+                            {insLoading ? tIns('loadingWait') : tIns('chooseRequired')}
                           </p>
                         )}
                       </div>

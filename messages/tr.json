@@ -1043,7 +1043,9 @@
     "subheading": "Uluslararası deneyimle, yolculuğunuza ek güvence.",
     "schengenBadge": "Schengen alanı geçerli",
     "none": "Sigorta istemiyorum",
-    "coverLabel": "{coverage}€ teminat · 100€ muafiyet"
+    "coverLabel": "{coverage}€ teminat · 100€ muafiyet",
+    "chooseRequired": "Lütfen sigorta tercihinizi seçin",
+    "loadingWait": "Sigorta seçenekleri yükleniyor…"
   },
 
   "extrasPage": {

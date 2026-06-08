@@ -1043,7 +1043,9 @@
     "subheading": "Travel with extra peace of mind, backed by international experience.",
     "schengenBadge": "Valid in the Schengen area",
     "none": "No insurance",
-    "coverLabel": "€{coverage} cover · €100 excess"
+    "coverLabel": "€{coverage} cover · €100 excess",
+    "chooseRequired": "Please choose an insurance option",
+    "loadingWait": "Loading insurance options…"
   },
 
   "extrasPage": {
