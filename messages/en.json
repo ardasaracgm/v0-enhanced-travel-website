@@ -1038,6 +1038,14 @@
     }
   },
 
+  "checkoutInsurance": {
+    "heading": "Travel insurance",
+    "subheading": "Travel with extra peace of mind, backed by international experience.",
+    "schengenBadge": "Valid in the Schengen area",
+    "none": "No insurance",
+    "coverLabel": "€{coverage} cover · €100 excess"
+  },
+
   "extrasPage": {
     "totalPrice": "Total Price",
     "returnPrefix": "Return:",
@@ -1083,6 +1091,17 @@
       "pieceCount": "{count, plural, one {# piece} other {# pieces}}",
       "summaryLabel": "Luggage storage",
       "removeAria": "Remove luggage"
+    },
+    "insurance": {
+      "heading": "Travel insurance",
+      "subheading": "Protect your trip.",
+      "optInLabel": "Add travel insurance",
+      "loading": "Loading plans…",
+      "error": "Couldn't load plans. Please try again.",
+      "pricePlaceholder": "Price coming soon",
+      "summaryLabel": "Travel insurance",
+      "removeAria": "Remove insurance",
+      "travellerCount": "{count, plural, one {# traveller} other {# travellers}}"
     }
   },
 

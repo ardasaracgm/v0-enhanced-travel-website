@@ -12,6 +12,7 @@ import {
   AlertCircle,
   MessageCircle,
   CalendarClock,
+  ShieldCheck,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -21,6 +22,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
@@ -29,7 +32,10 @@ import {
   useBooking,
   selectOutboundFerry,
   selectTotalPrice,
+  type FerryBookingItem,
+  type InsuranceBookingItem,
 } from '@/lib/booking-context'
+import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only guard tetiklenmez)
 import { submitBooking } from '@/lib/actions/submit-booking'
 import { assertNever } from '@/lib/trip-items/types'
 import { summarizeItem } from '@/lib/trip-items/summary'
@@ -39,10 +45,72 @@ export default function CheckoutPage() {
   const router = useRouter()
   const locale = useLocale() as Locale
   const t = useTranslations('checkout')
+  const tIns = useTranslations('checkoutInsurance')
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
+
+  // Sigorta upsell (A1) — gerçek DOB'larla canlı quote.
+  const outboundItem = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
+  ) ?? null
+  const returnItem = state.items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
+  ) ?? null
+  const insuranceItem = state.items.find(
+    (i): i is InsuranceBookingItem => i.type === 'insurance'
+  ) ?? null
+  const [insTariffs, setInsTariffs] = React.useState<InsuranceTariff[]>([])
+  const [insLoading, setInsLoading] = React.useState(false)
+  const [insFailed, setInsFailed] = React.useState(false)
+
+  // DOB içeriği değişince (sessionStorage hydration boş→dolu) effect'i yeniden
+  // tetikler — length tek başına yetmez (SET_ITEMS/SET_PASSENGERS ayrı dispatch).
+  const passengerDobKey = state.passengers.map((p) => p.birthDate ?? '').join(',')
+
+  React.useEffect(() => {
+    // Savunma: normal akışta her yolcunun birthDate'i dolu (passenger-details
+    // Zod gate), ama eksikse quote'u hiç çalıştırma (insFailed=false → bölüm gizli).
+    if (!outboundItem || state.passengers.length === 0) return
+    if (!state.passengers.every((p) => p.birthDate)) return
+    let cancelled = false
+    setInsLoading(true)
+    setInsFailed(false)
+    fetch('/api/insurance/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dateFrom: outboundItem.date,
+        dateTo: returnItem?.date ?? outboundItem.date,
+        touristCount: state.passengers.length,
+        tourists: state.passengers.map((p) => ({ dateBirth: p.birthDate })),
+      }),
+    })
+      .then((r) => { if (!r.ok) throw new Error('quote'); return r.json() })
+      .then((d: { tariffs: InsuranceTariff[] }) => { if (!cancelled) setInsTariffs(d.tariffs) })
+      .catch(() => { if (!cancelled) setInsFailed(true) })
+      .finally(() => { if (!cancelled) setInsLoading(false) })
+    return () => { cancelled = true }
+  }, [outboundItem?.date, returnItem?.date, passengerDobKey])
+
+  function handleInsuranceChange(value: string) {
+    if (value === 'none') { dispatch({ type: 'REMOVE_INSURANCE' }); return }
+    const tariff = insTariffs.find((tf) => String(tf.tariffId) === value)
+    if (!tariff || !outboundItem) return
+    dispatch({
+      type: 'SET_INSURANCE',
+      payload: {
+        tariffId: tariff.tariffId,
+        tariffName: tariff.tariffName,
+        coverageValue: tariff.coverageValue,
+        touristCount: state.passengers.length,
+        startDate: outboundItem.date,
+        endDate: returnItem?.date ?? outboundItem.date,
+        priceAmount: tariff.priceAmount, // display; server re-price eder
+      },
+    })
+  }
 
   const handleConfirm = async () => {
     if (!acceptTerms || isProcessing) return
@@ -57,6 +125,8 @@ export default function CheckoutPage() {
         locale,
         // IDs/params only — submitBooking resolves every price server-side
         // (ferry/car from trusted sources, luggage via calculateLuggagePriceCents).
+        // A1: insurance da payload'a girer; sunucu getInsuranceQuote ile re-price eder
+        // (client priceAmount yok sayılır). Poliçe oluşturma add_contract Kademe B.
         items: state.items.map(item => {
           if (item.type === 'ferry') {
             return { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
@@ -69,6 +139,11 @@ export default function CheckoutPage() {
             // client priceAmount was display-only; server recomputes.
             return { type: 'luggage' as const, counts: item.counts, dropOffDate: item.dropOffDate,
                      pickupDate: item.pickupDate, location: item.location }
+          }
+          if (item.type === 'insurance') {
+            // priceAmount display-only; server getInsuranceQuote ile yeniden fiyatlar.
+            return { type: 'insurance' as const, tariffId: item.tariffId, tariffName: item.tariffName,
+                     touristCount: item.touristCount, priceAmount: item.priceAmount }
           }
           // Exhaustiveness: a new BookingItem type without a branch here fails
           // at compile time (item: never). No more silent "unknown = luggage".
@@ -210,7 +285,7 @@ export default function CheckoutPage() {
                     {/* Generic per-item rows (registry summary facet). Luggage
                         now appears here too — was previously only in the total. */}
                     {state.items.map((item, i) => {
-                      const row = summarizeItem(item)
+                      const row = summarizeItem(item, locale)
                       return (
                         <div
                           key={i}
@@ -330,7 +405,74 @@ export default function CheckoutPage() {
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24">
+                <div className="sticky top-24 space-y-6">
+                  {/* Travel insurance upsell (A1) — opt-in boş başlar (AB Madde 22).
+                      Hata olursa bölüm sessizce gizlenir; checkout kırılmaz. */}
+                  {!insFailed && (
+                    <Card className="bg-card border-border/50">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-foreground leading-tight">{tIns('heading')}</h3>
+                            <p className="text-xs text-muted-foreground">{tIns('subheading')}</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
+                          <CheckCircle className="h-3 w-3" /> {tIns('schengenBadge')}
+                        </span>
+
+                        {insLoading ? (
+                          <div className="space-y-2">
+                            <Skeleton className="h-11 w-full" />
+                            <Skeleton className="h-11 w-full" />
+                            <Skeleton className="h-11 w-full" />
+                          </div>
+                        ) : (
+                          <RadioGroup
+                            value={insuranceItem ? String(insuranceItem.tariffId) : 'none'}
+                            onValueChange={handleInsuranceChange}
+                            className="space-y-2"
+                          >
+                            {/* Default: opt-in boş (AB Madde 22 — pre-tick yasak) */}
+                            <label
+                              htmlFor="ins-none"
+                              className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2 cursor-pointer transition-all ${
+                                !insuranceItem ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                              }`}
+                            >
+                              <RadioGroupItem value="none" id="ins-none" />
+                              <span className="text-sm text-foreground">{tIns('none')}</span>
+                            </label>
+                            {insTariffs.map((tariff) => {
+                              const selected = insuranceItem?.tariffId === tariff.tariffId
+                              return (
+                                <label
+                                  key={tariff.tariffId}
+                                  htmlFor={`ins-${tariff.tariffId}`}
+                                  className={`flex items-center justify-between gap-3 rounded-xl border-2 px-3 py-2 cursor-pointer transition-all ${
+                                    selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-3 min-w-0">
+                                    <RadioGroupItem value={String(tariff.tariffId)} id={`ins-${tariff.tariffId}`} />
+                                    {/* coverageValue gösterilir; tariffName ("Standard") GÖSTERİLMEZ */}
+                                    <span className="text-sm font-medium text-foreground">
+                                      {tIns('coverLabel', { coverage: tariff.coverageValue.toLocaleString(locale) })}
+                                    </span>
+                                  </span>
+                                  <span className="text-sm font-semibold text-primary whitespace-nowrap">€{tariff.priceAmount}</span>
+                                </label>
+                              )
+                            })}
+                          </RadioGroup>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-bold text-foreground mb-6">Order Summary</h3>
@@ -339,7 +481,7 @@ export default function CheckoutPage() {
                         <div className="space-y-2">
                           {/* Generic breakdown — one line per item incl. luggage. */}
                           {state.items.map((item, i) => {
-                            const row = summarizeItem(item)
+                            const row = summarizeItem(item, locale)
                             return (
                               <div key={i} className="flex items-center justify-between text-sm">
                                 <span className="text-muted-foreground">{row.breakdownLabel}</span>

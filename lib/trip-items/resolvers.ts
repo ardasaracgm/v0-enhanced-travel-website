@@ -20,6 +20,7 @@ import type {
   FerryResolveCtx,
   CarResolveCtx,
   LuggageResolveCtx,
+  InsuranceResolveCtx,
 } from './types'
 
 // date: "2026-06-15", time: "09:00" → "2026-06-15T09:00:00+03:00"
@@ -100,6 +101,34 @@ export function resolveLuggageItem(ctx: LuggageResolveCtx): ResolvedTripItem {
       drop_off_date: item.dropOffDate,
       pickup_date: item.pickupDate,
       location: item.location,
+    },
+  }
+}
+
+/**
+ * Insurance (Auras). PURE — fiyat ctx.quoteAmount'tan (submit-booking
+ * getInsuranceQuote ile getirir; A0'da mock 0). Fiyat mantığı yazılı, değer
+ * mock. Gerçek poliçe verisi Kademe B (add_contract). scheduledAt/endsAt
+ * +03:00 deseni resolveLuggageItem ile aynı.
+ */
+export function resolveInsuranceItem(ctx: InsuranceResolveCtx): ResolvedTripItem {
+  const { item, quoteAmount, dateFrom, dateTo } = ctx
+  return {
+    type: 'insurance',
+    title: `Travel insurance — ${item.tariffName}`,
+    scheduledAt: `${dateFrom}T00:00:00+03:00`,
+    endsAt: `${dateTo}T00:00:00+03:00`,
+    passengerCount: item.touristCount,
+    priceAmount: quoteAmount, // A0: mock 0
+    priceCurrency: 'EUR',
+    metadata: {
+      policy_type: 'travel',
+      starts_at: dateFrom,
+      ends_at: dateTo,
+      insurer: 'Auras',
+      tariff_id: item.tariffId,
+      tariff_name: item.tariffName,
+      tourist_count: item.touristCount,
     },
   }
 }

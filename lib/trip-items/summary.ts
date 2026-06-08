@@ -19,6 +19,7 @@ import type {
   FerryBookingItem,
   CarRentalBookingItem,
   LuggageBookingItem,
+  InsuranceBookingItem,
 } from '@/lib/booking-context'
 
 export interface ItemSummaryRow {
@@ -67,11 +68,25 @@ function luggageRow(item: LuggageBookingItem): ItemSummaryRow {
   }
 }
 
+// coverageValue gösterilir (35.000€/100.000€), tariffName ("Standard") DEĞİL —
+// upsell kartındaki coverLabel ile tutarlı, locale-aware. tariffName kayıtta kalır.
+function insuranceRow(item: InsuranceBookingItem, locale: string): ItemSummaryRow {
+  const coverage = item.coverageValue.toLocaleString(locale)
+  return {
+    label: 'Travel insurance',
+    title: locale === 'tr' ? `${coverage}€ teminat` : `€${coverage} cover`,
+    detail: `${item.touristCount} ${item.touristCount === 1 ? 'traveller' : 'travellers'}`,
+    breakdownLabel: 'Insurance',
+    amount: item.priceAmount,
+  }
+}
+
 // Registry of per-type summary formatters — exhaustive over BookableItemType.
 const ITEM_SUMMARY = {
   ferry: ferryRow,
   car_rental: carRow,
   luggage: luggageRow,
+  insurance: insuranceRow,
 }
 
 /**
@@ -79,7 +94,7 @@ const ITEM_SUMMARY = {
  * each formatter gets its exact type; assertNever closes it — a new item type
  * without a row fails at compile time.
  */
-export function summarizeItem(item: BookingItem): ItemSummaryRow {
+export function summarizeItem(item: BookingItem, locale: string = 'en'): ItemSummaryRow {
   switch (item.type) {
     case 'ferry':
       return ITEM_SUMMARY.ferry(item)
@@ -87,6 +102,8 @@ export function summarizeItem(item: BookingItem): ItemSummaryRow {
       return ITEM_SUMMARY.car_rental(item)
     case 'luggage':
       return ITEM_SUMMARY.luggage(item)
+    case 'insurance':
+      return ITEM_SUMMARY.insurance(item, locale)
     default:
       return assertNever(item, 'summary booking item')
   }

@@ -1032,6 +1032,14 @@
     }
   },
 
+  "checkoutInsurance": {
+    "heading": "Travel insurance",
+    "subheading": "Travel with extra peace of mind, backed by international experience.",
+    "schengenBadge": "Valid in the Schengen area",
+    "none": "No insurance",
+    "coverLabel": "€{coverage} cover · €100 excess"
+  },
+
   "extrasPage": {
     "totalPrice": "Συνολική τιμή",
     "returnPrefix": "Επιστροφή:",
@@ -1077,6 +1085,17 @@
       "pieceCount": "{count, plural, one {# τεμάχιο} other {# τεμάχια}}",
       "summaryLabel": "Φύλαξη αποσκευών",
       "removeAria": "Αφαίρεση αποσκευών"
+    },
+    "insurance": {
+      "heading": "Travel insurance",
+      "subheading": "Protect your trip.",
+      "optInLabel": "Add travel insurance",
+      "loading": "Loading plans…",
+      "error": "Couldn't load plans. Please try again.",
+      "pricePlaceholder": "Price coming soon",
+      "summaryLabel": "Travel insurance",
+      "removeAria": "Remove insurance",
+      "travellerCount": "{count, plural, one {# traveller} other {# travellers}}"
     }
   },
 

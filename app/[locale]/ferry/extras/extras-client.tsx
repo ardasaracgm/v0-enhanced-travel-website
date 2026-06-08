@@ -315,12 +315,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           </div>
         </section>
 
-        {/* Luggage drop-off — yalnız emanet sunulan adalarda (gate). */}
+        {/* Luggage drop-off — yalnız emanet sunulan adalarda (gate); tam genişlik
+            (sigorta ödeme adımına taşındı). */}
         {luggageAvailable && (
         <section className="w-full pt-8 md:pt-12">
           <div className="container px-4 md:px-6">
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
+            <div>
+              <div>
                 <Card className="bg-card border-2 border-border/50">
                   <CardContent className="p-5 space-y-4">
                     {/* Heading + slogan — ince üst; sağ üstte (i) boyut rehberi */}
@@ -414,8 +415,6 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </CardContent>
                 </Card>
               </div>
-              {/* Sağ sütun — sigorta upsell için rezerve (şimdilik boş) */}
-              <div className="lg:col-span-1" aria-hidden />
             </div>
           </div>
         </section>

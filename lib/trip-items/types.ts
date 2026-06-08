@@ -29,13 +29,13 @@ import type { FerryRoute } from '@/lib/ferry-mock-data'
 // package_pickup, etc. created through OTHER flows). The registry's
 // Record<BookableItemType, …> forces an entry for each, so a new value
 // here is a COMPILE error until its descriptor exists.
-export type BookableItemType = 'ferry' | 'car_rental' | 'luggage'
+export type BookableItemType = 'ferry' | 'car_rental' | 'luggage' | 'insurance'
 
 // Future doors — declared, intentionally NOT bookable yet. Adding one to
 // BookableItemType above + a descriptor is the whole "enable" step.
-// Insurance (Kademe A), e-SIM, VIP transfer, etc. live here as placeholders.
+// Insurance moved to BookableItemType (Kademe A0 — Auras opt-in scaffold).
+// e-SIM, VIP transfer, etc. live here as placeholders.
 export type PlannedItemType =
-  | 'insurance'
   | 'esim'
   | 'transfer'
   | 'tour'
@@ -45,7 +45,6 @@ export type PlannedItemType =
   | 'custom'
 
 export const PLANNED_ITEM_TYPES: readonly PlannedItemType[] = [
-  'insurance',
   'esim',
   'transfer',
   'tour',
@@ -84,7 +83,15 @@ export interface LuggageSubmitItem {
   location: string
 }
 
-export type SubmitItem = FerrySubmitItem | CarSubmitItem | LuggageSubmitItem
+export interface InsuranceSubmitItem {
+  type: 'insurance'
+  tariffId: number      // doc:86 tariff_id (integer)
+  tariffName: string
+  touristCount: number
+  priceAmount: number   // A0: mock/0; display-only — sunucu re-price eder (Kademe B)
+}
+
+export type SubmitItem = FerrySubmitItem | CarSubmitItem | LuggageSubmitItem | InsuranceSubmitItem
 
 // ============================================================
 // Resolve contexts — what the server gathers before pricing
@@ -120,7 +127,17 @@ export interface LuggageResolveCtx {
   item: LuggageSubmitItem
 }
 
-export type ResolveCtx = FerryResolveCtx | CarResolveCtx | LuggageResolveCtx
+export interface InsuranceResolveCtx {
+  item: InsuranceSubmitItem
+  /** Otoriter fiyat — getInsuranceQuote'tan (A0: mock 0). I/O call site'ta. */
+  quoteAmount: number
+  /** Kaynak currency (loglanır; fiyat EUR 1:1 gösterilir). */
+  quoteCurrency: string
+  dateFrom: string
+  dateTo: string
+}
+
+export type ResolveCtx = FerryResolveCtx | CarResolveCtx | LuggageResolveCtx | InsuranceResolveCtx
 
 // ============================================================
 // Resolved trip item — the registry's output contract

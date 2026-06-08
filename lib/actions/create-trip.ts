@@ -120,6 +120,7 @@ export type CreateTripErrorCode =
   | 'database_error'
   | 'invalid_luggage'
   | 'car_unavailable'
+  | 'invalid_insurance'
   | 'unexpected'
 
 // ============================================================

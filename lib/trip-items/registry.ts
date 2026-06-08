@@ -25,11 +25,13 @@ import type {
   FerryResolveCtx,
   CarResolveCtx,
   LuggageResolveCtx,
+  InsuranceResolveCtx,
 } from './types'
 import {
   resolveFerryItem,
   resolveCarRentalItem,
   resolveLuggageItem,
+  resolveInsuranceItem,
 } from './resolvers'
 
 // date >= today in Greece timezone prevents bookings for past departures.
@@ -100,6 +102,23 @@ const luggageDescriptor = {
   resolve: resolveLuggageItem,
 } satisfies TripItemDescriptor<LuggageResolveCtx, typeof luggageSchema>
 
+// Insurance (Auras opt-in). Client tariffId(number)+ad+yolcu sayısı+display
+// fiyat gönderir; sunucu getInsuranceQuote ile yeniden fiyatlar (A0: mock).
+const insuranceSchema = z.object({
+  type:         z.literal('insurance'),
+  tariffId:     z.number().int(),         // doc:86 integer
+  tariffName:   z.string().min(1).max(200),
+  touristCount: z.number().int().min(1).max(9),
+  priceAmount:  z.number().nonnegative(), // A0: mock/0; sunucu yok sayar
+})
+
+const insuranceDescriptor = {
+  type: 'insurance',
+  enabled: true,
+  clientSchema: insuranceSchema,
+  resolve: resolveInsuranceItem,
+} satisfies TripItemDescriptor<InsuranceResolveCtx, typeof insuranceSchema>
+
 /**
  * The registry. `satisfies Record<BookableItemType, …>` = compile-time
  * exhaustiveness; a new BookableItemType without an entry will not type-check.
@@ -108,6 +127,7 @@ export const TRIP_ITEM_REGISTRY = {
   ferry: ferryDescriptor,
   car_rental: carRentalDescriptor,
   luggage: luggageDescriptor,
+  insurance: insuranceDescriptor,
 } satisfies Record<BookableItemType, TripItemDescriptor>
 
 export function getTripItemDescriptor(

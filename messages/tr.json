@@ -1038,6 +1038,14 @@
     }
   },
 
+  "checkoutInsurance": {
+    "heading": "Seyahat sigortası",
+    "subheading": "Uluslararası deneyimle, yolculuğunuza ek güvence.",
+    "schengenBadge": "Schengen alanı geçerli",
+    "none": "Sigorta istemiyorum",
+    "coverLabel": "{coverage}€ teminat · 100€ muafiyet"
+  },
+
   "extrasPage": {
     "totalPrice": "Toplam Fiyat",
     "returnPrefix": "Dönüş:",
@@ -1083,6 +1091,17 @@
       "pieceCount": "{count, plural, one {# parça} other {# parça}}",
       "summaryLabel": "Valiz emaneti",
       "removeAria": "Valizi kaldır"
+    },
+    "insurance": {
+      "heading": "Seyahat sigortası",
+      "subheading": "Yolculuğunuzu güvence altına alın.",
+      "optInLabel": "Seyahat sigortası ekle",
+      "loading": "Tarifeler yükleniyor…",
+      "error": "Tarifeler alınamadı. Lütfen tekrar deneyin.",
+      "pricePlaceholder": "Fiyat yakında",
+      "summaryLabel": "Seyahat sigortası",
+      "removeAria": "Sigortayı kaldır",
+      "travellerCount": "{count, plural, one {# yolcu} other {# yolcu}}"
     }
   },
 

@@ -87,7 +87,22 @@ export interface LuggageBookingItem {
   priceAmount: number    // gün × Σ(counts×tarife), display only
 }
 
-export type BookingItem = FerryBookingItem | CarRentalBookingItem | LuggageBookingItem
+export interface InsuranceBookingItem {
+  type: 'insurance'
+  tariffId: number
+  tariffName: string
+  coverageValue: number  // get_offers coverage_value (35000/100000) — UI bunu gösterir
+  touristCount: number
+  startDate: string      // YYYY-MM-DD (gidiş)
+  endDate: string        // YYYY-MM-DD (dönüş ?? gidiş)
+  priceAmount: number    // A0: mock 0, display-only (sunucu re-price eder — Kademe B)
+}
+
+export type BookingItem =
+  | FerryBookingItem
+  | CarRentalBookingItem
+  | LuggageBookingItem
+  | InsuranceBookingItem
 
 export interface BookingState {
   searchParams: {
@@ -153,6 +168,8 @@ type BookingAction =
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
   | { type: 'SET_LUGGAGE'; payload: Omit<LuggageBookingItem, 'type'> }
   | { type: 'REMOVE_LUGGAGE' }
+  | { type: 'SET_INSURANCE'; payload: Omit<InsuranceBookingItem, 'type'> }
+  | { type: 'REMOVE_INSURANCE' }
   | { type: 'SET_ITEMS'; payload: BookingItem[] }
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
@@ -274,6 +291,24 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return {
         ...state,
         items: state.items.filter(i => i.type !== 'luggage'),
+      }
+    case 'SET_INSURANCE': {
+      const insuranceItem: InsuranceBookingItem = {
+        type: 'insurance',
+        ...action.payload,
+      }
+      return {
+        ...state,
+        items: [
+          ...state.items.filter(i => i.type !== 'insurance'),
+          insuranceItem,
+        ],
+      }
+    }
+    case 'REMOVE_INSURANCE':
+      return {
+        ...state,
+        items: state.items.filter(i => i.type !== 'insurance'),
       }
     case 'SET_ITEMS':
       return { ...state, items: action.payload }

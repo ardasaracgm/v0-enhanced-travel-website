@@ -24,7 +24,9 @@ import {
   resolveFerryItem,
   resolveCarRentalItem,
   resolveLuggageItem,
+  resolveInsuranceItem,
 } from '@/lib/trip-items/resolvers'
+import { getInsuranceQuote } from '@/lib/insurs'
 import { submitItemSchema } from '@/lib/trip-items/registry'
 import { assertNever } from '@/lib/trip-items/types'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
@@ -52,6 +54,13 @@ export interface SubmitBookingInput {
         dropOffDate: string   // YYYY-MM-DD
         pickupDate: string    // YYYY-MM-DD
         location: string
+      }
+    | {
+        type: 'insurance'
+        tariffId: number
+        tariffName: string
+        touristCount: number
+        priceAmount: number   // A0: mock/0; sunucu yok sayar
       }
   >
 
@@ -234,6 +243,31 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           ok: false,
           code: 'invalid_luggage',
           error: err instanceof Error ? err.message : 'Invalid luggage selection',
+        }
+      }
+    } else if (item.type === 'insurance') {
+      // Server-side authoritative re-price (luggage deseni). Client priceAmount
+      // YOK SAYILIR; get_price'tan gerçek DOB'larla teyit edilir. Poliçe
+      // OLUŞTURULMAZ (add_contract Kademe B) — yalnız quote + ödemeye dahil.
+      try {
+        const dateFrom = outboundDate as string
+        const dateTo = returnDate ?? (outboundDate as string)
+        const tourists = input.passengers.map((p) => ({ dateBirth: p.birthDate }))
+        const tariffs = await getInsuranceQuote({
+          dateFrom, dateTo, touristCount: item.touristCount, tourists,
+        })
+        const match = tariffs.find((tf) => tf.tariffId === item.tariffId)
+        if (!match) {
+          return { ok: false, code: 'invalid_insurance', error: `Insurance tariff not found: ${item.tariffId}` }
+        }
+        items.push(resolveInsuranceItem({
+          item, quoteAmount: match.priceAmount, quoteCurrency: match.sourceCurrency, dateFrom, dateTo,
+        }))
+      } catch (err) {
+        return {
+          ok: false,
+          code: 'invalid_insurance',
+          error: err instanceof Error ? err.message : 'Insurance quote failed',
         }
       }
     } else {
