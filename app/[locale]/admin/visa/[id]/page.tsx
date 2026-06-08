@@ -64,9 +64,17 @@ export default async function AdminVisaDetailPage({
             {app.first_name} {app.last_name}
           </h1>
         </div>
-        <Badge variant="outline" className="text-sm">
-          {app.state}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="text-sm">
+            {app.state}
+          </Badge>
+          <a
+            href={`/api/admin/visa/${id}/docx`}
+            className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          >
+            Word indir
+          </a>
+        </div>
       </div>
 
       {/* State değiştirme — her hedef ayrı form; action kendi içinde is_admin doğrular */}
