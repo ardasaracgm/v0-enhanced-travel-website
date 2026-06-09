@@ -11,8 +11,13 @@ import type { InsuranceItemMetadata } from '@/lib/supabase'
  * get_print_form → R2) ve insurance trip_item metadata'sını günceller.
  *
  * Çekirdek orkestratör — HİÇBİR YERDEN çağrılmaz (B4b webhook, B4c admin bağlar).
- * İdempotent: metadata.order_id varsa no-op. NON-FATAL: çağıran (webhook/admin)
- * ödeme akışını bozmamalı → hata { ok:false } döner, policy_state='failed' yazılır.
+ * RESUMABLE + İDEMPOTENT: policy_state==='issued' ise no-op; order_id varsa addContract
+ * ATLANIR (mükerrer order yok). NON-FATAL: çağıran (webhook/admin) ödeme akışını
+ * bozmamalı → hata { ok:false } döner.
+ *
+ * confirm-tolerant / print-authoritative: confirmContract hatası YUTULUR (Auras
+ * zaten-confirmed order'ı reddeder), "poliçe aktif mi" kararını get_print_form verir
+ * (aktif→gerçek %PDF, değil→0 byte → %PDF guard fırlatır → pending kalır).
  *
  * GÜVENLİK: confirm_contract poliçeyi Paid+Active yapar → SADECE gerçek ödeme
  * alındıktan sonra çağrılmalı (çağıran sorumlu). payment_id=1 = "ödeme bizde
@@ -97,15 +102,19 @@ export async function issuePolicy(tripId: string): Promise<IssuePolicyResult> {
 
     const orderId = metadata.order_id as number // STAGE 1 sonrası kesin var
 
-    // ---- STAGE 2 — confirm (YALNIZ henüz confirmed değilse; bir daha asla re-confirm) ----
-    if (metadata.policy_state === 'pending') {
+    // ---- STAGE 2 — confirm (TOLERANT) — hata olursa YUT + logla. Auras zaten-confirmed
+    //      order'ı REDDEDER (success=false) ve ilk-confirm de patlayabilir; "aktif mi"
+    //      kararı STAGE 3'teki get_print_form'a bırakılır (aktif→%PDF, değil→0 byte).
+    try {
       await confirmContract({ orderId, paymentId: 1 }) // SABİT 1 (Auras: "ödeme bizde tamam")
-      metadata.policy_state = 'confirmed'
-      await writeMetadata(supabase, item.id, metadata) // best-effort: aynı invocation'da STAGE 3'e devam
+    } catch (confirmErr) {
+      console.warn('[issuePolicy] confirm_contract failed — deferring to print as authority:',
+        confirmErr instanceof Error ? confirmErr.message : confirmErr)
     }
 
-    // ---- STAGE 3 — print + R2 + finalize (idempotent: print yan etkisiz, putObject overwrite) ----
-    const pdf = await getPrintForm({ orderId }) // ham %PDF Buffer
+    // ---- STAGE 3 — print OTORİTE + R2 + issued. getPrintForm'un %PDF guard'ı aktif
+    //      olmayan poliçenin 0-byte yanıtını yakalar → throw → catch → pending kalır (retry güvenli).
+    const pdf = await getPrintForm({ orderId }) // aktif değilse guard fırlatır
     const key = buildPolicyKey(tripId, orderId)
     await putObject(getPolicyBucket(), key, pdf, 'application/pdf')
 

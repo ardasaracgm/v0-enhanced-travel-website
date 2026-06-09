@@ -258,7 +258,7 @@ export interface InsuranceItemMetadata {
   order_id?: number
   police_num?: string
   policy_r2_key?: string
-  policy_state?: 'pending' | 'confirmed' | 'issued' | 'failed'
+  policy_state?: 'pending' | 'issued' | 'failed'
 }
 
 export interface ESIMItemMetadata {
