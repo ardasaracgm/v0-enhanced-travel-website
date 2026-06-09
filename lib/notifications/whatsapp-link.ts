@@ -68,9 +68,9 @@ export function getSalesPhoneLink() {
 // ============================================================
 
 const paymentMessage: Record<Locale, string> = {
-  en: `Hello TravelBeez, I'd like to confirm payment for my booking.\n\nReference: {ref}\nAmount: {amount} {currency}\n\nThank you!`,
-  tr: `Merhaba TravelBeez, rezervasyonum için ödeme onayı almak istiyorum.\n\nReferans: {ref}\nTutar: {amount} {currency}\n\nTeşekkürler!`,
-  el: `Γεια σας TravelBeez, θα ήθελα να επιβεβαιώσω την πληρωμή για την κράτησή μου.\n\nΑναφορά: {ref}\nΠοσό: {amount} {currency}\n\nΕυχαριστώ!`,
+  en: `Hello TravelBeez, I'd like to confirm payment for my booking.\n\nReference: {ref}\nAmount: {amount} {currency}\n\n⏳ Your reservation will be cancelled if payment is not made within 1 hour.\n\nThank you!`,
+  tr: `Merhaba TravelBeez, rezervasyonum için ödeme onayı almak istiyorum.\n\nReferans: {ref}\nTutar: {amount} {currency}\n\n⏳ Rezervasyonunuz 1 saat içinde ödeme yapılmazsa iptal edilir.\n\nTeşekkürler!`,
+  el: `Γεια σας TravelBeez, θα ήθελα να επιβεβαιώσω την πληρωμή για την κράτησή μου.\n\nΑναφορά: {ref}\nΠοσό: {amount} {currency}\n\n⏳ Your reservation will be cancelled if payment is not made within 1 hour.\n\nΕυχαριστώ!`,
 }
 
 const supportMessage: Record<Locale, string> = {

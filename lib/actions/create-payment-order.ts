@@ -19,6 +19,7 @@
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { vivaRequest, getVivaCheckoutUrl } from '@/lib/viva/client'
+import { expireTripIfStale, PAYMENT_EXPIRY_MINUTES } from '@/lib/trips/expiry'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 const SOURCE_CODE = process.env.VIVA_SOURCE_CODE ?? ''
@@ -31,7 +32,7 @@ export interface CreatePaymentOrderInput {
 
 export type CreatePaymentOrderResult =
   | { ok: true; orderCode: string; redirectUrl: string }
-  | { ok: false; error: string }
+  | { ok: false; error: string; code?: 'booking_expired' }
 
 interface VivaCreateOrderRequest {
   amount:          number
@@ -60,12 +61,21 @@ export async function createPaymentOrder(
   // 1. Read authoritative amount + state from DB — price never from client
   const { data: trip, error: tripErr } = await supabase
     .from('trips')
-    .select('id, reference, total_amount, contact_email, state, viva_order_code')
+    .select('id, reference, total_amount, contact_email, state, viva_order_code, created_at')
     .eq('id', input.tripId)
     .maybeSingle()
 
   if (tripErr || !trip) {
     return { ok: false, error: `Trip not found: ${input.tripId}` }
+  }
+
+  // 1b. Lazy expiry: pending_payment trip 1 saati aştıysa soft-cancel + ödeme engelle.
+  if (await expireTripIfStale(trip, supabase)) {
+    return {
+      ok: false,
+      error: `Trip ${trip.reference} expired (no payment within ${PAYMENT_EXPIRY_MINUTES} min)`,
+      code: 'booking_expired',
+    }
   }
 
   if (trip.state !== 'pending_payment') {
