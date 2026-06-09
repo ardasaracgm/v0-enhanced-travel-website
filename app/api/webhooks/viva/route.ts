@@ -14,6 +14,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { fetchWebhookVerificationKey } from '@/lib/viva/client'
 import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
+import { issuePolicy } from '@/lib/insurance/issue-policy'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -184,6 +185,8 @@ export async function POST(req: NextRequest): Promise<Response> {
           return NextResponse.json({ error: 'state_update_failed' }, { status: 500 })
         }
         console.info(`[viva-webhook] trip ${trip.reference} healed to confirmed (no email)`)
+        // Heal de confirmed'e geçirdi → poliçe oluştur (NON-FATAL, idempotent).
+        await tryIssuePolicy(trip.id)
       }
       // already confirmed (or any other state) → nothing to do.
       return NextResponse.json({ ok: true, idempotent: 'payment_exists' })
@@ -202,6 +205,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     console.error(`[viva-webhook] state update failed for trip ${trip.reference}:`, updErr.message)
     return NextResponse.json({ error: 'state_update_failed' }, { status: 500 })
   }
+
+  // Ödeme onaylandı → Auras poliçesini oluştur (NON-FATAL: hata webhook'u 500'e
+  // düşürmez; B4c admin backstop devreye girer). Mail'den bağımsız, sırası önemsiz.
+  await tryIssuePolicy(trip.id)
 
   // (i) confirmation email (paid=true) — FIRST successful confirm only. Lead
   //     passenger drives the name with a safe fallback; an email failure must
@@ -250,4 +257,28 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   console.info(`[viva-webhook] trip ${trip.reference} confirmed`)
   return NextResponse.json({ ok: true, confirmed: trip.reference })
+}
+
+/**
+ * Poliçe oluşturmayı NON-FATAL sarar: webhook hiçbir koşulda 500'e düşmemeli
+ * (500 → Viva retry → already-confirmed guard → poliçe BİR DAHA denenmez). Hata →
+ * 200 + log; B4c admin "poliçe oluştur" backstop'u devreye girer. issuePolicy zaten
+ * idempotent + {ok:false} döner; buradaki try/catch throw'a karşı ekstra savunma.
+ */
+async function tryIssuePolicy(tripId: string): Promise<void> {
+  try {
+    const r = await issuePolicy(tripId)
+    if (r.ok) {
+      if (r.skipped === 'no_insurance') return // sigortasız booking — normal, sessiz
+      if (r.skipped === 'already_issued') {
+        console.info(`[viva-webhook] policy already issued for trip ${tripId} (idempotent)`)
+      } else {
+        console.log(`[viva-webhook] policy issued for trip ${tripId} (police ${r.policeNum})`)
+      }
+    } else {
+      console.error(`[viva-webhook] issuePolicy failed for trip ${tripId} — admin backstop needed: ${r.error}`)
+    }
+  } catch (err) {
+    console.error(`[viva-webhook] issuePolicy threw for trip ${tripId}:`, err instanceof Error ? err.message : err)
+  }
 }
