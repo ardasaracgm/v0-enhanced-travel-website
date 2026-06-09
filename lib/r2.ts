@@ -25,6 +25,7 @@ const endpoint = process.env.R2_ENDPOINT
 const accessKeyId = process.env.R2_ACCESS_KEY_ID
 const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
 const bucket = process.env.R2_VISA_BUCKET
+const policyBucket = process.env.R2_POLICY_BUCKET
 
 // Presigned-URL lifetimes (seconds).
 export const UPLOAD_URL_TTL_SECONDS = 5 * 60   // browser PUT window
@@ -67,6 +68,31 @@ function getR2Client(): S3Client {
 export function getVisaBucket(): string {
   assertR2Env()
   return bucket!
+}
+
+/** The insurance-policy bucket — SEPARATE assert (visa flows must not require it). */
+export function getPolicyBucket(): string {
+  if (!policyBucket) {
+    throw new Error(
+      'R2 policy bucket not configured. Missing env var: R2_POLICY_BUCKET. ' +
+        'See .env.example and add it in Vercel → Settings → Environment Variables.',
+    )
+  }
+  return policyBucket
+}
+
+/**
+ * Server-side PUT — bir Buffer'ı doğrudan R2'ye yazar (presign yok, tarayıcı yok).
+ * SUNUCUNUN ürettiği belgeler için (örn. sigorta poliçesi PDF'i).
+ */
+export async function putObject(
+  bucket: string,
+  key: string,
+  body: Buffer,
+  contentType: string,
+): Promise<void> {
+  const client = getR2Client()
+  await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }))
 }
 
 /**

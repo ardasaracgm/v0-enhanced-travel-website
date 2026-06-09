@@ -133,6 +133,9 @@ export interface InsuranceResolveCtx {
   quoteAmount: number
   /** Kaynak currency (loglanır; fiyat EUR 1:1 gösterilir). */
   quoteCurrency: string
+  /** get_offers'tan otoriter coverage — eşleşen tarifeden, client'tan DEĞİL. */
+  coverageId: number
+  coverageValue: number
   dateFrom: string
   dateTo: string
 }

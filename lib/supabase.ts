@@ -248,6 +248,17 @@ export interface InsuranceItemMetadata {
   starts_at: string
   ends_at: string
   insurer?: string
+  // Auras quote snapshot (resolveInsuranceItem yazar)
+  tariff_id?: number
+  tariff_name?: string
+  tourist_count?: number
+  coverage_id?: number
+  coverage_value?: number
+  // Poliçe oluşturma sonucu (issuePolicy yazar — B4)
+  order_id?: number
+  police_num?: string
+  policy_r2_key?: string
+  policy_state?: 'pending' | 'issued' | 'failed'
 }
 
 export interface ESIMItemMetadata {

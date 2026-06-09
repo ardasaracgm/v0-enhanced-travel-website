@@ -261,7 +261,8 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           return { ok: false, code: 'invalid_insurance', error: `Insurance tariff not found: ${item.tariffId}` }
         }
         items.push(resolveInsuranceItem({
-          item, quoteAmount: match.priceAmount, quoteCurrency: match.sourceCurrency, dateFrom, dateTo,
+          item, quoteAmount: match.priceAmount, quoteCurrency: match.sourceCurrency,
+          coverageId: match.coverageId, coverageValue: match.coverageValue, dateFrom, dateTo,
         }))
       } catch (err) {
         return {

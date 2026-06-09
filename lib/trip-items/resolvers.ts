@@ -112,7 +112,7 @@ export function resolveLuggageItem(ctx: LuggageResolveCtx): ResolvedTripItem {
  * +03:00 deseni resolveLuggageItem ile aynı.
  */
 export function resolveInsuranceItem(ctx: InsuranceResolveCtx): ResolvedTripItem {
-  const { item, quoteAmount, dateFrom, dateTo } = ctx
+  const { item, quoteAmount, coverageId, coverageValue, dateFrom, dateTo } = ctx
   return {
     type: 'insurance',
     title: `Travel insurance — ${item.tariffName}`,
@@ -129,6 +129,8 @@ export function resolveInsuranceItem(ctx: InsuranceResolveCtx): ResolvedTripItem
       tariff_id: item.tariffId,
       tariff_name: item.tariffName,
       tourist_count: item.touristCount,
+      coverage_id: coverageId,
+      coverage_value: coverageValue,
     },
   }
 }
