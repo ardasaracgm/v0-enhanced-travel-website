@@ -181,30 +181,124 @@ export async function getInsuranceQuote(input: InsuranceQuoteInput): Promise<Ins
 /** add_contract (doc §2, satır 380-467). order_id/police_num döner (doc:453-459). */
 export interface AddContractInput {
   tariffId: number
+  coverageId: number
   dateFrom: string
   dateTo: string
   insurer: { firstName: string; lastName: string; phone: string; email: string; dateBirth: string; passport: string }
   tourists: Array<{ firstName: string; lastName: string; dateBirth: string; passport: string }>
 }
 export interface AddContractResult { orderId: number; policeNum: string; totalAmount: number; currency: string }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function addContract(_input: AddContractInput): Promise<AddContractResult> {
-  // TODO(Kademe B): doc:385-417 gövdesini POST et, doc:453-459 yanıtını eşle.
-  throw new Error('[insurs] addContract — Kademe B (payment_id pending)')
+export async function addContract(input: AddContractInput): Promise<AddContractResult> {
+  const { apiBase, apiKey } = getInsursConfig()
+  // B1 (TEST) kanıtlanan şekil = get_price ile aynı: coverage_id params içinde,
+  // insurer + tourists top-level; country_of_* / tariff_id top-level YOK.
+  const res = await fetch(`${apiBase}/services/api/add_contract`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: apiKey,
+      product_id: PRODUCT_ID,
+      company_id: COMPANY_ID,
+      locality_coverage: LOCALITY_COVERAGE,
+      insurer: {
+        first_name: input.insurer.firstName,
+        last_name: input.insurer.lastName,
+        phone: input.insurer.phone,
+        email: input.insurer.email,
+        date_birth: input.insurer.dateBirth,
+        passport: input.insurer.passport,
+      },
+      tourists: input.tourists.map((t) => ({
+        first_name: t.firstName,
+        last_name: t.lastName,
+        date_birth: t.dateBirth,
+        passport: t.passport,
+      })),
+      params: {
+        date_from: input.dateFrom,
+        date_to: input.dateTo,
+        franchise_id: FRANCHISE_ID,
+        type_of_travel: TYPE_OF_TRAVEL,
+        currency: 'EUR',
+        coverage_id: input.coverageId,
+      },
+    }),
+  })
+  if (!res.ok) throw new Error(`[insurs] add_contract HTTP ${res.status}`)
+
+  const json = (await res.json()) as {
+    success?: boolean
+    error_code?: number
+    message?: string
+    order_id?: number
+    police_num?: string
+    total_amount?: number | string
+    currency?: string
+  }
+  if (!json.success || json.order_id === undefined) {
+    throw new Error(`[insurs] add_contract success=false (code ${json.error_code ?? '?'}: ${json.message ?? 'unknown'})`)
+  }
+  return {
+    orderId: json.order_id,
+    policeNum: json.police_num ?? '',
+    totalAmount: Number(json.total_amount ?? 0),
+    currency: json.currency ?? 'EUR',
+  }
 }
 
 /** confirm_contract (doc §3, satır 470-496). payment_id ZORUNLU (doc:479,490)
  *  → Viva ödeme kimliği (Kademe 4) gelene kadar çağrılamaz. */
 export interface ConfirmContractInput { orderId: number; paymentId: number }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function confirmContract(_input: ConfirmContractInput): Promise<{ orderId: number }> {
-  // TODO(Kademe B): doc:475-480 gövdesini POST et.
-  throw new Error('[insurs] confirmContract — Kademe B (payment_id pending)')
+export async function confirmContract(input: ConfirmContractInput): Promise<{ orderId: number }> {
+  const { apiBase, apiKey } = getInsursConfig()
+  // ⚠️ GÜVENLİK: confirm poliçeyi Paid+Active yapar (B1'de PDF'te teyit edildi).
+  // SADECE gerçek ödeme alındıktan sonra çağrılmalı (admin onayı / Viva webhook).
+  // Ödeme öncesi çağrı = ödenmemiş ama aktif poliçe. payment_id = "ödeme bizde
+  // tamam" sinyali (Auras: B1'de payment_id=1 ile çalıştı); çağıran sağlar.
+  const res = await fetch(`${apiBase}/services/api/confirm_contract`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: apiKey,
+      product_id: PRODUCT_ID,
+      order_id: input.orderId,
+      payment_id: input.paymentId,
+    }),
+  })
+  if (!res.ok) throw new Error(`[insurs] confirm_contract HTTP ${res.status}`)
+
+  const json = (await res.json()) as {
+    success?: boolean
+    error_code?: number
+    message?: string
+    order_id?: number
+  }
+  if (!json.success) {
+    throw new Error(`[insurs] confirm_contract success=false (code ${json.error_code ?? '?'}: ${json.message ?? 'unknown'})`)
+  }
+  return { orderId: json.order_id ?? input.orderId }
 }
 
 /** get_print_form (doc §4, satır 503-527). Poliçe PDF buffer'ı; ödeme onayından sonra. */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getPrintForm(_input: { orderId: number }): Promise<never> {
-  // TODO(Kademe B): doc:507-523 — { "<buffer>": PDF } döner.
-  throw new Error('[insurs] getPrintForm — Kademe B (payment_id pending)')
+export async function getPrintForm(input: { orderId: number }): Promise<Buffer> {
+  const { apiBase, apiKey } = getInsursConfig()
+  // ⚠️ KRİTİK (B1 TEST): yanıt HAM binary PDF (application/pdf, %PDF ile başlar).
+  // base64/JSON DEĞİL → decode/parse YOK; arrayBuffer doğrudan Buffer'a çevrilir.
+  const res = await fetch(`${apiBase}/services/api/get_print_form`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: apiKey,
+      product_id: PRODUCT_ID,
+      order_id: input.orderId,
+    }),
+  })
+  if (!res.ok) throw new Error(`[insurs] get_print_form HTTP ${res.status}`)
+
+  const buf = Buffer.from(await res.arrayBuffer())
+  // Savunma: %PDF değilse muhtemelen JSON hata gövdesi döndü.
+  if (buf.subarray(0, 4).toString('latin1') !== '%PDF') {
+    throw new Error(`[insurs] get_print_form PDF değil (head: ${buf.subarray(0, 40).toString('utf8')})`)
+  }
+  return buf
 }
