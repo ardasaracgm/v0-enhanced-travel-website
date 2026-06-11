@@ -608,11 +608,12 @@ function HubAccessCard({ presetEmail }: { presetEmail?: string }) {
   const handleSend = async () => {
     if (!email || status === 'sending') return
     setStatus('sending')
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/${locale}/hub`,
+        emailRedirectTo: `${siteUrl}/api/auth/callback?next=/${locale}/hub`,
       },
     })
     setStatus(error ? 'error' : 'sent')

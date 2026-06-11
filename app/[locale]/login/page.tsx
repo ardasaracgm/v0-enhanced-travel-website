@@ -30,11 +30,12 @@ function LoginCard() {
     if (!email || status === 'sending') return
     setStatus('sending')
     const next = searchParams.get('next') ?? `/${locale}/hub`
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${siteUrl}/api/auth/callback?next=${encodeURIComponent(next)}`,
       },
     })
     setStatus(error ? 'error' : 'sent')
