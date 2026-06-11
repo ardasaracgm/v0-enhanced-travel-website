@@ -12,7 +12,7 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { fetchWebhookVerificationKey } from '@/lib/viva/client'
+import { fetchWebhookVerificationKey, getTransaction } from '@/lib/viva/client'
 import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
 import { issuePolicy } from '@/lib/insurance/issue-policy'
 
@@ -132,6 +132,63 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (!transactionId) {
     console.error(`[viva-webhook] ALERT 1796/'F' for trip ${trip.reference} missing TransactionId`)
     return NextResponse.json({ error: 'missing_transaction_id' }, { status: 500 })
+  }
+
+  // (g0) server-side RE-VERIFICATION — never trust the unauthenticated webhook
+  //      POST alone. Fetch the transaction from Viva (OAuth2) and confirm it
+  //      against Viva's own record before flipping state. The cheap pre-filters
+  //      above (StatusId at :110, cents amount at :118) STAY; this is the
+  //      authoritative check and sits before BOTH the normal flip (h) and the
+  //      heal path (NOTE 3), since both run below this point on the same event.
+  //      Error split: a Viva 404 means no such transaction (forged/unknown) →
+  //      permanent, ack 200; any other fetch failure is transient → 500 retry.
+  let tx: Awaited<ReturnType<typeof getTransaction>>
+  try {
+    tx = await getTransaction(transactionId)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('HTTP 404')) {
+      console.error(`[viva-webhook] reverify: Viva has no transaction ${transactionId} for trip ${trip.reference} — rejecting`)
+      return NextResponse.json({ ok: true, ignored: 'reverify_not_found' })
+    }
+    console.error(`[viva-webhook] reverify fetch failed for trip ${trip.reference}:`, msg)
+    return NextResponse.json({ error: 'reverify_error' }, { status: 500 })
+  }
+
+  // (g0.1) Viva's own status must be final/captured.
+  if (tx.statusId !== 'F') {
+    console.error('[viva-webhook] reverify_status', {
+      reference:     trip.reference,
+      transactionId,
+      statusId:      tx.statusId,
+      currencyCode:  tx.currencyCode,
+    })
+    return NextResponse.json({ ok: true, ignored: 'reverify_status' })
+  }
+
+  // (g0.2) Viva's transaction amount is the MAJOR currency unit (EUR) — compare
+  //        directly to trip.total_amount, NO ×100.
+  if (tx.amount !== trip.total_amount) {
+    console.error('[viva-webhook] reverify_amount', {
+      reference:     trip.reference,
+      transactionId,
+      expected:      trip.total_amount,
+      received:      tx.amount,
+      statusId:      tx.statusId,
+      currencyCode:  tx.currencyCode,
+    })
+    return NextResponse.json({ ok: true, ignored: 'reverify_amount' })
+  }
+
+  // (g0.3) the transaction must belong to the order we matched the trip on.
+  if (String(tx.orderCode) !== orderCode) {
+    console.error('[viva-webhook] reverify_ordercode', {
+      reference:     trip.reference,
+      transactionId,
+      expected:      orderCode,
+      received:      String(tx.orderCode),
+    })
+    return NextResponse.json({ ok: true, ignored: 'reverify_ordercode' })
   }
 
   // (g) idempotency guard #2 — write the payment row FIRST (before the state

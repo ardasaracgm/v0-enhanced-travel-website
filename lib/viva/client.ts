@@ -88,6 +88,27 @@ export function getVivaCheckoutUrl(orderCode: string): string {
 }
 
 /**
+ * Retrieve a transaction from Viva — server-side re-verification.
+ * GET /checkout/v2/transactions/{id} (OAuth2 Bearer via vivaRequest).
+ *
+ * Used to confirm a webhook-reported payment against Viva's own record
+ * (status + amount) instead of trusting the unauthenticated webhook POST.
+ * vivaRequest throws on non-2xx, so a forged/unknown transactionId → Viva 404
+ * → throw → the caller (webhook) can reject the event.
+ */
+export interface VivaTransaction {
+  transactionId?: string
+  orderCode:      number
+  statusId:       string   // 'F' = final/captured (mirrors webhook StatusId)
+  amount:         number   // major currency unit (EUR), per Viva transaction API
+  currencyCode?:  string
+}
+
+export async function getTransaction(transactionId: string): Promise<VivaTransaction> {
+  return vivaRequest<VivaTransaction>('GET', `/checkout/v2/transactions/${transactionId}`)
+}
+
+/**
  * Make an authenticated request to the Viva API.
  * Obtains/reuses a cached OAuth2 bearer token automatically.
  */
