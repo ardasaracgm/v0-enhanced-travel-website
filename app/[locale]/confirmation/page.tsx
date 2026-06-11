@@ -8,8 +8,6 @@ import {
   CheckCircle,
   Mail,
   Phone,
-  Calendar,
-  Clock,
   User,
   Home,
   MessageCircle,
@@ -38,7 +36,9 @@ import {
   type FerryRoute,
   type CarRentalSelection,
   type Passenger,
+  type BookingItem,
 } from '@/lib/booking-context'
+import { summarizeItem } from '@/lib/trip-items/summary'
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 
@@ -103,6 +103,7 @@ interface BookingSnapshot {
   returnTotal:        number
   carTotal:           number
   grandTotal:         number
+  items:              BookingItem[]
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ interface BookingSnapshot {
 export default function ConfirmationPage() {
   const { state, dispatch } = useBooking()
   const router = useRouter()
+  const locale = useLocale()
 
   const [mode, setMode]                 = React.useState<ConfirmationMode>('loading')
   const [snapshot, setSnapshot]         = React.useState<BookingSnapshot | null>(null)
@@ -168,6 +170,7 @@ export default function ConfirmationPage() {
         returnTotal: returnFerry ? returnFerry.price * passengerCount : 0,
         carTotal:    car ? car.pricePerDay * car.days : 0,
         grandTotal:  selectTotalPrice(state),
+        items:       state.items,
       })
 
       writeConfirmationRecord({
@@ -462,73 +465,25 @@ export default function ConfirmationPage() {
                 </h3>
 
                 <div className="space-y-4">
-                  {/* Outbound */}
-                  <div className="p-4 bg-secondary/50 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                        Outbound
-                      </span>
-                      <span className="text-sm font-semibold text-primary">€{snapshot.ferryTotal}</span>
-                    </div>
-                    <p className="font-semibold text-foreground">
-                      {snapshot.outbound.from} → {snapshot.outbound.to}
-                    </p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                      <Calendar className="h-4 w-4" />
-                      {snapshot.searchDate}
-                      <Clock className="h-4 w-4 ml-2" />
-                      {snapshot.outbound.departureTime} - {snapshot.outbound.arrivalTime}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {snapshot.outbound.operator} · {snapshot.outbound.vessel}
-                    </p>
-                  </div>
-
-                  {/* Return */}
-                  {snapshot.returnFerry && (
-                    <div className="p-4 bg-secondary/50 rounded-xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                          Return
-                        </span>
-                        <span className="text-sm font-semibold text-primary">€{snapshot.returnTotal}</span>
+                  {/* All line items from the same source as the total (snapshot.items,
+                      captured pre-RESET) — registry covers ferry/car/luggage/insurance. */}
+                  {snapshot.items.map((item, i) => {
+                    const row = summarizeItem(item, locale)
+                    return (
+                      <div key={i} className="p-4 bg-secondary/50 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                            {row.label}
+                          </span>
+                          <span className="text-sm font-semibold text-primary">€{row.amount}</span>
+                        </div>
+                        <p className="font-semibold text-foreground">{row.title}</p>
+                        {row.detail && (
+                          <p className="text-sm text-muted-foreground mt-1">{row.detail}</p>
+                        )}
                       </div>
-                      <p className="font-semibold text-foreground">
-                        {snapshot.returnFerry.from} → {snapshot.returnFerry.to}
-                      </p>
-                      <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                        <Calendar className="h-4 w-4" />
-                        {snapshot.returnDate}
-                        <Clock className="h-4 w-4 ml-2" />
-                        {snapshot.returnFerry.departureTime} - {snapshot.returnFerry.arrivalTime}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {snapshot.returnFerry.operator} · {snapshot.returnFerry.vessel}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Car rental */}
-                  {snapshot.car && (
-                    <div className="p-4 bg-secondary/50 rounded-xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                          Car Rental
-                        </span>
-                        <span className="text-sm font-semibold text-primary">€{snapshot.carTotal}</span>
-                      </div>
-                      <p className="font-semibold text-foreground">
-                        {snapshot.car.brand
-                          ? `${snapshot.car.brand} ${snapshot.car.model}`
-                          : snapshot.car.model}{' '}
-                        ({snapshot.car.days}{' '}
-                        {snapshot.car.days === 1 ? 'day' : 'days'})
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Pickup: {snapshot.car.pickupLocation}
-                      </p>
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
 
                 <Separator className="my-4" />
