@@ -54,6 +54,9 @@ export default async function AdminLayout({
             <Link href="/admin" className="font-medium text-foreground">
               Visa Applications
             </Link>
+            <Link href="/admin/insurance" className="text-muted-foreground hover:text-foreground">
+              Insurance
+            </Link>
           </nav>
         </div>
       </header>
