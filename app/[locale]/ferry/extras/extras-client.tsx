@@ -56,7 +56,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const { state, dispatch } = useBooking()
   const t = useTranslations('extrasPage')
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
-  const [oneWayDays, setOneWayDays] = React.useState(3)
+  // One-way: no default — user must pick (forced choice). null = not yet chosen.
+  const [oneWayDays, setOneWayDays] = React.useState<number | null>(null)
   // Tarih-bazlı müsaitlik: server'dan { carId: kalan_adet }. null = henüz gelmedi.
   const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
   const [availLoading, setAvailLoading] = React.useState(false)
@@ -128,7 +129,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     ? 1
     : isRoundTrip
       ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
-      : Math.max(1, oneWayDays)
+      : Math.max(1, oneWayDays ?? 1)
+
+  // One-way needs an explicit day choice before the car can be added / user proceeds.
+  const dayChosen = isRoundTrip || oneWayDays != null
 
   // Pickup tarihi / gün sayısı değişince müsaitliği server'dan çek. Race koruması:
   // hızlı gün değişiminde eski cevap yenisini ezmesin (cancelled flag).
@@ -190,7 +194,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
       return
     }
     setSelectedCarId(car.id)
-    dispatchCarSelection(car, days)
+    // One-way w/o a chosen day: highlight only, don't add to cart yet (forced choice).
+    if (dayChosen) dispatchCarSelection(car, days)
   }
 
   function handleDaysChange(newDays: number) {
@@ -202,6 +207,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   }
 
   function handleContinue() {
+    if (selectedCarId != null && !dayChosen) return  // guard: must pick rental days
     router.push('/ferry/passenger-details')
   }
 
@@ -433,6 +439,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   <p className="text-muted-foreground">
                     {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-2">{t('dailyRateNotice')}</p>
                 </div>
 
                 {/* One-way day selector */}
@@ -440,11 +447,11 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-foreground">{t('howManyDays')}</span>
                     <Select
-                      value={String(oneWayDays)}
+                      value={oneWayDays != null ? String(oneWayDays) : undefined}
                       onValueChange={v => handleDaysChange(Number(v))}
                     >
-                      <SelectTrigger className="w-28">
-                        <SelectValue />
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder={t('selectDays')} />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 14 }, (_, i) => i + 1).map(n => (
@@ -572,9 +579,11 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                               <div className="flex items-end justify-between pt-1">
                                 <div>
                                   <p className="text-xl font-bold text-primary">€{car.price}<span className="text-sm font-normal text-muted-foreground">{t('perDay')}</span></p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {t('dayCount', { count: days })} = <span className="font-medium text-foreground">€{lineTotal}</span>
-                                  </p>
+                                  {dayChosen && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('dayCount', { count: days })} = <span className="font-medium text-foreground">€{lineTotal}</span>
+                                    </p>
+                                  )}
                                 </div>
                                 <Button
                                   size="sm"
@@ -622,7 +631,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       )}
 
                       {/* Selected car */}
-                      {selectedCar && (
+                      {selectedCar && dayChosen && (
                         <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
                           <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
                           <p className="font-medium text-foreground text-sm">{selectedCar.model}</p>
@@ -664,10 +673,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <Button
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                         onClick={handleContinue}
+                        disabled={selectedCarId != null && !dayChosen}
                       >
                         {t('continueToPassengers')}
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
+                      {selectedCarId != null && !dayChosen && (
+                        <p className="text-sm text-destructive text-center">{t('selectDayWarning')}</p>
+                      )}
 
                       <Button
                         variant="ghost"

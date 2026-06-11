@@ -46,12 +46,33 @@ function ferryRow(item: FerryBookingItem): ItemSummaryRow {
   }
 }
 
-function carRow(item: CarRentalBookingItem): ItemSummaryRow {
+// "YYYY-MM-DD" + n gün (UTC, tz kaymasız). carRow drop-off türetimi için.
+function addDaysISO(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
+// Locale-aware kısa tarih ("12 Haz" / "12 Jun"), UTC sabit.
+function fmtDate(iso: string, locale: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale, {
+    day: 'numeric', month: 'short', timeZone: 'UTC',
+  })
+}
+
+function carRow(item: CarRentalBookingItem, locale: string): ItemSummaryRow {
   const name = item.brand ? `${item.brand} ${item.model}` : item.model
+  const isTr = locale === 'tr'
+  const dayWord = isTr ? 'gün' : item.days === 1 ? 'day' : 'days'
+  // dropoffAt one-way'de pickup'a eşit (placeholder); inclusive gün sayısından türet
+  // → her iki akışta da doğru. days/fiyat DEĞİŞMEZ, yalnız görünüm.
+  const dropoff = addDaysISO(item.pickupAt, item.days - 1)
   return {
     label: 'Car Rental',
-    title: `${name} · ${item.days} ${item.days === 1 ? 'day' : 'days'}`,
-    detail: `Pickup: ${item.pickupLocation}`,
+    title: name,
+    detail: isTr
+      ? `Alış: ${fmtDate(item.pickupAt, locale)} · Teslim: ${fmtDate(dropoff, locale)} · ${item.days} ${dayWord}`
+      : `Pickup: ${fmtDate(item.pickupAt, locale)} · Drop-off: ${fmtDate(dropoff, locale)} · ${item.days} ${dayWord}`,
     breakdownLabel: `Car (${item.days}d)`,
     amount: item.priceAmount,
   }
@@ -99,7 +120,7 @@ export function summarizeItem(item: BookingItem, locale: string = 'en'): ItemSum
     case 'ferry':
       return ITEM_SUMMARY.ferry(item)
     case 'car_rental':
-      return ITEM_SUMMARY.car_rental(item)
+      return ITEM_SUMMARY.car_rental(item, locale)
     case 'luggage':
       return ITEM_SUMMARY.luggage(item)
     case 'insurance':

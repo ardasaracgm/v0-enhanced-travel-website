@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   const locale = useLocale() as Locale
   const t = useTranslations('checkout')
   const tIns = useTranslations('checkoutInsurance')
+  const tExtras = useTranslations('extrasPage')
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
   const [isProcessing, setIsProcessing] = React.useState(false)
@@ -306,6 +307,9 @@ export default function CheckoutPage() {
                             <p className="font-semibold text-foreground">{row.title}</p>
                             {row.detail && (
                               <p className="text-sm text-muted-foreground">{row.detail}</p>
+                            )}
+                            {item.type === 'car_rental' && (
+                              <p className="text-xs text-muted-foreground mt-1">{tExtras('dailyRateNotice')}</p>
                             )}
                           </div>
                           <p className="text-lg font-bold text-primary mt-2 md:mt-0">
