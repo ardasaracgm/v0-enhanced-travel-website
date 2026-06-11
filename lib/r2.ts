@@ -116,10 +116,10 @@ export async function getUploadUrl(key: string, contentType: string): Promise<st
  * response-content-disposition presigned imzaya girer → cross-origin R2'de de
  * çalışır (download attribute'una güvenmez). Verilmezse inline (Open) davranışı.
  */
-export async function getDownloadUrl(key: string, filename?: string): Promise<string> {
+export async function getDownloadUrl(key: string, filename?: string, bucket?: string): Promise<string> {
   const client = getR2Client()
   const command = new GetObjectCommand({
-    Bucket: getVisaBucket(),
+    Bucket: bucket ?? getVisaBucket(),
     Key: key,
     // RFC 6266: ascii-temiz filename + UTF-8 filename* (TR/EL adlar için).
     ...(filename
