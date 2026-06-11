@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
 import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -34,9 +34,11 @@ import {
   selectCarRental,
   selectTotalPrice,
   type FerryBookingItem,
+  type CarRentalBookingItem,
   type LuggageBookingItem,
 } from '@/lib/booking-context'
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
+import { summarizeItem, addDaysISO } from '@/lib/trip-items/summary'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkCarAvailability } from '@/lib/actions/car-availability-action'
@@ -55,6 +57,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const router = useRouter()
   const { state, dispatch } = useBooking()
   const t = useTranslations('extrasPage')
+  const locale = useLocale()
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
   // One-way: no default — user must pick (forced choice). null = not yet chosen.
   const [oneWayDays, setOneWayDays] = React.useState<number | null>(null)
@@ -74,6 +77,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   ) ?? null
   const returnItem = state.items.find(
     (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
+  ) ?? null
+  const carBookingItem = state.items.find(
+    (i): i is CarRentalBookingItem => i.type === 'car_rental'
   ) ?? null
 
   const outbound = selectOutboundFerry(state)
@@ -182,7 +188,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         pickupLocation: DEFAULT_PICKUP_LOCATION,
         dropoffLocation: DEFAULT_PICKUP_LOCATION,
         pickupAt: outboundItem!.date,
-        dropoffAt: returnItem?.date ?? outboundItem!.date,
+        // Drop-off'u inclusive gün sayısından türet → round-trip'te = return.date
+        // (değişmez), tek-yönde gerçek teslim → DB doğru. days/fiyat etkilenmez.
+        dropoffAt: addDaysISO(outboundItem!.date, dayCount - 1),
       },
     })
   }
@@ -636,7 +644,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                           <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
                           <p className="font-medium text-foreground text-sm">{selectedCar.model}</p>
                           <p className="text-xs text-muted-foreground">
-                            {t('dayCount', { count: days })} · {DEFAULT_PICKUP_LOCATION}
+                            {carBookingItem
+                              ? summarizeItem(carBookingItem, locale).detail
+                              : t('dayCount', { count: days })}
                           </p>
                           <p className="text-primary text-sm font-semibold mt-1">€{selectedCar.price * days}</p>
                         </div>

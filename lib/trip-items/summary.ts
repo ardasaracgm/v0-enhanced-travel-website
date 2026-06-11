@@ -47,7 +47,8 @@ function ferryRow(item: FerryBookingItem): ItemSummaryRow {
 }
 
 // "YYYY-MM-DD" + n gün (UTC, tz kaymasız). carRow drop-off türetimi için.
-function addDaysISO(iso: string, n: number): string {
+// Exported: extras-client drop-off KAYIT değerini bununla türetir (tek kaynak).
+export function addDaysISO(iso: string, n: number): string {
   const [y, m, d] = iso.split('-').map(Number)
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
 }
