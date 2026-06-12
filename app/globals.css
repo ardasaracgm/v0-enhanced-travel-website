@@ -89,8 +89,10 @@
   html, body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
-    scrollbar-gutter: stable;
     max-width: 100%;
+  }
+  html {
+    scrollbar-gutter: stable;
   }
   body[data-scroll-locked] {
     margin-right: 0 !important;
