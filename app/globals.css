@@ -92,4 +92,8 @@
     scrollbar-gutter: stable;
     max-width: 100%;
   }
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
 }
