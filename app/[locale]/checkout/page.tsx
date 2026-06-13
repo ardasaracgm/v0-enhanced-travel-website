@@ -390,37 +390,6 @@ export default function CheckoutPage() {
                         we coordinate payment. Online card payment (Viva Wallet) is launching soon.
                       </p>
                     </div>
-
-                    <Separator />
-
-                    {/* Terms & Conditions */}
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="terms"
-                        checked={acceptTerms}
-                        onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                      />
-                      <div className="space-y-1">
-                        <Label htmlFor="terms" className="text-sm cursor-pointer">
-                          I agree to the{' '}
-                          <Link href="/terms" className="text-primary hover:underline">
-                            Terms of Service
-                          </Link>{' '}
-                          and{' '}
-                          <Link
-                            href="/privacy"
-                            className="text-primary hover:underline"
-                          >
-                            Privacy Policy
-                          </Link>
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          By confirming this booking, you agree to the{' '}
-                          {outbound ? 'ferry operator' : 'car rental supplier'}&apos;s terms and
-                          TravelBeez&apos;s booking conditions.
-                        </p>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
 
@@ -534,6 +503,34 @@ export default function CheckoutPage() {
                           <span className="text-primary">
                             €{selectTotalPrice(state)}
                           </span>
+                        </div>
+
+                        <Separator />
+
+                        {/* Terms & Conditions — directly above the confirm action */}
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            id="terms"
+                            checked={acceptTerms}
+                            onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                          />
+                          <div className="space-y-1">
+                            <Label htmlFor="terms" className="text-sm cursor-pointer">
+                              I agree to the{' '}
+                              <Link href="/terms" className="text-primary hover:underline">
+                                Terms of Service
+                              </Link>{' '}
+                              and{' '}
+                              <Link href="/privacy" className="text-primary hover:underline">
+                                Privacy Policy
+                              </Link>
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              By confirming this booking, you agree to the{' '}
+                              {outbound ? 'ferry operator' : 'car rental supplier'}&apos;s terms and
+                              TravelBeez&apos;s booking conditions.
+                            </p>
+                          </div>
                         </div>
 
                         <Button
