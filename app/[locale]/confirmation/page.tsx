@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import {
   Ship,
+  Car,
   CheckCircle,
   Mail,
   Phone,
@@ -92,7 +93,7 @@ interface BookingSnapshot {
   contactEmail:       string
   contactPhone:       string
   paymentWhatsAppUrl: string
-  outbound:           FerryRoute
+  outbound:           FerryRoute | null
   returnFerry:        FerryRoute | null
   car:                CarRentalSelection | null
   passengers:         Passenger[]
@@ -148,10 +149,13 @@ export default function ConfirmationPage() {
     modeDetectedRef.current = true
 
     const outbound = selectOutboundFerry(state)
+    const car      = selectCarRental(state)
 
-    if (state.bookingReference && outbound) {
+    // Car-only standalone bookings have no ferry leg — accept either a ferry
+    // or a car item so they reach 'fresh' mode (and write a record) instead
+    // of falling through to 'empty' on the very first visit.
+    if (state.bookingReference && (outbound || car)) {
       const returnFerry    = selectReturnFerry(state)
-      const car            = selectCarRental(state)
       const passengerCount = state.searchParams.passengers
 
       setSnapshot({
@@ -166,7 +170,7 @@ export default function ConfirmationPage() {
         searchDate:  state.searchParams.date,
         returnDate:  state.searchParams.returnDate ?? '',
         passengerCount,
-        ferryTotal:  outbound.price * passengerCount,
+        ferryTotal:  outbound ? outbound.price * passengerCount : 0,
         returnTotal: returnFerry ? returnFerry.price * passengerCount : 0,
         carTotal:    car ? car.pricePerDay * car.days : 0,
         grandTotal:  selectTotalPrice(state),
@@ -244,8 +248,13 @@ export default function ConfirmationPage() {
               <p className="text-muted-foreground mb-6">
                 Start a new booking to see your confirmation.
               </p>
-              <Link href="/ferry">
-                <Button>Search Ferries</Button>
+              {/* Empty mode carries no item info — type is unknown, so route to
+                  a neutral home rather than assuming a ferry search. */}
+              <Link href="/">
+                <Button>
+                  <Home className="h-4 w-4 mr-2" />
+                  Back to Home
+                </Button>
               </Link>
             </CardContent>
           </Card>
@@ -466,7 +475,11 @@ export default function ConfirmationPage() {
             <Card className="mb-6">
               <CardContent className="p-6">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Ship className="h-5 w-5 text-primary" />
+                  {snapshot.outbound ? (
+                    <Ship className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Car className="h-5 w-5 text-primary" />
+                  )}
                   Trip Details
                 </h3>
 
