@@ -1,7 +1,9 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { getAvailabilityForDates, computeEndDate } from '@/lib/car-availability'
+import { getAvailabilityForDates, computeEndDate, addDaysUtc, getAvailabilityCalendar } from '@/lib/car-availability'
+import type { AvailabilityCalendar as CalData } from '@/lib/car-availability'
 import { normalizeCar, dateDiffInDays } from '@/lib/normalize-car'
 import { Link } from '@/i18n/routing'
+import { AvailabilityCalendar } from '@/components/admin/availability-calendar'
 import {
   Table,
   TableHeader,
@@ -14,15 +16,40 @@ import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
 
+// İki YYYY-MM-DD'den geç olanı (lexicographic = kronolojik). Prev clamp için.
+function maxStr(a: string, b: string): string {
+  return a >= b ? a : b
+}
+
 export default async function AdminCarsPage({
+  params,
   searchParams,
 }: {
-  searchParams: Promise<{ pickup?: string; dropoff?: string }>
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ pickup?: string; dropoff?: string; start?: string }>
 }) {
-  const { pickup: pickupParam, dropoff: dropoffParam } = await searchParams
+  const { locale } = await params
+  const { pickup: pickupParam, dropoff: dropoffParam, start: startParam } = await searchParams
 
   // Atina günü = public car-rental sayfasıyla aynı (page.tsx:102).
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
+
+  // ── Takvim 30-gün kayan pencere. start default bugün; geçmişe + geçersize karşı clamp.
+  //    GÜVENLİK: ?start=garbage lexicographic'te bugünü geçebilir → addDaysUtc throw eder;
+  //    regex guard ile geçersiz/geçmiş start sessizce bugüne düşer (sayfa patlamaz).
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+  const WINDOW = 30
+  const start = startParam && DATE_RE.test(startParam) && startParam >= todayAthens ? startParam : todayAthens
+  const prevStart = start > todayAthens ? maxStr(todayAthens, addDaysUtc(start, -WINDOW)) : null
+  const nextStart = addDaysUtc(start, WINDOW)
+
+  let calendar: CalData | null = null
+  let calErr: string | null = null
+  try {
+    calendar = await getAvailabilityCalendar(start, WINDOW)
+  } catch (e) {
+    calErr = e instanceof Error ? e.message : 'Calendar failed'
+  }
   // Default GEÇERLİ aralık: bugün → bugün+2 (3 gün). computeEndDate(today,3)=today+2.
   const pickup = pickupParam || todayAthens
   const dropoff = dropoffParam || computeEndDate(todayAthens, 3)
@@ -78,6 +105,55 @@ export default async function AdminCarsPage({
         </Link>
       </div>
 
+      {/* ── Aylık dolu/boş takvim (30-gün pencere, seçimsiz default) ── */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {start} → {addDaysUtc(start, WINDOW - 1)} · {WINDOW} gün
+          </p>
+          <div className="flex gap-2">
+            {prevStart ? (
+              <Link
+                href={`/admin/cars?start=${prevStart}`}
+                className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+              >
+                ← Prev
+              </Link>
+            ) : (
+              <span className="rounded-md border px-3 py-1.5 text-sm text-muted-foreground opacity-50">
+                ← Prev
+              </span>
+            )}
+            <Link
+              href={`/admin/cars?start=${nextStart}`}
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+            >
+              Next →
+            </Link>
+          </div>
+        </div>
+        {calErr ? (
+          <p className="text-sm text-destructive">Calendar failed: {calErr}</p>
+        ) : calendar ? (
+          <AvailabilityCalendar data={calendar} today={todayAthens} locale={locale} />
+        ) : null}
+        <div className="flex gap-3 text-xs text-muted-foreground">
+          <span>
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-emerald-500/40" />
+            Boş
+          </span>
+          <span>
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-amber-500/40" />
+            Kısmi
+          </span>
+          <span>
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-red-500/40" />
+            Dolu
+          </span>
+        </div>
+      </section>
+
+      {/* ── Mevcut tek-aralık checker (aynen korunur, ALTTA) ── */}
       {/* Tarih aralığı — düz GET form (RSC, client JS yok); searchParams'ı besler. */}
       <form method="get" className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
