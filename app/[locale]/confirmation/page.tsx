@@ -521,7 +521,7 @@ export default function ConfirmationPage() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
-                  Passengers ({snapshot.passengers.length})
+                  {snapshot.outbound ? 'Passengers' : 'Driver'} ({snapshot.passengers.length})
                 </h3>
                 <div className="space-y-3">
                   {snapshot.passengers.map((p, i) => (
@@ -531,9 +531,18 @@ export default function ConfirmationPage() {
                     >
                       <div>
                         <p className="font-medium text-foreground">{p.firstName} {p.lastName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {p.nationality} · Passport: {p.passportNumber}
-                        </p>
+                        {snapshot.outbound ? (
+                          <p className="text-sm text-muted-foreground">
+                            {p.nationality} · Passport: {p.passportNumber}
+                          </p>
+                        ) : (p.birthDate || p.licenseExpiry) ? (
+                          <p className="text-sm text-muted-foreground">
+                            {[
+                              p.birthDate && `DOB: ${p.birthDate}`,
+                              p.licenseExpiry && `Licence exp: ${p.licenseExpiry}`,
+                            ].filter(Boolean).join(' · ')}
+                          </p>
+                        ) : null}
                       </div>
                       {i === 0 && (
                         <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
@@ -572,7 +581,8 @@ export default function ConfirmationPage() {
                       3
                     </span>
                     <span>
-                      Once payment clears, your tickets are issued and emailed to{' '}
+                      Once payment clears, your{' '}
+                      {snapshot.outbound ? 'tickets are' : 'rental voucher is'} issued and emailed to{' '}
                       <strong>{snapshot.contactEmail}</strong>.
                     </span>
                   </li>
