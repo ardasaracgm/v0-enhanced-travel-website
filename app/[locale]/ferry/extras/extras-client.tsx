@@ -61,6 +61,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
   // One-way: no default — user must pick (forced choice). null = not yet chosen.
   const [oneWayDays, setOneWayDays] = React.useState<number | null>(null)
+  // Round-trip: default = full island stay (ferry window); user may lower it.
+  // null = use the window default; a number = explicit user choice.
+  const [roundTripDays, setRoundTripDays] = React.useState<number | null>(null)
   // Tarih-bazlı müsaitlik: server'dan { carId: kalan_adet }. null = henüz gelmedi.
   const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
   const [availLoading, setAvailLoading] = React.useState(false)
@@ -99,6 +102,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
       setSelectedCarId(existing.carId)
       if (state.searchParams.tripType !== 'round-trip') {
         setOneWayDays(Math.max(1, existing.days))
+      } else {
+        setRoundTripDays(Math.max(1, existing.days))
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,10 +136,17 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
   // outboundItem null iken de türetilebilsin diye guard'dan önce; null'da 1
   // (zaten aşağıda return null). round-trip = takvim günü dahil; one-way = seçici.
+  // Ferry window = island stay (outbound→return, inclusive). This is the CEILING
+  // for a round-trip car rental; the customer may rent for fewer days.
+  const ferryWindow = !outboundItem
+    ? 1
+    : Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
+
   const days = !outboundItem
     ? 1
     : isRoundTrip
-      ? Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
+      // Default = full window; clamp so a stale choice can't exceed a shrunk window.
+      ? Math.min(roundTripDays ?? ferryWindow, ferryWindow)
       : Math.max(1, oneWayDays ?? 1)
 
   // One-way needs an explicit day choice before the car can be added / user proceeds.
@@ -207,7 +219,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   }
 
   function handleDaysChange(newDays: number) {
-    setOneWayDays(newDays)
+    if (isRoundTrip) setRoundTripDays(newDays)
+    else setOneWayDays(newDays)
     if (selectedCarId) {
       const car = cars.find(c => c.id === selectedCarId)
       if (car) dispatchCarSelection(car, newDays)
@@ -472,15 +485,28 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </div>
                 )}
 
-                {/* Round-trip: computed days, read-only */}
+                {/* Round-trip: selectable days, capped at the ferry window (island
+                    stay). Default = full window; user may rent for fewer days. */}
                 {isRoundTrip && returnItem && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>{t('rentalDuration')}</span>
-                    <span className="font-medium text-foreground">
-                      {t('dayCount', { count: days })}
-                      <span className="font-normal text-muted-foreground ml-1">
-                        ({outboundItem.date} → {returnItem.date})
-                      </span>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-sm font-medium text-foreground">{t('howManyDays')}</span>
+                    <Select
+                      value={String(days)}
+                      onValueChange={v => handleDaysChange(Number(v))}
+                    >
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder={t('selectDays')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: ferryWindow }, (_, i) => i + 1).map(n => (
+                          <SelectItem key={n} value={String(n)}>
+                            {t('dayCount', { count: n })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-xs text-muted-foreground">
+                      ({outboundItem.date} → {returnItem.date})
                     </span>
                   </div>
                 )}
