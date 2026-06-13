@@ -28,6 +28,8 @@ export default function CarRentalDriverPage() {
   const t = useTranslations('carRentalDriver')
   const tp = useTranslations('passengerDetails')   // shared field labels + error fragments
   const car = selectCarRental(state)
+  // Date input ceilings: bound the year to 4 digits (native date inputs allow 6).
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const [firstName, setFirstName] = React.useState('')
   const [lastName, setLastName] = React.useState('')
@@ -208,6 +210,8 @@ export default function CarRentalDriverPage() {
                           <Input
                             id="birthDate"
                             type="date"
+                            min="1900-01-01"
+                            max={todayAthens}
                             value={birthDate}
                             onChange={(e) => setBirthDate(e.target.value)}
                             className={errors.birthDate ? 'border-destructive' : ''}
@@ -221,6 +225,8 @@ export default function CarRentalDriverPage() {
                           <Input
                             id="licenseExpiry"
                             type="date"
+                            min={todayAthens}
+                            max="2099-12-31"
                             value={licenseExpiry}
                             onChange={(e) => setLicenseExpiry(e.target.value)}
                             className={errors.licenseExpiry ? 'border-destructive' : ''}

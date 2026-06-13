@@ -255,11 +255,11 @@ export default function CarRentalPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
-                    <Input type="date" className="h-10" min={todayAthens} max={dropoffDate || undefined} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
+                    <Input type="date" className="h-10" min={todayAthens} max={dropoffDate || '2099-12-31'} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('returnDateLabel')}</label>
-                    <Input type="date" className="h-10" min={pickupDate || todayAthens} value={dropoffDate} onChange={e => setDropoffDate(e.target.value)} />
+                    <Input type="date" className="h-10" min={pickupDate || todayAthens} max="2099-12-31" value={dropoffDate} onChange={e => setDropoffDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('driverAgeLabel')}</label>

@@ -76,6 +76,8 @@ export default function PassengerDetailsPage() {
   const router = useRouter()
   const { state, dispatch } = useBooking()
   const t = useTranslations('passengerDetails')
+  // Date input ceilings: bound the year to 4 digits (native date inputs allow 6).
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
   // YYYY-MM-DD travel dates for the validation factory. `|| undefined` so an
@@ -297,6 +299,8 @@ export default function PassengerDetailsPage() {
                             <Input
                               id={`birthDate-${index}`}
                               type="date"
+                              min="1900-01-01"
+                              max={todayAthens}
                               value={passenger.birthDate}
                               onChange={(e) => updatePassenger(index, 'birthDate', e.target.value)}
                               className={errors[`passenger-${index}-birthDate`] ? 'border-destructive' : ''}
@@ -348,6 +352,7 @@ export default function PassengerDetailsPage() {
                             <Input
                               id={`passportExpiry-${index}`}
                               type="date"
+                              max="2099-12-31"
                               value={passenger.passportExpiryDate ?? ''}
                               onChange={(e) => updatePassenger(index, 'passportExpiryDate', e.target.value)}
                               className={errors[`passenger-${index}-passportExpiry`] ? 'border-destructive' : ''}

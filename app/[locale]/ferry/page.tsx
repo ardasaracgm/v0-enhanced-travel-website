@@ -196,6 +196,7 @@ export default function FerryTicketsPage() {
                       type="date"
                       className="h-10"
                       min={todayAthens}
+                      max="2099-12-31"
                       value={date}
                       onChange={(e) => {
                         const newDate = e.target.value
@@ -213,6 +214,7 @@ export default function FerryTicketsPage() {
                         type="date"
                         className="h-10"
                         min={date || todayAthens}
+                        max="2099-12-31"
                         value={returnDate}
                         onChange={(e) => setReturnDate(e.target.value)}
                       />
