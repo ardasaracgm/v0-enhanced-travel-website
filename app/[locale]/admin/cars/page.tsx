@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getAvailabilityForDates, computeEndDate } from '@/lib/car-availability'
 import { normalizeCar, dateDiffInDays } from '@/lib/normalize-car'
+import { Link } from '@/i18n/routing'
 import {
   Table,
   TableHeader,
@@ -67,7 +68,15 @@ export default async function AdminCarsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Car Availability</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-foreground">Car Availability</h1>
+        <Link
+          href={`/admin/trips/new?pickup=${pickup}&dropoff=${dropoff}`}
+          className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+        >
+          + New reservation
+        </Link>
+      </div>
 
       {/* Tarih aralığı — düz GET form (RSC, client JS yok); searchParams'ı besler. */}
       <form method="get" className="flex flex-wrap items-end gap-3">
@@ -129,12 +138,13 @@ export default async function AdminCarsPage({
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Occupied</TableHead>
                   <TableHead className="text-right">Remaining</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                       No cars.
                     </TableCell>
                   </TableRow>
@@ -147,6 +157,18 @@ export default async function AdminCarsPage({
                       <TableCell className="text-right">{r.occupied}</TableCell>
                       <TableCell className="text-right">
                         {r.remaining === 0 ? <Badge variant="destructive">0</Badge> : r.remaining}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {r.remaining > 0 ? (
+                          <Link
+                            href={`/admin/trips/new?carId=${r.id}&pickup=${pickup}&dropoff=${dropoff}`}
+                            className="text-sm font-medium text-primary hover:underline"
+                          >
+                            Book
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

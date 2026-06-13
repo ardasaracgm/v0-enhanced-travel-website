@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { confirmTrip } from '@/lib/trips/confirm'
 import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
+import { isPlaceholderEmail } from '@/lib/walk-in-email'
 
 // Admin'in manuel işaretleyebileceği sağlayıcılar (WhatsApp/banka ödemesi sonrası).
 // viva_wallet webhook'a ait; internal admin-manuel değil → yalnız bu ikisi.
@@ -87,9 +88,10 @@ export async function confirmPayment(formData: FormData): Promise<void> {
   }
 
   // 5) Onay e-postası — YALNIZ fresh confirm'de (23505 değil VE gerçek flip).
+  //    Walk-in placeholder (.local) adrese ASLA mail atma (bounce engeli).
   //    Çift tıklamada gitmez. Webhook main-path bloğunun birebir kopyası
   //    (route.ts:262-302); email hatası ASLA action'ı düşürmez (non-fatal).
-  if (freshPayment && !confirmRes.alreadyConfirmed) {
+  if (freshPayment && !confirmRes.alreadyConfirmed && !isPlaceholderEmail(trip.contact_email)) {
     try {
       const { data: lead } = await admin
         .from('passengers')
