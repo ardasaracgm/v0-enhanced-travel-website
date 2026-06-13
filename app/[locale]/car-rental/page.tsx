@@ -245,16 +245,13 @@ export default function CarRentalPage() {
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('pickupLocationLabel')}</label>
-                    <Select defaultValue="port">
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('locationPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="port">{t('locationPort')}</SelectItem>
-                        <SelectItem value="airport">{t('locationAirport')}</SelectItem>
-                        <SelectItem value="hotel">{t('locationHotel')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {/* Single fixed pickup point (Kos Port) — the chosen value was
+                        never used (handleSelect hardcodes DEFAULT_PICKUP_LOCATION),
+                        so a read-only field instead of a dead one-option dropdown. */}
+                    <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-sm text-foreground">
+                      <MapPin className="h-4 w-4 text-primary shrink-0" />
+                      <span>{t('locationPort')}</span>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
