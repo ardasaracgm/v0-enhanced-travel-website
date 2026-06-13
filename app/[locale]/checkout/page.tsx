@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-lg">
                       <User className="h-5 w-5 text-primary" />
-                      Passengers ({state.passengers.length})
+                      {outbound ? 'Passengers' : 'Driver'} ({state.passengers.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -344,9 +344,15 @@ export default function CheckoutPage() {
                         >
                           <div>
                             <p className="font-medium text-foreground">{passenger.firstName} {passenger.lastName}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {passenger.nationality} · Passport: {passenger.passportNumber}
-                            </p>
+                            {outbound ? (
+                              <p className="text-sm text-muted-foreground">
+                                {passenger.nationality} · Passport: {passenger.passportNumber}
+                              </p>
+                            ) : passenger.birthDate ? (
+                              <p className="text-sm text-muted-foreground">
+                                DOB: {passenger.birthDate}
+                              </p>
+                            ) : null}
                           </div>
                           {index === 0 && (
                             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
@@ -376,8 +382,8 @@ export default function CheckoutPage() {
                     <div className="p-4 bg-[#25D366]/10 border border-[#25D366]/30 rounded-xl">
                       <p className="text-sm text-foreground leading-relaxed">
                         After confirming your booking, we&apos;ll send a secure payment link
-                        on WhatsApp. Your seats are reserved while we coordinate payment.
-                        Online card payment (Viva Wallet) is launching soon.
+                        on WhatsApp. {outbound ? 'Your seats are reserved' : 'Your car is reserved'} while
+                        we coordinate payment. Online card payment (Viva Wallet) is launching soon.
                       </p>
                     </div>
 
@@ -405,8 +411,9 @@ export default function CheckoutPage() {
                           </Link>
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          By confirming this booking, you agree to the ferry operator&apos;s
-                          terms and TravelBeez&apos;s booking conditions.
+                          By confirming this booking, you agree to the{' '}
+                          {outbound ? 'ferry operator' : 'car rental supplier'}&apos;s terms and
+                          TravelBeez&apos;s booking conditions.
                         </p>
                       </div>
                     </div>
@@ -560,7 +567,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
-                        <TrustItem icon={CalendarClock} title="Flexible Date Change" desc="Up to 48 hours before departure" />
+                        <TrustItem icon={CalendarClock} title="Flexible Date Change" desc={outbound ? 'Up to 48 hours before departure' : 'Up to 48 hours before pickup'} />
                         <TrustItem icon={MessageCircle} title="WhatsApp Support" desc="Talk to us anytime" />
                         <TrustItem icon={CheckCircle} title="Instant Confirmation" desc="Reference sent immediately" />
                       </div>
