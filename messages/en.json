@@ -935,6 +935,23 @@
     }
   },
 
+  "carRentalDriver": {
+    "heading": "Driver details",
+    "subheading": "We need the main driver's details to confirm your rental.",
+    "driverTitle": "Main driver",
+    "minAgeHint": "The driver must be at least 21 years old.",
+    "noCar": {
+      "title": "No car selected",
+      "body": "Please choose a car before entering driver details.",
+      "cta": "Browse cars"
+    },
+    "summaryTitle": "Rental summary",
+    "rentalLabel": "Car rental",
+    "dayCount": "{count, plural, one {# day} other {# days}}",
+    "total": "Total",
+    "continue": "Continue to payment",
+    "steps": { "selectCar": "Select car", "driver": "Driver", "payment": "Payment" }
+  },
   "passengerDetails": {
     "labels": {
       "firstName": "First Name (as on passport)",

@@ -935,6 +935,23 @@
     }
   },
 
+  "carRentalDriver": {
+    "heading": "Sürücü bilgileri",
+    "subheading": "Kiralamanızı onaylamak için ana sürücünün bilgilerine ihtiyacımız var.",
+    "driverTitle": "Ana sürücü",
+    "minAgeHint": "Sürücü en az 21 yaşında olmalı.",
+    "noCar": {
+      "title": "Araç seçilmedi",
+      "body": "Sürücü bilgilerini girmeden önce lütfen bir araç seçin.",
+      "cta": "Araçlara göz at"
+    },
+    "summaryTitle": "Kiralama özeti",
+    "rentalLabel": "Araç kiralama",
+    "dayCount": "{count, plural, one {# gün} other {# gün}}",
+    "total": "Toplam",
+    "continue": "Ödemeye devam et",
+    "steps": { "selectCar": "Araç seç", "driver": "Sürücü", "payment": "Ödeme" }
+  },
   "passengerDetails": {
     "labels": {
       "firstName": "Ad (pasaportta yazdığı gibi)",
