@@ -19,7 +19,14 @@ const EMAIL_RE = /.+@.+\..+/
  * /admin/trips/[id]'e yönlendirir → onayı mevcut parça-2 "Mark paid" yapar.
  * GÜVENLİK: updateVisaState/confirmPayment zarfı — self-auth + is_admin; hata → throw.
  */
-export async function createReservation(formData: FormData): Promise<void> {
+export interface CreateReservationState {
+  error?: string
+}
+
+export async function createReservation(
+  _prev: CreateReservationState,
+  formData: FormData,
+): Promise<CreateReservationState> {
   // 1) Form alanları.
   const carId = String(formData.get('carId') ?? '')
   const pickup = String(formData.get('pickup') ?? '')
@@ -31,27 +38,27 @@ export async function createReservation(formData: FormData): Promise<void> {
   const locale = String(formData.get('locale') ?? 'tr') as Locale
 
   // 2) Minimal doğrulama (admin güvenilir → sürücü/Zod YOK; createTrip de ayrıca doğrular).
-  if (!carId) throw new Error('Araç seçilmedi')
+  if (!carId) return { error: 'Please select a car.' }
   if (!pickup || !dropoff || dateDiffInDays(pickup, dropoff) < 0) {
-    throw new Error('Geçersiz tarih aralığı — bırakış alıştan önce olamaz')
+    return { error: 'Invalid date range — dropoff cannot be before pickup.' }
   }
   const days = dateDiffInDays(pickup, dropoff) + 1
-  if (customerName.length < 2) throw new Error('Müşteri adı zorunlu')
-  if (customerPhone.length < 6) throw new Error('Geçerli telefon zorunlu')
-  if (!EMAIL_RE.test(customerEmailRaw)) throw new Error('Geçerli email zorunlu')
+  if (customerName.length < 2) return { error: 'Customer name is required.' }
+  if (customerPhone.length < 6) return { error: 'A valid phone number is required.' }
+  if (!EMAIL_RE.test(customerEmailRaw)) return { error: 'A valid email is required.' }
 
   // 3) Gate — admin-confirm-payment.ts:31-42 ile birebir.
   const auth = await createSupabaseServerClient()
   const {
     data: { user },
   } = await auth.auth.getUser()
-  if (!user) throw new Error('unauthorized')
+  if (!user) return { error: 'Not authorized.' }
   const { data: profile } = await auth
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
     .maybeSingle()
-  if (!profile?.is_admin) throw new Error('forbidden')
+  if (!profile?.is_admin) return { error: 'Not authorized.' }
 
   // 4) Email artık ZORUNLU (yukarıda doğrulandı) → Mark paid onay maili atar.
   const email = customerEmailRaw
@@ -63,14 +70,14 @@ export async function createReservation(formData: FormData): Promise<void> {
     .select('id, brand, model, price_per_day')
     .eq('id', carId)
     .maybeSingle()
-  if (carErr) throw new Error(`Araç sorgusu hatası: ${carErr.message}`)
-  if (!car) throw new Error(`Araç bulunamadı: ${carId}`)
+  if (carErr) return { error: 'Could not load car. Please try again.' }
+  if (!car) return { error: 'Car not found.' }
   const serverPrice = Number(car.price_per_day ?? 0) * days
 
   // 6) Çift-rezervasyon guard — walk-in'de de ZORUNLU (overbooking koruması).
   //    submit-booking.ts:252-254 ile aynı sert reddetme.
   const free = await isAvailable(carId, pickup, days)
-  if (!free) throw new Error(`Araç bu tarihlerde dolu: ${carId}`)
+  if (!free) return { error: 'This car is fully booked for the selected dates.' }
 
   // 7) Fiyat kararı (B): geçerli override → onu kullan; değilse sunucu fiyatı.
   const parsedRate = negotiatedRateRaw !== '' ? Number(negotiatedRateRaw) : null
@@ -115,7 +122,7 @@ export async function createReservation(formData: FormData): Promise<void> {
     customer: { fullName: customerName, firstName, lastName, email, phone: customerPhone },
     items: [carItem],
   })
-  if (!tripResult.ok) throw new Error(tripResult.error)
+  if (!tripResult.ok) return { error: tripResult.error }
 
   // 11) car_bookings 'held' — submit-booking.ts:397-404 ile aynı (NON-FATAL). Çift-tık
   //     (alreadyExisted) ise mükerrer held YAZMA.
@@ -130,6 +137,9 @@ export async function createReservation(formData: FormData): Promise<void> {
     if (bookErr) console.error('[createReservation] car_bookings insert failed (non-fatal):', bookErr.message)
   }
 
-  // 12) Mevcut Mark paid sayfasına yönlendir (parça-2). redirect NEXT_REDIRECT fırlatır.
+  // 12) Mevcut Mark paid sayfasına yönlendir (parça-2). redirect NEXT_REDIRECT fırlatır
+  //     (framework yakalar; useActionState state'ine düşmez). Aşağıdaki return ULAŞILMAZ —
+  //     yalnız i18n redirect 'never' tipinde olmadığı için TS fall-through'unu susturur.
   redirect({ href: `/admin/trips/${tripResult.tripId}`, locale })
+  return {}
 }

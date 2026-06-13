@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState, useState } from 'react'
 import { dateDiffInDays } from '@/lib/normalize-car'
 import { createReservation } from '@/lib/actions/admin-create-reservation'
 
@@ -31,6 +31,7 @@ export function NewReservationForm({
   const [pickup, setPickup] = useState(defaultPickup)
   const [dropoff, setDropoff] = useState(defaultDropoff)
   const [negotiated, setNegotiated] = useState('')
+  const [state, formAction, isPending] = useActionState(createReservation, {})
 
   // Canlı fiyat — SADECE gösterim. Submit'te createReservation server fiyatını
   // yeniden hesaplar (admin-create-reservation.ts:62-69); client rakamı otorite DEĞİL.
@@ -44,7 +45,7 @@ export function NewReservationForm({
   const validOverride = parsed !== null && Number.isFinite(parsed) && parsed >= 0
 
   return (
-    <form action={createReservation} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       <input type="hidden" name="locale" value={locale} />
 
       <div className="flex flex-col gap-1">
@@ -176,11 +177,14 @@ export function NewReservationForm({
         />
       </div>
 
+      {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+
       <button
         type="submit"
-        className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+        disabled={isPending}
+        className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
       >
-        Create reservation
+        {isPending ? 'Creating…' : 'Create reservation'}
       </button>
     </form>
   )
