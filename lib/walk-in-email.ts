@@ -1,13 +1,8 @@
-// Walk-in müşterisi email vermezse üretilen yer-tutucu adres. Non-routable .local
-// domain → ASLA gerçek mail gönderilmez: isPlaceholderEmail, confirmPayment'in email
-// gate'inde guard olarak kullanılır (parça-2). Telefon-temelli → aynı telefonla tekrar
-// gelen müşteri upsertCustomer'da (email-key) dedup olur.
+// Legacy yer-tutucu adres sigortası. Walk-in formu artık email-ZORUNLU (parça-4) →
+// yeni placeholder ÜRETİLMEZ. Ama bu değişiklikten önce oluşmuş walk-in trip'lerin
+// contact_email'i hâlâ @walk-in.travelbeez.local; isPlaceholderEmail, confirmPayment'in
+// email gate'inde (parça-2) o eski satırlara bounce mail atılmasını engeller.
 const WALK_IN_EMAIL_DOMAIN = 'walk-in.travelbeez.local'
-
-export function buildWalkInEmail(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  return `walkin-${digits}@${WALK_IN_EMAIL_DOMAIN}`
-}
 
 export function isPlaceholderEmail(email: string | null | undefined): boolean {
   return !!email && email.endsWith(`@${WALK_IN_EMAIL_DOMAIN}`)

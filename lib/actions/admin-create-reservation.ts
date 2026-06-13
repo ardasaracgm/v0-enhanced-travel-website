@@ -7,7 +7,6 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
 import { isAvailable, computeEndDate } from '@/lib/car-availability'
 import { dateDiffInDays } from '@/lib/normalize-car'
-import { buildWalkInEmail } from '@/lib/walk-in-email'
 import { redirect } from '@/i18n/routing'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
@@ -39,6 +38,7 @@ export async function createReservation(formData: FormData): Promise<void> {
   const days = dateDiffInDays(pickup, dropoff) + 1
   if (customerName.length < 2) throw new Error('Müşteri adı zorunlu')
   if (customerPhone.length < 6) throw new Error('Geçerli telefon zorunlu')
+  if (!EMAIL_RE.test(customerEmailRaw)) throw new Error('Geçerli email zorunlu')
 
   // 3) Gate — admin-confirm-payment.ts:31-42 ile birebir.
   const auth = await createSupabaseServerClient()
@@ -53,9 +53,8 @@ export async function createReservation(formData: FormData): Promise<void> {
     .maybeSingle()
   if (!profile?.is_admin) throw new Error('forbidden')
 
-  // 4) Email dallanması (C): gerçek email geçerliyse onu kullan (Mark paid mail atar);
-  //    yoksa telefon-temelli .local placeholder (isPlaceholderEmail guard mail'i susturur).
-  const email = EMAIL_RE.test(customerEmailRaw) ? customerEmailRaw : buildWalkInEmail(customerPhone)
+  // 4) Email artık ZORUNLU (yukarıda doğrulandı) → Mark paid onay maili atar.
+  const email = customerEmailRaw
 
   // 5) Sunucu fiyatı OTORİTE (CLAUDE.md: client fiyatına güvenme). submit-booking.ts:243-247.
   const admin = getSupabaseAdmin()

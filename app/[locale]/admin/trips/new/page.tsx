@@ -124,12 +124,13 @@ export default async function AdminNewReservationPage({
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="customerEmail" className="text-sm font-medium text-foreground">
-              Email <span className="text-muted-foreground">(optional)</span>
+              Email
             </label>
             <input
               id="customerEmail"
               name="customerEmail"
               type="email"
+              required
               className="h-10 rounded-md border bg-background px-3 text-sm"
             />
           </div>
