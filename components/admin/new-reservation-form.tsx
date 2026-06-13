@@ -65,7 +65,7 @@ export function NewReservationForm({
           </option>
           {cars.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} — €{c.pricePerDay}/gün
+              {c.name} — €{c.pricePerDay}/day
             </option>
           ))}
         </select>
@@ -147,23 +147,23 @@ export function NewReservationForm({
         <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
           {validRange ? (
             <span className="text-foreground">
-              {selectedCar.name} × {days} gün = <strong>{fmtEuro(base)}</strong>
+              {selectedCar.name} × {days} days = <strong>{fmtEuro(base)}</strong>
               {validOverride && (
                 <span className="text-muted-foreground">
                   {' '}
-                  (override: {fmtEuro(parsed)} → geçerli toplam)
+                  (override: {fmtEuro(parsed)} → applied total)
                 </span>
               )}
             </span>
           ) : (
-            <span className="text-destructive">Geçersiz tarih aralığı</span>
+            <span className="text-destructive">Invalid date range</span>
           )}
         </div>
       )}
 
       <div className="flex flex-col gap-1">
         <label htmlFor="negotiatedRate" className="text-sm font-medium text-foreground">
-          Negotiated total <span className="text-muted-foreground">(optional — boşsa sunucu fiyatı)</span>
+          Negotiated total <span className="text-muted-foreground">(optional — server price if empty)</span>
         </label>
         <input
           id="negotiatedRate"

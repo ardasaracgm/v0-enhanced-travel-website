@@ -11,11 +11,9 @@ function cellClass(remaining: number, quantity: number): string {
 export function AvailabilityCalendar({
   data,
   today,
-  locale,
 }: {
   data: CalData
   today: string
-  locale: string
 }) {
   const { days, cars } = data
   const head = days.map((d) => {
@@ -23,7 +21,7 @@ export function AvailabilityCalendar({
     return {
       date: d,
       dom: dt.getUTCDate(),
-      wd: dt.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
+      wd: dt.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
       isToday: d === today,
     }
   })

@@ -22,13 +22,10 @@ function maxStr(a: string, b: string): string {
 }
 
 export default async function AdminCarsPage({
-  params,
   searchParams,
 }: {
-  params: Promise<{ locale: string }>
   searchParams: Promise<{ pickup?: string; dropoff?: string; start?: string }>
 }) {
-  const { locale } = await params
   const { pickup: pickupParam, dropoff: dropoffParam, start: startParam } = await searchParams
 
   // Atina günü = public car-rental sayfasıyla aynı (page.tsx:102).
@@ -109,7 +106,7 @@ export default async function AdminCarsPage({
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {start} → {addDaysUtc(start, WINDOW - 1)} · {WINDOW} gün
+            {start} → {addDaysUtc(start, WINDOW - 1)} · {WINDOW} days
           </p>
           <div className="flex gap-2">
             {prevStart ? (
@@ -135,20 +132,20 @@ export default async function AdminCarsPage({
         {calErr ? (
           <p className="text-sm text-destructive">Calendar failed: {calErr}</p>
         ) : calendar ? (
-          <AvailabilityCalendar data={calendar} today={todayAthens} locale={locale} />
+          <AvailabilityCalendar data={calendar} today={todayAthens} />
         ) : null}
         <div className="flex gap-3 text-xs text-muted-foreground">
           <span>
             <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-emerald-500/40" />
-            Boş
+            Free
           </span>
           <span>
             <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-amber-500/40" />
-            Kısmi
+            Partial
           </span>
           <span>
             <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-red-500/40" />
-            Dolu
+            Full
           </span>
         </div>
       </section>
@@ -194,7 +191,7 @@ export default async function AdminCarsPage({
 
       {!validRange ? (
         <p className="text-sm text-destructive">
-          Geçersiz tarih aralığı — bırakış tarihi alış tarihinden önce olamaz.
+          Invalid date range — dropoff cannot be before pickup.
         </p>
       ) : carsErr ? (
         <p className="text-sm text-destructive">Failed to load cars: {carsErr.message}</p>
@@ -203,7 +200,7 @@ export default async function AdminCarsPage({
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            {pickup} → {dropoff} · {days} gün
+            {pickup} → {dropoff} · {days} days
           </p>
           <div className="rounded-md border bg-background">
             <Table>
