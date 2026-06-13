@@ -215,7 +215,11 @@ export default function ConfirmationPage() {
    * side-effects ensures sessionStorage is cleared and the in-memory RESET has
    * been dispatched before the new page's BookingProvider can hydrate.
    */
-  const handleNewBooking = (href: '/' | '/ferry') => {
+  // Car-only booking (a car item, no ferry) → "new booking" returns to the
+  // car-rental fleet rather than the ferry search.
+  const isCarOnly = (its: BookingItem[]) => its.length > 0 && !its.some((i) => i.type === 'ferry')
+
+  const handleNewBooking = (href: '/' | '/ferry' | '/car-rental') => {
     clearConfirmationRecord()
     clearBookingStorage()
     dispatch({ type: 'RESET' })
@@ -336,6 +340,8 @@ export default function ConfirmationPage() {
                   <Home className="h-4 w-4 mr-2" />
                   Back to Home
                 </Button>
+                {/* Refresh mode: ConfirmationRecord carries no item info, so we
+                    can't tell car-only from ferry here — default to /ferry. */}
                 <Button type="button" variant="outline" onClick={() => handleNewBooking('/ferry')}>
                   Start New Booking
                 </Button>
@@ -581,7 +587,7 @@ export default function ConfirmationPage() {
                 <Home className="h-4 w-4 mr-2" />
                 Back to Home
               </Button>
-              <Button type="button" variant="outline" onClick={() => handleNewBooking('/ferry')}>
+              <Button type="button" variant="outline" onClick={() => handleNewBooking(isCarOnly(snapshot.items) ? '/car-rental' : '/ferry')}>
                 Start New Booking
               </Button>
             </div>

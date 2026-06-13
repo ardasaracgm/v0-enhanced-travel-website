@@ -50,6 +50,9 @@ export default function CheckoutPage() {
   const tExtras = useTranslations('extrasPage')
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
+  // Car-only standalone (no ferry but a car item) → route nav links to the
+  // car-rental flow instead of /ferry.
+  const carOnly = !outbound && state.items.some((i) => i.type === 'car_rental')
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
 
@@ -223,7 +226,7 @@ export default function CheckoutPage() {
               <p className="text-muted-foreground mb-6">
                 Please complete the previous steps before checkout.
               </p>
-              <Link href="/ferry">
+              <Link href={carOnly ? '/car-rental' : '/ferry'}>
                 <Button>Start New Booking</Button>
               </Link>
             </CardContent>
@@ -244,7 +247,7 @@ export default function CheckoutPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <Link href="/ferry/passenger-details">
+                <Link href={carOnly ? '/car-rental/driver' : '/ferry/passenger-details'}>
                   <Button
                     variant="ghost"
                     size="icon"
