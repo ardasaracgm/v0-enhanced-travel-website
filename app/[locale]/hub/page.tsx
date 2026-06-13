@@ -22,7 +22,7 @@ interface HubTab {
 const TABS: HubTab[] = [
   { key: 'visa',          label: 'Visa',           icon: FileCheck,   href: '/visa', locked: false },
   { key: 'ferry',         label: 'Ferry',          icon: Ship,        locked: true },
-  { key: 'car_rental',    label: 'Car Rental',     icon: Car,         locked: true },
+  { key: 'car_rental',    label: 'Car Rental',     icon: Car,         href: '/hub/car-rental', locked: false },
   { key: 'tour',          label: 'Tours',          icon: MapPinned,   locked: true },
   { key: 'hotel',         label: 'Hotels',         icon: Hotel,       locked: true },
   { key: 'transfer',      label: 'Transfers',      icon: BusFront,    locked: true },
