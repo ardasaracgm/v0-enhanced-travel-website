@@ -13,6 +13,7 @@ import {
   MessageCircle,
   CalendarClock,
   ShieldCheck,
+  Car,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
 
   const handleConfirm = async () => {
     if (!acceptTerms || isProcessing || insuranceBlocking) return
-    if (!outbound) return
+    if (state.items.length === 0) return
 
     setIsProcessing(true)
     dispatch({ type: 'SET_SUBMIT_ERROR', payload: null })
@@ -207,8 +208,10 @@ export default function CheckoutPage() {
     }
   }
 
-  // Guard: must have ferry + passengers before reaching this page
-  if (!outbound || state.passengers.length === 0) {
+  // Guard: must have at least one item + one passenger/driver. Car-only
+  // standalone has no ferry leg, so we no longer require `outbound` here —
+  // the server (submitBooking) is the authority on ferry-leg validity.
+  if (state.items.length === 0 || state.passengers.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
@@ -269,9 +272,9 @@ export default function CheckoutPage() {
         <section className="w-full py-4 border-b border-border/50 bg-card">
           <div className="container px-4 md:px-6">
             <div className="flex items-center justify-center gap-4 md:gap-8 text-xs md:text-sm">
-              <Step done label="Select Ferry" />
+              <Step done label={outbound ? 'Select Ferry' : 'Select Car'} />
               <Divider />
-              <Step done label="Passengers" />
+              <Step done label={outbound ? 'Passengers' : 'Driver'} />
               <Divider />
               <Step current label="Confirm" />
             </div>
@@ -288,7 +291,7 @@ export default function CheckoutPage() {
                 <Card className="bg-card border-border/50">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-lg">
-                      <Ship className="h-5 w-5 text-primary" />
+                      {outbound ? <Ship className="h-5 w-5 text-primary" /> : <Car className="h-5 w-5 text-primary" />}
                       Your Trip
                     </CardTitle>
                   </CardHeader>
@@ -422,7 +425,8 @@ export default function CheckoutPage() {
                 <div className="sticky top-24 space-y-6">
                   {/* Travel insurance upsell (A1) — opt-in boş başlar (AB Madde 22).
                       Hata olursa bölüm sessizce gizlenir; checkout kırılmaz. */}
-                  {!insFailed && (
+                  {/* Insurance upsell is travel/ferry-only — hidden for car-only. */}
+                  {outbound && !insFailed && (
                     <Card className="bg-card border-border/50">
                       <CardContent className="p-6 space-y-4">
                         <div className="flex items-center gap-3">
