@@ -108,11 +108,20 @@ export default function CarRentalPage() {
 
   // Rental period — inclusive day count (pickup→dropoff), matching the rest of
   // the app (server clamp + resolver use days where dropoffAt = pickup + days-1).
+  // validRange requires dropoff on/after pickup; same-day (dateDiff 0) is a
+  // legit 1-day rental, so the floor is >= 0 (never mask a negative as 1 day).
   const datesChosen = !!pickupDate && !!dropoffDate
-  const rentalDays = datesChosen ? Math.max(1, dateDiffInDays(pickupDate, dropoffDate) + 1) : 0
+  const validRange = datesChosen && dateDiffInDays(pickupDate, dropoffDate) >= 0
+  const rentalDays = validRange ? dateDiffInDays(pickupDate, dropoffDate) + 1 : 0
+
+  // Dates changed → any prior availability is stale; force a fresh "Ara" before
+  // a car can be selected (closes the stale-map hole).
+  React.useEffect(() => {
+    setAvailability(null)
+  }, [pickupDate, dropoffDate])
 
   async function handleSearch() {
-    if (!datesChosen) { setSearchError(t('selectDatesFirst')); return }
+    if (!validRange) { setSearchError(t('selectDatesFirst')); return }
     setSearchError(null)
     setAvailLoading(true)
     const res = await checkCarAvailability(pickupDate, rentalDays)
@@ -123,7 +132,7 @@ export default function CarRentalPage() {
   // Real DB cars only — fallback fleet ids aren't in `cars`, so booking them
   // would silently drop the item server-side. Fallback keeps the WhatsApp path.
   function handleSelect(car: NormalizedCar) {
-    if (!datesChosen) { setSearchError(t('selectDatesFirst')); return }
+    if (!validRange) { setSearchError(t('selectDatesFirst')); return }
     dispatch({
       type: 'SET_CAR_RENTAL',
       payload: {
@@ -249,7 +258,7 @@ export default function CarRentalPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
-                    <Input type="date" className="h-10" min={todayAthens} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
+                    <Input type="date" className="h-10" min={todayAthens} max={dropoffDate || undefined} value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('returnDateLabel')}</label>
@@ -379,7 +388,7 @@ export default function CarRentalPage() {
                             ) : (
                               <Button
                                 onClick={() => handleSelect(car)}
-                                disabled={!datesChosen || (availability != null && availability[car.id] === 0)}
+                                disabled={!validRange || availability == null || (availability[car.id] ?? 0) === 0}
                                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
                               >
                                 {availability != null && availability[car.id] === 0 ? t('unavailableButton') : t('selectButton')}
