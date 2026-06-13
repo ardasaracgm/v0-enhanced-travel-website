@@ -185,16 +185,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount }))
     } else if (item.type === 'car_rental') {
       try {
-        // Recompute days server-side from ferry dates when both legs are present
-        // (round-trip). For one-way, trust the Zod-validated client value.
+        // Round-trip: the island stay (outbound→return, inclusive) is the CEILING,
+        // not a fixed value — the customer may rent for fewer days than they're on
+        // the island. Clamp the client-chosen days to [1, ferryWindow]. One-way has
+        // no return leg, so trust the Zod-validated client value (Math.max floor).
         const ferryItems = input.items.filter(
           (i): i is Extract<typeof i, { type: 'ferry' }> => i.type === 'ferry'
         )
         const outboundFerryItem = ferryItems.find(i => i.leg === 'outbound')
         const returnFerryItem   = ferryItems.find(i => i.leg === 'return')
-        const authorizedDays =
+        const ferryWindow =
           outboundFerryItem && returnFerryItem
             ? Math.max(1, dateDiffInDays(outboundFerryItem.date, returnFerryItem.date) + 1)
+            : null
+        const authorizedDays =
+          ferryWindow != null
+            ? Math.min(Math.max(1, item.days), ferryWindow)
             : Math.max(1, item.days)
 
         const supabase = getSupabaseAdmin()
