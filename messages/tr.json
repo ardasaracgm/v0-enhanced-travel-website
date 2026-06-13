@@ -323,6 +323,8 @@
     "age2124": "21–24 yaş",
     "age25plus": "25+ yaş",
     "searchButton": "Araç Ara",
+    "selectDatesFirst": "Lütfen önce alış ve teslim tarihlerini seçin.",
+    "unavailableButton": "Dolu",
     "fleetTitle": "Araç Filomuz",
     "fleetSubtitle": "Kos Adası'nı keşfetmek için bakımlı araçlar",
     "seatsLabel": "{count} Koltuk",

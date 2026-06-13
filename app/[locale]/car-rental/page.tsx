@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Car, MapPin, CheckCircle, Star, Shield, Fuel, Users, Settings, Zap, AlertCircle, CarIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/routing'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,7 +33,11 @@ import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { getAvailableCars } from '@/lib/supabase'
-import { normalizeCar, type NormalizedCar } from '@/lib/normalize-car'
+import { normalizeCar, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
+import { useBooking } from '@/lib/booking-context'
+import { checkCarAvailability } from '@/lib/actions/car-availability-action'
+
+const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
 // Fallback data in case database is empty or unavailable
 const fallbackCarFleet = [
@@ -95,6 +100,45 @@ export default function CarRentalPage() {
   const [pickupDate, setPickupDate] = React.useState('')
   const [dropoffDate, setDropoffDate] = React.useState('')
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
+  const router = useRouter()
+  const { dispatch } = useBooking()
+  const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
+  const [availLoading, setAvailLoading] = React.useState(false)
+  const [searchError, setSearchError] = React.useState<string | null>(null)
+
+  // Rental period — inclusive day count (pickup→dropoff), matching the rest of
+  // the app (server clamp + resolver use days where dropoffAt = pickup + days-1).
+  const datesChosen = !!pickupDate && !!dropoffDate
+  const rentalDays = datesChosen ? Math.max(1, dateDiffInDays(pickupDate, dropoffDate) + 1) : 0
+
+  async function handleSearch() {
+    if (!datesChosen) { setSearchError(t('selectDatesFirst')); return }
+    setSearchError(null)
+    setAvailLoading(true)
+    const res = await checkCarAvailability(pickupDate, rentalDays)
+    setAvailability(res.ok ? res.availability : null)
+    setAvailLoading(false)
+  }
+
+  // Real DB cars only — fallback fleet ids aren't in `cars`, so booking them
+  // would silently drop the item server-side. Fallback keeps the WhatsApp path.
+  function handleSelect(car: NormalizedCar) {
+    if (!datesChosen) { setSearchError(t('selectDatesFirst')); return }
+    dispatch({
+      type: 'SET_CAR_RENTAL',
+      payload: {
+        carId: car.id,
+        model: car.model,
+        pricePerDay: car.price,
+        days: rentalDays,
+        pickupLocation: DEFAULT_PICKUP_LOCATION,
+        dropoffLocation: DEFAULT_PICKUP_LOCATION,
+        pickupAt: pickupDate,
+        dropoffAt: dropoffDate,
+      },
+    })
+    router.push('/car-rental/driver')
+  }
 
   React.useEffect(() => {
     async function fetchCars() {
@@ -225,13 +269,14 @@ export default function CarRentalPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">&nbsp;</label>
-                    <Button className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button onClick={handleSearch} disabled={availLoading} className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
                       {t('searchButton')}
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
+            {searchError && <p className="mt-3 text-sm text-destructive">{searchError}</p>}
           </div>
         </section>
 
@@ -327,7 +372,19 @@ export default function CarRentalPage() {
                               <span className="text-3xl font-bold text-primary">&euro;{car.price}</span>
                               <span className="text-muted-foreground text-sm">{t('perDay')}</span>
                             </div>
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">{t('selectButton')}</Button>
+                            {usingFallback ? (
+                              <a href="https://wa.me/302242050008" target="_blank" rel="noopener noreferrer">
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">{t('selectButton')}</Button>
+                              </a>
+                            ) : (
+                              <Button
+                                onClick={() => handleSelect(car)}
+                                disabled={!datesChosen || (availability != null && availability[car.id] === 0)}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                              >
+                                {availability != null && availability[car.id] === 0 ? t('unavailableButton') : t('selectButton')}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </CardContent>

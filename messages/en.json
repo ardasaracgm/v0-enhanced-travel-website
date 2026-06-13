@@ -323,6 +323,8 @@
     "age2124": "21–24 years",
     "age25plus": "25+ years",
     "searchButton": "Search Cars",
+    "selectDatesFirst": "Please select pickup and return dates first.",
+    "unavailableButton": "Unavailable",
     "fleetTitle": "Our Car Fleet",
     "fleetSubtitle": "Well-maintained vehicles perfect for exploring Kos Island",
     "seatsLabel": "{count} Seats",
