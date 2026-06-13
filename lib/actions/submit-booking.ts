@@ -30,7 +30,7 @@ import { getInsuranceQuote } from '@/lib/insurs'
 import { submitItemSchema } from '@/lib/trip-items/registry'
 import { assertNever } from '@/lib/trip-items/types'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
-import { makePassengerSchema, derivePassengerType } from '@/lib/validation/booking'
+import { makePassengerSchema, makeDriverSchema, derivePassengerType, isYoungDriver, todayAthensISO } from '@/lib/validation/booking'
 import { z } from 'zod'
 
 // ============================================================
@@ -110,6 +110,16 @@ export type SubmitBookingResult =
 // submitItemSchema is the discriminatedUnion built from them. See
 // lib/trip-items/registry.ts.
 
+// ============================================================
+// Ferry-flow signal — single source of truth
+// ============================================================
+// A booking rides the FERRY flow iff it has an outbound ferry leg. This one
+// predicate drives the structural guard, the passenger-vs-driver schema choice,
+// and the downstream travel-date logic — never re-derived ad hoc elsewhere.
+function hasOutboundFerry(items: SubmitBookingInput['items']): boolean {
+  return items.some(i => i.type === 'ferry' && i.leg === 'outbound')
+}
+
 // Structural schema — everything EXCEPT detailed passenger validation, which
 // is run separately below because it needs the (now-trusted) travel dates.
 const SubmitBookingStructureSchema = z.object({
@@ -121,8 +131,14 @@ const SubmitBookingStructureSchema = z.object({
   contactPhone:   z.string().trim().min(7),
   notesCustomer:  z.string().max(500).optional(),
 }).refine(
-  data => data.items.some(i => i.type === 'ferry' && i.leg === 'outbound'),
-  { message: 'Booking must include an outbound ferry leg', path: ['items'] }
+  // A ferry booking MUST include an outbound leg. A booking with NO ferry at all
+  // (car-only standalone) is allowed — items.min(1) still blocks empty orders,
+  // and a lone return leg without an outbound is still rejected here.
+  data => {
+    const ferries = data.items.filter(i => i.type === 'ferry')
+    return ferries.length === 0 || hasOutboundFerry(data.items)
+  },
+  { message: 'A ferry booking must include an outbound leg', path: ['items'] }
 ).refine(
   data => {
     const ferryLegs = data.items.filter(i => i.type === 'ferry')
@@ -159,15 +175,24 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   const outboundDate = ferryLegs.find((i) => i.leg === 'outbound')?.date
   const returnDate = ferryLegs.find((i) => i.leg === 'return')?.date
 
-  // 1c. Validate passengers with a travel-date-aware schema (passport-expiry
-  //     floor = return ?? outbound). Zod rejects '' gender, bad passports, etc.
-  const passengersResult = z
-    .array(makePassengerSchema({ outboundDate, returnDate }))
-    .min(1)
-    .safeParse(input.passengers)
+  // Ferry flow vs. car-only standalone — one signal, drives schema + dates below.
+  const hasFerry = hasOutboundFerry(structural.data.items)
+
+  // 1c. Validate passengers (ferry) OR driver (car-only) with the right schema.
+  //     Ferry: full passport identity, travel-date-aware (expiry floor =
+  //     return ?? outbound), 1+ passengers. Car-only: exactly ONE driver —
+  //     name + DOB (>=21); email/phone come from the structural contact fields.
+  const passengersResult = hasFerry
+    ? z.array(makePassengerSchema({ outboundDate, returnDate })).min(1).safeParse(input.passengers)
+    : z.array(makeDriverSchema()).length(1).safeParse(input.passengers)
   if (!passengersResult.success) {
     return { ok: false, code: 'validation_failed', error: formatZodError(passengersResult.error) }
   }
+
+  // Young-driver flag (21–24): car-only only, no price effect — surfaced on the
+  // car_rental item metadata for ops. The ferry flow has no standalone driver.
+  // Safe because the driver array is length(1): passengers[0] IS the driver.
+  const youngDriver = !hasFerry && isYoungDriver(input.passengers[0]?.birthDate ?? '')
 
   // 2. Resolve items and build createTrip list
   const items: CreateTripInput['items'] = []
@@ -223,14 +248,18 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
             end_date: computeEndDate(item.pickupAt, authorizedDays),
           })
           // I/O (cars fetch + authorizedDays) stays here; pure assembly in resolver.
-          items.push(
-            resolveCarRentalItem({
-              item,
-              car: data,
-              authorizedDays,
-              passengerCount: input.passengerCount,
-            }),
-          )
+          const carItem = resolveCarRentalItem({
+            item,
+            car: data,
+            authorizedDays,
+            passengerCount: input.passengerCount,
+          })
+          // Young-driver flag → jsonb metadata. No schema change, no price effect.
+          // Branch-gated: can only ever land on a car_rental item.
+          if (youngDriver) {
+            carItem.metadata = { ...carItem.metadata, young_driver: true }
+          }
+          items.push(carItem)
         }
       } catch (err) {
         console.error('[submitBooking] car lookup failed:', err)
@@ -256,8 +285,14 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       // YOK SAYILIR; get_price'tan gerçek DOB'larla teyit edilir. Poliçe
       // OLUŞTURULMAZ (add_contract Kademe B) — yalnız quote + ödemeye dahil.
       try {
-        const dateFrom = outboundDate as string
-        const dateTo = returnDate ?? (outboundDate as string)
+        // Insurance requires real travel dates → only reachable in the ferry
+        // flow. Defensive: never reached in car-only (no insurance item there),
+        // but guard the latent crash instead of casting undefined to string.
+        if (!outboundDate) {
+          return { ok: false, code: 'invalid_insurance', error: 'Insurance requires ferry travel dates' }
+        }
+        const dateFrom = outboundDate
+        const dateTo = returnDate ?? outboundDate
         const tourists = input.passengers.map((p) => ({ dateBirth: p.birthDate }))
         const tariffs = await getInsuranceQuote({
           dateFrom, dateTo, touristCount: item.touristCount, tourists,
@@ -285,9 +320,10 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   }
 
   // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND
-  //    date (sail-out) — never returnDate, never a client-sent type. The
-  //    structural schema guarantees an outbound leg, so outboundDate is set.
-  const outboundTravelDate = outboundDate as string
+  //    date (sail-out) — never returnDate, never a client-sent type. Car-only
+  //    bookings have no ferry date → fall back to today (Athens); a 21+ driver
+  //    still classifies as 'adult', which is correct.
+  const outboundTravelDate = outboundDate ?? todayAthensISO()
 
   const leadPassenger =
     input.passengers.find((p) => p.isLead) ?? input.passengers[0]

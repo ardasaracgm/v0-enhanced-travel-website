@@ -1016,7 +1016,8 @@
       "birthDate": {
         "invalid": "Please enter a valid date of birth",
         "future": "Date of birth cannot be in the future",
-        "tooOld": "Please check the date of birth"
+        "tooOld": "Please check the date of birth",
+        "driverMinAge": "The driver must be at least 21 years old"
       },
       "passport": { "invalid": "Passport number must be 5–20 letters or digits" },
       "passportExpiry": {

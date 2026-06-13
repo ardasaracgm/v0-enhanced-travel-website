@@ -1016,7 +1016,8 @@
       "birthDate": {
         "invalid": "Lütfen geçerli bir doğum tarihi girin",
         "future": "Doğum tarihi gelecekte olamaz",
-        "tooOld": "Lütfen doğum tarihini kontrol edin"
+        "tooOld": "Lütfen doğum tarihini kontrol edin",
+        "driverMinAge": "Sürücü en az 21 yaşında olmalı"
       },
       "passport": { "invalid": "Pasaport numarası 5–20 harf veya rakamdan oluşmalıdır" },
       "passportExpiry": {

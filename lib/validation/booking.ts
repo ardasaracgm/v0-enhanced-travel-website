@@ -44,7 +44,7 @@ function parseISODate(s: string): Date | null {
 }
 
 /** Today as YYYY-MM-DD in the operator's timezone (Greece), matching submit-booking. */
-function todayAthensISO(): string {
+export function todayAthensISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 }
 
@@ -170,6 +170,47 @@ export function makePassengerSchema(
     nationality: z.string().trim().min(2, 'nationality.required'),
   })
 }
+
+// ============================================================
+// Driver schema (car-rental standalone — lightweight, no passport)
+// ============================================================
+// Car-only bookings collect a DRIVER, not a ferry passenger: name + DOB only.
+// Email/phone live at the contact level (contactEmail/contactPhone), validated
+// structurally in submitBooking — not per-row here. Passport/nationality/gender
+// are intentionally absent (those passengers columns are nullable; createTrip
+// writes ?? null). Age floor is a business rule: drivers must be >= 21.
+export const DRIVER_MIN_AGE = 21
+
+export function makeDriverSchema() {
+  return z.object({
+    firstName: z.string().trim().min(1, 'firstName.required'),
+    lastName: z.string().trim().min(1, 'lastName.required'),
+    birthDate: z.string().superRefine((val, ctx) => {
+      const d = parseISODate(val)
+      if (!d) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.invalid' })
+        return
+      }
+      const age = ageOn(val, todayAthensISO())
+      if (age < 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.future' })
+      } else if (age > 120) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.tooOld' })
+      } else if (age < DRIVER_MIN_AGE) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.driverMinAge' })
+      }
+    }),
+  })
+}
+
+/** Qualifying driver (>=21) who falls in the 21–24 young-driver band. No price
+ *  effect — just an ops flag surfaced on the car_rental item metadata. */
+export function isYoungDriver(birthDate: string): boolean {
+  const age = ageOn(birthDate, todayAthensISO())
+  return age >= DRIVER_MIN_AGE && age < 25
+}
+
+export type DriverInput = z.infer<ReturnType<typeof makeDriverSchema>>
 
 // ============================================================
 // Contact schema
