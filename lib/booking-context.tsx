@@ -32,6 +32,8 @@ export interface Passenger {
   passportNumber: string
   passportExpiryDate?: string   // optional; validated "after return date" by the schema
   nationality: string
+  // Car-only driver only; required + validated >= dropoffAt by makeDriverSchema.
+  licenseExpiry?: string
 }
 
 export interface CarRentalSelection {

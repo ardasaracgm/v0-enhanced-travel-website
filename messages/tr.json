@@ -942,6 +942,8 @@
     "subheading": "Kiralamanızı onaylamak için ana sürücünün bilgilerine ihtiyacımız var.",
     "driverTitle": "Ana sürücü",
     "minAgeHint": "Sürücü en az 21 yaşında olmalı.",
+    "licenseLabel": "Ehliyet geçerlilik tarihi",
+    "licenseHint": "Ehliyetiniz aracı teslim tarihine kadar geçerli olmalı.",
     "noCar": {
       "title": "Araç seçilmedi",
       "body": "Sürücü bilgilerini girmeden önce lütfen bir araç seçin.",
@@ -1042,6 +1044,10 @@
       "passportExpiry": {
         "invalid": "Lütfen geçerli bir pasaport geçerlilik tarihi girin",
         "beforeTravel": "Pasaport, dönüş tarihinize kadar geçerli olmalıdır"
+      },
+      "licenseExpiry": {
+        "invalid": "Lütfen geçerli bir ehliyet geçerlilik tarihi girin",
+        "beforeDropoff": "Ehliyetiniz aracı teslim tarihine kadar geçerli olmalı"
       },
       "nationality": { "required": "Uyruk gerekli" },
       "email": {

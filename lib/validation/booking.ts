@@ -181,7 +181,7 @@ export function makePassengerSchema(
 // writes ?? null). Age floor is a business rule: drivers must be >= 21.
 export const DRIVER_MIN_AGE = 21
 
-export function makeDriverSchema() {
+export function makeDriverSchema(opts?: { dropoffAt?: string }) {
   return z.object({
     firstName: z.string().trim().min(1, 'firstName.required'),
     lastName: z.string().trim().min(1, 'lastName.required'),
@@ -198,6 +198,19 @@ export function makeDriverSchema() {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.tooOld' })
       } else if (age < DRIVER_MIN_AGE) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'birthDate.driverMinAge' })
+      }
+    }),
+    // Driver's licence expiry — required, and must be valid through the rental
+    // drop-off date. Stored on the car_rental item metadata (no passengers col).
+    // An empty/malformed value reuses the 'invalid' message (mirrors birthDate).
+    licenseExpiry: z.string().superRefine((val, ctx) => {
+      const d = parseISODate(val)
+      if (!d) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'licenseExpiry.invalid' })
+        return
+      }
+      if (opts?.dropoffAt && val < opts.dropoffAt) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'licenseExpiry.beforeDropoff' })
       }
     }),
   })

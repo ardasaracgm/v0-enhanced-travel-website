@@ -210,6 +210,7 @@ export interface CarRentalItemMetadata {
   pickup_at: string
   dropoff_at: string
   driver_license_country?: string
+  driver_license_expiry?: string   // YYYY-MM-DD; car-only driver, from makeDriverSchema
   insurance_level?: 'basic' | 'full'
 }
 

@@ -942,6 +942,8 @@
     "subheading": "We need the main driver's details to confirm your rental.",
     "driverTitle": "Main driver",
     "minAgeHint": "The driver must be at least 21 years old.",
+    "licenseLabel": "Driver's licence expiry",
+    "licenseHint": "Your licence must be valid through the drop-off date.",
     "noCar": {
       "title": "No car selected",
       "body": "Please choose a car before entering driver details.",
@@ -1042,6 +1044,10 @@
       "passportExpiry": {
         "invalid": "Please enter a valid passport expiry date",
         "beforeTravel": "Passport must be valid through your return date"
+      },
+      "licenseExpiry": {
+        "invalid": "Please enter a valid driver's licence expiry date",
+        "beforeDropoff": "Your licence must be valid through the drop-off date"
       },
       "nationality": { "required": "Nationality is required" },
       "email": {

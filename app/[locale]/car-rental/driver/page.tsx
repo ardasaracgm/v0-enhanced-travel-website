@@ -32,12 +32,15 @@ export default function CarRentalDriverPage() {
   const [firstName, setFirstName] = React.useState('')
   const [lastName, setLastName] = React.useState('')
   const [birthDate, setBirthDate] = React.useState('')
+  const [licenseExpiry, setLicenseExpiry] = React.useState('')
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
   function validate(): boolean {
-    const driver = makeDriverSchema().safeParse({ firstName, lastName, birthDate })
+    const driver = makeDriverSchema({ dropoffAt: car?.dropoffAt }).safeParse({
+      firstName, lastName, birthDate, licenseExpiry,
+    })
     const contact = contactSchema.safeParse({ contactEmail, contactPhone })
     const next: Record<string, string> = {}
     if (!driver.success) {
@@ -66,6 +69,7 @@ export default function CarRentalDriverPage() {
       passportNumber: '',
       passportExpiryDate: '',
       nationality: '',
+      licenseExpiry,
     }
     dispatch({ type: 'SET_PASSENGERS', payload: [driver] })
     dispatch({ type: 'SET_CONTACT', payload: { email: contactEmail, phone: contactPhone } })
@@ -211,6 +215,19 @@ export default function CarRentalDriverPage() {
                           {errors.birthDate
                             ? <p className="text-sm text-destructive">{errors.birthDate}</p>
                             : <p className="text-xs text-muted-foreground">{t('minAgeHint')}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="licenseExpiry">{t('licenseLabel')} *</Label>
+                          <Input
+                            id="licenseExpiry"
+                            type="date"
+                            value={licenseExpiry}
+                            onChange={(e) => setLicenseExpiry(e.target.value)}
+                            className={errors.licenseExpiry ? 'border-destructive' : ''}
+                          />
+                          {errors.licenseExpiry
+                            ? <p className="text-sm text-destructive">{errors.licenseExpiry}</p>
+                            : <p className="text-xs text-muted-foreground">{t('licenseHint')}</p>}
                         </div>
                       </div>
                     </CardContent>

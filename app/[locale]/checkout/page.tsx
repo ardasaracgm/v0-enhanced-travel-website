@@ -173,6 +173,7 @@ export default function CheckoutPage() {
           passportNumber: p.passportNumber,
           passportExpiryDate: p.passportExpiryDate,
           nationality: p.nationality,
+          licenseExpiry: p.licenseExpiry,
           isLead: idx === 0,
         })),
         contactEmail: state.contactEmail,
@@ -348,9 +349,12 @@ export default function CheckoutPage() {
                               <p className="text-sm text-muted-foreground">
                                 {passenger.nationality} · Passport: {passenger.passportNumber}
                               </p>
-                            ) : passenger.birthDate ? (
+                            ) : (passenger.birthDate || passenger.licenseExpiry) ? (
                               <p className="text-sm text-muted-foreground">
-                                DOB: {passenger.birthDate}
+                                {[
+                                  passenger.birthDate && `DOB: ${passenger.birthDate}`,
+                                  passenger.licenseExpiry && `Licence exp: ${passenger.licenseExpiry}`,
+                                ].filter(Boolean).join(' · ')}
                               </p>
                             ) : null}
                           </div>

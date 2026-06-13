@@ -79,6 +79,8 @@ export interface SubmitBookingInput {
     nationality: string
     /** Lead passenger has the contact info; others may share the email/phone */
     isLead?: boolean
+    /** Car-only driver's licence expiry (YYYY-MM-DD); written to car metadata */
+    licenseExpiry?: string
   }>
 
   /** Contact info (snapshot at booking time) */
@@ -182,9 +184,18 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   //     Ferry: full passport identity, travel-date-aware (expiry floor =
   //     return ?? outbound), 1+ passengers. Car-only: exactly ONE driver —
   //     name + DOB (>=21); email/phone come from the structural contact fields.
+  const carInput = input.items.find(
+    (i): i is Extract<typeof i, { type: 'car_rental' }> => i.type === 'car_rental'
+  )
+  // Authoritative drop-off from required pickupAt + days — the client dropoffAt
+  // is schema-optional (registry.ts), so deriving here keeps the licence >=
+  // drop-off rule from silently skipping. computeEndDate = pickup + (days-1).
+  const carDropoff = carInput
+    ? computeEndDate(carInput.pickupAt, Math.max(1, carInput.days))
+    : undefined
   const passengersResult = hasFerry
     ? z.array(makePassengerSchema({ outboundDate, returnDate })).min(1).safeParse(input.passengers)
-    : z.array(makeDriverSchema()).length(1).safeParse(input.passengers)
+    : z.array(makeDriverSchema({ dropoffAt: carDropoff })).length(1).safeParse(input.passengers)
   if (!passengersResult.success) {
     return { ok: false, code: 'validation_failed', error: formatZodError(passengersResult.error) }
   }
@@ -258,6 +269,12 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           // Branch-gated: can only ever land on a car_rental item.
           if (youngDriver) {
             carItem.metadata = { ...carItem.metadata, young_driver: true }
+          }
+          // Driver's licence expiry → jsonb metadata (car-only; same pattern as
+          // young_driver). passengers[0] IS the driver (array is length 1).
+          const licenseExpiry = !hasFerry ? input.passengers[0]?.licenseExpiry : undefined
+          if (licenseExpiry) {
+            carItem.metadata = { ...carItem.metadata, driver_license_expiry: licenseExpiry }
           }
           items.push(carItem)
         }
