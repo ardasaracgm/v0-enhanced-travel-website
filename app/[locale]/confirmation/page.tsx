@@ -49,6 +49,7 @@ const TTL_MS = 24 * 60 * 60 * 1000
 interface ConfirmationRecord {
   reference:   string
   whatsappUrl: string
+  isCarOnly:   boolean
   timestamp:   number
 }
 
@@ -180,6 +181,7 @@ export default function ConfirmationPage() {
       writeConfirmationRecord({
         reference:   state.bookingReference,
         whatsappUrl: state.paymentWhatsAppUrl,
+        isCarOnly:   isCarOnly(state.items),
       })
 
       clearBookingStorage()
@@ -349,9 +351,9 @@ export default function ConfirmationPage() {
                   <Home className="h-4 w-4 mr-2" />
                   Back to Home
                 </Button>
-                {/* Refresh mode: ConfirmationRecord carries no item info, so we
-                    can't tell car-only from ferry here — default to /ferry. */}
-                <Button type="button" variant="outline" onClick={() => handleNewBooking('/ferry')}>
+                {/* ConfirmationRecord now carries isCarOnly, so route car-only
+                    bookings back to the fleet instead of the ferry search. */}
+                <Button type="button" variant="outline" onClick={() => handleNewBooking(storedRecord.isCarOnly ? '/car-rental' : '/ferry')}>
                   Start New Booking
                 </Button>
               </div>
