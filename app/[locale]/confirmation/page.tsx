@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
+import { useSearchParams } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import {
   Ship,
@@ -15,6 +16,7 @@ import {
   Copy,
   Check,
   Sparkles,
+  Loader2,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
@@ -40,6 +42,7 @@ import {
   type BookingItem,
 } from '@/lib/booking-context'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { confirmFromReturn } from '@/lib/actions/confirm-from-return'
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 
@@ -121,6 +124,16 @@ export default function ConfirmationPage() {
   const [copied, setCopied]             = React.useState(false)
   const modeDetectedRef                 = React.useRef(false)
 
+  // Viva payment-return signal — Viva appends ?t={transactionId}&s={orderCode}
+  // to the success URL. Their presence means the user returned from a payment;
+  // the SERVER confirm result (not client state) drives the view in that case.
+  const searchParams = useSearchParams()
+  const vivaT = searchParams.get('t')
+  const vivaS = searchParams.get('s')
+  const isVivaReturn = Boolean(vivaT && vivaS)
+  const [vivaStatus, setVivaStatus] =
+    React.useState<'checking' | 'confirmed' | 'timeout' | 'fallback'>('checking')
+
   // Fires confetti only when the fresh booking lands — not on refresh/empty.
   React.useEffect(() => {
     if (mode === 'fresh') {
@@ -199,6 +212,55 @@ export default function ConfirmationPage() {
     }
   }, [state.idempotencyKey]) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: run once after first hydration; including state/dispatch would re-fire on every state change
 
+  // Viva double-confirm: on a payment return, confirm the trip server-side
+  // immediately instead of waiting for the async webhook. Idempotent — racing
+  // the webhook is safe (UNIQUE payment key + heal). Polls while 'pending' up to
+  // ~20s, then stops gracefully. Cleanup cancels any in-flight poll on unmount.
+  React.useEffect(() => {
+    if (!isVivaReturn || !vivaT || !vivaS) return
+    const transactionId = vivaT
+    const orderCode = vivaS
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let attempts = 0
+    const MAX_ATTEMPTS = 10
+
+    const tick = async () => {
+      if (cancelled) return
+      let res: Awaited<ReturnType<typeof confirmFromReturn>>
+      try {
+        res = await confirmFromReturn({ transactionId, orderCode })
+      } catch {
+        res = { state: 'error' }
+      }
+      if (cancelled) return
+
+      if (res.state === 'confirmed') {
+        setVivaStatus('confirmed')
+        return
+      }
+      if (res.state === 'error' || res.state === 'not_found') {
+        setVivaStatus('fallback')
+        return
+      }
+      // 'pending' — keep polling, then surface a graceful timeout message.
+      attempts += 1
+      if (attempts >= MAX_ATTEMPTS) {
+        setVivaStatus('timeout')
+        return
+      }
+      timer = setTimeout(tick, 2000)
+    }
+
+    setVivaStatus('checking')
+    void tick()
+
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [isVivaReturn, vivaT, vivaS])
+
   const activeReference = snapshot?.bookingReference ?? storedRecord?.reference ?? ''
 
   const handleCopyReference = async () => {
@@ -233,6 +295,164 @@ export default function ConfirmationPage() {
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
+
+  // Viva payment-return view takes priority over the client-state modes below.
+  // 'fallback' (error / not_found) deliberately falls through to the existing
+  // fresh/refresh/empty WhatsApp views; all other statuses render here.
+  if (isVivaReturn && vivaStatus !== 'fallback') {
+    if (vivaStatus === 'confirmed') {
+      return (
+        <div className="flex min-h-screen flex-col bg-background">
+          <Header />
+          <main className="flex-1">
+            <section className="w-full py-12 bg-gradient-to-b from-green-50 to-background">
+              <div className="container px-4 md:px-6">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center"
+                >
+                  <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="h-10 w-10 text-green-600" />
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                    Payment Received — Reservation Confirmed
+                  </h1>
+                  <p className="text-muted-foreground text-lg mb-2">
+                    Your payment was received and your reservation is confirmed. No further action is needed.
+                  </p>
+                  {snapshot?.contactEmail && (
+                    <p className="text-sm text-muted-foreground">
+                      Confirmation sent to{' '}
+                      <span className="font-medium text-foreground">{snapshot.contactEmail}</span>
+                    </p>
+                  )}
+                </motion.div>
+              </div>
+            </section>
+
+            <section className="w-full py-8">
+              <div className="container px-4 md:px-6 max-w-3xl mx-auto">
+                {activeReference && (
+                  <Card className="border-primary/30 mb-6">
+                    <CardContent className="p-6 text-center">
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
+                        Your Booking Reference
+                      </p>
+                      <div className="flex items-center justify-center gap-3">
+                        <p className="text-3xl md:text-4xl font-mono font-bold text-primary">
+                          {activeReference}
+                        </p>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={handleCopyReference}
+                          aria-label="Copy reference"
+                        >
+                          {copied ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {snapshot && snapshot.items.length > 0 && (
+                  <Card className="mb-6">
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                        {snapshot.outbound ? (
+                          <Ship className="h-5 w-5 text-primary" />
+                        ) : (
+                          <Car className="h-5 w-5 text-primary" />
+                        )}
+                        Trip Details
+                      </h3>
+                      <div className="space-y-4">
+                        {snapshot.items.map((item, i) => {
+                          const row = summarizeItem(item, locale)
+                          return (
+                            <div key={i} className="p-4 bg-secondary/50 rounded-xl">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                                  {row.label}
+                                </span>
+                                <span className="text-sm font-semibold text-primary">€{row.amount}</span>
+                              </div>
+                              <p className="font-semibold text-foreground">{row.title}</p>
+                              {row.detail && (
+                                <p className="text-sm text-muted-foreground mt-1">{row.detail}</p>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <Separator className="my-4" />
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-foreground">Total Paid</span>
+                        <span className="text-2xl font-bold text-primary">€{snapshot.grandTotal}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </main>
+          <Footer />
+          <FloatingWhatsApp />
+        </div>
+      )
+    }
+
+    // 'checking' (incl. polling) → spinner; 'timeout' → graceful processing note.
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8 text-center">
+              {vivaStatus === 'timeout' ? (
+                <>
+                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                  <h2 className="text-xl font-bold text-foreground mb-2">
+                    Your payment is being processed
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    Your confirmation email will arrive shortly. No further action is needed.
+                  </p>
+                  <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+                  <h2 className="text-xl font-bold text-foreground mb-2">
+                    Processing your payment…
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Please wait while we confirm your payment. This only takes a moment.
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   // 'loading': return null suppresses the empty-state flash between first paint
   // and BookingProvider hydration — the component mounts before its parent's effect runs.
