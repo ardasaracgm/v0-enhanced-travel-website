@@ -115,6 +115,15 @@ export async function POST(req: NextRequest): Promise<Response> {
   // (f) amount cross-check (minor-unit integer cents). Mismatch = high-priority
   //     alert, NO state change, but 200 — a wrong amount will not fix on retry.
   const expectedCents = Math.round(trip.total_amount * 100)
+  // TEMP €0.30 probe — fires BEFORE the (f) reject so raw ev.Amount is captured
+  // even if this comparison rejects. Remove after cents-vs-decimal is confirmed.
+  console.log('[viva-probe-f]', JSON.stringify({
+    eventAmount:     ev.Amount,
+    eventAmountType: typeof ev.Amount,
+    expectedCents,
+    tripTotal:       trip.total_amount,
+    tripTotalType:   typeof trip.total_amount,
+  }))
   if (expectedCents !== ev.Amount) {
     console.error('[viva-webhook] amount_mismatch', {
       reference: trip.reference,
@@ -165,6 +174,15 @@ export async function POST(req: NextRequest): Promise<Response> {
     })
     return NextResponse.json({ ok: true, ignored: 'reverify_status' })
   }
+
+  // TEMP €0.30 probe — fires after getTransaction (g0), BEFORE the (g0.2)
+  // reject, so tx.amount is captured even if this comparison rejects.
+  console.log('[viva-probe-g0]', JSON.stringify({
+    txAmount:      tx.amount,
+    txAmountType:  typeof tx.amount,
+    tripTotal:     trip.total_amount,
+    tripTotalType: typeof trip.total_amount,
+  }))
 
   // (g0.2) Viva's transaction amount is the MAJOR currency unit (EUR) — compare
   //        directly to trip.total_amount, NO ×100.
