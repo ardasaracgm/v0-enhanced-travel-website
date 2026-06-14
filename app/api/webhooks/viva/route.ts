@@ -12,9 +12,8 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { fetchWebhookVerificationKey, getTransaction } from '@/lib/viva/client'
-import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
-import { confirmTrip } from '@/lib/trips/confirm'
+import { fetchWebhookVerificationKey } from '@/lib/viva/client'
+import { processVivaTransaction } from '@/lib/viva/process-transaction'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -136,173 +135,23 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'missing_transaction_id' }, { status: 500 })
   }
 
-  // (g0) server-side RE-VERIFICATION — never trust the unauthenticated webhook
-  //      POST alone. Fetch the transaction from Viva (OAuth2) and confirm it
-  //      against Viva's own record before flipping state. The cheap pre-filters
-  //      above (StatusId at :110, cents amount at :118) STAY; this is the
-  //      authoritative check and sits before BOTH the normal flip (h) and the
-  //      heal path (NOTE 3), since both run below this point on the same event.
-  //      Error split: a Viva 404 means no such transaction (forged/unknown) →
-  //      permanent, ack 200; any other fetch failure is transient → 500 retry.
-  let tx: Awaited<ReturnType<typeof getTransaction>>
-  try {
-    tx = await getTransaction(transactionId)
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes('HTTP 404')) {
-      console.error(`[viva-webhook] reverify: Viva has no transaction ${transactionId} for trip ${trip.reference} — rejecting`)
-      return NextResponse.json({ ok: true, ignored: 'reverify_not_found' })
-    }
-    console.error(`[viva-webhook] reverify fetch failed for trip ${trip.reference}:`, msg)
-    return NextResponse.json({ error: 'reverify_error' }, { status: 500 })
-  }
-
-  // (g0.1) Viva's own status must be final/captured.
-  if (tx.statusId !== 'F') {
-    console.error('[viva-webhook] reverify_status', {
-      reference:     trip.reference,
-      transactionId,
-      statusId:      tx.statusId,
-      currencyCode:  tx.currencyCode,
-    })
-    return NextResponse.json({ ok: true, ignored: 'reverify_status' })
-  }
-
-  // (g0.2) Viva's transaction amount is the MAJOR currency unit (EUR) — compare
-  //        directly to trip.total_amount, NO ×100.
-  if (tx.amount !== trip.total_amount) {
-    console.error('[viva-webhook] reverify_amount', {
-      reference:     trip.reference,
-      transactionId,
-      expected:      trip.total_amount,
-      received:      tx.amount,
-      statusId:      tx.statusId,
-      currencyCode:  tx.currencyCode,
-    })
-    return NextResponse.json({ ok: true, ignored: 'reverify_amount' })
-  }
-
-  // (g0.3) the transaction must belong to the order we matched the trip on.
-  if (String(tx.orderCode) !== orderCode) {
-    console.error('[viva-webhook] reverify_ordercode', {
-      reference:     trip.reference,
-      transactionId,
-      expected:      orderCode,
-      received:      String(tx.orderCode),
-    })
-    return NextResponse.json({ ok: true, ignored: 'reverify_ordercode' })
-  }
-
-  // (g) idempotency guard #2 — write the payment row FIRST (before the state
-  //     flip). idempotency_key is deterministic on the Viva transaction and the
-  //     column is UNIQUE, so a duplicate delivery raises 23505.
-  const { error: payErr } = await supabase.from('payments').insert({
-    trip_id:         trip.id,
-    amount:          trip.total_amount,
-    currency:        trip.currency,
-    provider:        'viva_wallet',
-    provider_ref:    transactionId,
-    state:           'completed',
-    idempotency_key: `viva:${transactionId}`,
-    metadata: {
-      order_code:    orderCode,
+  // (g0..i) shared confirm pipeline — reverify + payment + confirmTrip + email.
+  //         Extracted to processVivaTransaction so the success-URL action can
+  //         share the SAME path. The EventData-based pre-filters (a..f) above
+  //         STAY here; the function starts at server-side re-verification and
+  //         returns the exact { httpStatus, body } this route used to emit.
+  const result = await processVivaTransaction({
+    transactionId,
+    orderCode,
+    sendEmail: true,
+    paymentMetadata: {
       event_type_id: eventTypeId,
       status_id:     ev.StatusId,
       raw_amount:    ev.Amount,
     },
-    completed_at:    new Date().toISOString(),
   })
-
-  if (payErr) {
-    if (payErr.code === '23505') {
-      // NOTE 3: duplicate delivery — payment already recorded on a prior attempt.
-      // Idempotent success, BUT a prior delivery may have written the payment and
-      // then failed the (h) flip, leaving the trip stuck in pending_payment. So
-      // re-check the CURRENT state (not the stale read above) and heal it.
-      // The heal path deliberately sends NO confirmation email: the original
-      // attempt may already have sent it, and a duplicate email is worse than a
-      // rare missed one (recoverable later via the admin panel).
-      console.info(`[viva-webhook] payment for trip ${trip.reference} already processed (23505) — idempotent`)
-
-      const { data: cur, error: curErr } = await supabase
-        .from('trips')
-        .select('state')
-        .eq('id', trip.id)
-        .maybeSingle()
-      if (curErr) {
-        console.error(`[viva-webhook] heal state re-check failed for trip ${trip.reference}:`, curErr.message)
-        return NextResponse.json({ error: 'lookup_failed' }, { status: 500 })
-      }
-
-      if (cur?.state === 'pending_payment') {
-        const healRes = await confirmTrip(trip.id)
-        if (!healRes.ok) {
-          console.error(`[viva-webhook] heal state update failed for trip ${trip.reference}:`, healRes.error)
-          return NextResponse.json({ error: 'state_update_failed' }, { status: 500 })
-        }
-        console.info(`[viva-webhook] trip ${trip.reference} healed to confirmed (no email)`)
-      }
-      // already confirmed (or any other state) → nothing to do.
-      return NextResponse.json({ ok: true, idempotent: 'payment_exists' })
-    }
-    console.error(`[viva-webhook] payment insert failed for trip ${trip.reference}:`, payErr.message)
-    return NextResponse.json({ error: 'payment_insert_failed' }, { status: 500 })
-  }
-
-  // (h) confirm the trip — flip state (fatal) + confirmed side-effects
-  //     (car_bookings held→confirmed, policy issuance), all non-fatal. The
-  //     confirmation email stays below; the heal path deliberately skips it.
-  const confirmRes = await confirmTrip(trip.id)
-  if (!confirmRes.ok) {
-    console.error(`[viva-webhook] state update failed for trip ${trip.reference}:`, confirmRes.error)
-    return NextResponse.json({ error: 'state_update_failed' }, { status: 500 })
-  }
-
-  // (i) confirmation email (paid=true) — FIRST successful confirm only. Lead
-  //     passenger drives the name with a safe fallback; an email failure must
-  //     NEVER fail the webhook. (The NOTE-3 heal path above intentionally skips this.)
-  try {
-    const { data: lead } = await supabase
-      .from('passengers')
-      .select('first_name, last_name')
-      .eq('trip_id', trip.id)
-      .eq('is_lead', true)
-      .maybeSingle()
-
-    const leadName = [lead?.first_name, lead?.last_name]
-      .filter((s): s is string => !!s && s.trim().length > 0)
-      .join(' ')
-      .trim()
-    const customerName = leadName || 'Traveler' // fallback — never blank/undefined
-
-    const { data: items } = await supabase
-      .from('trip_items')
-      .select('item_type, title, scheduled_at, price_amount')
-      .eq('trip_id', trip.id)
-      .order('sequence', { ascending: true })
-
-    await sendBookingConfirmation(trip.contact_email, {
-      paid:         true,
-      reference:    trip.reference,
-      customerName,
-      contactPhone: trip.contact_phone,
-      contactEmail: trip.contact_email,
-      totalAmount:  trip.total_amount,
-      currency:     trip.currency,
-      locale:       trip.locale,
-      items: (items ?? []).map((i) => ({
-        type:        i.item_type,
-        title:       i.title,
-        scheduledAt: i.scheduled_at,
-        price:       i.price_amount,
-      })),
-      paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
-    })
-  } catch (emailErr) {
-    const msg = emailErr instanceof Error ? emailErr.message : String(emailErr)
-    console.error('[viva-webhook] confirmation email failed (non-fatal):', msg)
-  }
-
-  console.info(`[viva-webhook] trip ${trip.reference} confirmed`)
-  return NextResponse.json({ ok: true, confirmed: trip.reference })
+  return NextResponse.json(
+    result.body,
+    result.httpStatus === 200 ? undefined : { status: result.httpStatus },
+  )
 }
