@@ -24,7 +24,7 @@ import type { InsuranceItemMetadata } from '@/lib/supabase'
  * tamam" sinyali (Auras, B1 TEST'te kabul).
  */
 export type IssuePolicyResult =
-  | { ok: true; policeNum?: string; r2Key?: string; skipped?: 'no_insurance' | 'already_issued' }
+  | { ok: true; policeNum?: string; r2Key?: string; skipped?: 'no_insurance' | 'already_issued' | 'issuing_in_progress' }
   | { ok: false; error: string }
 
 export async function issuePolicy(tripId: string): Promise<IssuePolicyResult> {
@@ -55,6 +55,31 @@ export async function issuePolicy(tripId: string): Promise<IssuePolicyResult> {
       }
       if (!metadata.starts_at || !metadata.ends_at) {
         return { ok: false, error: 'missing insurance dates in metadata' }
+      }
+
+      // ---- ATOMIC ORDER LEASE — concurrency guard around addContract ----
+      // Two confirm paths run confirmTrip's side-effects; both could reach here
+      // with order_id still undefined and BOTH call addContract → duplicate Auras
+      // order (Auras has NO idempotency — doc+code confirmed). The conditional
+      // UPDATE below is claimable only when the lease is NULL or older than 5 min
+      // (self-heals a crash-stranded lease). Postgres row-lock serialises
+      // concurrent claims: exactly ONE gets a row (proceeds), the other gets 0
+      // rows and skips addContract entirely. order_id then dedupes all later calls.
+      const leaseExpiry = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const { data: leased, error: leaseErr } = await supabase
+        .from('trip_items')
+        .update({ policy_issue_lease_at: new Date().toISOString() })
+        .eq('id', item.id)
+        .eq('item_type', 'insurance')
+        .or(`policy_issue_lease_at.is.null,policy_issue_lease_at.lt.${leaseExpiry}`)
+        .select('id')
+        .maybeSingle()
+      if (leaseErr) return { ok: false, error: `order lease claim failed: ${leaseErr.message}` }
+      if (!leased) {
+        // A concurrent run holds an active lease → it will create the order.
+        // Skip addContract to make a duplicate Auras order impossible.
+        console.info(`[issuePolicy] order lease held by concurrent run for trip ${tripId} — skipping addContract`)
+        return { ok: true, skipped: 'issuing_in_progress' }
       }
 
       // insurer = lead passenger + trip contact; tourists = tüm passengers (yalnız FRESH'te okunur).
@@ -125,6 +150,12 @@ export async function issuePolicy(tripId: string): Promise<IssuePolicyResult> {
   } catch (err) {
     // NON-FATAL. order_id YOKSA addContract patladı → 'failed' işaretle (retry = fresh, güvenli).
     // order_id VARSA stage'i ('pending'/'confirmed') KORU → sonraki çağrı RESUME etsin (mükerrer order yok).
+    // Lease (policy_issue_lease_at) KASTEN reset EDİLMEZ: Auras add_contract dedupe
+    // ETMEZ (idempotency/client-reference yok — doc+kod teyitli), dolayısıyla bu
+    // throw bir timeout-post-creation olabilir (order Auras'ta oluştu, yanıt gelmedi).
+    // Anında retry çift order yaratır. Lease 5dk tutulur (expiry ile açılır); o
+    // pencerede retry claim EDEMEZ → çift order engellenir. Başarısız poliçe retry'ı
+    // 5dk gecikir (kabul edilen bedel); belirsiz durum admin panelinden çözülür.
     if (metadata.order_id === undefined) {
       await writeMetadata(supabase, item.id, { ...metadata, policy_state: 'failed' })
     }

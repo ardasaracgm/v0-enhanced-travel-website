@@ -324,6 +324,7 @@ export interface TripItem {
   cancellation_policy: Record<string, unknown>
   state: TripItemState
   metadata: TripItemMetadata | Record<string, unknown>
+  policy_issue_lease_at?: string | null
   internal_notes?: string | null
   created_at: string
   updated_at: string
