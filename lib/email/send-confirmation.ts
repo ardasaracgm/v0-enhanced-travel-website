@@ -87,3 +87,27 @@ export async function sendBookingConfirmation(
     return { sent: false, error: msg }
   }
 }
+
+/**
+ * Pending (awaiting-payment) confirmation email — the WhatsApp-fallback variant.
+ * Sends the booking-confirmation template with `paid` OMITTED (→ "awaiting
+ * payment" copy + WhatsApp pay CTA, byte-for-byte the old createTrip email).
+ * Fire-and-forget: wraps the send in its own try/catch and never throws, so a
+ * mail failure can never fail the booking.
+ *
+ * Callers (submitBooking / submitVisaApplication / adminCreateReservation) invoke
+ * this ONLY on the WhatsApp-fallback path — i.e. when no Viva redirect was
+ * produced — and only for a freshly created trip. A successful Viva order sends
+ * no email here; the paid confirmation follows on payment.
+ */
+export async function sendPendingBookingEmail(
+  data: Omit<BookingEmailData, 'paid'>
+): Promise<boolean> {
+  try {
+    const result = await sendBookingConfirmation(data.contactEmail, data)
+    return result.sent
+  } catch (err) {
+    console.error('[email] sendPendingBookingEmail threw (non-fatal):', err)
+    return false
+  }
+}

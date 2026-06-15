@@ -31,7 +31,6 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
 import { buildPaymentWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
 import type {
   TripItemType,
@@ -110,6 +109,10 @@ export type CreateTripResult =
       tripId: string
       reference: string
       paymentWhatsAppUrl: string
+      /** Authoritative order total (EUR decimal) — surfaced so callers can
+       *  build the pending email without recomputing it. */
+      totalAmount: number
+      currency: string
       emailSent: boolean
       alreadyExisted: boolean
     }
@@ -164,6 +167,8 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
         tripId: existing.id,
         reference: existing.reference,
         paymentWhatsAppUrl: waUrl,
+        totalAmount: Number(existing.total_amount),
+        currency: existing.currency,
         emailSent: false,
         alreadyExisted: true,
       }
@@ -237,6 +242,8 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
             tripId: raced.id,
             reference: raced.reference,
             paymentWhatsAppUrl: waUrl,
+            totalAmount: Number(raced.total_amount),
+            currency: raced.currency,
             emailSent: false,
             alreadyExisted: true,
           }
@@ -305,37 +312,19 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
       currency,
     })
 
-    // ----- 10. Send confirmation email (fire-and-forget, non-blocking) -----
-    let emailSent = false
-    try {
-      const emailResult = await sendBookingConfirmation(input.customer.email, {
-        reference: trip.reference,
-        customerName: input.customer.fullName,
-        contactPhone: input.customer.phone,
-        contactEmail: input.customer.email,
-        totalAmount,
-        currency,
-        locale: input.locale,
-        items: input.items.map((i) => ({
-          type: i.type,
-          title: i.title,
-          scheduledAt: i.scheduledAt ?? null,
-          price: i.priceAmount,
-        })),
-        paymentWhatsAppUrl,
-      })
-      emailSent = emailResult.sent
-    } catch (emailErr) {
-      // Never let email failures fail the booking
-      console.error('[createTrip] email send failed:', emailErr)
-    }
-
+    // ----- 10. Return. The confirmation email is NO LONGER sent here — it moved
+    //     to the callers (submitBooking / submitVisaApplication / admin), which
+    //     send the pending+WhatsApp email ONLY on the Viva fallback path. A
+    //     successful Viva order sends no email; the paid email follows on payment.
+    //     emailSent is kept in the contract but is always false from here now.
     return {
       ok: true,
       tripId: trip.id,
       reference: trip.reference,
       paymentWhatsAppUrl,
-      emailSent,
+      totalAmount,
+      currency,
+      emailSent: false,
       alreadyExisted: false,
     }
   } catch (err) {

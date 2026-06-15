@@ -15,6 +15,7 @@
 
 import { createTrip, type CreateTripInput, type CreateTripErrorCode } from './create-trip'
 import { createPaymentOrder } from './create-payment-order'
+import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
@@ -425,6 +426,29 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     }
   } catch (err) {
     console.error('[submitBooking] createPaymentOrder threw unexpectedly:', err)
+  }
+
+  // Pending+WhatsApp email — ONLY when Viva produced no redirect (graceful
+  // degradation → WhatsApp is the payment path; covers both the ok:false branch
+  // and a thrown createPaymentOrder) AND this is a freshly created trip (an
+  // idempotent re-submit must not re-send). Successful Viva → no email here.
+  if (!vivaRedirectUrl && !tripResult.alreadyExisted) {
+    await sendPendingBookingEmail({
+      reference: tripResult.reference,
+      customerName: leadFullName,
+      contactPhone: input.contactPhone,
+      contactEmail: input.contactEmail,
+      totalAmount: tripResult.totalAmount,
+      currency: tripResult.currency,
+      locale: input.locale,
+      items: items.map((i) => ({
+        type: i.type,
+        title: i.title,
+        scheduledAt: i.scheduledAt ?? null,
+        price: i.priceAmount,
+      })),
+      paymentWhatsAppUrl: tripResult.paymentWhatsAppUrl,
+    })
   }
 
   return { ...tripResult, vivaRedirectUrl }

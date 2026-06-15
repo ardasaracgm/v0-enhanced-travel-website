@@ -23,6 +23,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
 import { createPaymentOrder } from '@/lib/actions/create-payment-order'
+import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { VISA_FEE_EUR, isValidPromoCode } from '@/lib/visa-pricing'
 import {
   visaApplicationSchema,
@@ -313,6 +314,23 @@ export async function submitVisaApplication(
       else console.warn('[submitVisaApplication] Viva order failed, WhatsApp fallback:', pay.error)
     } catch (err) {
       console.error('[submitVisaApplication] createPaymentOrder threw:', err)
+    }
+
+    // Pending+WhatsApp email — same rule as the booking flow: only on the Viva
+    // fallback (no redirect) and only for a freshly created trip. Without this,
+    // moving the email out of createTrip would silently drop the visa email.
+    if (!redirectUrl && !tripResult.alreadyExisted) {
+      await sendPendingBookingEmail({
+        reference: tripResult.reference,
+        customerName: `${v.firstName} ${v.lastName}`.trim(),
+        contactPhone: v.phone,
+        contactEmail: v.email,
+        totalAmount: tripResult.totalAmount,
+        currency: tripResult.currency,
+        locale: v.locale,
+        items: [{ type: 'visa', title: 'Visa Application', scheduledAt: null, price: VISA_FEE_EUR }],
+        paymentWhatsAppUrl: tripResult.paymentWhatsAppUrl,
+      })
     }
 
     return {

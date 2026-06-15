@@ -5,6 +5,7 @@ import { createHash } from 'crypto'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
+import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { isAvailable, computeEndDate } from '@/lib/car-availability'
 import { dateDiffInDays } from '@/lib/normalize-car'
 import { redirect } from '@/i18n/routing'
@@ -135,6 +136,29 @@ export async function createReservation(
       state: 'held',
     })
     if (bookErr) console.error('[createReservation] car_bookings insert failed (non-fatal):', bookErr.message)
+  }
+
+  // Pending+WhatsApp email. No Viva on the admin walk-in path, so there is no
+  // fallback guard — every freshly created reservation emails the customer
+  // (alreadyExisted = double-click → no re-send). Matches the email createTrip
+  // used to send before it moved out.
+  if (!tripResult.alreadyExisted) {
+    await sendPendingBookingEmail({
+      reference: tripResult.reference,
+      customerName,
+      contactPhone: customerPhone,
+      contactEmail: email,
+      totalAmount: tripResult.totalAmount,
+      currency: tripResult.currency,
+      locale,
+      items: [{
+        type: carItem.type,
+        title: carItem.title,
+        scheduledAt: carItem.scheduledAt ?? null,
+        price: carItem.priceAmount,
+      }],
+      paymentWhatsAppUrl: tripResult.paymentWhatsAppUrl,
+    })
   }
 
   // 12) Mevcut Mark paid sayfasına yönlendir (parça-2). redirect NEXT_REDIRECT fırlatır
