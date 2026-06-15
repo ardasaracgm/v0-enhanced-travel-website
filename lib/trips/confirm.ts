@@ -41,6 +41,8 @@ const issuePolicyEffect: ConfirmSideEffect = async (_supabase, tripId) => {
       if (r.skipped === 'no_insurance') return
       if (r.skipped === 'already_issued') {
         console.info(`[confirmTrip] policy already issued for trip ${tripId} (idempotent)`)
+      } else if (r.skipped === 'issuing_in_progress') {
+        console.info(`[confirmTrip] policy issue in progress by concurrent run for trip ${tripId} — skipped`)
       } else {
         console.log(`[confirmTrip] policy issued for trip ${tripId} (police ${r.policeNum})`)
       }
