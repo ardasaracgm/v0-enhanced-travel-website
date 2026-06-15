@@ -64,26 +64,32 @@ const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [confirmCarBookings, issuePoli
 export async function confirmTrip(tripId: string): Promise<ConfirmTripResult> {
   const supabase = getSupabaseAdmin()
 
-  const { data: cur, error: readErr } = await supabase
+  // Atomic flip: the conditional WHERE state='pending_payment' means exactly ONE
+  // concurrent caller flips the row (1 row back = "I am the first confirmer"); a
+  // racing caller (or a webhook re-delivery) matches 0 rows. Replaces the old
+  // read-then-write, so confirmed_at is never double-written and wonConfirm is a
+  // reliable first-confirmer signal.
+  const { data: flipped, error: updErr } = await supabase
     .from('trips')
-    .select('state')
+    .update({ state: 'confirmed', confirmed_at: new Date().toISOString() })
     .eq('id', tripId)
+    .eq('state', 'pending_payment')
+    .select('id')
     .maybeSingle()
-  if (readErr) return { ok: false, error: readErr.message }
+  if (updErr) return { ok: false, error: updErr.message }
 
-  const alreadyConfirmed = cur?.state === 'confirmed'
+  const wonConfirm = flipped !== null
 
-  if (!alreadyConfirmed) {
-    const { error: updErr } = await supabase
-      .from('trips')
-      .update({ state: 'confirmed', confirmed_at: new Date().toISOString() })
-      .eq('id', tripId)
-    if (updErr) return { ok: false, error: updErr.message }
-  }
-
+  // Side-effects ALWAYS run (NOT gated on wonConfirm): each is idempotent +
+  // self-gating, and running them on every call is the resumable backstop for a
+  // prior confirm whose side-effect failed. (C-2 closes the issuePolicy double-
+  // order window with its own lease — this loop deliberately does not dedupe.)
   for (const effect of CONFIRM_SIDE_EFFECTS) {
     await effect(supabase, tripId)
   }
 
-  return { ok: true, alreadyConfirmed }
+  // alreadyConfirmed kept in the contract (no caller reads it today). Meaning is
+  // now "the flip was not mine" — covers already-confirmed AND any non-pending
+  // state (cancelled/expired); a caller needing that split would re-SELECT.
+  return { ok: true, alreadyConfirmed: !wonConfirm }
 }
