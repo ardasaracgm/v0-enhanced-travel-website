@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getTransaction } from '@/lib/viva/client'
-import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
+import { claimAndSendPaidEmail } from '@/lib/email/send-paid-confirmation'
 import { confirmTrip } from '@/lib/trips/confirm'
 
 export interface ProcessVivaTransactionInput {
@@ -10,9 +10,6 @@ export interface ProcessVivaTransactionInput {
   transactionId: string
   /** Viva order code — matches the trip and guards (g0.3). */
   orderCode: string
-  /** Send the paid confirmation email on a FIRST successful confirm. Webhook
-   *  main path = true; the 23505 heal path always skips regardless (NOTE 3). */
-  sendEmail: boolean
   /** Provenance written verbatim into the payment row metadata. The webhook
    *  passes the EventData fields; other callers may omit them. */
   paymentMetadata?: {
@@ -30,10 +27,12 @@ export interface ProcessVivaTransactionResult {
 
 /**
  * Shared Viva confirm pipeline: server-side re-verification → payment row
- * (idempotent) → confirmTrip → optional paid email. Extracted VERBATIM from the
- * webhook POST handler (steps g0..i) so the webhook and the success-URL action
- * share ONE confirm path. Behaviour — every 200/500 split, the NOTE-3 23505
- * heal, and the deliberate no-email heal — is preserved exactly.
+ * (idempotent) → confirmTrip → race-safe paid email (single-owner claim).
+ * Extracted from the webhook POST handler (steps g0..i) so the webhook and the
+ * success-URL action share ONE confirm path. Every 200/500 split and the NOTE-3
+ * 23505 heal are preserved exactly; the paid email is now owned by the atomic
+ * confirmation_email_sent_at claim (claimAndSendPaidEmail), so EVERY path may
+ * attempt it and exactly one wins — no sendEmail flag needed.
  *
  * Self-contained: re-looks-up the trip by orderCode so callers need only the two
  * Viva identifiers. (The webhook also looks the trip up earlier for its
@@ -42,7 +41,7 @@ export interface ProcessVivaTransactionResult {
 export async function processVivaTransaction(
   input: ProcessVivaTransactionInput,
 ): Promise<ProcessVivaTransactionResult> {
-  const { transactionId, orderCode, sendEmail } = input
+  const { transactionId, orderCode } = input
   const supabase = getSupabaseAdmin()
 
   // trip lookup by viva_order_code (mirrors webhook (c) + NOTE 1).
@@ -161,9 +160,11 @@ export async function processVivaTransaction(
           console.error(`[viva-webhook] heal state update failed for trip ${trip.reference}:`, healRes.error)
           return { httpStatus: 500, body: { error: 'state_update_failed' } }
         }
-        console.info(`[viva-webhook] trip ${trip.reference} healed to confirmed (no email)`)
+        console.info(`[viva-webhook] trip ${trip.reference} healed to confirmed`)
       }
-      // already confirmed (or any other state) → nothing to do.
+      // Recover a possibly-missed paid email: a prior delivery may have written
+      // the payment and died before sending. NULL-gated → no-op if already sent.
+      await claimAndSendPaidEmail(trip.id)
       return { httpStatus: 200, body: { ok: true, idempotent: 'payment_exists' } }
     }
     console.error(`[viva-webhook] payment insert failed for trip ${trip.reference}:`, payErr.message)
@@ -178,53 +179,10 @@ export async function processVivaTransaction(
     return { httpStatus: 500, body: { error: 'state_update_failed' } }
   }
 
-  // (i) confirmation email (paid=true) — FIRST successful confirm only, and only
-  //     when the caller opts in (webhook main path = true; heal path skipped
-  //     above). Lead passenger drives the name with a safe fallback; an email
-  //     failure must NEVER fail the request.
-  if (sendEmail) {
-    try {
-      const { data: lead } = await supabase
-        .from('passengers')
-        .select('first_name, last_name')
-        .eq('trip_id', trip.id)
-        .eq('is_lead', true)
-        .maybeSingle()
-
-      const leadName = [lead?.first_name, lead?.last_name]
-        .filter((s): s is string => !!s && s.trim().length > 0)
-        .join(' ')
-        .trim()
-      const customerName = leadName || 'Traveler' // fallback — never blank/undefined
-
-      const { data: items } = await supabase
-        .from('trip_items')
-        .select('item_type, title, scheduled_at, price_amount')
-        .eq('trip_id', trip.id)
-        .order('sequence', { ascending: true })
-
-      await sendBookingConfirmation(trip.contact_email, {
-        paid:         true,
-        reference:    trip.reference,
-        customerName,
-        contactPhone: trip.contact_phone,
-        contactEmail: trip.contact_email,
-        totalAmount:  trip.total_amount,
-        currency:     trip.currency,
-        locale:       trip.locale,
-        items: (items ?? []).map((i) => ({
-          type:        i.item_type,
-          title:       i.title,
-          scheduledAt: i.scheduled_at,
-          price:       i.price_amount,
-        })),
-        paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
-      })
-    } catch (emailErr) {
-      const msg = emailErr instanceof Error ? emailErr.message : String(emailErr)
-      console.error('[viva-webhook] confirmation email failed (non-fatal):', msg)
-    }
-  }
+  // (i) paid confirmation email — race-safe, single-owner. The claim decides the
+  //     sole sender across the webhook, success-URL action and heal path; a
+  //     non-winning caller sends nothing. Self-contained + non-fatal.
+  await claimAndSendPaidEmail(trip.id)
 
   console.info(`[viva-webhook] trip ${trip.reference} confirmed`)
   return { httpStatus: 200, body: { ok: true, confirmed: trip.reference } }

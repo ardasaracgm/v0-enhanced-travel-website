@@ -11,7 +11,9 @@
  * UNIQUE payment idempotency key (viva:{transactionId}) + the NOTE-3 heal.
  *
  * Email is deliberately NOT sent here — the webhook main path owns the single
- * confirmation email (sendEmail:false) to avoid a duplicate.
+ * Email is owned by the atomic confirmation_email_sent_at claim inside the
+ * pipeline — whichever confirmer wins the claim sends it, so this path no longer
+ * needs a sendEmail flag and a duplicate is impossible.
  *
  * Identifiers come from Viva's success-URL query params: t={transactionId},
  * s={orderCode}.
@@ -41,10 +43,10 @@ export async function confirmFromReturn(
     return { state: 'error' }
   }
 
-  // 2. Shared confirm pipeline (idempotent). sendEmail:false — webhook owns it.
+  // 2. Shared confirm pipeline (idempotent). Paid email is claim-gated inside.
   let result: Awaited<ReturnType<typeof processVivaTransaction>>
   try {
-    result = await processVivaTransaction({ transactionId, orderCode, sendEmail: false })
+    result = await processVivaTransaction({ transactionId, orderCode })
   } catch (err) {
     console.error('[confirmFromReturn] processVivaTransaction threw:', err)
     return { state: 'error' }

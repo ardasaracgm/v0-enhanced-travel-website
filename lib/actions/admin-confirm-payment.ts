@@ -5,8 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { confirmTrip } from '@/lib/trips/confirm'
-import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
-import { isPlaceholderEmail } from '@/lib/walk-in-email'
+import { claimAndSendPaidEmail } from '@/lib/email/send-paid-confirmation'
 
 // Admin'in manuel işaretleyebileceği sağlayıcılar (WhatsApp/banka ödemesi sonrası).
 // viva_wallet webhook'a ait; internal admin-manuel değil → yalnız bu ikisi.
@@ -55,7 +54,6 @@ export async function confirmPayment(formData: FormData): Promise<void> {
 
   // 3) Ödeme satırını ÖNCE yaz (webhook route.ts:197-212 ile aynı şablon).
   //    idempotency_key trip'e deterministik + UNIQUE → çift tıklama 23505 verir.
-  let freshPayment = true
   const { error: payErr } = await admin.from('payments').insert({
     trip_id:         trip.id,
     amount:          trip.total_amount,
@@ -73,7 +71,6 @@ export async function confirmPayment(formData: FormData): Promise<void> {
     // confirmTrip aşağıda koşulsuz çağrılır ve zaten idempotent.
     if (payErr.code === '23505') {
       console.info(`[admin-confirm] payment for trip ${trip.reference} already processed (23505) — idempotent`)
-      freshPayment = false
     } else {
       console.error(`[admin-confirm] payment insert failed for trip ${trip.reference}:`, payErr.message)
       throw new Error(`payment_insert_failed: ${payErr.message}`)
@@ -87,53 +84,10 @@ export async function confirmPayment(formData: FormData): Promise<void> {
     throw new Error(`state_update_failed: ${confirmRes.error}`)
   }
 
-  // 5) Onay e-postası — YALNIZ fresh confirm'de (23505 değil VE gerçek flip).
-  //    Walk-in placeholder (.local) adrese ASLA mail atma (bounce engeli).
-  //    Çift tıklamada gitmez. Webhook main-path bloğunun birebir kopyası
-  //    (route.ts:262-302); email hatası ASLA action'ı düşürmez (non-fatal).
-  if (freshPayment && !confirmRes.alreadyConfirmed && !isPlaceholderEmail(trip.contact_email)) {
-    try {
-      const { data: lead } = await admin
-        .from('passengers')
-        .select('first_name, last_name')
-        .eq('trip_id', trip.id)
-        .eq('is_lead', true)
-        .maybeSingle()
-
-      const leadName = [lead?.first_name, lead?.last_name]
-        .filter((s): s is string => !!s && s.trim().length > 0)
-        .join(' ')
-        .trim()
-      const customerName = leadName || 'Traveler' // fallback — never blank/undefined
-
-      const { data: items } = await admin
-        .from('trip_items')
-        .select('item_type, title, scheduled_at, price_amount')
-        .eq('trip_id', trip.id)
-        .order('sequence', { ascending: true })
-
-      await sendBookingConfirmation(trip.contact_email, {
-        paid:         true,
-        reference:    trip.reference,
-        customerName,
-        contactPhone: trip.contact_phone,
-        contactEmail: trip.contact_email,
-        totalAmount:  trip.total_amount,
-        currency:     trip.currency,
-        locale:       trip.locale,
-        items: (items ?? []).map((i) => ({
-          type:        i.item_type,
-          title:       i.title,
-          scheduledAt: i.scheduled_at,
-          price:       i.price_amount,
-        })),
-        paymentWhatsAppUrl: '', // unused on the paid path
-      })
-    } catch (emailErr) {
-      const msg = emailErr instanceof Error ? emailErr.message : String(emailErr)
-      console.error('[admin-confirm] confirmation email failed (non-fatal):', msg)
-    }
-  }
+  // 5) Onay e-postası — race-safe claim ile (placeholder/.local guard + çift-send
+  //    koruması helper içinde). Aynı confirmation_email_sent_at kolonunu webhook
+  //    ile paylaşır → admin + webhook aynı trip'e iki kez atamaz. Non-fatal.
+  await claimAndSendPaidEmail(trip.id)
 
   console.info(`[admin-confirm] trip ${trip.reference} confirmed (provider=${provider})`)
   revalidatePath(`/${locale}/admin/trips/${trip.id}`)

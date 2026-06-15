@@ -14,6 +14,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { fetchWebhookVerificationKey } from '@/lib/viva/client'
 import { processVivaTransaction } from '@/lib/viva/process-transaction'
+import { claimAndSendPaidEmail } from '@/lib/email/send-paid-confirmation'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -99,8 +100,12 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ ok: true, ignored: 'trip_not_found' })
   }
 
-  // (d) idempotency guard #1 — already confirmed: write nothing, send no email.
+  // (d) idempotency guard #1 — already confirmed: no state change.
   if (trip.state === 'confirmed') {
+    // Backstop: a prior confirmer (e.g. the success-URL action) may have
+    // confirmed without the paid email landing. NULL-gated claim → no-op if the
+    // email already went out; otherwise this webhook delivers the missed one.
+    await claimAndSendPaidEmail(trip.id)
     console.info(`[viva-webhook] trip ${trip.reference} already confirmed — no-op`)
     return NextResponse.json({ ok: true, idempotent: 'already_confirmed' })
   }
@@ -143,7 +148,6 @@ export async function POST(req: NextRequest): Promise<Response> {
   const result = await processVivaTransaction({
     transactionId,
     orderCode,
-    sendEmail: true,
     paymentMetadata: {
       event_type_id: eventTypeId,
       status_id:     ev.StatusId,
