@@ -4,7 +4,16 @@
     "heroSubtitle": "Approved Schengen-compliant travel insurance for your trip — in a few minutes.",
     "steps": { "dates": "Dates & Coverage", "travellers": "Travellers", "review": "Review & Pay" },
     "nav": { "back": "Back", "next": "Next", "pay": "Pay" },
-    "stepPlaceholder": "Form fields will be added in the next steps."
+    "stepPlaceholder": "Form fields will be added in the next steps.",
+    "labels": { "dateFrom": "Start date", "dateTo": "End date", "travellers": "Number of travellers" },
+    "coverageHeading": "Choose coverage",
+    "coverageLabel": "{coverage}€ coverage · 100€ deductible",
+    "estimatedPrice": "~{price}€ (estimate)",
+    "estimateNote": "This price is an estimate; the exact amount is calculated in the next step from travellers' dates of birth.",
+    "pickDates": "Select your travel dates to see prices.",
+    "quoteLoading": "Loading prices…",
+    "quoteFailed": "Could not fetch a price. Please check the dates and try again.",
+    "errors": { "datesRequired": "Please enter valid start and end dates.", "coverageRequired": "Please choose a coverage option." }
   },
   "common": {
     "loading": "Loading...",

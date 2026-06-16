@@ -4,7 +4,16 @@
     "heroSubtitle": "Schengen vizesi ve seyahatiniz için onaylı seyahat sigortası — birkaç dakikada.",
     "steps": { "dates": "Tarih ve Teminat", "travellers": "Yolcular", "review": "Özet ve Ödeme" },
     "nav": { "back": "Geri", "next": "İleri", "pay": "Öde" },
-    "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek."
+    "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek.",
+    "labels": { "dateFrom": "Başlangıç tarihi", "dateTo": "Bitiş tarihi", "travellers": "Yolcu sayısı" },
+    "coverageHeading": "Teminat seçin",
+    "coverageLabel": "{coverage}€ teminat · 100€ muafiyet",
+    "estimatedPrice": "~{price}€ (tahmini)",
+    "estimateNote": "Bu fiyat tahminidir; kesin tutar bir sonraki adımda yolcu doğum tarihlerine göre hesaplanır.",
+    "pickDates": "Fiyatları görmek için seyahat tarihlerini seçin.",
+    "quoteLoading": "Fiyatlar yükleniyor…",
+    "quoteFailed": "Fiyat alınamadı. Lütfen tarihleri kontrol edip tekrar deneyin.",
+    "errors": { "datesRequired": "Lütfen geçerli başlangıç ve bitiş tarihleri girin.", "coverageRequired": "Lütfen bir teminat seçeneği seçin." }
   },
   "common": {
     "loading": "Yükleniyor...",
