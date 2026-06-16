@@ -62,7 +62,11 @@ export default async function HubVisaPage({
             ) : (
               <div className="space-y-4">
                 {applications.map((a) => (
-                  <div key={a.id} className="rounded-md border bg-background p-4">
+                  <Link
+                    key={a.id}
+                    href={`/hub/visa/${a.id}`}
+                    className="block rounded-md border bg-background p-4 transition-shadow hover:shadow-md cursor-pointer"
+                  >
                     <div className="flex items-center justify-between gap-4">
                       <span className="font-medium text-foreground">
                         {a.firstName} {a.lastName}
@@ -72,7 +76,7 @@ export default async function HubVisaPage({
                     <p className="mt-1 text-xs text-muted-foreground">
                       {new Date(a.createdAt).toLocaleDateString('en-GB')}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
