@@ -399,6 +399,10 @@ export default function ConfirmationPage() {
                   </Card>
                 )}
 
+                {/* Hub erişim CTA — confirmed görünümünde de (Fix C'de düşmüştü).
+                    snapshot null olabilir bu dalda, bu yüzden ?. ile. */}
+                <HubAccessCard presetEmail={snapshot?.contactEmail} />
+
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
                     <Home className="h-4 w-4 mr-2" />

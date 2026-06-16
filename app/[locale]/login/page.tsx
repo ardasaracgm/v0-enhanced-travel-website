@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input'
 function LoginCard() {
   const locale = useLocale()
   const searchParams = useSearchParams()
-  const [email, setEmail] = React.useState('')
+  const [email, setEmail] = React.useState(searchParams.get('email') ?? '')
   const [status, setStatus] =
     React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 

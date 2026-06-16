@@ -58,6 +58,10 @@ const T: Record<Locale, Record<string, string>> = {
     paidHeading: 'Payment Received — Booking Confirmed',
     paidBody:
       'Your payment has been received and your booking is confirmed. We look forward to welcoming you — no further action is needed.',
+    hubHeading: 'Manage your booking online',
+    hubBody:
+      'Sign in to your TravelBeez Hub to track this booking, your visa and more — no password needed.',
+    hubCta: 'Go to my Hub',
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Port, Greece · Licensed by the Greek Ministry of Tourism (MH.T.E.)',
     contactLine: 'Questions? WhatsApp +30 22420 5008 or call +30 22420 5009',
@@ -80,6 +84,10 @@ const T: Record<Locale, Record<string, string>> = {
     paidHeading: 'Ödeme Alındı — Rezervasyon Onaylandı',
     paidBody:
       'Ödemeniz alındı ve rezervasyonunuz onaylandı. Sizi ağırlamayı dört gözle bekliyoruz — başka bir işlem yapmanıza gerek yoktur.',
+    hubHeading: 'Rezervasyonunuzu çevrimiçi yönetin',
+    hubBody:
+      'Bu rezervasyonu, vize başvurunuzu ve daha fazlasını takip etmek için TravelBeez Hub hesabınıza giriş yapın — şifre gerekmez.',
+    hubCta: "Hub'a Git",
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Limanı, Yunanistan · Yunan Turizm Bakanlığı (MH.T.E.) lisanslı',
     contactLine: 'Sorularınız? WhatsApp +30 22420 5008 veya telefon +30 22420 5009',
@@ -102,6 +110,10 @@ const T: Record<Locale, Record<string, string>> = {
     paidHeading: 'Η Πληρωμή Ελήφθη — Κράτηση Επιβεβαιωμένη',
     paidBody:
       'Η πληρωμή σας ελήφθη και η κράτησή σας επιβεβαιώθηκε. Ανυπομονούμε να σας υποδεχτούμε — δεν απαιτείται καμία περαιτέρω ενέργεια.',
+    hubHeading: 'Διαχειριστείτε την κράτησή σας online',
+    hubBody:
+      'Συνδεθείτε στο TravelBeez Hub για να παρακολουθείτε αυτή την κράτηση, τη βίζα σας και άλλα — χωρίς κωδικό.',
+    hubCta: 'Μετάβαση στο Hub',
     footer:
       'TravelBeez · FerryBee Travel ΙΚΕ · Λιμένας Κω, Ελλάδα · Αδειοδοτημένο από το Υπουργείο Τουρισμού (Μ.Η.Τ.Ε.)',
     contactLine: 'Ερωτήσεις; WhatsApp +30 22420 5008 ή τηλ. +30 22420 5009',
@@ -122,6 +134,11 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
   const introText  = paid ? t.paidIntro    : t.intro
   const payHeading = paid ? t.paidHeading   : t.paymentHeading
   const payBody    = paid ? t.paidBody      : t.paymentBody
+
+  // Hub linki SABİT canonical domain — NEXT_PUBLIC_SITE_URL'e bağlanmaz
+  // (preview deploy'larda alpha vercel domaini riski; mail dış müşteriye gider).
+  // /login sayfasına gider (magic-link DEĞİL); ?email ile alanı önceden doldurur.
+  const hubUrl = `https://www.travelbeez.gr/${data.locale}/login?email=${encodeURIComponent(data.contactEmail)}`
 
   const itemsRows = data.items
     .map(
@@ -202,6 +219,17 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
           </div>
         </td></tr>
 
+        <!-- Hub access CTA (always — paid + pending) -->
+        <tr><td style="padding:0 32px 24px 32px;">
+          <div style="background:#eff6ff;border:1px solid #dbeafe;border-radius:8px;padding:20px;text-align:center;">
+            <h3 style="margin:0 0 8px 0;font-size:16px;font-weight:700;color:#1e3a8a;">${escape(t.hubHeading)}</h3>
+            <p style="margin:0 0 16px 0;color:#1d4ed8;font-size:14px;line-height:1.5;">${escape(t.hubBody)}</p>
+            <a href="${escape(hubUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;font-weight:600;font-size:15px;padding:12px 24px;border-radius:8px;text-decoration:none;">
+              ${escape(t.hubCta)}
+            </a>
+          </div>
+        </td></tr>
+
         <!-- Contact line -->
         <tr><td style="padding:0 32px 24px 32px;text-align:center;">
           <p style="margin:0;color:#64748b;font-size:13px;">${escape(t.contactLine)}</p>
@@ -239,6 +267,10 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     payHeading,
     payBody,
     ...(paid ? [] : [data.paymentWhatsAppUrl]),
+    '',
+    t.hubHeading,
+    t.hubBody,
+    hubUrl,
     '',
     t.contactLine,
     '',
