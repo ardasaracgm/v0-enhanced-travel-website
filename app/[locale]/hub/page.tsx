@@ -20,7 +20,7 @@ interface HubTab {
 
 // 10 sekme. TripItemType ile hizalı (custom hariç). Vize AÇIK, gerisi kilitli.
 const TABS: HubTab[] = [
-  { key: 'visa',          label: 'Visa',           icon: FileCheck,   href: '/visa', locked: false },
+  { key: 'visa',          label: 'Visa',           icon: FileCheck,   href: '/hub/visa', locked: false },
   { key: 'ferry',         label: 'Ferry',          icon: Ship,        locked: true },
   { key: 'car_rental',    label: 'Car Rental',     icon: Car,         href: '/hub/car-rental', locked: false },
   { key: 'tour',          label: 'Tours',          icon: MapPinned,   locked: true },
