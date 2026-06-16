@@ -13,6 +13,15 @@
  */
 import { createBrowserClient } from '@supabase/ssr'
 
+/**
+ * Hub magic-link (signInWithOtp) için SABİT canonical origin.
+ * NEXT_PUBLIC_SITE_URL'e GÜVENME: prod'da apex (travelbeez.gr) / preview'da
+ * alpha-vercel domaini çıkıyor → magic-link yanlış host'a döner, www/apex
+ * cookie-session tutarsızlığı. Tek kaynak: email template ile aynı www canonical.
+ * (Supabase panelinde Site URL + Redirect URLs de www'a hizalanmalı — ayrı adım.)
+ */
+export const HUB_AUTH_ORIGIN = 'https://www.travelbeez.gr'
+
 export function createSupabaseBrowserClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

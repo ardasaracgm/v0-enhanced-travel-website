@@ -14,7 +14,7 @@ import * as React from 'react'
 import { Suspense } from 'react'
 import { useLocale } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { createSupabaseBrowserClient, HUB_AUTH_ORIGIN } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -30,12 +30,11 @@ function LoginCard() {
     if (!email || status === 'sending') return
     setStatus('sending')
     const next = searchParams.get('next') ?? `/${locale}/hub`
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${siteUrl}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${HUB_AUTH_ORIGIN}/api/auth/callback?next=${encodeURIComponent(next)}`,
       },
     })
     setStatus(error ? 'error' : 'sent')

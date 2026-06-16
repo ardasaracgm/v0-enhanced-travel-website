@@ -28,7 +28,7 @@ import { Separator } from '@/components/ui/separator'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { createSupabaseBrowserClient, HUB_AUTH_ORIGIN } from '@/lib/supabase-browser'
 import {
   useBooking,
   clearBookingStorage,
@@ -863,12 +863,11 @@ function HubAccessCard({ presetEmail }: { presetEmail?: string }) {
   const handleSend = async () => {
     if (!email || status === 'sending') return
     setStatus('sending')
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${siteUrl}/api/auth/callback?next=/${locale}/hub`,
+        emailRedirectTo: `${HUB_AUTH_ORIGIN}/api/auth/callback?next=/${locale}/hub`,
       },
     })
     setStatus(error ? 'error' : 'sent')
