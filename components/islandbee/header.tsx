@@ -19,6 +19,7 @@ export function Header() {
       | "/car-rental"
       | "/tours"
       | "/visa"
+      | "/insurance"
       | "/events"
       | "/package-pickup"
       | "/contact";
@@ -29,6 +30,7 @@ export function Header() {
     { href: "/tours", labelKey: "tours" },
     { href: "/events", labelKey: "eventsGroups" },
     { href: "/visa", labelKey: "visaSupport" },
+    { href: "/insurance", labelKey: "insurance" },
     { href: "/package-pickup", labelKey: "packagePickup" },
     { href: "/contact", labelKey: "contact" },
   ];
