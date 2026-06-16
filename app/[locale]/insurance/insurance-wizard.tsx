@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { CheckCircle } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,9 +16,12 @@ import { todayAthensISO } from '@/lib/validation/dates'
 import {
   INSURANCE_DATE_RE, MAX_TRAVELLERS, insuranceStep1Schema, insuranceStep2Schema,
 } from '@/lib/validation/insurance'
-import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only guard tetiklenmez)
+import { submitInsuranceOrder } from '@/lib/actions/submit-insurance-order'
+import { getOrCreateInsuranceOrderKey, clearInsuranceOrderKey } from '@/lib/insurance/order-key'
+import type { InsuranceTariff } from '@/lib/insurs'             // type-only (server-only guard tetiklenmez)
+import type { Locale } from '@/lib/notifications/whatsapp-link' // type-only
 
-// 3-adımlı wizard: 1) tarih+teminat (B2 ✓), 2) yolcular (B3 ✓), 3) özet+öde (B4).
+// 3-adımlı wizard: 1) tarih+teminat (B2 ✓), 2) yolcular (B3 ✓), 3) özet+öde (B4 ✓).
 const TOTAL_STEPS = 3
 const STEP_KEYS = ['dates', 'travellers', 'review'] as const
 
@@ -68,6 +72,15 @@ export function InsuranceWizard() {
   const [quoteFailed, setQuoteFailed] = React.useState(false)
   const [step1Attempted, setStep1Attempted] = React.useState(false)
 
+  // Submit
+  const [submitting, setSubmitting] = React.useState(false)
+  const [submitError, setSubmitError] = React.useState(false)
+  const [done, setDone] = React.useState(false)
+  const [paymentLink, setPaymentLink] = React.useState<string | null>(null)
+
+  // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
+  React.useEffect(() => { getOrCreateInsuranceOrderKey() }, [])
+
   // Yolcu sayısı değişince diziyi yeniden boyutlandır (girilen veriyi KORU).
   React.useEffect(() => {
     setPassengers((prev) => {
@@ -110,7 +123,8 @@ export function InsuranceWizard() {
   const step1Parsed = insuranceStep1Schema.safeParse({
     dateFrom, dateTo, travellers, coverageId: coverageId ?? undefined,
   })
-  const step1Valid = step1Parsed.success && tariffs.some((tf) => tf.coverageId === coverageId)
+  const selectedTariff = tariffs.find((tf) => tf.coverageId === coverageId) ?? null
+  const step1Valid = step1Parsed.success && selectedTariff != null
   const isLast = step === TOTAL_STEPS - 1
 
   const updatePassenger = (index: number, field: keyof PassengerForm, value: string) => {
@@ -143,7 +157,64 @@ export function InsuranceWizard() {
     setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))
   }
 
+  // Adım 3 — Öde. Defansif: coverage/step2 hâlâ geçerli mi (yoksa ilgili adıma dön).
+  const handleSubmit = async () => {
+    if (!coverageId || !selectedTariff) { setStep(0); return }
+    if (!validateStep2()) { setStep(1); return }
+    setSubmitting(true)
+    setSubmitError(false)
+    try {
+      const res = await submitInsuranceOrder({
+        idempotencyKey: getOrCreateInsuranceOrderKey(),
+        locale: locale as Locale,
+        dateFrom,
+        dateTo,
+        coverageId,
+        passengers: passengers.map((p) => ({
+          firstName: p.firstName, lastName: p.lastName,
+          birthDate: p.birthDate, passportNumber: p.passportNumber, // Part A şekli (birthDate)
+        })),
+        contact: { email: contactEmail, phone: contactPhone },
+      })
+      if (res.ok) {
+        clearInsuranceOrderKey() // tamamlandı → sonraki satış taze key
+        if (res.redirectUrl) {
+          window.location.assign(res.redirectUrl) // Viva Smart Checkout (sayfa unmount)
+          return
+        }
+        setPaymentLink(res.paymentWhatsAppUrl) // Viva yok → WhatsApp fallback
+        setDone(true)
+      } else {
+        setSubmitError(true)
+      }
+    } catch {
+      setSubmitError(true)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const passengerError = (i: number, field: string) => step2Errors[`passenger-${i}-${field}`]
+
+  // ----- Başarı (WhatsApp fallback) kartı -----
+  if (done) {
+    return (
+      <Card className="mx-auto max-w-2xl border-primary/30">
+        <CardContent className="space-y-4 p-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <CheckCircle className="h-8 w-8 text-primary" />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground">{t('success.title')}</h3>
+          <p className="text-muted-foreground">{t('success.body')}</p>
+          {paymentLink && (
+            <Button asChild className="mt-2">
+              <a href={paymentLink} target="_blank" rel="noopener noreferrer">{t('success.whatsappCta')}</a>
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -307,19 +378,49 @@ export function InsuranceWizard() {
               </div>
             </div>
           ) : (
-            // Adım 3 gövdesi B4'te gelecek.
-            <p className="text-sm text-muted-foreground">{t('stepPlaceholder')}</p>
+            // Adım 3 — Özet + öde
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">{t('reviewHeading')}</h2>
+              <div className="divide-y rounded-md border">
+                <div className="flex items-center justify-between gap-4 p-3 text-sm">
+                  <span className="text-muted-foreground">{t('summaryCoverage')}</span>
+                  <span className="text-foreground">
+                    {selectedTariff
+                      ? t('coverageLabel', { coverage: selectedTariff.coverageValue.toLocaleString(locale) })
+                      : '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 p-3 text-sm">
+                  <span className="text-muted-foreground">{t('summaryDates')}</span>
+                  <span className="text-foreground">{dateFrom} → {dateTo}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 p-3 text-sm">
+                  <span className="text-muted-foreground">{t('summaryTravellers')}</span>
+                  <span className="text-right text-foreground">
+                    {passengers.map((p) => `${p.firstName} ${p.lastName}`.trim()).join(', ')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 p-3">
+                  <span className="text-sm font-medium text-foreground">{t('summaryTotal')}</span>
+                  <span className="text-base font-semibold text-primary">
+                    {selectedTariff ? `€${selectedTariff.priceAmount.toLocaleString(locale)}` : '—'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">{t('payNote')}</p>
+              {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
+            </div>
           )}
         </CardContent>
       </Card>
 
       <div className="flex items-center justify-between">
         <Button type="button" variant="outline"
-          onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+          onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || submitting}>
           {t('nav.back')}
         </Button>
-        <Button type="button" onClick={goNext} disabled={isLast}>
-          {isLast ? t('nav.pay') : t('nav.next')}
+        <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
+          {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
         </Button>
       </div>
     </div>
