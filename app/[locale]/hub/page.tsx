@@ -27,7 +27,7 @@ const TABS: HubTab[] = [
   { key: 'hotel',         label: 'Hotels',         icon: Hotel,       locked: true },
   { key: 'transfer',      label: 'Transfers',      icon: BusFront,    locked: true },
   { key: 'package_pickup',label: 'Package Pickup', icon: Package,     locked: true },
-  { key: 'insurance',     label: 'Insurance',      icon: ShieldCheck, locked: true },
+  { key: 'insurance',     label: 'Insurance',      icon: ShieldCheck, href: '/hub/insurance', locked: false },
   { key: 'esim',          label: 'eSIM',           icon: Smartphone,  locked: true },
   { key: 'luggage',       label: 'Luggage',        icon: Luggage,     locked: true },
 ] as const
