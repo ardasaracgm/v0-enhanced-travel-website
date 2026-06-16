@@ -1,4 +1,11 @@
 {
+  "insurance": {
+    "heroTitle": "Travel Insurance",
+    "heroSubtitle": "Approved Schengen-compliant travel insurance for your trip — in a few minutes.",
+    "steps": { "dates": "Dates & Coverage", "travellers": "Travellers", "review": "Review & Pay" },
+    "nav": { "back": "Back", "next": "Next", "pay": "Pay" },
+    "stepPlaceholder": "Form fields will be added in the next steps."
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",

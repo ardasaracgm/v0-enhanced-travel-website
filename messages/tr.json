@@ -1,4 +1,11 @@
 {
+  "insurance": {
+    "heroTitle": "Seyahat Sigortası",
+    "heroSubtitle": "Schengen vizesi ve seyahatiniz için onaylı seyahat sigortası — birkaç dakikada.",
+    "steps": { "dates": "Tarih ve Teminat", "travellers": "Yolcular", "review": "Özet ve Ödeme" },
+    "nav": { "back": "Geri", "next": "İleri", "pay": "Öde" },
+    "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek."
+  },
   "common": {
     "loading": "Yükleniyor...",
     "error": "Bir şeyler ters gitti",
