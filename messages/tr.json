@@ -5,7 +5,11 @@
     "steps": { "dates": "Tarih ve Teminat", "travellers": "Yolcular", "review": "Özet ve Ödeme" },
     "nav": { "back": "Geri", "next": "İleri", "pay": "Öde" },
     "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek.",
-    "labels": { "dateFrom": "Başlangıç tarihi", "dateTo": "Bitiş tarihi", "travellers": "Yolcu sayısı" },
+    "labels": { "dateFrom": "Başlangıç tarihi", "dateTo": "Bitiş tarihi", "travellers": "Yolcu sayısı", "firstName": "Ad", "lastName": "Soyad", "birthDate": "Doğum tarihi", "passportNumber": "Pasaport numarası", "contactEmail": "E-posta", "contactPhone": "Telefon" },
+    "travellersHeading": "Yolcu bilgileri",
+    "passengerNumber": "{number}. Yolcu",
+    "leadBadge": "(Ana yolcu)",
+    "contactHeading": "İletişim bilgileri",
     "coverageHeading": "Teminat seçin",
     "coverageLabel": "{coverage}€ teminat · 100€ muafiyet",
     "estimatedPrice": "~{price}€ (tahmini)",
@@ -13,7 +17,7 @@
     "pickDates": "Fiyatları görmek için seyahat tarihlerini seçin.",
     "quoteLoading": "Fiyatlar yükleniyor…",
     "quoteFailed": "Fiyat alınamadı. Lütfen tarihleri kontrol edip tekrar deneyin.",
-    "errors": { "datesRequired": "Lütfen geçerli başlangıç ve bitiş tarihleri girin.", "coverageRequired": "Lütfen bir teminat seçeneği seçin." }
+    "errors": { "datesRequired": "Lütfen geçerli başlangıç ve bitiş tarihleri girin.", "coverageRequired": "Lütfen bir teminat seçeneği seçin.", "firstName_required": "Ad gerekli.", "lastName_required": "Soyad gerekli.", "birthDate_invalid": "Geçerli bir doğum tarihi girin.", "passport_required": "Pasaport numarası gerekli.", "email_invalid": "Geçerli bir e-posta adresi girin.", "phone_invalid": "Geçerli bir telefon numarası girin." }
   },
   "common": {
     "loading": "Yükleniyor...",

@@ -12,17 +12,35 @@ import {
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { todayAthensISO } from '@/lib/validation/dates'
-import { INSURANCE_DATE_RE, MAX_TRAVELLERS, insuranceStep1Schema } from '@/lib/validation/insurance'
+import {
+  INSURANCE_DATE_RE, MAX_TRAVELLERS, insuranceStep1Schema, insuranceStep2Schema,
+} from '@/lib/validation/insurance'
 import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only guard tetiklenmez)
 
-// 3-adımlı wizard: 1) tarih+teminat (B2 ✓), 2) yolcular (B3), 3) özet+öde (B4).
+// 3-adımlı wizard: 1) tarih+teminat (B2 ✓), 2) yolcular (B3 ✓), 3) özet+öde (B4).
 const TOTAL_STEPS = 3
 const STEP_KEYS = ['dates', 'travellers', 'review'] as const
+
+interface PassengerForm {
+  firstName: string
+  lastName: string
+  birthDate: string
+  passportNumber: string
+}
+const emptyPassenger = (): PassengerForm => ({ firstName: '', lastName: '', birthDate: '', passportNumber: '' })
 
 // Native date input 6 haneli yıl kabul eder → ilk 4'e kes (visa clampYear deseni).
 function clampYear(v: string): string {
   const m = /^(\d+)-(\d{2})-(\d{2})$/.exec(v)
   return m && m[1].length > 4 ? `${m[1].slice(0, 4)}-${m[2]}-${m[3]}` : v
+}
+
+// Zod path → düz error key (ferry passenger-details pathToErrorKey deseni).
+function step2ErrorKey(path: ReadonlyArray<string | number>): string | null {
+  if (path[0] === 'passengers' && typeof path[1] === 'number') return `passenger-${path[1]}-${String(path[2])}`
+  if (path[0] === 'contactEmail') return 'contact-email'
+  if (path[0] === 'contactPhone') return 'contact-phone'
+  return null
 }
 
 export function InsuranceWizard() {
@@ -32,22 +50,42 @@ export function InsuranceWizard() {
 
   const [step, setStep] = React.useState(0)
 
-  // Adım 1 alanları
+  // Adım 1
   const [dateFrom, setDateFrom] = React.useState('')
   const [dateTo, setDateTo] = React.useState('')
   const [travellers, setTravellers] = React.useState(1)
   const [coverageId, setCoverageId] = React.useState<number | null>(null)
 
-  // Canlı quote (tahmini — DOB yok; gerçek DOB ile re-quote B3'te)
+  // Adım 2
+  const [passengers, setPassengers] = React.useState<PassengerForm[]>([emptyPassenger()])
+  const [contactEmail, setContactEmail] = React.useState('')
+  const [contactPhone, setContactPhone] = React.useState('')
+  const [step2Errors, setStep2Errors] = React.useState<Record<string, string>>({})
+
+  // Quote
   const [tariffs, setTariffs] = React.useState<InsuranceTariff[]>([])
   const [quoteLoading, setQuoteLoading] = React.useState(false)
   const [quoteFailed, setQuoteFailed] = React.useState(false)
   const [step1Attempted, setStep1Attempted] = React.useState(false)
 
+  // Yolcu sayısı değişince diziyi yeniden boyutlandır (girilen veriyi KORU).
+  React.useEffect(() => {
+    setPassengers((prev) => {
+      if (prev.length === travellers) return prev
+      const next = prev.slice(0, travellers)
+      while (next.length < travellers) next.push(emptyPassenger())
+      return next
+    })
+  }, [travellers])
+
   const datesValid =
     INSURANCE_DATE_RE.test(dateFrom) && INSURANCE_DATE_RE.test(dateTo) && dateFrom <= dateTo
 
-  // Tarih/sayı değişiminde tahmini fiyat çek (checkout deseni: cancel flag, debounce yok).
+  // Tüm DOB'lar dolu → re-quote'u gerçek DOB ile çağır (tahmin → kesin fiyat).
+  const allDobsValid =
+    passengers.length === travellers && passengers.every((p) => INSURANCE_DATE_RE.test(p.birthDate))
+  const dobKey = passengers.map((p) => p.birthDate).join(',')
+
   React.useEffect(() => {
     if (!datesValid) { setTariffs([]); return }
     let cancelled = false
@@ -56,29 +94,56 @@ export function InsuranceWizard() {
     fetch('/api/insurance/quote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dateFrom, dateTo, touristCount: travellers }), // DOB YOK → tahmin
+      body: JSON.stringify({
+        dateFrom, dateTo, touristCount: travellers,
+        // DOB'lar tamamsa gerçek DOB → kesin fiyat; değilse tahmin (server fallback).
+        ...(allDobsValid ? { tourists: passengers.map((p) => ({ dateBirth: p.birthDate })) } : {}),
+      }),
     })
       .then((r) => { if (!r.ok) throw new Error('quote'); return r.json() })
       .then((d: { tariffs: InsuranceTariff[] }) => { if (!cancelled) setTariffs(d.tariffs) })
-      .catch(() => { if (!cancelled) { setQuoteFailed(true); setTariffs([]) } })
+      .catch(() => { if (!cancelled) setQuoteFailed(true) }) // tariffs KORUNUR (son iyi değer)
       .finally(() => { if (!cancelled) setQuoteLoading(false) })
     return () => { cancelled = true }
-  }, [dateFrom, dateTo, travellers, datesValid])
+  }, [dateFrom, dateTo, travellers, datesValid, allDobsValid, dobKey])
 
   const step1Parsed = insuranceStep1Schema.safeParse({
     dateFrom, dateTo, travellers, coverageId: coverageId ?? undefined,
   })
-  // Şema şekli geçerli + seçilen teminat canlı tarifede mevcut.
   const step1Valid = step1Parsed.success && tariffs.some((tf) => tf.coverageId === coverageId)
   const isLast = step === TOTAL_STEPS - 1
+
+  const updatePassenger = (index: number, field: keyof PassengerForm, value: string) => {
+    setPassengers((prev) => {
+      const next = [...prev]
+      next[index] = { ...next[index], [field]: value }
+      return next
+    })
+  }
+
+  const validateStep2 = (): boolean => {
+    const result = insuranceStep2Schema.safeParse({ passengers, contactEmail, contactPhone })
+    if (result.success) { setStep2Errors({}); return true }
+    const next: Record<string, string> = {}
+    for (const issue of result.error.issues) {
+      const key = step2ErrorKey(issue.path)
+      if (key && !next[key]) next[key] = t(`errors.${issue.message}`)
+    }
+    setStep2Errors(next)
+    return false
+  }
 
   const goNext = () => {
     if (step === 0) {
       setStep1Attempted(true)
+      if (quoteLoading) return // re-quote bitene kadar kilitle (eski tariff eşleşmesi yanıltmasın)
       if (!step1Valid) return
     }
+    if (step === 1) { if (!validateStep2()) return }
     setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))
   }
+
+  const passengerError = (i: number, field: string) => step2Errors[`passenger-${i}-${field}`]
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -110,17 +175,13 @@ export function InsuranceWizard() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="ins-date-from">{t('labels.dateFrom')} *</Label>
-                  <Input
-                    id="ins-date-from" type="date" min={today} value={dateFrom}
-                    onChange={(e) => setDateFrom(clampYear(e.target.value))}
-                  />
+                  <Input id="ins-date-from" type="date" min={today} value={dateFrom}
+                    onChange={(e) => setDateFrom(clampYear(e.target.value))} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="ins-date-to">{t('labels.dateTo')} *</Label>
-                  <Input
-                    id="ins-date-to" type="date" min={dateFrom || today} value={dateTo}
-                    onChange={(e) => setDateTo(clampYear(e.target.value))}
-                  />
+                  <Input id="ins-date-to" type="date" min={dateFrom || today} value={dateTo}
+                    onChange={(e) => setDateTo(clampYear(e.target.value))} />
                 </div>
               </div>
 
@@ -128,9 +189,7 @@ export function InsuranceWizard() {
               <div className="space-y-2">
                 <Label htmlFor="ins-travellers">{t('labels.travellers')} *</Label>
                 <Select value={String(travellers)} onValueChange={(v) => setTravellers(Number(v))}>
-                  <SelectTrigger id="ins-travellers" className="w-full sm:w-40">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger id="ins-travellers" className="w-full sm:w-40"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: MAX_TRAVELLERS }, (_, i) => i + 1).map((n) => (
                       <SelectItem key={n} value={String(n)}>{n}</SelectItem>
@@ -157,13 +216,10 @@ export function InsuranceWizard() {
                     {tariffs.map((tf) => {
                       const selected = tf.coverageId === coverageId
                       return (
-                        <Label
-                          key={tf.coverageId}
-                          htmlFor={`ins-cov-${tf.coverageId}`}
+                        <Label key={tf.coverageId} htmlFor={`ins-cov-${tf.coverageId}`}
                           className={`flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 ${
                             selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                          }`}
-                        >
+                          }`}>
                           <span className="flex items-center gap-2">
                             <RadioGroupItem value={String(tf.coverageId)} id={`ins-cov-${tf.coverageId}`} />
                             <span className="text-sm text-foreground">
@@ -187,8 +243,71 @@ export function InsuranceWizard() {
                 </p>
               )}
             </>
+          ) : step === 1 ? (
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-foreground">{t('travellersHeading')}</h2>
+
+              {passengers.map((p, index) => (
+                <div key={index} className="space-y-4 rounded-md border p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-fn-${index}`}>{t('labels.firstName')} *</Label>
+                      <Input id={`ins-fn-${index}`} value={p.firstName}
+                        onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
+                        className={passengerError(index, 'firstName') ? 'border-destructive' : ''} />
+                      {passengerError(index, 'firstName') && <p className="text-sm text-destructive">{passengerError(index, 'firstName')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-ln-${index}`}>{t('labels.lastName')} *</Label>
+                      <Input id={`ins-ln-${index}`} value={p.lastName}
+                        onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
+                        className={passengerError(index, 'lastName') ? 'border-destructive' : ''} />
+                      {passengerError(index, 'lastName') && <p className="text-sm text-destructive">{passengerError(index, 'lastName')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-dob-${index}`}>{t('labels.birthDate')} *</Label>
+                      <Input id={`ins-dob-${index}`} type="date" min="1900-01-01" max={today} value={p.birthDate}
+                        onChange={(e) => updatePassenger(index, 'birthDate', clampYear(e.target.value))}
+                        className={passengerError(index, 'birthDate') ? 'border-destructive' : ''} />
+                      {passengerError(index, 'birthDate') && <p className="text-sm text-destructive">{passengerError(index, 'birthDate')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-pp-${index}`}>{t('labels.passportNumber')} *</Label>
+                      <Input id={`ins-pp-${index}`} value={p.passportNumber}
+                        onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
+                        className={passengerError(index, 'passportNumber') ? 'border-destructive' : ''} />
+                      {passengerError(index, 'passportNumber') && <p className="text-sm text-destructive">{passengerError(index, 'passportNumber')}</p>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* İletişim */}
+              <div className="space-y-4 rounded-md border p-4">
+                <p className="text-sm font-medium text-foreground">{t('contactHeading')}</p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
+                    <Input id="ins-email" type="email" value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      className={step2Errors['contact-email'] ? 'border-destructive' : ''} />
+                    {step2Errors['contact-email'] && <p className="text-sm text-destructive">{step2Errors['contact-email']}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
+                    <Input id="ins-phone" type="tel" value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      className={step2Errors['contact-phone'] ? 'border-destructive' : ''} />
+                    {step2Errors['contact-phone'] && <p className="text-sm text-destructive">{step2Errors['contact-phone']}</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
-            // Adım 2-3 gövdeleri B3/B4'te gelecek.
+            // Adım 3 gövdesi B4'te gelecek.
             <p className="text-sm text-muted-foreground">{t('stepPlaceholder')}</p>
           )}
         </CardContent>

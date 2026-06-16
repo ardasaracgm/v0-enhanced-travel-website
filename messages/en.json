@@ -5,7 +5,11 @@
     "steps": { "dates": "Dates & Coverage", "travellers": "Travellers", "review": "Review & Pay" },
     "nav": { "back": "Back", "next": "Next", "pay": "Pay" },
     "stepPlaceholder": "Form fields will be added in the next steps.",
-    "labels": { "dateFrom": "Start date", "dateTo": "End date", "travellers": "Number of travellers" },
+    "labels": { "dateFrom": "Start date", "dateTo": "End date", "travellers": "Number of travellers", "firstName": "First name", "lastName": "Last name", "birthDate": "Date of birth", "passportNumber": "Passport number", "contactEmail": "Email", "contactPhone": "Phone" },
+    "travellersHeading": "Traveller details",
+    "passengerNumber": "Traveller {number}",
+    "leadBadge": "(Lead)",
+    "contactHeading": "Contact details",
     "coverageHeading": "Choose coverage",
     "coverageLabel": "{coverage}€ coverage · 100€ deductible",
     "estimatedPrice": "~{price}€ (estimate)",
@@ -13,7 +17,7 @@
     "pickDates": "Select your travel dates to see prices.",
     "quoteLoading": "Loading prices…",
     "quoteFailed": "Could not fetch a price. Please check the dates and try again.",
-    "errors": { "datesRequired": "Please enter valid start and end dates.", "coverageRequired": "Please choose a coverage option." }
+    "errors": { "datesRequired": "Please enter valid start and end dates.", "coverageRequired": "Please choose a coverage option.", "firstName_required": "First name is required.", "lastName_required": "Last name is required.", "birthDate_invalid": "Enter a valid date of birth.", "passport_required": "Passport number is required.", "email_invalid": "Enter a valid email address.", "phone_invalid": "Enter a valid phone number." }
   },
   "common": {
     "loading": "Loading...",

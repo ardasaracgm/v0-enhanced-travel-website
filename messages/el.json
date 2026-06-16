@@ -5,7 +5,11 @@
     "steps": { "dates": "Ημερομηνίες & Κάλυψη", "travellers": "Ταξιδιώτες", "review": "Σύνοψη & Πληρωμή" },
     "nav": { "back": "Πίσω", "next": "Επόμενο", "pay": "Πληρωμή" },
     "stepPlaceholder": "Τα πεδία της φόρμας θα προστεθούν στα επόμενα βήματα.",
-    "labels": { "dateFrom": "Ημερομηνία έναρξης", "dateTo": "Ημερομηνία λήξης", "travellers": "Αριθμός ταξιδιωτών" },
+    "labels": { "dateFrom": "Ημερομηνία έναρξης", "dateTo": "Ημερομηνία λήξης", "travellers": "Αριθμός ταξιδιωτών", "firstName": "Όνομα", "lastName": "Επώνυμο", "birthDate": "Ημερομηνία γέννησης", "passportNumber": "Αριθμός διαβατηρίου", "contactEmail": "Email", "contactPhone": "Τηλέφωνο" },
+    "travellersHeading": "Στοιχεία ταξιδιωτών",
+    "passengerNumber": "Ταξιδιώτης {number}",
+    "leadBadge": "(Κύριος)",
+    "contactHeading": "Στοιχεία επικοινωνίας",
     "coverageHeading": "Επιλέξτε κάλυψη",
     "coverageLabel": "{coverage}€ κάλυψη · 100€ απαλλαγή",
     "estimatedPrice": "~{price}€ (εκτίμηση)",
@@ -13,7 +17,7 @@
     "pickDates": "Επιλέξτε τις ημερομηνίες ταξιδιού για να δείτε τιμές.",
     "quoteLoading": "Φόρτωση τιμών…",
     "quoteFailed": "Δεν ήταν δυνατή η λήψη τιμής. Ελέγξτε τις ημερομηνίες και δοκιμάστε ξανά.",
-    "errors": { "datesRequired": "Εισαγάγετε έγκυρες ημερομηνίες έναρξης και λήξης.", "coverageRequired": "Επιλέξτε μια επιλογή κάλυψης." }
+    "errors": { "datesRequired": "Εισαγάγετε έγκυρες ημερομηνίες έναρξης και λήξης.", "coverageRequired": "Επιλέξτε μια επιλογή κάλυψης.", "firstName_required": "Το όνομα είναι υποχρεωτικό.", "lastName_required": "Το επώνυμο είναι υποχρεωτικό.", "birthDate_invalid": "Εισαγάγετε έγκυρη ημερομηνία γέννησης.", "passport_required": "Ο αριθμός διαβατηρίου είναι υποχρεωτικός.", "email_invalid": "Εισαγάγετε έγκυρη διεύθυνση email.", "phone_invalid": "Εισαγάγετε έγκυρο αριθμό τηλεφώνου." }
   },
   "common": {
     "loading": "Φόρτωση...",
