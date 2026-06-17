@@ -87,12 +87,14 @@ const luggageSchema = z.object({
 const transferLegSchema = z.object({
   routeId:   z.string().min(1),
   vehicleId: z.string().min(1),
+  date:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), // standalone; ferry-extras boş bırakır
 })
 const transferSchema = z.object({
   type:     z.literal('transfer'),
   regionId: z.string().min(1),
   outbound: transferLegSchema.optional(),
   return:   transferLegSchema.optional(),
+  passengerCount: z.number().int().min(1).max(60).optional(), // bilgi amaçlı
 })
 
 // ============================================================

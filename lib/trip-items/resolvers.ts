@@ -158,26 +158,35 @@ export function resolveTransferItem(ctx: TransferResolveCtx): ResolvedTripItem {
   const routeLabel =
     region?.routes.find((r) => r.id === firstLeg?.routeId)?.label ?? firstLeg?.routeId ?? ''
   const legCount = (item.outbound ? 1 : 0) + (item.return ? 1 : 0)
+  // Standalone'da bacak tarihleri var → trip start/end dolsun (admin/Hub/WhatsApp
+  // koordinasyonu günü gösterir). Ferry-extras bacakları date'siz → null kalır
+  // (geriye uyumlu). +03:00 deseni diğer resolver'larla aynı.
+  const atMidnight = (d?: string) => (d ? `${d}T00:00:00+03:00` : null)
+  const outDate = item.outbound?.date
+  const retDate = item.return?.date
+  const scheduledAt = atMidnight(outDate ?? retDate)             // ilk gün (gidiş yoksa dönüş)
+  const endsAt = outDate && retDate ? atMidnight(retDate) : null // round-trip → bitiş = dönüş günü
   return {
     type: 'transfer',
     title: `Transfer — ${pickupLabel} ↔ ${routeLabel} (${legCount} ${legCount === 1 ? 'leg' : 'legs'})`,
-    scheduledAt: null,
-    endsAt: null,
-    passengerCount: 1,
+    scheduledAt,
+    endsAt,
+    passengerCount: 1, // "kaç trip kalemi" — kişi-bazlı değil (araç-bazlı). Yolcu sayısı bilgi.
     // cents → EUR decimals (tarifeler tam euro/yarım euro; bölme kayıpsız).
     priceAmount: totalCents / 100,
     priceCurrency: 'EUR',
     metadata: {
       region_id: item.regionId,
       outbound: item.outbound
-        ? { route_id: item.outbound.routeId, vehicle_id: item.outbound.vehicleId }
+        ? { route_id: item.outbound.routeId, vehicle_id: item.outbound.vehicleId, ...(item.outbound.date ? { date: item.outbound.date } : {}) }
         : undefined,
       return: item.return
-        ? { route_id: item.return.routeId, vehicle_id: item.return.vehicleId }
+        ? { route_id: item.return.routeId, vehicle_id: item.return.vehicleId, ...(item.return.date ? { date: item.return.date } : {}) }
         : undefined,
       pickup_location: pickupLabel,
       dropoff_location: routeLabel,
       total_cents: totalCents,
+      ...(item.passengerCount ? { passenger_count_info: item.passengerCount } : {}),
     },
   }
 }

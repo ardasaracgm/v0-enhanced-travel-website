@@ -92,8 +92,14 @@ export interface InsuranceSubmitItem {
 export interface TransferSubmitItem {
   type: 'transfer'
   regionId: string
-  outbound?: { routeId: string; vehicleId: string }
-  return?: { routeId: string; vehicleId: string }
+  // date: YYYY-MM-DD — yalnız standalone (transfer route) doldurur; ferry-extras
+  // bacakları date'siz gelir (opsiyonel → geriye uyumlu). Aktif bacağın tarihi
+  // zorunluluğunu submit-transfer-order'ın validate'i dayatır (createTrip değil).
+  outbound?: { routeId: string; vehicleId: string; date?: string }
+  return?: { routeId: string; vehicleId: string; date?: string }
+  // Bilgi amaçlı (araç kapasitesi bağlamı). Fiyatı/kalem sayısını ETKİLEMEZ —
+  // passenger row üretmez, yalnız metadata'ya yazılır. ferry-extras göndermez.
+  passengerCount?: number
 }
 
 export type SubmitItem =
