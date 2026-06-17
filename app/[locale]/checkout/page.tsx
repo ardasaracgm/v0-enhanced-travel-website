@@ -160,6 +160,11 @@ export default function CheckoutPage() {
             return { type: 'insurance' as const, tariffId: item.tariffId, tariffName: item.tariffName,
                      touristCount: item.touristCount, priceAmount: item.priceAmount }
           }
+          if (item.type === 'transfer') {
+            // IDs only; server re-prices via calculateTransferTotalCents.
+            return { type: 'transfer' as const, regionId: item.regionId,
+                     outbound: item.outbound, return: item.return }
+          }
           // Exhaustiveness: a new BookingItem type without a branch here fails
           // at compile time (item: never). No more silent "unknown = luggage".
           return assertNever(item, 'checkout booking item')

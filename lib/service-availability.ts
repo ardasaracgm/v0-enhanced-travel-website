@@ -11,18 +11,38 @@
  * Kod değişmez. Ferry API (Kademe 7) gerçek port kodlarını getirince buraya.
  */
 
-// Gate edilen hizmetler (değerler TripItemType ile aynı string'ler).
-export type GateableService = 'car_rental' | 'luggage' | 'insurance' | 'esim'
+import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 
-export const SERVICE_AVAILABILITY: Record<GateableService, 'all' | readonly string[]> = {
+// Gate edilen hizmetler (değerler TripItemType ile aynı string'ler).
+export type GateableService = 'car_rental' | 'luggage' | 'insurance' | 'esim' | 'transfer'
+
+// transfer HARİÇ — origin-tarafı (kalkış) servis; availability TRANSFER_REGIONS
+// anahtarlarından türer (ayrı liste yok). Diğerleri varış adasına (to) göre.
+export const SERVICE_AVAILABILITY: Record<Exclude<GateableService, 'transfer'>, 'all' | readonly string[]> = {
   car_rental: ['kos'], // araç filosu yalnız Kos'ta
   luggage:    ['kos'], // emanet ofisi yalnız Kos'ta
   insurance:  'all',   // poliçe destinasyondan bağımsız (insurance kartı feat/insurance-auras'ta)
   esim:       'all',   // e-SIM destinasyondan bağımsız (kart henüz yok — ileri uyum)
 }
 
-/** destination = searchParams.to. 'all' olmayan hizmet, listede yoksa gizli. */
-export function isServiceAvailable(service: GateableService, destination: string): boolean {
+/**
+ * destination = searchParams.to; origin = searchParams.from (transfer için).
+ * 'all' olmayan hizmet, listede yoksa gizli.
+ */
+export function isServiceAvailable(
+  service: GateableService,
+  destination: string,
+  origin?: string,
+): boolean {
+  // Transfer kalkış-tarafı servis: availability TRANSFER_REGIONS anahtarlarından
+  // türer (ayrı liste yok). Yeni firma = yeni region; gate kodu değişmez.
+  // hasOwnProperty: prototype zinciri taranmasın ('constructor' gibi origin false).
+  if (service === 'transfer') {
+    return (
+      origin != null &&
+      Object.prototype.hasOwnProperty.call(TRANSFER_REGIONS, origin.toLowerCase())
+    )
+  }
   const rule = SERVICE_AVAILABILITY[service]
   if (rule === 'all') return true
   return rule.includes(destination.toLowerCase())

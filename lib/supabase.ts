@@ -196,11 +196,12 @@ export interface FerryItemMetadata {
 }
 
 export interface TransferItemMetadata {
-  pickup_location: string       // address or POI
+  region_id: string
+  outbound?: { route_id: string; vehicle_id: string }
+  return?: { route_id: string; vehicle_id: string }
+  pickup_location: string
   dropoff_location: string
-  vehicle_class: 'standard' | 'vip' | 'minivan' | 'minibus'
-  pickup_at: string             // ISO
-  flight_or_ferry_ref?: string
+  total_cents?: number
 }
 
 export interface CarRentalItemMetadata {

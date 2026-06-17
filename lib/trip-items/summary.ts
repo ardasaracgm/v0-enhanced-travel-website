@@ -14,12 +14,14 @@
  */
 
 import { assertNever } from './types'
+import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import type {
   BookingItem,
   FerryBookingItem,
   CarRentalBookingItem,
   LuggageBookingItem,
   InsuranceBookingItem,
+  TransferBookingItem,
 } from '@/lib/booking-context'
 
 export interface ItemSummaryRow {
@@ -103,12 +105,30 @@ function insuranceRow(item: InsuranceBookingItem, locale: string): ItemSummaryRo
   }
 }
 
+// Bodrum kalkış transfer'i — etiketler statik TRANSFER_REGIONS'tan (client-safe).
+// Round-trip iki bacak: legCount detayda; başlık pickup ↔ rota.
+function transferRow(item: TransferBookingItem): ItemSummaryRow {
+  const region = TRANSFER_REGIONS[item.regionId as keyof typeof TRANSFER_REGIONS]
+  const legCount = (item.outbound ? 1 : 0) + (item.return ? 1 : 0)
+  const firstLeg = item.outbound ?? item.return
+  const routeLabel =
+    region?.routes.find((r) => r.id === firstLeg?.routeId)?.label ?? firstLeg?.routeId ?? ''
+  return {
+    label: 'Transfer',
+    title: region ? `${region.pickupLabel} ↔ ${routeLabel}` : item.title,
+    detail: `${legCount} ${legCount === 1 ? 'leg' : 'legs'}`,
+    breakdownLabel: 'Transfer',
+    amount: item.priceAmount,
+  }
+}
+
 // Registry of per-type summary formatters — exhaustive over BookableItemType.
 const ITEM_SUMMARY = {
   ferry: ferryRow,
   car_rental: carRow,
   luggage: luggageRow,
   insurance: insuranceRow,
+  transfer: transferRow,
 }
 
 /**
@@ -126,6 +146,8 @@ export function summarizeItem(item: BookingItem, locale: string = 'en'): ItemSum
       return ITEM_SUMMARY.luggage(item)
     case 'insurance':
       return ITEM_SUMMARY.insurance(item, locale)
+    case 'transfer':
+      return ITEM_SUMMARY.transfer(item)
     default:
       return assertNever(item, 'summary booking item')
   }

@@ -100,11 +100,21 @@ export interface InsuranceBookingItem {
   priceAmount: number    // A0: mock 0, display-only (sunucu re-price eder — Kademe B)
 }
 
+export interface TransferBookingItem {
+  type: 'transfer'
+  regionId: string
+  outbound?: { routeId: string; vehicleId: string }
+  return?: { routeId: string; vehicleId: string }
+  title: string          // görüntü etiketi, ör. "Transfer — Bodrum ↔ Yalıkavak"
+  priceAmount: number    // bacakların toplamı, display only (sunucu re-price eder)
+}
+
 export type BookingItem =
   | FerryBookingItem
   | CarRentalBookingItem
   | LuggageBookingItem
   | InsuranceBookingItem
+  | TransferBookingItem
 
 export interface BookingState {
   searchParams: {
@@ -172,6 +182,8 @@ type BookingAction =
   | { type: 'REMOVE_LUGGAGE' }
   | { type: 'SET_INSURANCE'; payload: Omit<InsuranceBookingItem, 'type'> }
   | { type: 'REMOVE_INSURANCE' }
+  | { type: 'SET_TRANSFER'; payload: Omit<TransferBookingItem, 'type'> }
+  | { type: 'REMOVE_TRANSFER' }
   | { type: 'SET_ITEMS'; payload: BookingItem[] }
   | { type: 'SET_IDEMPOTENCY_KEY'; payload: string }
   | { type: 'SET_BOOKING_REFERENCE'; payload: string }
@@ -311,6 +323,24 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       return {
         ...state,
         items: state.items.filter(i => i.type !== 'insurance'),
+      }
+    case 'SET_TRANSFER': {
+      const transferItem: TransferBookingItem = {
+        type: 'transfer',
+        ...action.payload,
+      }
+      return {
+        ...state,
+        items: [
+          ...state.items.filter(i => i.type !== 'transfer'),
+          transferItem,
+        ],
+      }
+    }
+    case 'REMOVE_TRANSFER':
+      return {
+        ...state,
+        items: state.items.filter(i => i.type !== 'transfer'),
       }
     case 'SET_ITEMS':
       return { ...state, items: action.payload }

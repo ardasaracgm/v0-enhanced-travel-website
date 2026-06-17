@@ -26,6 +26,7 @@ import {
   resolveCarRentalItem,
   resolveLuggageItem,
   resolveInsuranceItem,
+  resolveTransferItem,
 } from '@/lib/trip-items/resolvers'
 import { getInsuranceQuote } from '@/lib/insurs'
 import { submitItemSchema } from '@/lib/trip-items/registry'
@@ -62,6 +63,12 @@ export interface SubmitBookingInput {
         tariffName: string
         touristCount: number
         priceAmount: number   // A0: mock/0; sunucu yok sayar
+      }
+    | {
+        type: 'transfer'
+        regionId: string
+        outbound?: { routeId: string; vehicleId: string }
+        return?: { routeId: string; vehicleId: string }
       }
   >
 
@@ -328,6 +335,19 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           ok: false,
           code: 'invalid_insurance',
           error: err instanceof Error ? err.message : 'Insurance quote failed',
+        }
+      }
+    } else if (item.type === 'transfer') {
+      // Server-side authoritative. resolveTransferItem (→ calculateTransferTotalCents)
+      // throws RangeError on bad input (no leg, unknown region/route/vehicle) —
+      // surfaced as 'invalid_transfer'. Client priceAmount ignored (luggage pattern).
+      try {
+        items.push(resolveTransferItem({ item }))
+      } catch (err) {
+        return {
+          ok: false,
+          code: 'invalid_transfer',
+          error: err instanceof Error ? err.message : 'Invalid transfer selection',
         }
       }
     } else {

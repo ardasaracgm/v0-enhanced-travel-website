@@ -15,12 +15,15 @@
  */
 
 import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
+import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
+import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import type {
   ResolvedTripItem,
   FerryResolveCtx,
   CarResolveCtx,
   LuggageResolveCtx,
   InsuranceResolveCtx,
+  TransferResolveCtx,
 } from './types'
 
 // date: "2026-06-15", time: "09:00" → "2026-06-15T09:00:00+03:00"
@@ -131,6 +134,50 @@ export function resolveInsuranceItem(ctx: InsuranceResolveCtx): ResolvedTripItem
       tourist_count: item.touristCount,
       coverage_id: coverageId,
       coverage_value: coverageValue,
+    },
+  }
+}
+
+/**
+ * Transfer (Bodrum kalkış). PURE — fiyat calculateTransferTotalCents'ten
+ * (round-trip iki bacağı toplar). RangeError (no leg / unknown region/route/
+ * vehicle) caller'da (submit-booking) 'invalid_transfer'a çevrilir. Client
+ * priceAmount yok sayılır — luggage deseni. Etiketler statik TRANSFER_REGIONS'tan
+ * (saf veri; I/O yok). Title düz İngilizce — diğer resolver'larla tutarlı.
+ */
+export function resolveTransferItem(ctx: TransferResolveCtx): ResolvedTripItem {
+  const { item } = ctx
+  const totalCents = calculateTransferTotalCents({
+    regionId: item.regionId,
+    outbound: item.outbound,
+    return: item.return,
+  })
+  const region = TRANSFER_REGIONS[item.regionId as keyof typeof TRANSFER_REGIONS]
+  const pickupLabel = region?.pickupLabel ?? item.regionId
+  const firstLeg = item.outbound ?? item.return
+  const routeLabel =
+    region?.routes.find((r) => r.id === firstLeg?.routeId)?.label ?? firstLeg?.routeId ?? ''
+  const legCount = (item.outbound ? 1 : 0) + (item.return ? 1 : 0)
+  return {
+    type: 'transfer',
+    title: `Transfer — ${pickupLabel} ↔ ${routeLabel} (${legCount} ${legCount === 1 ? 'leg' : 'legs'})`,
+    scheduledAt: null,
+    endsAt: null,
+    passengerCount: 1,
+    // cents → EUR decimals (tarifeler tam euro/yarım euro; bölme kayıpsız).
+    priceAmount: totalCents / 100,
+    priceCurrency: 'EUR',
+    metadata: {
+      region_id: item.regionId,
+      outbound: item.outbound
+        ? { route_id: item.outbound.routeId, vehicle_id: item.outbound.vehicleId }
+        : undefined,
+      return: item.return
+        ? { route_id: item.return.routeId, vehicle_id: item.return.vehicleId }
+        : undefined,
+      pickup_location: pickupLabel,
+      dropoff_location: routeLabel,
+      total_cents: totalCents,
     },
   }
 }

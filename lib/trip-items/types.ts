@@ -29,7 +29,7 @@ import type { FerryRoute } from '@/lib/ferry-mock-data'
 // package_pickup, etc. created through OTHER flows). The registry's
 // Record<BookableItemType, …> forces an entry for each, so a new value
 // here is a COMPILE error until its descriptor exists.
-export type BookableItemType = 'ferry' | 'car_rental' | 'luggage' | 'insurance'
+export type BookableItemType = 'ferry' | 'car_rental' | 'luggage' | 'insurance' | 'transfer'
 
 // Future doors — declared, intentionally NOT bookable yet. Adding one to
 // BookableItemType above + a descriptor is the whole "enable" step.
@@ -37,7 +37,6 @@ export type BookableItemType = 'ferry' | 'car_rental' | 'luggage' | 'insurance'
 // e-SIM, VIP transfer, etc. live here as placeholders.
 export type PlannedItemType =
   | 'esim'
-  | 'transfer'
   | 'tour'
   | 'hotel'
   | 'package_pickup'
@@ -46,7 +45,6 @@ export type PlannedItemType =
 
 export const PLANNED_ITEM_TYPES: readonly PlannedItemType[] = [
   'esim',
-  'transfer',
   'tour',
   'hotel',
   'package_pickup',
@@ -91,7 +89,19 @@ export interface InsuranceSubmitItem {
   priceAmount: number   // A0: mock/0; display-only — sunucu re-price eder (Kademe B)
 }
 
-export type SubmitItem = FerrySubmitItem | CarSubmitItem | LuggageSubmitItem | InsuranceSubmitItem
+export interface TransferSubmitItem {
+  type: 'transfer'
+  regionId: string
+  outbound?: { routeId: string; vehicleId: string }
+  return?: { routeId: string; vehicleId: string }
+}
+
+export type SubmitItem =
+  | FerrySubmitItem
+  | CarSubmitItem
+  | LuggageSubmitItem
+  | InsuranceSubmitItem
+  | TransferSubmitItem
 
 // ============================================================
 // Resolve contexts — what the server gathers before pricing
@@ -140,7 +150,16 @@ export interface InsuranceResolveCtx {
   dateTo: string
 }
 
-export type ResolveCtx = FerryResolveCtx | CarResolveCtx | LuggageResolveCtx | InsuranceResolveCtx
+export interface TransferResolveCtx {
+  item: TransferSubmitItem
+}
+
+export type ResolveCtx =
+  | FerryResolveCtx
+  | CarResolveCtx
+  | LuggageResolveCtx
+  | InsuranceResolveCtx
+  | TransferResolveCtx
 
 // ============================================================
 // Resolved trip item — the registry's output contract

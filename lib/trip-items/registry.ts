@@ -26,12 +26,14 @@ import type {
   CarResolveCtx,
   LuggageResolveCtx,
   InsuranceResolveCtx,
+  TransferResolveCtx,
 } from './types'
 import {
   resolveFerryItem,
   resolveCarRentalItem,
   resolveLuggageItem,
   resolveInsuranceItem,
+  resolveTransferItem,
 } from './resolvers'
 
 // date >= today in Greece timezone prevents bookings for past departures.
@@ -77,6 +79,22 @@ const luggageSchema = z.object({
   location:    z.string().min(1).max(64),
 })
 
+// Transfer (Bodrum kalkış). Client region/route/vehicle id gönderir; iki bacak
+// (outbound/return) opsiyonel. "≥1 bacak" + fiyat sunucuda (resolver →
+// calculateTransferTotalCents, RangeError→invalid_transfer); client fiyatı yok.
+// discriminatedUnion + descriptor düz ZodObject ister → refine dış objede DEĞİL
+// (luggage deseni: takvim/iş-kuralı pricing'te, Zod yalnız şekil).
+const transferLegSchema = z.object({
+  routeId:   z.string().min(1),
+  vehicleId: z.string().min(1),
+})
+const transferSchema = z.object({
+  type:     z.literal('transfer'),
+  regionId: z.string().min(1),
+  outbound: transferLegSchema.optional(),
+  return:   transferLegSchema.optional(),
+})
+
 // ============================================================
 // Descriptors — `satisfies` preserves each precise schema/ctx type
 // ============================================================
@@ -119,6 +137,13 @@ const insuranceDescriptor = {
   resolve: resolveInsuranceItem,
 } satisfies TripItemDescriptor<InsuranceResolveCtx, typeof insuranceSchema>
 
+const transferDescriptor = {
+  type: 'transfer',
+  enabled: true,
+  clientSchema: transferSchema,
+  resolve: resolveTransferItem,
+} satisfies TripItemDescriptor<TransferResolveCtx, typeof transferSchema>
+
 /**
  * The registry. `satisfies Record<BookableItemType, …>` = compile-time
  * exhaustiveness; a new BookableItemType without an entry will not type-check.
@@ -128,6 +153,7 @@ export const TRIP_ITEM_REGISTRY = {
   car_rental: carRentalDescriptor,
   luggage: luggageDescriptor,
   insurance: insuranceDescriptor,
+  transfer: transferDescriptor,
 } satisfies Record<BookableItemType, TripItemDescriptor>
 
 export function getTripItemDescriptor(

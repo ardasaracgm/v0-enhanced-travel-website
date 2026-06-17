@@ -124,6 +124,7 @@ export type CreateTripErrorCode =
   | 'invalid_luggage'
   | 'car_unavailable'
   | 'invalid_insurance'
+  | 'invalid_transfer'
   | 'unexpected'
 
 // ============================================================
