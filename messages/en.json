@@ -1162,6 +1162,19 @@
       "summaryLabel": "Travel insurance",
       "removeAria": "Remove insurance",
       "travellerCount": "{count, plural, one {# traveller} other {# travellers}}"
+    },
+    "transfer": {
+      "heading": "Bodrum Transfer — Door to Port",
+      "subheading": "Private VIP transfer between your Bodrum location and the ferry port.",
+      "route": "Pickup / drop-off point",
+      "selectRoute": "Select location",
+      "vehicle": "Vehicle",
+      "outbound": "Outbound (Bodrum → port)",
+      "return": "Return (port → Bodrum)",
+      "perLeg": "/leg",
+      "summaryLabel": "Bodrum transfer",
+      "legCount": "{count, plural, one {# leg} other {# legs}}",
+      "removeAria": "Remove transfer"
     }
   },
 

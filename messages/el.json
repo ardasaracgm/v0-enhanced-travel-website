@@ -1156,6 +1156,19 @@
       "summaryLabel": "Travel insurance",
       "removeAria": "Remove insurance",
       "travellerCount": "{count, plural, one {# traveller} other {# travellers}}"
+    },
+    "transfer": {
+      "heading": "Μεταφορά Bodrum — Από την πόρτα στο λιμάνι",
+      "subheading": "Ιδιωτική VIP μεταφορά μεταξύ της τοποθεσίας σας στο Bodrum και του λιμανιού.",
+      "route": "Σημείο παραλαβής / άφιξης",
+      "selectRoute": "Επιλέξτε σημείο",
+      "vehicle": "Όχημα",
+      "outbound": "Μετάβαση (Bodrum → λιμάνι)",
+      "return": "Επιστροφή (λιμάνι → Bodrum)",
+      "perLeg": "/διαδρομή",
+      "summaryLabel": "Μεταφορά Bodrum",
+      "legCount": "{count, plural, one {# διαδρομή} other {# διαδρομές}}",
+      "removeAria": "Αφαίρεση μεταφοράς"
     }
   },
 

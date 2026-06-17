@@ -3,13 +3,14 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
-import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X } from 'lucide-react'
+import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X, Bus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -36,10 +37,12 @@ import {
   type FerryBookingItem,
   type CarRentalBookingItem,
   type LuggageBookingItem,
+  type TransferBookingItem,
 } from '@/lib/booking-context'
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { summarizeItem, addDaysISO } from '@/lib/trip-items/summary'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
+import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkCarAvailability } from '@/lib/actions/car-availability-action'
 
@@ -74,6 +77,17 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   ) ?? null
   const [luggageCounts, setLuggageCounts] = React.useState<LuggageCounts>({ small: 0, medium: 0, large: 0 })
   const [sizeTipOpen, setSizeTipOpen] = React.useState(false)  // (i) boyut rehberi; mobil tap
+
+  // Transfer (Bodrum kalkış) UI state; cart state reducer'da. region = kalkış portu.
+  const transferItem = state.items.find(
+    (i): i is TransferBookingItem => i.type === 'transfer'
+  ) ?? null
+  const transferRegionId = (state.searchParams.from || '').toLowerCase()
+  const transferRegion = TRANSFER_REGIONS[transferRegionId as keyof typeof TRANSFER_REGIONS] ?? null
+  const [transferRouteId, setTransferRouteId] = React.useState<string | null>(null)
+  const [transferVehicleId, setTransferVehicleId] = React.useState<string | null>(null)
+  const [transferOutbound, setTransferOutbound] = React.useState(true)   // gidiş varsayılan açık
+  const [transferReturn, setTransferReturn] = React.useState(false)
 
   const outboundItem = state.items.find(
     (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
@@ -120,10 +134,29 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Transfer seçimini context'ten hydrate et (back-navigation).
+  React.useEffect(() => {
+    const existing = state.items.find(
+      (i): i is TransferBookingItem => i.type === 'transfer'
+    )
+    if (existing) {
+      const leg = existing.outbound ?? existing.return
+      if (leg) {
+        setTransferRouteId(leg.routeId)
+        setTransferVehicleId(leg.vehicleId)
+      }
+      setTransferOutbound(existing.outbound != null)
+      setTransferReturn(existing.return != null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Hizmet görünürlük gate'i — varış adasına göre (searchParams.to, lowercase).
   const dest = state.searchParams.to
   const carAvailable = isServiceAvailable('car_rental', dest)
   const luggageAvailable = isServiceAvailable('luggage', dest)
+  // Transfer kalkış-tarafı (origin = searchParams.from); region anahtarından gate.
+  const transferAvailable = isServiceAvailable('transfer', dest, state.searchParams.from)
 
   // Rota artık bu hizmeti sunmuyorsa sepetten temizle (gizli ama sepette kalmış
   // item checkout'a gitmesin). dispatch stable + flag'ler to'dan türer (extras
@@ -131,7 +164,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   React.useEffect(() => {
     if (!carAvailable) dispatch({ type: 'SET_CAR_RENTAL', payload: null })
     if (!luggageAvailable) dispatch({ type: 'REMOVE_LUGGAGE' })
-  }, [carAvailable, luggageAvailable, dispatch])
+    if (!transferAvailable) dispatch({ type: 'REMOVE_TRANSFER' })
+  }, [carAvailable, luggageAvailable, transferAvailable, dispatch])
 
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
   // outboundItem null iken de türetilebilsin diye guard'dan önce; null'da 1
@@ -271,6 +305,66 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   }
 
   const selectedCar = cars.find(c => c.id === selectedCarId) ?? null
+
+  // Fiyat formatı — kart-içi tutarlı 2 ondalık, locale ayraçlı (TR €37,50 / €28,00).
+  const fmtEur = (n: number) =>
+    n.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  // Transfer canlı fiyat (display-only; sunucu calculateTransferTotalCents ile re-price).
+  const transferRoute = transferRegion?.routes.find((r) => r.id === transferRouteId) ?? null
+  const transferPerLegEur =
+    transferRoute && transferVehicleId
+      ? ((transferRoute.prices as Record<string, number>)[transferVehicleId] ?? 0) / 100
+      : 0
+  const transferLegCount = (transferOutbound ? 1 : 0) + (transferReturn ? 1 : 0)
+  const transferTotalPrice = transferPerLegEur * transferLegCount
+
+  // Seçili rota+araç, açık bacak(lar)a kopyalanır → outbound/return. Geçersizse
+  // (rota/araç yok ya da iki toggle kapalı) sepetten çıkar. Model iki-bacak kalır.
+  function syncTransfer(routeId: string | null, vehicleId: string | null, outOn: boolean, retOn: boolean) {
+    if (!transferRegion || !routeId || !vehicleId || (!outOn && !retOn)) {
+      dispatch({ type: 'REMOVE_TRANSFER' })
+      return
+    }
+    const leg = { routeId, vehicleId }
+    const route = transferRegion.routes.find((r) => r.id === routeId)
+    const perLegCents = route ? ((route.prices as Record<string, number>)[vehicleId] ?? 0) : 0
+    const legCount = (outOn ? 1 : 0) + (retOn ? 1 : 0)
+    dispatch({
+      type: 'SET_TRANSFER',
+      payload: {
+        regionId: transferRegionId,
+        outbound: outOn ? leg : undefined,
+        return: retOn ? leg : undefined,
+        title: `${transferRegion.pickupLabel} ↔ ${route?.label ?? routeId}`,
+        priceAmount: (perLegCents * legCount) / 100, // display-only
+      },
+    })
+  }
+
+  function handleTransferRoute(routeId: string) {
+    setTransferRouteId(routeId)
+    syncTransfer(routeId, transferVehicleId, transferOutbound, transferReturn)
+  }
+  function handleTransferVehicle(vehicleId: string) {
+    setTransferVehicleId(vehicleId)
+    syncTransfer(transferRouteId, vehicleId, transferOutbound, transferReturn)
+  }
+  function handleTransferOutbound(on: boolean) {
+    setTransferOutbound(on)
+    syncTransfer(transferRouteId, transferVehicleId, on, transferReturn)
+  }
+  function handleTransferReturn(on: boolean) {
+    setTransferReturn(on)
+    syncTransfer(transferRouteId, transferVehicleId, transferOutbound, on)
+  }
+  function handleRemoveTransfer() {
+    setTransferRouteId(null)
+    setTransferVehicleId(null)
+    setTransferOutbound(true)
+    setTransferReturn(false)
+    dispatch({ type: 'REMOVE_TRANSFER' })
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -443,6 +537,93 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 </Card>
               </div>
             </div>
+          </div>
+        </section>
+        )}
+
+        {/* Bodrum transfer — yalnız kalkış portunda transfer firması varsa (gate,
+            origin = searchParams.from). Tam genişlik, luggage deseni. */}
+        {transferAvailable && transferRegion && (
+        <section className="w-full pt-8 md:pt-12">
+          <div className="container px-4 md:px-6">
+            <Card className="bg-card border-2 border-border/50">
+              <CardContent className="p-5 space-y-4">
+                {/* Heading + canlı toplam */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Bus className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
+                      <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                    {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
+                  </span>
+                </div>
+
+                {/* Rota + araç */}
+                <div className="flex flex-wrap items-end gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
+                    <Select value={transferRouteId ?? undefined} onValueChange={handleTransferRoute}>
+                      <SelectTrigger className="w-56">
+                        <SelectValue placeholder={t('transfer.selectRoute')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {transferRegion.routes.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
+                    <div className="flex items-center gap-2">
+                      {transferRegion.vehicles.map((v) => {
+                        const selected = transferVehicleId === v.id
+                        const priceEur = transferRoute
+                          ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
+                          : null
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => handleTransferVehicle(v.id)}
+                            className={`flex flex-col items-start rounded-xl border-2 px-3 py-1.5 transition-all ${
+                              selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                            }`}
+                          >
+                            <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
+                            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                              <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                              {priceEur != null && (
+                                <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
+                              )}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* İki bağımsız bacak toggle'ı — en az biri açık olmalı */}
+                <div className="flex flex-wrap items-center gap-6 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Switch checked={transferOutbound} onCheckedChange={handleTransferOutbound} />
+                    <span className="text-sm text-foreground">{t('transfer.outbound')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Switch checked={transferReturn} onCheckedChange={handleTransferReturn} />
+                    <span className="text-sm text-foreground">{t('transfer.return')}</span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
         )}
@@ -691,6 +872,30 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                               type="button"
                               aria-label={t('luggage.removeAria')}
                               onClick={handleRemoveLuggage}
+                              className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bodrum transfer — cart'taki item'dan; × ile kaldır */}
+                      {transferItem && (
+                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground mb-1">{t('transfer.summaryLabel')}</p>
+                              <p className="font-medium text-foreground text-sm">{summarizeItem(transferItem, locale).title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {t('transfer.legCount', { count: (transferItem.outbound ? 1 : 0) + (transferItem.return ? 1 : 0) })}
+                              </p>
+                              <p className="text-primary text-sm font-semibold mt-1">€{fmtEur(transferItem.priceAmount)}</p>
+                            </div>
+                            <button
+                              type="button"
+                              aria-label={t('transfer.removeAria')}
+                              onClick={handleRemoveTransfer}
                               className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
                             >
                               <X className="h-4 w-4" />

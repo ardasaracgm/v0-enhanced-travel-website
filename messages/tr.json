@@ -1162,6 +1162,19 @@
       "summaryLabel": "Seyahat sigortası",
       "removeAria": "Sigortayı kaldır",
       "travellerCount": "{count, plural, one {# yolcu} other {# yolcu}}"
+    },
+    "transfer": {
+      "heading": "Bodrum Transfer — Kapıdan Limana",
+      "subheading": "Bodrum'daki adresiniz ile feribot limanı arasında özel VIP transfer.",
+      "route": "Alış / bırakış noktası",
+      "selectRoute": "Nokta seçin",
+      "vehicle": "Araç",
+      "outbound": "Gidiş (Bodrum → liman)",
+      "return": "Dönüş (liman → Bodrum)",
+      "perLeg": "/yön",
+      "summaryLabel": "Bodrum transfer",
+      "legCount": "{count, plural, one {# yön} other {# yön}}",
+      "removeAria": "Transferi kaldır"
     }
   },
 
