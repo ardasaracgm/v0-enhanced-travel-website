@@ -2,10 +2,16 @@
 
 import * as React from "react";
 import { Link } from "@/i18n/routing";
-import { Menu, Phone } from "lucide-react";
+import { ChevronDown, Menu, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TrustBar } from "@/components/islandbee/trust-bar";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
@@ -30,6 +36,11 @@ export function Header() {
     { key: "contact", labelKey: "contact" },
   ];
 
+  // SERVICE_ROUTES.disabled'a göre ayır: canlılar inline, "yakında" olanlar
+  // tek bir dropdown (desktop) / gruplanmış blok (mobil) içinde.
+  const liveItems = navItems.filter((i) => !SERVICE_ROUTES[i.key].disabled);
+  const comingSoonItems = navItems.filter((i) => SERVICE_ROUTES[i.key].disabled);
+
   return (
     <>
       <div className="relative z-50">
@@ -52,32 +63,34 @@ export function Header() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6">
-            {navItems.map((item) => {
-              const { href, disabled } = SERVICE_ROUTES[item.key];
-              if (disabled) {
-                return (
-                  <span
-                    key={item.key}
-                    aria-disabled="true"
-                    className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed whitespace-nowrap"
-                  >
-                    {t(item.labelKey)}
-                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {tCommon("comingSoon")}
-                    </span>
-                  </span>
-                );
-              }
-              return (
-                <Link
-                  key={item.key}
-                  href={href}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
+            {liveItems.map((item) => (
+              <Link
+                key={item.key}
+                href={SERVICE_ROUTES[item.key].href}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {t(item.labelKey)}
+              </Link>
+            ))}
+            {comingSoonItems.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap focus:outline-none data-[state=open]:text-primary">
+                  {tCommon("comingSoon")}
+                  <ChevronDown className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {comingSoonItems.map((item) => (
+                    <DropdownMenuItem
+                      key={item.key}
+                      disabled
+                      className="cursor-not-allowed"
+                    >
+                      {t(item.labelKey)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">
@@ -119,33 +132,34 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col gap-4 mt-8">
-                  {navItems.map((item) => {
-                    const { href, disabled } = SERVICE_ROUTES[item.key];
-                    if (disabled) {
-                      return (
-                        <span
-                          key={item.key}
-                          aria-disabled="true"
-                          className="flex items-center gap-2 text-lg font-medium text-muted-foreground/50 cursor-not-allowed"
-                        >
-                          {t(item.labelKey)}
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            {tCommon("comingSoon")}
+                  {liveItems.map((item) => (
+                    <Link
+                      key={item.key}
+                      href={SERVICE_ROUTES[item.key].href}
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {t(item.labelKey)}
+                    </Link>
+                  ))}
+                  {comingSoonItems.length > 0 && (
+                    <div className="mt-1 pt-4 border-t border-border">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground/70 mb-3">
+                        {tCommon("comingSoon")}
+                      </p>
+                      <div className="flex flex-col gap-3">
+                        {comingSoonItems.map((item) => (
+                          <span
+                            key={item.key}
+                            aria-disabled="true"
+                            className="text-lg font-medium text-muted-foreground/50 cursor-not-allowed"
+                          >
+                            {t(item.labelKey)}
                           </span>
-                        </span>
-                      );
-                    }
-                    return (
-                      <Link
-                        key={item.key}
-                        href={href}
-                        className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {t(item.labelKey)}
-                      </Link>
-                    );
-                  })}
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-2 pt-4 border-t border-border">
                     <LanguageSwitcher variant="compact" />
                   </div>
