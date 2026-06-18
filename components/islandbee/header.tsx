@@ -8,31 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TrustBar } from "@/components/islandbee/trust-bar";
+import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const t = useTranslations("header");
+  const tCommon = useTranslations("common");
 
-  const navItems: {
-    href:
-      | "/ferry"
-      | "/car-rental"
-      | "/tours"
-      | "/visa"
-      | "/insurance"
-      | "/events"
-      | "/package-pickup"
-      | "/contact";
-    labelKey: string;
-  }[] = [
-    { href: "/ferry", labelKey: "ferryTickets" },
-    { href: "/car-rental", labelKey: "carRental" },
-    { href: "/tours", labelKey: "tours" },
-    { href: "/events", labelKey: "eventsGroups" },
-    { href: "/visa", labelKey: "visaSupport" },
-    { href: "/insurance", labelKey: "insurance" },
-    { href: "/package-pickup", labelKey: "packagePickup" },
-    { href: "/contact", labelKey: "contact" },
+  // href + disabled artık lib/services.ts'ten (tek kaynak). Sıra: canlılar
+  // (ferry, araç, transfer, vize, sigorta) → "yakında" (tur, organizasyon,
+  // paket) → iletişim (utility).
+  const navItems: { key: ServiceKey; labelKey: string }[] = [
+    { key: "ferry", labelKey: "ferryTickets" },
+    { key: "carRental", labelKey: "carRental" },
+    { key: "transfer", labelKey: "transfer" },
+    { key: "visa", labelKey: "visaSupport" },
+    { key: "insurance", labelKey: "insurance" },
+    { key: "tours", labelKey: "tours" },
+    { key: "events", labelKey: "eventsGroups" },
+    { key: "packagePickup", labelKey: "packagePickup" },
+    { key: "contact", labelKey: "contact" },
   ];
 
   return (
@@ -57,15 +52,32 @@ export function Header() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
-              >
-                {t(item.labelKey)}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const { href, disabled } = SERVICE_ROUTES[item.key];
+              if (disabled) {
+                return (
+                  <span
+                    key={item.key}
+                    aria-disabled="true"
+                    className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed whitespace-nowrap"
+                  >
+                    {t(item.labelKey)}
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {tCommon("comingSoon")}
+                    </span>
+                  </span>
+                );
+              }
+              return (
+                <Link
+                  key={item.key}
+                  href={href}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                >
+                  {t(item.labelKey)}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">
@@ -107,16 +119,33 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col gap-4 mt-8">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {t(item.labelKey)}
-                    </Link>
-                  ))}
+                  {navItems.map((item) => {
+                    const { href, disabled } = SERVICE_ROUTES[item.key];
+                    if (disabled) {
+                      return (
+                        <span
+                          key={item.key}
+                          aria-disabled="true"
+                          className="flex items-center gap-2 text-lg font-medium text-muted-foreground/50 cursor-not-allowed"
+                        >
+                          {t(item.labelKey)}
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {tCommon("comingSoon")}
+                          </span>
+                        </span>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.key}
+                        href={href}
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {t(item.labelKey)}
+                      </Link>
+                    );
+                  })}
                   <div className="mt-2 pt-4 border-t border-border">
                     <LanguageSwitcher variant="compact" />
                   </div>
