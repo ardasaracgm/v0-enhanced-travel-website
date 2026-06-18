@@ -4,15 +4,7 @@ import type { AvailabilityCalendar as CalData } from '@/lib/car-availability'
 import { normalizeCar, dateDiffInDays } from '@/lib/normalize-car'
 import { Link } from '@/i18n/routing'
 import { AvailabilityCalendar } from '@/components/admin/availability-calendar'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { CarFleetTable, type ModelGroup } from '@/components/admin/car-fleet-table'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,20 +67,43 @@ export default async function AdminCarsPage({
     }
   }
 
-  // occupied = total − remaining. remaining motorun otoritesi (her car için döner, :126-129).
-  // İsim = normalizeCar(...).model (brand+model birleşik; NormalizedCar'da displayName YOK, :90).
-  const rows = (rawCars ?? []).map((c: Record<string, unknown>) => {
-    const total = Number(c.quantity ?? 0)
-    const remaining = availability ? (availability[c.id as string] ?? total) : total
-    return {
-      id: c.id as string,
-      name: normalizeCar(c).model,
-      location: (c.location as string) || '—',
-      total,
-      occupied: Math.max(0, total - remaining),
-      remaining,
+  // Plakalar model_key havuzlarına gruplanır (retired hariç). Havuz başlık satırı +
+  // plaka alt-satırları. remaining = havuzdaki müsait aktif plaka sayısı (motordan).
+  const groupMap = new Map<string, ModelGroup>()
+  for (const c of rawCars ?? []) {
+    if ((c.status as string) === 'retired') continue
+    const key = (c.model_key as string) || (c.id as string)
+    let g = groupMap.get(key)
+    if (!g) {
+      g = {
+        modelKey: key,
+        label: normalizeCar(c).model,
+        category: (c.category as string) || '—',
+        plateCount: 0,
+        remaining: 0,
+        plates: [],
+      }
+      groupMap.set(key, g)
     }
-  })
+    const status: 'active' | 'maintenance' =
+      (c.status as string) === 'maintenance' ? 'maintenance' : 'active'
+    const rem = availability ? (availability[c.id as string] ?? 0) : status === 'active' ? 1 : 0
+    g.plates.push({
+      id: c.id as string,
+      plate: (c.plate as string) || '—',
+      model: normalizeCar(c).model,
+      priority: Number(c.priority ?? 1),
+      status,
+      remaining: rem,
+    })
+    g.plateCount += 1
+    g.remaining += rem
+  }
+  const groups = [...groupMap.values()]
+  for (const g of groups) {
+    g.plates.sort((a, b) => a.priority - b.priority || a.plate.localeCompare(b.plate))
+  }
+  groups.sort((a, b) => a.label.localeCompare(b.label))
 
   return (
     <div className="space-y-6">
@@ -202,53 +217,7 @@ export default async function AdminCarsPage({
           <p className="text-sm text-muted-foreground">
             {pickup} → {dropoff} · {days} days
           </p>
-          <div className="rounded-md border bg-background">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Car</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Occupied</TableHead>
-                  <TableHead className="text-right">Remaining</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                      No cars.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium text-foreground">{r.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{r.location}</TableCell>
-                      <TableCell className="text-right">{r.total}</TableCell>
-                      <TableCell className="text-right">{r.occupied}</TableCell>
-                      <TableCell className="text-right">
-                        {r.remaining === 0 ? <Badge variant="destructive">0</Badge> : r.remaining}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {r.remaining > 0 ? (
-                          <Link
-                            href={`/admin/trips/new?carId=${r.id}&pickup=${pickup}&dropoff=${dropoff}`}
-                            className="text-sm font-medium text-primary hover:underline"
-                          >
-                            Book
-                          </Link>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <CarFleetTable groups={groups} pickup={pickup} dropoff={dropoff} />
         </>
       )}
     </div>
