@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing'
+import { SERVICE_ROUTES, type ServiceKey } from '@/lib/services'
 import {
   Ship,
   Compass,
@@ -15,7 +16,21 @@ import { useTranslations } from 'next-intl'
 export function Footer() {
   const t = useTranslations('footer')
   const tHeader = useTranslations('header')
+  const tCommon = useTranslations('common')
   const year = new Date().getFullYear()
+
+  // Servis kolonu — header/grid ile aynı tek kaynak. Etiketler header
+  // namespace'inden (tHeader). Canlı: ferry/araç/transfer/sigorta/vize;
+  // "yakında": tur/paket.
+  const serviceLinks: { key: ServiceKey; labelKey: string }[] = [
+    { key: 'ferry', labelKey: 'ferryTickets' },
+    { key: 'carRental', labelKey: 'carRental' },
+    { key: 'transfer', labelKey: 'transfer' },
+    { key: 'insurance', labelKey: 'insurance' },
+    { key: 'visa', labelKey: 'visaSupport' },
+    { key: 'tours', labelKey: 'tours' },
+    { key: 'packagePickup', labelKey: 'packagePickup' },
+  ]
 
   return (
     <footer className="w-full bg-foreground text-background">
@@ -91,11 +106,31 @@ export function Footer() {
               {t('services')}
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
-              <li><Link href="/ferry" className="hover:text-primary transition-colors">{tHeader('ferryTickets')}</Link></li>
-              <li><Link href="/car-rental" className="hover:text-primary transition-colors">{tHeader('carRental')}</Link></li>
-              <li><Link href="/tours" className="hover:text-primary transition-colors">{tHeader('tours')}</Link></li>
-              <li><Link href="/visa" className="hover:text-primary transition-colors">{tHeader('visaSupport')}</Link></li>
-              <li><Link href="/package-pickup" className="hover:text-primary transition-colors">{tHeader('packagePickup')}</Link></li>
+              {serviceLinks.map((item) => {
+                const { href, disabled } = SERVICE_ROUTES[item.key]
+                if (disabled) {
+                  return (
+                    <li key={item.key}>
+                      <span
+                        aria-disabled="true"
+                        className="flex items-center gap-1.5 text-background/40 cursor-not-allowed"
+                      >
+                        {tHeader(item.labelKey)}
+                        <span className="rounded-full bg-background/10 px-1.5 py-0.5 text-[10px] font-medium text-background/60">
+                          {tCommon('comingSoon')}
+                        </span>
+                      </span>
+                    </li>
+                  )
+                }
+                return (
+                  <li key={item.key}>
+                    <Link href={href} className="hover:text-primary transition-colors">
+                      {tHeader(item.labelKey)}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
