@@ -185,7 +185,7 @@ export default function CarRentalPage() {
         <section className="relative w-full py-20 md:py-32 overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&q=80"
+              src="/cars/koscar.webp"
               alt={t('heroImageAlt')}
               fill
               className="object-cover"
