@@ -4,6 +4,7 @@ export interface NormalizedCar {
   id: string
   type: string
   model: string
+  modelKey?: string      // cars.model_key — havuz anahtarı (seçim/dispatch için)
   price: number          // price per day
   image: string
   features: string[]
@@ -88,6 +89,7 @@ export function normalizeCar(car: CarType | Record<string, unknown>): Normalized
     id: getString('id'),
     type: getString('category', getString('type', 'Car')),
     model: displayName,
+    modelKey: getString('model_key') || undefined,
     price,
     image,
     features: [fuel, `${seats} Seats`, transmission],
@@ -101,4 +103,17 @@ export function normalizeCar(car: CarType | Record<string, unknown>): Normalized
     description: getString('description') || 'Reliable vehicle for exploring Kos Island.',
     available: carRecord.available !== false,
   }
+}
+
+// Plakaları model_key havuzuna indir: kart başına tek model. Temsilci = ilk plaka
+// (fiyat/özellik havuz içinde aynı). Dönen kartın `id` alanı model_key TAŞIR →
+// downstream seçim/dispatch/availability anahtarı model_key olur. model_key'i
+// olmayan satır (fallback filo) kendi id'siyle ayrı kart kalır.
+export function groupByModelKey(cars: NormalizedCar[]): NormalizedCar[] {
+  const seen = new Map<string, NormalizedCar>()
+  for (const c of cars) {
+    const key = c.modelKey || c.id
+    if (!seen.has(key)) seen.set(key, { ...c, id: key })
+  }
+  return [...seen.values()]
 }

@@ -1,16 +1,17 @@
 'use server'
 
 /**
- * Server action: checkCarAvailability
- * ===================================
+ * Server action: checkModelAvailability
+ * =====================================
  * server-only müsaitlik motorunu ('use server' olmayan car-availability.ts,
  * service-role) client'a açan ince köprü — submitBooking ile aynı kalıp.
  * Client yalnız pickupDate + days yollar; envanter kararı server'da.
+ * Dönen Record model_key → o havuzdaki müsait aktif plaka sayısı.
  */
 
-import { getAvailabilityForDates } from '@/lib/car-availability'
+import { getModelAvailability } from '@/lib/car-availability'
 
-export async function checkCarAvailability(
+export async function checkModelAvailability(
   pickupDate: string,
   days: number,
 ): Promise<
@@ -18,10 +19,10 @@ export async function checkCarAvailability(
   | { ok: false; error: string }
 > {
   try {
-    const availability = await getAvailabilityForDates(pickupDate, days)
+    const availability = await getModelAvailability(pickupDate, days)
     return { ok: true, availability }
   } catch (err) {
-    console.error('[checkCarAvailability] failed:', err)
+    console.error('[checkModelAvailability] failed:', err)
     return { ok: false, error: err instanceof Error ? err.message : 'Availability check failed' }
   }
 }

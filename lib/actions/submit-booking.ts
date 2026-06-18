@@ -19,7 +19,7 @@ import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { getFerryById } from '@/lib/ferry-mock-data'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
-import { isAvailable, computeEndDate } from '@/lib/car-availability'
+import { assignPlate, computeEndDate } from '@/lib/car-availability'
 import { type LuggageCounts } from '@/lib/luggage-pricing'
 import {
   resolveFerryItem,
@@ -49,7 +49,7 @@ export interface SubmitBookingInput {
   /** Booking line items — IDs only; server resolves prices */
   items: Array<
     | { type: 'ferry'; leg: 'outbound' | 'return'; ferryId: string; date: string }
-    | { type: 'car_rental'; carId: string; days: number; pickupAt: string; dropoffAt?: string }
+    | { type: 'car_rental'; modelKey: string; days: number; pickupAt: string; dropoffAt?: string }
     | {
         type: 'luggage'
         counts: LuggageCounts
@@ -244,22 +244,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
         const authorizedDays = authorizeCarDays(item)
         const authorizedDropoff = computeEndDate(item.pickupAt, authorizedDays)
 
+        // Müşteri model_key seçer; sunucu havuzdan somut plakayı ATAR: status='active',
+        // tarih çakışması yok, en düşük priority. Boş plaka yok → HARD reject (havuz dolu/yok).
+        const plateId = await assignPlate(item.modelKey, item.pickupAt, authorizedDays)
+        if (!plateId) {
+          return { ok: false, code: 'car_unavailable', error: `Car unavailable: ${item.modelKey}` }
+        }
         const supabase = getSupabaseAdmin()
         const { data } = await supabase
           .from('cars')
           .select('id, brand, model, price_per_day, available')
-          .eq('id', item.carId)
+          .eq('id', plateId)
           .maybeSingle()
         if (data) {
-          // Müsaitlik + hold. "Araç var ama tarih aralığı DOLU" → HARD reject.
-          // ("Araç bulunamadı" = data yok → aşağıdaki soft-skip korunur; ikisi ayrı.)
-          // pickupAt artık şemada zorunlu (YYYY-MM-DD) → guard gerekmez.
-          const free = await isAvailable(item.carId, item.pickupAt, authorizedDays)
-          if (!free) {
-            return { ok: false, code: 'car_unavailable', error: `Car unavailable: ${item.carId}` }
-          }
+          // assignPlate zaten status + müsaitlik garanti etti → ekstra isAvailable gereksiz.
           carBookingDrafts.push({
-            car_id: item.carId,
+            car_id: plateId,
             start_date: item.pickupAt,
             end_date: authorizedDropoff,
           })

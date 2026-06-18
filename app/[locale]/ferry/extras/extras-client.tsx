@@ -46,7 +46,7 @@ import { summarizeItem } from '@/lib/trip-items/summary'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
-import { checkCarAvailability } from '@/lib/actions/car-availability-action'
+import { checkModelAvailability } from '@/lib/actions/car-availability-action'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -63,7 +63,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const { state, dispatch } = useBooking()
   const t = useTranslations('extrasPage')
   const locale = useLocale()
-  const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
+  const [selectedModelKey, setSelectedModelKey] = React.useState<string | null>(null)
   // Kiralama tarihleri — iki date seçici (standalone /car-rental ile aynı desen).
   // Alış ön-dolu (= gidiş feribotu); teslim round-trip'te dönüş, one-way'de boş
   // (zorunlu seçim). days = dateDiff(pickup,dropoff)+1 (inclusive) — aşağıda türer.
@@ -71,7 +71,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const [dropoffDate, setDropoffDate] = React.useState('')
   // Date input min'i için bugün (Atina TZ) — standalone ile aynı.
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
-  // Tarih-bazlı müsaitlik: server'dan { carId: kalan_adet }. null = henüz gelmedi.
+  // Tarih-bazlı müsaitlik: server'dan { model_key: müsait_plaka_sayısı }. null = henüz gelmedi.
   const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
   const [availLoading, setAvailLoading] = React.useState(false)
 
@@ -117,7 +117,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   React.useEffect(() => {
     const existing = selectCarRental(state)
     if (existing) {
-      setSelectedCarId(existing.carId)
+      setSelectedModelKey(existing.modelKey)
       setPickupDate(existing.pickupAt)
       setDropoffDate(existing.dropoffAt)
     } else if (outboundItem) {
@@ -198,7 +198,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     if (!carAvailable || !validRange) return
     let cancelled = false
     setAvailLoading(true)
-    checkCarAvailability(pickupDate, days)
+    checkModelAvailability(pickupDate, days)
       .then(res => {
         if (cancelled) return
         if (res.ok) setAvailability(res.availability)
@@ -210,12 +210,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
   // Seçili araç bu tarihlerde dolduysa seçimi geri al (context'ten de çıkar).
   React.useEffect(() => {
-    if (!availability || !selectedCarId) return
-    if (availability[selectedCarId] === 0) {
-      setSelectedCarId(null)
+    if (!availability || !selectedModelKey) return
+    if (availability[selectedModelKey] === 0) {
+      setSelectedModelKey(null)
       dispatch({ type: 'SET_CAR_RENTAL', payload: null })
     }
-  }, [availability, selectedCarId, dispatch])
+  }, [availability, selectedModelKey, dispatch])
 
   if (!outboundItem || !outbound) return null
 
@@ -239,7 +239,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     dispatch({
       type: 'SET_CAR_RENTAL',
       payload: {
-        carId: car.id,
+        modelKey: car.id, // grouped: car.id === model_key
         model: car.model,
         pricePerDay: car.price,
         days: dayCount,
@@ -260,12 +260,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   }
 
   function handleSelectCar(car: NormalizedCar) {
-    if (selectedCarId === car.id) {
-      setSelectedCarId(null)
+    if (selectedModelKey === car.id) {
+      setSelectedModelKey(null)
       dispatch({ type: 'SET_CAR_RENTAL', payload: null })
       return
     }
-    setSelectedCarId(car.id)
+    setSelectedModelKey(car.id)
     // Geçerli aralık yoksa (ör. one-way'de teslim seçilmemiş): yalnız vurgula,
     // sepete ekleme (forced choice). Tarih seçilince reconcileCar ekler.
     if (validRange) syncCar(car.id, pickupDate, dropoffDate)
@@ -273,15 +273,15 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
   function handlePickupChange(v: string) {
     setPickupDate(v)
-    reconcileCar(selectedCarId, v, dropoffDate)
+    reconcileCar(selectedModelKey, v, dropoffDate)
   }
   function handleDropoffChange(v: string) {
     setDropoffDate(v)
-    reconcileCar(selectedCarId, pickupDate, v)
+    reconcileCar(selectedModelKey, pickupDate, v)
   }
 
   function handleContinue() {
-    if (selectedCarId != null && !dayChosen) return  // guard: must pick valid dates
+    if (selectedModelKey != null && !dayChosen) return  // guard: must pick valid dates
     router.push('/ferry/passenger-details')
   }
 
@@ -323,7 +323,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     dispatch({ type: 'REMOVE_LUGGAGE' })
   }
 
-  const selectedCar = cars.find(c => c.id === selectedCarId) ?? null
+  const selectedCar = cars.find(c => c.id === selectedModelKey) ?? null
 
   // Fiyat formatı — kart-içi tutarlı 2 ondalık, locale ayraçlı (TR €37,50 / €28,00).
   const fmtEur = (n: number) =>
@@ -719,7 +719,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {/* Car cards */}
                 <div className={`grid sm:grid-cols-2 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
                   {cars.map((car, index) => {
-                    const isSelected = selectedCarId === car.id
+                    const isSelected = selectedModelKey === car.id
                     const lineTotal = car.price * days
                     const qty = availability?.[car.id]
                     const isUnavailable = availability != null && qty === 0
@@ -915,12 +915,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <Button
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                         onClick={handleContinue}
-                        disabled={selectedCarId != null && !dayChosen}
+                        disabled={selectedModelKey != null && !dayChosen}
                       >
                         {t('continueToPassengers')}
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
-                      {selectedCarId != null && !dayChosen && (
+                      {selectedModelKey != null && !dayChosen && (
                         <p className="text-sm text-destructive text-center">{t('selectDayWarning')}</p>
                       )}
 

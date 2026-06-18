@@ -60,7 +60,7 @@ const ferrySchema = z.object({
 // dropoffAt opsiyonel kalır (backward-compat) ama extras + standalone hep gönderir.
 const carSchema = z.object({
   type:      z.literal('car_rental'),
-  carId:     z.string().min(1),
+  modelKey:  z.string().min(1),
   days:      z.number().int().positive().max(90),
   pickupAt:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'pickupAt must be YYYY-MM-DD'),
   dropoffAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dropoffAt must be YYYY-MM-DD').optional(),

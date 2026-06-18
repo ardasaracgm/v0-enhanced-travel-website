@@ -67,7 +67,7 @@ export interface FerrySubmitItem {
 
 export interface CarSubmitItem {
   type: 'car_rental'
-  carId: string
+  modelKey: string
   days: number
   pickupAt?: string
   dropoffAt?: string

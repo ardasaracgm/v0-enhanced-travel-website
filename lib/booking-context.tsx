@@ -37,7 +37,7 @@ export interface Passenger {
 }
 
 export interface CarRentalSelection {
-  carId: string
+  modelKey: string
   model: string
   brand?: string
   pricePerDay: number
@@ -67,7 +67,7 @@ export interface FerryBookingItem {
 
 export interface CarRentalBookingItem {
   type: 'car_rental'
-  carId: string
+  modelKey: string
   model: string
   brand?: string
   pricePerDay: number
@@ -269,7 +269,7 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       const carItem: CarRentalBookingItem = {
         type: 'car_rental',
-        carId: action.payload.carId,
+        modelKey: action.payload.modelKey,
         model: action.payload.model,
         brand: action.payload.brand,
         pricePerDay: action.payload.pricePerDay,
@@ -504,7 +504,7 @@ export function selectCarRental(state: BookingState): CarRentalSelection | null 
   )
   if (!item) return null
   return {
-    carId: item.carId,
+    modelKey: item.modelKey,
     model: item.model,
     brand: item.brand,
     pricePerDay: item.pricePerDay,

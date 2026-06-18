@@ -149,7 +149,7 @@ export default function CheckoutPage() {
             return { type: 'ferry' as const, leg: item.leg, ferryId: item.ferryId, date: item.date }
           }
           if (item.type === 'car_rental') {
-            return { type: 'car_rental' as const, carId: item.carId, days: item.days,
+            return { type: 'car_rental' as const, modelKey: item.modelKey, days: item.days,
                      pickupAt: item.pickupAt, dropoffAt: item.dropoffAt }
           }
           if (item.type === 'luggage') {

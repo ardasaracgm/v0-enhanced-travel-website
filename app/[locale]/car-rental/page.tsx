@@ -33,9 +33,9 @@ import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { getAvailableCars } from '@/lib/supabase'
-import { normalizeCar, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
+import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { useBooking } from '@/lib/booking-context'
-import { checkCarAvailability } from '@/lib/actions/car-availability-action'
+import { checkModelAvailability } from '@/lib/actions/car-availability-action'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -124,7 +124,7 @@ export default function CarRentalPage() {
     if (!validRange) { setSearchError(t('selectDatesFirst')); return }
     setSearchError(null)
     setAvailLoading(true)
-    const res = await checkCarAvailability(pickupDate, rentalDays)
+    const res = await checkModelAvailability(pickupDate, rentalDays)
     setAvailability(res.ok ? res.availability : null)
     setAvailLoading(false)
   }
@@ -136,7 +136,7 @@ export default function CarRentalPage() {
     dispatch({
       type: 'SET_CAR_RENTAL',
       payload: {
-        carId: car.id,
+        modelKey: car.id, // grouped: car.id === model_key
         model: car.model,
         pricePerDay: car.price,
         days: rentalDays,
@@ -167,8 +167,8 @@ export default function CarRentalPage() {
         setUsingFallback(true)
         setFallbackReason('No cars found in database. Showing default fleet.')
       } else {
-        // Normalize all cars from Supabase
-        setCars(data.map(normalizeCar))
+        // Normalize + model_key havuzuna grupla (kart başına tek model).
+        setCars(groupByModelKey(data.map(normalizeCar)))
       }
       setLoading(false)
     }
