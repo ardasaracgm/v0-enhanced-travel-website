@@ -55,7 +55,8 @@ export function AvailabilityCalendar({
             cars.map((car) => (
               <tr key={car.id} className="border-t">
                 <td className="sticky left-0 z-10 whitespace-nowrap bg-background px-3 py-2 font-medium text-foreground">
-                  {car.name} <span className="text-muted-foreground">({car.quantity})</span>
+                  {car.name}
+                  {car.plate ? <span className="text-muted-foreground"> — {car.plate}</span> : null}
                 </td>
                 {car.remainingByDay.map((rem, i) => {
                   const d = days[i]

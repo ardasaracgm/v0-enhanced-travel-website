@@ -221,6 +221,7 @@ export async function assignPlate(
 export interface CarCalendarRow {
   id: string
   name: string
+  plate?: string   // plaka — takvim satır etiketinde "Model — PLAKA"
   quantity: number // plaka kapasitesi: 1 (active) / 0 (maintenance). quantity kolonu DEĞİL.
   remainingByDay: number[] // days[] ile aynı sıra; remaining = capacity − used
 }
@@ -283,7 +284,7 @@ export async function getAvailabilityCalendar(
     const capacity = c.status === 'active' ? 1 : 0
     const used = usedByCar.get(c.id as string)
     const remainingByDay = days.map((_, i) => Math.max(0, capacity - (used ? used[i] : 0)))
-    return { id: c.id as string, name: normalizeCar(c).model, quantity: capacity, remainingByDay }
+    return { id: c.id as string, name: normalizeCar(c).model, plate: (c.plate as string) || undefined, quantity: capacity, remainingByDay }
   })
 
   return { days, cars: rows }
