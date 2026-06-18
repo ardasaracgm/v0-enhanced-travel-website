@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import { BookingStepper } from '@/components/booking/stepper'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
@@ -279,17 +280,7 @@ export default function CheckoutPage() {
         </section>
 
         {/* Progress Steps */}
-        <section className="w-full py-4 border-b border-border/50 bg-card">
-          <div className="container px-4 md:px-6">
-            <div className="flex items-center justify-center gap-4 md:gap-8 text-xs md:text-sm">
-              <Step done label={outbound ? 'Select Ferry' : 'Select Car'} />
-              <Divider />
-              <Step done label={outbound ? 'Passengers' : 'Driver'} />
-              <Divider />
-              <Step current label="Confirm" />
-            </div>
-          </div>
-        </section>
+        <BookingStepper flow={carOnly ? 'car' : 'ferry'} current="payment" />
 
         {/* Checkout Content */}
         <section className="w-full py-8 md:py-12">
@@ -589,28 +580,6 @@ export default function CheckoutPage() {
 // ============================================================
 // Subcomponents
 // ============================================================
-
-function Step({ done, current, label }: { done?: boolean; current?: boolean; label: string }) {
-  const circleClass = done
-    ? 'bg-primary/20 text-primary'
-    : current
-      ? 'bg-primary text-primary-foreground'
-      : 'bg-muted text-muted-foreground'
-  const labelClass = done || current ? 'text-primary font-medium' : 'text-muted-foreground'
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${circleClass}`}>
-        {done ? <CheckCircle className="h-5 w-5" /> : current ? '3' : ''}
-      </div>
-      <span className={`text-sm ${labelClass}`}>{label}</span>
-    </div>
-  )
-}
-
-function Divider() {
-  return <div className="w-8 md:w-12 h-0.5 bg-primary" />
-}
 
 function TrustItem({
   icon: Icon,

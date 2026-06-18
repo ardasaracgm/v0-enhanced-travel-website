@@ -1,4 +1,12 @@
 {
+  "steps": {
+    "selectFerry": "Select Ferry",
+    "extras": "Extras",
+    "passengers": "Passengers",
+    "payment": "Payment",
+    "selectCar": "Select Car",
+    "driver": "Driver"
+  },
   "insurance": {
     "heroTitle": "Travel Insurance",
     "heroSubtitle": "Approved Schengen-compliant travel insurance for your trip — in a few minutes.",

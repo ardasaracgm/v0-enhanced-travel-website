@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+import { BookingStepper } from '@/components/booking/stepper'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
@@ -148,39 +149,7 @@ export default function FerryResultsPage() {
         </section>
 
         {/* Progress Steps */}
-        <section className="w-full py-4 border-b border-border/50 bg-card">
-          <div className="container px-4 md:px-6">
-            <div className="flex items-center justify-center gap-6 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                  1
-                </div>
-                <span className="text-sm font-medium text-primary">{t('steps.selectFerry')}</span>
-              </div>
-              <div className="w-10 h-0.5 bg-border" />
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                  2
-                </div>
-                <span className="text-sm text-muted-foreground">{t('steps.extras')}</span>
-              </div>
-              <div className="w-10 h-0.5 bg-border" />
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                  3
-                </div>
-                <span className="text-sm text-muted-foreground">{t('steps.passengers')}</span>
-              </div>
-              <div className="w-10 h-0.5 bg-border" />
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                  4
-                </div>
-                <span className="text-sm text-muted-foreground">{t('steps.payment')}</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        <BookingStepper flow="ferry" current="selectFerry" />
 
         {/* Results */}
         <section className="w-full py-8 md:py-12">

@@ -1,4 +1,12 @@
 {
+  "steps": {
+    "selectFerry": "Feribot Seçimi",
+    "extras": "Ekstralar",
+    "passengers": "Yolcular",
+    "payment": "Ödeme",
+    "selectCar": "Araç Seçimi",
+    "driver": "Sürücü"
+  },
   "insurance": {
     "heroTitle": "Seyahat Sigortası",
     "heroSubtitle": "Schengen vizesi ve seyahatiniz için onaylı seyahat sigortası — birkaç dakikada.",
