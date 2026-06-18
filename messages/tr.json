@@ -107,6 +107,7 @@
     "tours": "Turlar",
     "visaSupport": "Vize Desteği",
     "insurance": "Seyahat Sigortası",
+    "transfer": "Transfer",
     "eventsGroups": "Organizasyonlar",
     "packagePickup": "Paket Teslim",
     "contact": "İletişim",
@@ -274,7 +275,11 @@
     "s5Title": "Vize Desteği",
     "s5Desc": "Schengen vize yardımı",
     "s6Title": "Paket Teslim",
-    "s6Desc": "Kos Limanı'nda güvenli teslimat adresi ve depolama"
+    "s6Desc": "Kos Limanı'nda güvenli teslimat adresi ve depolama",
+    "s7Title": "Seyahat Sigortası",
+    "s7Desc": "Schengen & seyahat sigortası — anında poliçe",
+    "s8Title": "VIP Transfer",
+    "s8Desc": "Havalimanı ve liman özel transfer hizmeti"
   },
 
   "carFleet": {

@@ -107,6 +107,7 @@
     "tours": "Tours",
     "visaSupport": "Visa Support",
     "insurance": "Travel Insurance",
+    "transfer": "Transfer",
     "eventsGroups": "Events & Groups",
     "packagePickup": "Package Pickup",
     "contact": "Contact",
@@ -274,7 +275,11 @@
     "s5Title": "Visa Support",
     "s5Desc": "Schengen visa assistance",
     "s6Title": "Package Pickup",
-    "s6Desc": "Secure delivery address and storage at Kos Port"
+    "s6Desc": "Secure delivery address and storage at Kos Port",
+    "s7Title": "Travel Insurance",
+    "s7Desc": "Schengen & travel insurance — instant policy",
+    "s8Title": "VIP Transfer",
+    "s8Desc": "Private airport & port transfer service"
   },
 
   "carFleet": {
