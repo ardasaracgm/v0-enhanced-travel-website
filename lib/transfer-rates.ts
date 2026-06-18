@@ -11,7 +11,7 @@
 //
 // Fiyatlar CENTS (EUR). Kaynak: docs/handover/FERİBOT TRANSFER.xlsx —
 // "BODRUM TRANSFER FİYAT LİSTESİ" (1 May 2026–15 Eki 2026; KDV HARİÇ).
-// Araç kapasiteleri sayfada yok — operasyonel değer (Vito 8, Sprinter 16).
+// Araç kapasiteleri sayfada yok — operasyonel değer (Vito 7, Sprinter 16).
 // ============================================================
 
 export const TRANSFER_REGIONS = {
@@ -19,7 +19,7 @@ export const TRANSFER_REGIONS = {
     operator: 'Milas Transfer',
     pickupLabel: 'Bodrum Merkez',
     vehicles: [
-      { id: 'vito',     label: 'Mercedes Vito (VIP)', capacity: 8 },
+      { id: 'vito',     label: 'Mercedes Vito (VIP)', capacity: 7 },
       { id: 'sprinter', label: 'Mercedes Sprinter',   capacity: 16 },
     ],
     routes: [
