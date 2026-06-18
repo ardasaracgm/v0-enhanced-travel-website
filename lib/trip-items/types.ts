@@ -134,8 +134,11 @@ export interface CarPriceRow {
 export interface CarResolveCtx {
   item: CarSubmitItem
   car: CarPriceRow
-  /** Server-authorized rental days (recomputed from ferry legs upstream). */
+  /** Server-authorized rental days (derived from pickup/dropoff range upstream). */
   authorizedDays: number
+  /** Server-authorized drop-off (pickup + authorizedDays−1) — single source for
+   *  both the car_bookings hold and the item metadata.dropoff_at. */
+  authorizedDropoff: string
   passengerCount: number
 }
 

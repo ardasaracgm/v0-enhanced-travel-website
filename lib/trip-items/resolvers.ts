@@ -56,14 +56,16 @@ export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
 }
 
 export function resolveCarRentalItem(ctx: CarResolveCtx): ResolvedTripItem {
-  const { item, car, authorizedDays, passengerCount } = ctx
+  const { item, car, authorizedDays, authorizedDropoff, passengerCount } = ctx
   const carName = [car.brand, car.model].filter(Boolean).join(' ') || 'Car rental'
   const pricePerDay = Number(car.price_per_day ?? 0)
+  // Drop-off is the SERVER-authorized value (not raw client item.dropoffAt), so the
+  // hold (car_bookings.end_date) and metadata.dropoff_at share one source of truth.
   return {
     type: 'car_rental',
     title: `${carName} (${authorizedDays} ${authorizedDays === 1 ? 'day' : 'days'})`,
     scheduledAt: item.pickupAt ?? null,
-    endsAt: item.dropoffAt ?? null,
+    endsAt: authorizedDropoff,
     passengerCount,
     priceAmount: pricePerDay * authorizedDays,
     priceCurrency: 'EUR',
@@ -73,7 +75,7 @@ export function resolveCarRentalItem(ctx: CarResolveCtx): ResolvedTripItem {
       days: authorizedDays,
       per_day_price: pricePerDay,
       pickup_at: item.pickupAt,
-      dropoff_at: item.dropoffAt,
+      dropoff_at: authorizedDropoff,
     },
   }
 }

@@ -64,9 +64,10 @@ const FIXTURES: Fixture[] = [
     name: 'car/one-way-4days',
     type: 'car_rental',
     ctx: {
-      item: { type: 'car_rental', carId: 'car-test-1', days: 4, pickupAt: '2026-07-10', dropoffAt: '2026-07-14' },
+      item: { type: 'car_rental', carId: 'car-test-1', days: 4, pickupAt: '2026-07-10', dropoffAt: '2026-07-13' },
       car: { id: 'car-test-1', brand: 'Fiat', model: 'Panda', price_per_day: 30 },
       authorizedDays: 4,
+      authorizedDropoff: '2026-07-13',
       passengerCount: 2,
     },
   },
@@ -74,9 +75,10 @@ const FIXTURES: Fixture[] = [
     name: 'car/round-trip-7days',
     type: 'car_rental',
     ctx: {
-      item: { type: 'car_rental', carId: 'car-test-1', days: 1, pickupAt: '2026-07-10', dropoffAt: '2026-07-17' },
+      item: { type: 'car_rental', carId: 'car-test-1', days: 1, pickupAt: '2026-07-10', dropoffAt: '2026-07-16' },
       car: { id: 'car-test-1', brand: 'Fiat', model: 'Panda', price_per_day: 30 },
       authorizedDays: 7,
+      authorizedDropoff: '2026-07-16',
       passengerCount: 2,
     },
   },

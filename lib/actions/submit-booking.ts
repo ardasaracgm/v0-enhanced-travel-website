@@ -195,11 +195,20 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   const carInput = input.items.find(
     (i): i is Extract<typeof i, { type: 'car_rental' }> => i.type === 'car_rental'
   )
-  // Authoritative drop-off from required pickupAt + days — the client dropoffAt
-  // is schema-optional (registry.ts), so deriving here keeps the licence >=
-  // drop-off rule from silently skipping. computeEndDate = pickup + (days-1).
+  // Otoriter kiralama günü: tarih aralığından türer (inclusive: dropoff−pickup+1).
+  // dropoffAt şemada opsiyonel (registry.ts) → yoksa eski item'lar için client days'e
+  // düşülür (backward-compat). Taban 1, tavan 90 (absürt aralık abuse guard — Zod
+  // .max(90) yalnız client days alanına uygulanıyordu, türetilmiş güne değil).
+  // Ferry penceresi artık advisory: clamp YOK — uzun konaklama bilinçli, fiyatlanır.
+  const authorizeCarDays = (it: { pickupAt: string; dropoffAt?: string; days: number }): number => {
+    const derived = it.dropoffAt ? dateDiffInDays(it.pickupAt, it.dropoffAt) + 1 : it.days
+    return Math.min(90, Math.max(1, derived))
+  }
+  // Authoritative drop-off from pickup + authorized days — feeds the driver licence
+  // expiry floor (makeDriverSchema) and the car_bookings hold. computeEndDate =
+  // pickup + (days-1), so a same-source dropoff for both metadata and hold.
   const carDropoff = carInput
-    ? computeEndDate(carInput.pickupAt, Math.max(1, carInput.days))
+    ? computeEndDate(carInput.pickupAt, authorizeCarDays(carInput))
     : undefined
   const passengersResult = hasFerry
     ? z.array(makePassengerSchema({ outboundDate, returnDate })).min(1).safeParse(input.passengers)
@@ -229,23 +238,11 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount }))
     } else if (item.type === 'car_rental') {
       try {
-        // Round-trip: the island stay (outbound→return, inclusive) is the CEILING,
-        // not a fixed value — the customer may rent for fewer days than they're on
-        // the island. Clamp the client-chosen days to [1, ferryWindow]. One-way has
-        // no return leg, so trust the Zod-validated client value (Math.max floor).
-        const ferryItems = input.items.filter(
-          (i): i is Extract<typeof i, { type: 'ferry' }> => i.type === 'ferry'
-        )
-        const outboundFerryItem = ferryItems.find(i => i.leg === 'outbound')
-        const returnFerryItem   = ferryItems.find(i => i.leg === 'return')
-        const ferryWindow =
-          outboundFerryItem && returnFerryItem
-            ? Math.max(1, dateDiffInDays(outboundFerryItem.date, returnFerryItem.date) + 1)
-            : null
-        const authorizedDays =
-          ferryWindow != null
-            ? Math.min(Math.max(1, item.days), ferryWindow)
-            : Math.max(1, item.days)
+        // Gün + teslim tarihi TEK kaynaktan: pickup/dropoff tarih aralığından türer
+        // (authorizeCarDays). Ferry penceresi advisory — clamp yok; uzun konaklama
+        // izinli ve fiyatlanır. authorizedDropoff hem hold hem metadata için aynı.
+        const authorizedDays = authorizeCarDays(item)
+        const authorizedDropoff = computeEndDate(item.pickupAt, authorizedDays)
 
         const supabase = getSupabaseAdmin()
         const { data } = await supabase
@@ -264,13 +261,14 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           carBookingDrafts.push({
             car_id: item.carId,
             start_date: item.pickupAt,
-            end_date: computeEndDate(item.pickupAt, authorizedDays),
+            end_date: authorizedDropoff,
           })
           // I/O (cars fetch + authorizedDays) stays here; pure assembly in resolver.
           const carItem = resolveCarRentalItem({
             item,
             car: data,
             authorizedDays,
+            authorizedDropoff,
             passengerCount: input.passengerCount,
           })
           // Young-driver flag → jsonb metadata. No schema change, no price effect.

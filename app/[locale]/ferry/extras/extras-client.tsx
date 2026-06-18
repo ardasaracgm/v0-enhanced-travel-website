@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -41,7 +42,7 @@ import {
   type TransferBookingItem,
 } from '@/lib/booking-context'
 import { dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
-import { summarizeItem, addDaysISO } from '@/lib/trip-items/summary'
+import { summarizeItem } from '@/lib/trip-items/summary'
 import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
@@ -63,11 +64,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const t = useTranslations('extrasPage')
   const locale = useLocale()
   const [selectedCarId, setSelectedCarId] = React.useState<string | null>(null)
-  // One-way: no default — user must pick (forced choice). null = not yet chosen.
-  const [oneWayDays, setOneWayDays] = React.useState<number | null>(null)
-  // Round-trip: default = full island stay (ferry window); user may lower it.
-  // null = use the window default; a number = explicit user choice.
-  const [roundTripDays, setRoundTripDays] = React.useState<number | null>(null)
+  // Kiralama tarihleri — iki date seçici (standalone /car-rental ile aynı desen).
+  // Alış ön-dolu (= gidiş feribotu); teslim round-trip'te dönüş, one-way'de boş
+  // (zorunlu seçim). days = dateDiff(pickup,dropoff)+1 (inclusive) — aşağıda türer.
+  const [pickupDate, setPickupDate] = React.useState('')
+  const [dropoffDate, setDropoffDate] = React.useState('')
+  // Date input min'i için bugün (Atina TZ) — standalone ile aynı.
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
   // Tarih-bazlı müsaitlik: server'dan { carId: kalan_adet }. null = henüz gelmedi.
   const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
   const [availLoading, setAvailLoading] = React.useState(false)
@@ -110,16 +113,20 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     }
   }, [outboundItem, router])
 
-  // Hydrate selection from context on mount (handles back-navigation)
+  // Hydrate selection + kiralama tarihlerini context'ten kur ya da varsayılan ver (mount).
   React.useEffect(() => {
     const existing = selectCarRental(state)
     if (existing) {
       setSelectedCarId(existing.carId)
-      if (state.searchParams.tripType !== 'round-trip') {
-        setOneWayDays(Math.max(1, existing.days))
-      } else {
-        setRoundTripDays(Math.max(1, existing.days))
-      }
+      setPickupDate(existing.pickupAt)
+      setDropoffDate(existing.dropoffAt)
+    } else if (outboundItem) {
+      // Alış = gidiş feribotu (mantıklı başlangıç). Round-trip: teslim = dönüş
+      // (tam pencere ön-dolu). One-way: teslim boş → zorunlu seçim (forced choice).
+      setPickupDate(outboundItem.date)
+      setDropoffDate(
+        state.searchParams.tripType === 'round-trip' ? (returnItem?.date ?? '') : ''
+      )
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -169,31 +176,29 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   }, [carAvailable, luggageAvailable, transferAvailable, dispatch])
 
   const isRoundTrip = state.searchParams.tripType === 'round-trip'
-  // outboundItem null iken de türetilebilsin diye guard'dan önce; null'da 1
-  // (zaten aşağıda return null). round-trip = takvim günü dahil; one-way = seçici.
-  // Ferry window = island stay (outbound→return, inclusive). This is the CEILING
-  // for a round-trip car rental; the customer may rent for fewer days.
-  const ferryWindow = !outboundItem
-    ? 1
-    : Math.max(1, dateDiffInDays(outboundItem.date, returnItem?.date ?? outboundItem.date) + 1)
 
-  const days = !outboundItem
-    ? 1
-    : isRoundTrip
-      // Default = full window; clamp so a stale choice can't exceed a shrunk window.
-      ? Math.min(roundTripDays ?? ferryWindow, ferryWindow)
-      : Math.max(1, oneWayDays ?? 1)
+  // Kiralama günü tarihlerden türer (inclusive): days = dateDiff(pickup,dropoff)+1.
+  // İki tarih de seçili ve teslim ≥ alış ise geçerli; aksi halde araç eklenemez
+  // (one-way'de teslim boş → forced choice). Gün/fiyat sunucuda yeniden hesaplanır.
+  const validRange =
+    !!pickupDate && !!dropoffDate && dateDiffInDays(pickupDate, dropoffDate) >= 0
+  const days = validRange ? dateDiffInDays(pickupDate, dropoffDate) + 1 : 0
+  const dayChosen = validRange
 
-  // One-way needs an explicit day choice before the car can be added / user proceeds.
-  const dayChosen = isRoundTrip || oneWayDays != null
+  // Ferry penceresi ÖNERİ (advisory): alış < gidiş veya teslim > dönüş ise yumuşak
+  // uyarı; engelleme YOK (uzun konaklama bilinçli olabilir, sunucu da zorlamaz).
+  const outsideWindow =
+    !!outboundItem &&
+    ((!!pickupDate && pickupDate < outboundItem.date) ||
+      (!!dropoffDate && !!returnItem && dropoffDate > returnItem.date))
 
   // Pickup tarihi / gün sayısı değişince müsaitliği server'dan çek. Race koruması:
   // hızlı gün değişiminde eski cevap yenisini ezmesin (cancelled flag).
   React.useEffect(() => {
-    if (!outboundItem || !carAvailable) return
+    if (!carAvailable || !validRange) return
     let cancelled = false
     setAvailLoading(true)
-    checkCarAvailability(outboundItem.date, days)
+    checkCarAvailability(pickupDate, days)
       .then(res => {
         if (cancelled) return
         if (res.ok) setAvailability(res.availability)
@@ -201,7 +206,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
       .finally(() => { if (!cancelled) setAvailLoading(false) })
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [outboundItem?.date, days, carAvailable])
+  }, [pickupDate, days, carAvailable, validRange])
 
   // Seçili araç bu tarihlerde dolduysa seçimi geri al (context'ten de çıkar).
   React.useEffect(() => {
@@ -224,7 +229,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         .join(', ')
     : ''
 
-  function dispatchCarSelection(car: NormalizedCar, dayCount: number) {
+  // Seçili araç + geçerli tarih aralığı → sepete upsert. pickupAt/dropoffAt gerçek
+  // seçili tarihler; days = dateDiff+1 (inclusive). Sunucu fiyatı tarihten yeniden
+  // hesaplar (client days display-only). Geçersiz aralıkta no-op.
+  function syncCar(carId: string, pAt: string, dAt: string) {
+    const car = cars.find(c => c.id === carId)
+    if (!car || !pAt || !dAt || dateDiffInDays(pAt, dAt) < 0) return
+    const dayCount = dateDiffInDays(pAt, dAt) + 1
     dispatch({
       type: 'SET_CAR_RENTAL',
       payload: {
@@ -234,12 +245,18 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         days: dayCount,
         pickupLocation: DEFAULT_PICKUP_LOCATION,
         dropoffLocation: DEFAULT_PICKUP_LOCATION,
-        pickupAt: outboundItem!.date,
-        // Drop-off'u inclusive gün sayısından türet → round-trip'te = return.date
-        // (değişmez), tek-yönde gerçek teslim → DB doğru. days/fiyat etkilenmez.
-        dropoffAt: addDaysISO(outboundItem!.date, dayCount - 1),
+        pickupAt: pAt,
+        dropoffAt: dAt,
       },
     })
+  }
+
+  // Tarih değişiminde seçili aracı sepetle uyumla: geçerli → upsert, geçersiz →
+  // sepetten çıkar (vurgu kalır; tarih tekrar geçerli olunca yeniden eklenir).
+  function reconcileCar(carId: string | null, pAt: string, dAt: string) {
+    if (!carId) return
+    if (!!pAt && !!dAt && dateDiffInDays(pAt, dAt) >= 0) syncCar(carId, pAt, dAt)
+    else dispatch({ type: 'SET_CAR_RENTAL', payload: null })
   }
 
   function handleSelectCar(car: NormalizedCar) {
@@ -249,21 +266,22 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
       return
     }
     setSelectedCarId(car.id)
-    // One-way w/o a chosen day: highlight only, don't add to cart yet (forced choice).
-    if (dayChosen) dispatchCarSelection(car, days)
+    // Geçerli aralık yoksa (ör. one-way'de teslim seçilmemiş): yalnız vurgula,
+    // sepete ekleme (forced choice). Tarih seçilince reconcileCar ekler.
+    if (validRange) syncCar(car.id, pickupDate, dropoffDate)
   }
 
-  function handleDaysChange(newDays: number) {
-    if (isRoundTrip) setRoundTripDays(newDays)
-    else setOneWayDays(newDays)
-    if (selectedCarId) {
-      const car = cars.find(c => c.id === selectedCarId)
-      if (car) dispatchCarSelection(car, newDays)
-    }
+  function handlePickupChange(v: string) {
+    setPickupDate(v)
+    reconcileCar(selectedCarId, v, dropoffDate)
+  }
+  function handleDropoffChange(v: string) {
+    setDropoffDate(v)
+    reconcileCar(selectedCarId, pickupDate, v)
   }
 
   function handleContinue() {
-    if (selectedCarId != null && !dayChosen) return  // guard: must pick rental days
+    if (selectedCarId != null && !dayChosen) return  // guard: must pick valid dates
     router.push('/ferry/passenger-details')
   }
 
@@ -635,53 +653,45 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   <p className="text-xs text-muted-foreground mt-2">{t('dailyRateNotice')}</p>
                 </div>
 
-                {/* One-way day selector */}
-                {!isRoundTrip && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-foreground">{t('howManyDays')}</span>
-                    <Select
-                      value={oneWayDays != null ? String(oneWayDays) : undefined}
-                      onValueChange={v => handleDaysChange(Number(v))}
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue placeholder={t('selectDays')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 14 }, (_, i) => i + 1).map(n => (
-                          <SelectItem key={n} value={String(n)}>
-                            {t('dayCount', { count: n })}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Kiralama tarihleri — iki date seçici (standalone deseni). Alış
+                    ön-dolu (gidiş feribotu), teslim seçilir. Gün = dateDiff+1.
+                    Ferry penceresi dışına çıkınca yumuşak uyarı (engel yok). */}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-end gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10 w-44"
+                        min={todayAthens}
+                        max={dropoffDate || undefined}
+                        value={pickupDate}
+                        onChange={e => handlePickupChange(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">{t('dropoffDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10 w-44"
+                        min={pickupDate || todayAthens}
+                        value={dropoffDate}
+                        onChange={e => handleDropoffChange(e.target.value)}
+                      />
+                    </div>
+                    {validRange && (
+                      <span className="text-sm text-muted-foreground pb-2.5">
+                        {t('dayCount', { count: days })}
+                      </span>
+                    )}
                   </div>
-                )}
-
-                {/* Round-trip: selectable days, capped at the ferry window (island
-                    stay). Default = full window; user may rent for fewer days. */}
-                {isRoundTrip && returnItem && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-sm font-medium text-foreground">{t('howManyDays')}</span>
-                    <Select
-                      value={String(days)}
-                      onValueChange={v => handleDaysChange(Number(v))}
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue placeholder={t('selectDays')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: ferryWindow }, (_, i) => i + 1).map(n => (
-                          <SelectItem key={n} value={String(n)}>
-                            {t('dayCount', { count: n })}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <span className="text-xs text-muted-foreground">
-                      ({outboundItem.date} → {returnItem.date})
-                    </span>
-                  </div>
-                )}
+                  {outsideWindow && returnItem && (
+                    <p className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      {t('windowWarning', { from: outboundItem.date, to: returnItem.date })}
+                    </p>
+                  )}
+                </div>
 
                 {/* Empty state */}
                 {cars.length === 0 && (
