@@ -48,17 +48,18 @@ ALTER TABLE public.cars
 --    price_per_day is the base daily rate (date-based overrides are a later layer).
 --    Only the Celerio pool has >1 plate, so priority is meaningful there; the two
 --    Pandas are SEPARATE cards (own slug + own price). Both Celerio plates = €60.
---    specs (seats/fuel/transmission) are best-effort; flag for ops review.
+--    specs (seats/transmission) are best-effort; flag for ops review. (fuel_type
+--    kolonu canlı şemada yok → seed'den çıkarıldı; normalizeCar fallback'e düşer.)
 INSERT INTO public.cars
-  (brand,     model,               model_key,          category,   plate,      priority, status,   available, quantity, location, source,  price_per_day, seats, fuel_type,  transmission)
+  (brand,     model,               model_key,          category,   plate,      priority, status,   available, quantity, location, source,  price_per_day, seats, transmission)
 VALUES
-  ('Fiat',    'Topolino Microcar', 'fiat-topolino',    'microcar', 'ΑΗΕ0435',  1,        'active', true,      1,        'kos',    'owned', 45,            2,     'Electric', 'Automatic'),
-  ('Fiat',    'Panda Cross',       'fiat-panda-cross', 'compact',  'ΧΗΟ4041',  1,        'active', true,      1,        'kos',    'owned', 50,            5,     'Petrol',   'Manual'),
-  ('Fiat',    'Panda City Life',   'fiat-panda-city',  'compact',  'ΧΖΡ1233',  1,        'active', true,      1,        'kos',    'owned', 55,            5,     'Petrol',   'Manual'),
-  ('Opel',    'Corsa Edition Pack','opel-corsa',       '5-seater', 'ΧΡΙ5837',  1,        'active', true,      1,        'kos',    'owned', 60,            5,     'Petrol',   'Manual'),
-  ('Suzuki',  'Celerio',           'suzuki-celerio',   '5-seater', 'KXZ3211',  1,        'active', true,      1,        'kos',    'owned', 60,            5,     'Petrol',   'Manual'),
-  ('Suzuki',  'Celerio',           'suzuki-celerio',   '5-seater', 'KXZ3212',  2,        'active', true,      1,        'kos',    'owned', 60,            5,     'Petrol',   'Manual'),
-  ('Hyundai', 'Bayon Premium',     'hyundai-bayon',    'suv',      'ΧΡΕ2076',  1,        'active', true,      1,        'kos',    'owned', 70,            5,     'Petrol',   'Manual')
+  ('Fiat',    'Topolino Microcar', 'fiat-topolino',    'microcar', 'ΑΗΕ0435',  1,        'active', true,      1,        'kos',    'owned', 45,            2,     'Automatic'),
+  ('Fiat',    'Panda Cross',       'fiat-panda-cross', 'compact',  'ΧΗΟ4041',  1,        'active', true,      1,        'kos',    'owned', 50,            5,     'Manual'),
+  ('Fiat',    'Panda City Life',   'fiat-panda-city',  'compact',  'ΧΖΡ1233',  1,        'active', true,      1,        'kos',    'owned', 55,            5,     'Manual'),
+  ('Opel',    'Corsa Edition Pack','opel-corsa',       '5-seater', 'ΧΡΙ5837',  1,        'active', true,      1,        'kos',    'owned', 60,            5,     'Manual'),
+  ('Suzuki',  'Celerio',           'suzuki-celerio',   '5-seater', 'KXZ3211',  1,        'active', true,      1,        'kos',    'owned', 60,            5,     'Manual'),
+  ('Suzuki',  'Celerio',           'suzuki-celerio',   '5-seater', 'KXZ3212',  2,        'active', true,      1,        'kos',    'owned', 60,            5,     'Manual'),
+  ('Hyundai', 'Bayon Premium',     'hyundai-bayon',    'suv',      'ΧΡΕ2076',  1,        'active', true,      1,        'kos',    'owned', 70,            5,     'Manual')
 ON CONFLICT (plate) DO NOTHING;
 
 -- 5. Assignment index — lowest active priority within a model_key pool (Parça 2).
