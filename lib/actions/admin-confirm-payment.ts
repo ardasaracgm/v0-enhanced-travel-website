@@ -54,27 +54,35 @@ export async function confirmPayment(formData: FormData): Promise<void> {
 
   // 3) Ödeme satırını ÖNCE yaz (webhook route.ts:197-212 ile aynı şablon).
   //    idempotency_key trip'e deterministik + UNIQUE → çift tıklama 23505 verir.
-  const { error: payErr } = await admin.from('payments').insert({
-    trip_id:         trip.id,
-    amount:          trip.total_amount,
-    currency:        trip.currency,
-    provider,
-    state:           'completed',
-    idempotency_key: `manual:${trip.id}`,
-    metadata: { confirmed_by: user.id, channel: 'admin_manual' },
-    completed_at:    new Date().toISOString(),
-  })
+  //    €0 / comp rezervasyon: payments_amount_check (amount > 0) bir €0 satırına izin
+  //    vermez → payment satırı YAZILMAZ; trip yine confirmed olur (confirmTrip aşağıda
+  //    koşulsuz). amount > 0 ise normal manuel ödeme insert'i.
+  const amount = Number(trip.total_amount ?? 0)
+  if (amount > 0) {
+    const { error: payErr } = await admin.from('payments').insert({
+      trip_id:         trip.id,
+      amount,
+      currency:        trip.currency,
+      provider,
+      state:           'completed',
+      idempotency_key: `manual:${trip.id}`,
+      metadata: { confirmed_by: user.id, channel: 'admin_manual' },
+      completed_at:    new Date().toISOString(),
+    })
 
-  if (payErr) {
-    // 23505 = mükerrer ödeme satırı → idempotent (webhook route.ts:215-223 semantiği).
-    // Zaten ödenmiş → email ATMA. Diğer hata = gerçek başarısızlık. Heal'a gerek yok:
-    // confirmTrip aşağıda koşulsuz çağrılır ve zaten idempotent.
-    if (payErr.code === '23505') {
-      console.info(`[admin-confirm] payment for trip ${trip.reference} already processed (23505) — idempotent`)
-    } else {
-      console.error(`[admin-confirm] payment insert failed for trip ${trip.reference}:`, payErr.message)
-      throw new Error(`payment_insert_failed: ${payErr.message}`)
+    if (payErr) {
+      // 23505 = mükerrer ödeme satırı → idempotent (webhook route.ts:215-223 semantiği).
+      // Zaten ödenmiş → email ATMA. Diğer hata = gerçek başarısızlık. Heal'a gerek yok:
+      // confirmTrip aşağıda koşulsuz çağrılır ve zaten idempotent.
+      if (payErr.code === '23505') {
+        console.info(`[admin-confirm] payment for trip ${trip.reference} already processed (23505) — idempotent`)
+      } else {
+        console.error(`[admin-confirm] payment insert failed for trip ${trip.reference}:`, payErr.message)
+        throw new Error(`payment_insert_failed: ${payErr.message}`)
+      }
     }
+  } else {
+    console.info(`[admin-confirm] trip ${trip.reference} is comp (€0) — no payment row, confirming directly`)
   }
 
   // 4) confirmTrip — trips flip (fatal) + car_bookings + policy (non-fatal). [confirm.ts:64]
