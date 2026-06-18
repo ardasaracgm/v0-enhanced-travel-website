@@ -145,6 +145,16 @@ export default function TravelBeez() {
     { key: "packagePickup", icon: <Package className="h-8 w-8" />, title: tSvc("s6Title"), description: tSvc("s6Desc") },
   ];
 
+  // Inline footer "Hizmetler" kolonu — grid'le aynı tek kaynak (SERVICE_ROUTES).
+  // Etiketler homeFooter namespace'inden (tFooter). Vize/sigorta "Destek"
+  // kolonunda yaşıyor; burada ferry/araç/transfer + (yakında) tur.
+  const footerServices: { key: ServiceKey; labelKey: string }[] = [
+    { key: "ferry", labelKey: "ferryTickets" },
+    { key: "carRental", labelKey: "carRental" },
+    { key: "transfer", labelKey: "transfer" },
+    { key: "tours", labelKey: "tours" },
+  ];
+
   const testimonials = [
     {
       name: "Ahmet Y.",
@@ -1427,38 +1437,31 @@ export default function TravelBeez() {
             <div>
               <h4 className="font-semibold text-foreground mb-4">{tFooter("servicesTitle")}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("ferryTickets")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("carRental")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("hotels")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("tours")}
-                  </Link>
-                </li>
+                {footerServices.map((item) => {
+                  const { href, disabled } = SERVICE_ROUTES[item.key];
+                  if (disabled) {
+                    return (
+                      <li key={item.key}>
+                        <span
+                          aria-disabled="true"
+                          className="flex items-center gap-1.5 text-muted-foreground/50 cursor-not-allowed"
+                        >
+                          {tFooter(item.labelKey)}
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {tCommon("comingSoon")}
+                          </span>
+                        </span>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={item.key}>
+                      <Link href={href} className="hover:text-primary transition-colors">
+                        {tFooter(item.labelKey)}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
             <div>
@@ -1481,7 +1484,7 @@ export default function TravelBeez() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    href="#"
+                    href={SERVICE_ROUTES.visa.href}
                     className="hover:text-primary transition-colors"
                   >
                     {tFooter("visaSupport")}
@@ -1489,7 +1492,7 @@ export default function TravelBeez() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href={SERVICE_ROUTES.insurance.href}
                     className="hover:text-primary transition-colors"
                   >
                     {tFooter("travelInsurance")}
@@ -1505,7 +1508,7 @@ export default function TravelBeez() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href={SERVICE_ROUTES.contact.href}
                     className="hover:text-primary transition-colors"
                   >
                     {tFooter("contactUs")}
