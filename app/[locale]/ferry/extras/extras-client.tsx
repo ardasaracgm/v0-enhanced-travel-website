@@ -498,6 +498,16 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                           </div>
                         </PopoverContent>
                       </Popover>
+                      {luggageItem && (
+                        <button
+                          type="button"
+                          aria-label={t('luggage.removeAria')}
+                          onClick={handleRemoveLuggage}
+                          className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                       </div>
                     </div>
 
@@ -519,7 +529,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                             >
                               {/* ×N rozeti ilk parçadan itibaren (×1 dahil) */}
                               {count >= 1 && (
-                                <span className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                <span className="absolute -bottom-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                                   ×{count}
                                 </span>
                               )}
@@ -559,9 +569,21 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                    {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
-                  </span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                      {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
+                    </span>
+                    {transferItem && (
+                      <button
+                        type="button"
+                        aria-label={t('transfer.removeAria')}
+                        onClick={handleRemoveTransfer}
+                        className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Rota + araç */}
