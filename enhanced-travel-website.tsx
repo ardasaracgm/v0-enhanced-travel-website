@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
 import { useTranslations } from "next-intl";
 import {
   Calendar,
@@ -13,6 +14,7 @@ import {
   Users,
   Ship,
   Car,
+  CarTaxiFront,
   Hotel,
   Compass,
   FileText,
@@ -57,6 +59,7 @@ export default function TravelBeez() {
   const tOffice = useTranslations("kosOffice");
   const tSup = useTranslations("support");
   const tSvc = useTranslations("services");
+  const tCommon = useTranslations("common");
   const tFleet = useTranslations("carFleet");
   const tPay = useTranslations("payment");
   const tIslands = useTranslations("popularIslands");
@@ -124,43 +127,22 @@ export default function TravelBeez() {
     islands: tTours(`items.${t.id}.islands`),
   }));
 
-  const services = [
-    {
-      icon: <Ship className="h-8 w-8" />,
-      title: tSvc("s1Title"),
-      description: tSvc("s1Desc"),
-      href: "/ferry",
-    },
-    {
-      icon: <Car className="h-8 w-8" />,
-      title: tSvc("s2Title"),
-      description: tSvc("s2Desc"),
-      href: "/car-rental",
-    },
-    {
-      icon: <Hotel className="h-8 w-8" />,
-      title: tSvc("s3Title"),
-      description: tSvc("s3Desc"),
-      href: "#",
-    },
-    {
-      icon: <Compass className="h-8 w-8" />,
-      title: tSvc("s4Title"),
-      description: tSvc("s4Desc"),
-      href: "/tours",
-    },
-    {
-      icon: <FileText className="h-8 w-8" />,
-      title: tSvc("s5Title"),
-      description: tSvc("s5Desc"),
-      href: "/visa",
-    },
-    {
-      icon: <Package className="h-8 w-8" />,
-      title: tSvc("s6Title"),
-      description: tSvc("s6Desc"),
-      href: "/package-pickup",
-    },
+  // href + disabled SERVICE_ROUTES'tan; başlık/açıklama services namespace'inden.
+  // Hotels (s3) gridden çıktı (route yok); transfer (s8) + sigorta (s7) eklendi.
+  // Sıra header ile tutarlı: canlılar → "yakında".
+  const services: {
+    key: ServiceKey;
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+  }[] = [
+    { key: "ferry", icon: <Ship className="h-8 w-8" />, title: tSvc("s1Title"), description: tSvc("s1Desc") },
+    { key: "carRental", icon: <Car className="h-8 w-8" />, title: tSvc("s2Title"), description: tSvc("s2Desc") },
+    { key: "transfer", icon: <CarTaxiFront className="h-8 w-8" />, title: tSvc("s8Title"), description: tSvc("s8Desc") },
+    { key: "insurance", icon: <Shield className="h-8 w-8" />, title: tSvc("s7Title"), description: tSvc("s7Desc") },
+    { key: "visa", icon: <FileText className="h-8 w-8" />, title: tSvc("s5Title"), description: tSvc("s5Desc") },
+    { key: "tours", icon: <Compass className="h-8 w-8" />, title: tSvc("s4Title"), description: tSvc("s4Desc") },
+    { key: "packagePickup", icon: <Package className="h-8 w-8" />, title: tSvc("s6Title"), description: tSvc("s6Desc") },
   ];
 
   const testimonials = [
@@ -882,31 +864,52 @@ export default function TravelBeez() {
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {services.map((service, index) => (
-                <motion.div
-                  key={service.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Link href={service.href}>
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-border/50 bg-card">
-                      <CardContent className="p-6 flex flex-col items-center text-center">
-                        <div className="mb-4 p-3 bg-primary/10 rounded-xl text-primary">
-                          {service.icon}
-                        </div>
-                        <h3 className="font-semibold text-foreground mb-2">
-                          {service.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {service.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              ))}
+              {services.map((service, index) => {
+                const { href, disabled } = SERVICE_ROUTES[service.key];
+                const card = (
+                  <Card
+                    className={`h-full border-border/50 bg-card ${
+                      disabled
+                        ? "opacity-60"
+                        : "hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                    }`}
+                  >
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                      <div className="mb-4 p-3 bg-primary/10 rounded-xl text-primary">
+                        {service.icon}
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                        {service.title}
+                        {disabled && (
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {tCommon("comingSoon")}
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {service.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+                return (
+                  <motion.div
+                    key={service.key}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {disabled ? (
+                      <div aria-disabled="true" className="cursor-not-allowed">
+                        {card}
+                      </div>
+                    ) : (
+                      <Link href={href}>{card}</Link>
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
