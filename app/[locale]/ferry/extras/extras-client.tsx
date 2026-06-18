@@ -590,7 +590,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="flex flex-wrap items-end gap-4">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
-                    <Select value={transferRouteId ?? undefined} onValueChange={handleTransferRoute}>
+                    <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
                       <SelectTrigger className="w-56">
                         <SelectValue placeholder={t('transfer.selectRoute')} />
                       </SelectTrigger>
