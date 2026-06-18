@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
-import { Ship, ChevronLeft, ArrowRight, User, CheckCircle, Shield, AlertCircle } from 'lucide-react'
+import { Ship, ChevronLeft, ArrowRight, User, CheckCircle, Shield, AlertCircle, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
@@ -30,6 +30,7 @@ import {
   selectTotalPrice,
   type Passenger,
 } from '@/lib/booking-context'
+import { OrderSummaryItems, useRemoveBookingItem } from '@/components/booking/order-summary-items'
 
 const nationalities = [
   'Turkey',
@@ -80,6 +81,10 @@ export default function PassengerDetailsPage() {
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
+  // The return ferry BookingItem (not just the FerryRoute) — needed to remove
+  // it via the shared remove logic (CLEAR_RETURN_FERRY + one-way reset).
+  const returnFerryItem = state.items.find(i => i.type === 'ferry' && i.leg === 'return')
+  const removeItem = useRemoveBookingItem()
   // YYYY-MM-DD travel dates for the validation factory. `|| undefined` so an
   // empty searchParams.date degrades to a "valid through today" floor rather
   // than ''-lenient (see makePassengerSchema). Age banding is server-side.
@@ -464,9 +469,21 @@ export default function PassengerDetailsPage() {
                         
                         {returnF && (
                           <div className="p-4 bg-secondary/50 rounded-xl">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                              <Ship className="h-4 w-4" />
-                              <span>{t('summary.return')}</span>
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Ship className="h-4 w-4" />
+                                <span>{t('summary.return')}</span>
+                              </div>
+                              {returnFerryItem && (
+                                <button
+                                  type="button"
+                                  aria-label="Remove return ferry"
+                                  onClick={() => removeItem(returnFerryItem)}
+                                  className="text-muted-foreground hover:text-destructive transition-colors"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
                             </div>
                             <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
                             <p className="text-sm text-muted-foreground">{state.searchParams.returnDate}</p>
@@ -475,15 +492,14 @@ export default function PassengerDetailsPage() {
                           </div>
                         )}
                         
-                        <div className="pt-4 border-t border-border/50">
-                          <div className="flex items-center justify-between mb-2">
+                        <div className="pt-4 border-t border-border/50 space-y-2">
+                          <div className="flex items-center justify-between">
                             <span className="text-muted-foreground">{t('summary.passengers')}</span>
                             <span className="text-foreground">{state.searchParams.passengers}</span>
                           </div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-muted-foreground">{t('summary.ferryTickets')}</span>
-                            <span className="text-foreground">€{selectTotalPrice(state)}</span>
-                          </div>
+                          {/* Per-item breakdown (transfer / luggage / car / insurance)
+                              with remove. Ferry shown as detail cards above. */}
+                          <OrderSummaryItems includeFerry={false} />
                           <div className="flex items-center justify-between text-lg font-bold pt-2 border-t border-border/50">
                             <span className="text-foreground">{t('summary.total')}</span>
                             <span className="text-primary">€{selectTotalPrice(state)}</span>

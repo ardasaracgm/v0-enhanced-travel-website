@@ -40,6 +40,7 @@ import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only gu
 import { submitBooking } from '@/lib/actions/submit-booking'
 import { assertNever } from '@/lib/trip-items/types'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 export default function CheckoutPage() {
@@ -485,16 +486,9 @@ export default function CheckoutPage() {
 
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          {/* Generic breakdown — one line per item incl. luggage. */}
-                          {state.items.map((item, i) => {
-                            const row = summarizeItem(item, locale)
-                            return (
-                              <div key={i} className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">{row.breakdownLabel}</span>
-                                <span className="text-foreground">€{row.amount}</span>
-                              </div>
-                            )
-                          })}
+                          {/* Generic breakdown — one removable line per item
+                              incl. luggage (shared with passenger-details). */}
+                          <OrderSummaryItems />
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Booking Fee</span>
                             <span className="text-green-600">Free</span>
