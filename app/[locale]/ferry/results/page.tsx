@@ -17,13 +17,14 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import {
   useBooking,
-  getFerriesForRoute,
   selectOutboundFerry,
   selectReturnFerry,
   selectTotalPrice,
-  type FerryRoute,
   type FerryBookingItem,
 } from '@/lib/booking-context'
+import { searchFerriesAction } from '@/lib/actions/ferry-search'
+import { ferryUnitFare, formatDuration } from '@/lib/ferry/display'
+import type { FerryTrip } from '@/lib/ferry/provider'
 
 const cityNames: Record<string, string> = {
   bodrum: 'Bodrum',
@@ -39,8 +40,8 @@ export default function FerryResultsPage() {
   const router = useRouter()
   const t = useTranslations('ferryResults')
   const { state, dispatch } = useBooking()
-  const [ferries, setFerries] = React.useState<FerryRoute[]>([])
-  const [returnFerries, setReturnFerries] = React.useState<FerryRoute[]>([])
+  const [ferries, setFerries] = React.useState<FerryTrip[]>([])
+  const [returnFerries, setReturnFerries] = React.useState<FerryTrip[]>([])
   const [isSelectingReturn, setIsSelectingReturn] = React.useState(false)
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
@@ -64,8 +65,8 @@ export default function FerryResultsPage() {
       (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
     )
     if (!out) return
-    const routeOk = out.ferry.from.toLowerCase() === state.searchParams.from
-                 && out.ferry.to.toLowerCase() === state.searchParams.to
+    const routeOk = out.ferry.from.id === state.searchParams.from
+                 && out.ferry.to.id === state.searchParams.to
     const paxOk = out.passengerCount === state.searchParams.passengers
     if (!routeOk || !paxOk) {
       dispatch({ type: 'CLEAR_FERRY_SELECTION' })
@@ -74,16 +75,24 @@ export default function FerryResultsPage() {
   }, [state.items, state.searchParams, dispatch])
 
   React.useEffect(() => {
-    const outboundFerries = getFerriesForRoute(state.searchParams.from, state.searchParams.to)
-    setFerries(outboundFerries.map(f => ({ ...f, date: state.searchParams.date })))
-    
-    if (state.searchParams.tripType === 'round-trip') {
-      const returnFerryList = getFerriesForRoute(state.searchParams.to, state.searchParams.from)
-      setReturnFerries(returnFerryList.map(f => ({ ...f, date: state.searchParams.returnDate || '' })))
-    }
+    let cancelled = false
+    const sp = state.searchParams
+    ;(async () => {
+      const outboundFerries = await searchFerriesAction({ from: sp.from, to: sp.to, date: sp.date })
+      if (cancelled) return
+      setFerries(outboundFerries.map(f => ({ ...f, date: sp.date })))
+
+      if (sp.tripType === 'round-trip') {
+        const returnFerryList = await searchFerriesAction({ from: sp.to, to: sp.from, date: sp.returnDate || '' })
+        if (!cancelled) setReturnFerries(returnFerryList.map(f => ({ ...f, date: sp.returnDate || '' })))
+      } else {
+        setReturnFerries([])
+      }
+    })()
+    return () => { cancelled = true }
   }, [state.searchParams])
 
-  const handleSelectFerry = (ferry: FerryRoute) => {
+  const handleSelectFerry = (ferry: FerryTrip) => {
     dispatch({ type: 'SELECT_FERRY', payload: ferry })
     
     if (state.searchParams.tripType === 'round-trip') {
@@ -91,7 +100,7 @@ export default function FerryResultsPage() {
     }
   }
 
-  const handleSelectReturnFerry = (ferry: FerryRoute) => {
+  const handleSelectReturnFerry = (ferry: FerryTrip) => {
     if (!outbound) return
     dispatch({ type: 'SELECT_RETURN_FERRY', payload: ferry })
   }
@@ -208,30 +217,30 @@ export default function FerryResultsPage() {
                                   <div className="flex items-center gap-8">
                                     <div className="text-center">
                                       <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
-                                      <p className="text-sm text-muted-foreground">{ferry.from}</p>
+                                      <p className="text-sm text-muted-foreground">{ferry.from.name}</p>
                                     </div>
                                     <div className="flex flex-col items-center">
                                       <div className="flex items-center gap-2 text-muted-foreground">
                                         <div className="w-8 h-0.5 bg-border" />
                                         <Clock className="h-4 w-4" />
-                                        <span className="text-sm">{ferry.duration}</span>
+                                        <span className="text-sm">{formatDuration(ferry.durationMinutes)}</span>
                                         <div className="w-8 h-0.5 bg-border" />
                                       </div>
                                       <p className="text-xs text-muted-foreground mt-1">{t('direct')}</p>
                                     </div>
                                     <div className="text-center">
                                       <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
-                                      <p className="text-sm text-muted-foreground">{ferry.to}</p>
+                                      <p className="text-sm text-muted-foreground">{ferry.to.name}</p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4">
                                     <div className="text-right">
-                                      <p className="text-2xl font-bold text-primary">{ferry.price}</p>
+                                      <p className="text-2xl font-bold text-primary">{ferryUnitFare(ferry)}</p>
                                       <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
                                     </div>
                                     <div className="flex flex-col gap-2 items-end">
-                                      <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                        {t('seatsLeft', { count: ferry.availableSeats })}
+                                      <Badge variant={ferry.passengerSeatsAvailable > 20 ? 'secondary' : 'destructive'} className="text-xs">
+                                        {t('seatsLeft', { count: ferry.passengerSeatsAvailable })}
                                       </Badge>
                                       <Button 
                                         size="sm" 
@@ -306,30 +315,30 @@ export default function FerryResultsPage() {
                                 <div className="flex items-center gap-8">
                                   <div className="text-center">
                                     <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
-                                    <p className="text-sm text-muted-foreground">{ferry.from}</p>
+                                    <p className="text-sm text-muted-foreground">{ferry.from.name}</p>
                                   </div>
                                   <div className="flex flex-col items-center">
                                     <div className="flex items-center gap-2 text-muted-foreground">
                                       <div className="w-8 h-0.5 bg-border" />
                                       <Clock className="h-4 w-4" />
-                                      <span className="text-sm">{ferry.duration}</span>
+                                      <span className="text-sm">{formatDuration(ferry.durationMinutes)}</span>
                                       <div className="w-8 h-0.5 bg-border" />
                                     </div>
                                     <p className="text-xs text-muted-foreground mt-1">Direct</p>
                                   </div>
                                   <div className="text-center">
                                     <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
-                                    <p className="text-sm text-muted-foreground">{ferry.to}</p>
+                                    <p className="text-sm text-muted-foreground">{ferry.to.name}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <div className="text-right">
-                                    <p className="text-2xl font-bold text-primary">{ferry.price}</p>
+                                    <p className="text-2xl font-bold text-primary">{ferryUnitFare(ferry)}</p>
                                     <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
                                   </div>
                                   <div className="flex flex-col gap-2 items-end">
-                                    <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                      {t('seatsLeft', { count: ferry.availableSeats })}
+                                    <Badge variant={ferry.passengerSeatsAvailable > 20 ? 'secondary' : 'destructive'} className="text-xs">
+                                      {t('seatsLeft', { count: ferry.passengerSeatsAvailable })}
                                     </Badge>
                                     <Button
                                       size="sm"
@@ -370,10 +379,10 @@ export default function FerryResultsPage() {
                               <Ship className="h-4 w-4" />
                               <span>{t('outbound')}</span>
                             </div>
-                            <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
+                            <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{outbound.operator}</p>
-                            <p className="text-primary font-medium mt-2">€{outboundItem!.ferry.price} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
+                            <p className="text-primary font-medium mt-2">€{ferryUnitFare(outboundItem!.ferry)} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
                           </div>
 
                           {returnF && (
@@ -382,10 +391,10 @@ export default function FerryResultsPage() {
                                 <Ship className="h-4 w-4" />
                                 <span>{t('return')}</span>
                               </div>
-                              <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
+                              <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                               <p className="text-sm text-muted-foreground">{returnF.operator}</p>
-                              <p className="text-primary font-medium mt-2">€{returnItem!.ferry.price} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
+                              <p className="text-primary font-medium mt-2">€{ferryUnitFare(returnItem!.ferry)} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
                             </div>
                           )}
 

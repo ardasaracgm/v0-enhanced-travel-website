@@ -14,7 +14,7 @@
       "vessel": "Bodrum Express I",
       "departure_time": "09:00",
       "arrival_time": "10:00",
-      "ferry_id": "bk-1",
+      "ferry_id": "mock:bk-1",
       "per_passenger_price": 35
     }
   },

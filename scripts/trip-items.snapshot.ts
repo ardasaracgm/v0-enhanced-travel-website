@@ -28,7 +28,6 @@ import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-import { getFerryById } from '../lib/ferry-mock-data'
 import type { ResolvedTripItem } from '../lib/trip-items/types'
 import type {
   FerryResolveCtx,
@@ -54,9 +53,16 @@ const FIXTURES: Fixture[] = [
     name: 'ferry/outbound-2pax',
     type: 'ferry',
     ctx: {
-      item: { type: 'ferry', leg: 'outbound', ferryId: 'bk-1', date: '2026-07-10' },
-      // Resolved ferry (I/O the harness performs, mirroring submit-booking).
-      ferry: getFerryById('bk-1')!,
+      item: { type: 'ferry', leg: 'outbound', ferryId: 'mock:bk-1', date: '2026-07-10' },
+      // Resolved ferry (provider.getTrip, mirroring submit-booking — canonical FerryTrip).
+      ferry: {
+        id: 'mock:bk-1', provider: 'mock',
+        from: { id: 'bodrum', name: 'Bodrum' }, to: { id: 'kos', name: 'Kos' },
+        date: '', departureTime: '09:00', arrivalTime: '10:00', durationMinutes: 60,
+        operator: 'Bodrum Express Lines', vessel: 'Bodrum Express I',
+        passengerSeatsAvailable: 45,
+        fares: [{ passengerType: 'adult', oneWay: 35, currency: 'EUR' }],
+      },
       passengerCount: 2,
     },
   },

@@ -402,9 +402,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 </Link>
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold">
-                    <span>{outbound.from}</span>
+                    <span>{outbound.from.name}</span>
                     <ArrowRight className="h-4 w-4" />
-                    <span>{outbound.to}</span>
+                    <span>{outbound.to.name}</span>
                   </div>
                   <p className="text-sm text-primary-foreground/80">
                     {state.searchParams.date} · {t('passengerCount', { count: state.searchParams.passengers })}
@@ -834,14 +834,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       {/* Ferry lines */}
                       <div className="p-3 bg-secondary/50 rounded-xl">
                         <p className="text-xs text-muted-foreground mb-1">{t('outboundFerry')}</p>
-                        <p className="font-medium text-foreground text-sm">{outbound.from} → {outbound.to}</p>
+                        <p className="font-medium text-foreground text-sm">{outbound.from.name} → {outbound.to.name}</p>
                         <p className="text-xs text-muted-foreground">{outbound.departureTime} · {outbound.operator}</p>
                       </div>
 
                       {returnF && (
                         <div className="p-3 bg-secondary/50 rounded-xl">
                           <p className="text-xs text-muted-foreground mb-1">{t('returnFerry')}</p>
-                          <p className="font-medium text-foreground text-sm">{returnF.from} → {returnF.to}</p>
+                          <p className="font-medium text-foreground text-sm">{returnF.from.name} → {returnF.to.name}</p>
                           <p className="text-xs text-muted-foreground">{returnF.departureTime} · {returnF.operator}</p>
                         </div>
                       )}

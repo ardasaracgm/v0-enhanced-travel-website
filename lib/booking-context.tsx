@@ -11,16 +11,8 @@
 
 import * as React from 'react'
 
-// Re-export ferry types/data so existing imports of
-// `from '@/lib/booking-context'` keep working.
-export {
-  mockFerries,
-  getFerriesForRoute,
-  getFerryById,
-  type FerryRoute,
-} from '@/lib/ferry-mock-data'
-
-import type { FerryRoute } from '@/lib/ferry-mock-data'
+import type { FerryTrip } from '@/lib/ferry/provider'
+import { ferryUnitFare } from '@/lib/ferry/display'
 import type { LuggageCounts } from '@/lib/luggage-rates'
 
 export interface Passenger {
@@ -59,10 +51,10 @@ export interface FerryBookingItem {
   type: 'ferry'
   leg: 'outbound' | 'return'
   ferryId: string
-  ferry: FerryRoute
+  ferry: FerryTrip
   date: string           // YYYY-MM-DD snapshot at selection time
   passengerCount: number
-  priceAmount: number    // ferry.price × passengerCount, display only
+  priceAmount: number    // ferryUnitFare(ferry) × passengerCount, display only
 }
 
 export interface CarRentalBookingItem {
@@ -171,8 +163,8 @@ const initialState: BookingState = {
 
 type BookingAction =
   | { type: 'SET_SEARCH_PARAMS'; payload: Partial<BookingState['searchParams']> }
-  | { type: 'SELECT_FERRY'; payload: FerryRoute }
-  | { type: 'SELECT_RETURN_FERRY'; payload: FerryRoute }
+  | { type: 'SELECT_FERRY'; payload: FerryTrip }
+  | { type: 'SELECT_RETURN_FERRY'; payload: FerryTrip }
   | { type: 'CLEAR_RETURN_FERRY' }
   | { type: 'CLEAR_FERRY_SELECTION' }
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
@@ -208,7 +200,7 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         ferry: action.payload,
         date: state.searchParams.date,
         passengerCount: pax,
-        priceAmount: action.payload.price * pax,
+        priceAmount: ferryUnitFare(action.payload) * pax,
       }
       return {
         ...state,
@@ -230,7 +222,7 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         ferry: action.payload,
         date: state.searchParams.returnDate ?? '',
         passengerCount: pax,
-        priceAmount: action.payload.price * pax,
+        priceAmount: ferryUnitFare(action.payload) * pax,
       }
       return {
         ...state,
@@ -484,14 +476,14 @@ export function clearBookingStorage(): void {
 // ============================================================
 // Sprint 2 consumers will switch to these. Not yet called by any page.
 
-export function selectOutboundFerry(state: BookingState): FerryRoute | null {
+export function selectOutboundFerry(state: BookingState): FerryTrip | null {
   const item = state.items.find(
     (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
   )
   return item?.ferry ?? null
 }
 
-export function selectReturnFerry(state: BookingState): FerryRoute | null {
+export function selectReturnFerry(state: BookingState): FerryTrip | null {
   const item = state.items.find(
     (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
   )

@@ -19,7 +19,7 @@
 import type { AnyZodObject } from 'zod'
 import type { TripItemType, TripItemMetadata } from '@/lib/supabase'
 import type { LuggageCounts } from '@/lib/luggage-rates'
-import type { FerryRoute } from '@/lib/ferry-mock-data'
+import type { FerryTrip } from '@/lib/ferry/provider'
 
 // ============================================================
 // Bookable vs. planned types
@@ -118,8 +118,8 @@ export type SubmitItem =
 
 export interface FerryResolveCtx {
   item: FerrySubmitItem
-  /** Resolved schedule (getFerryById stays at the call site — I/O upstream). */
-  ferry: FerryRoute
+  /** Resolved schedule (provider.getTrip stays at the call site — I/O upstream). */
+  ferry: FerryTrip
   passengerCount: number
 }
 
