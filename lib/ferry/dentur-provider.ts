@@ -211,7 +211,9 @@ export const DenturFerryProvider: FerryProvider = {
     }
     const passengers = req.passengers.map((p) => ({
       firstName: p.firstName, lastName: p.lastName, passportNumber: p.passportNumber,
-      gender: p.gender, passportExpiryDate: p.passportExpiryDate ?? null,
+      // Dentur wants "M"/"F" (swagger PassengerInfo: "M for Male, F for Female").
+      // female → 'F'; male AND unspecified → 'M' (house rule: anything non-female → male).
+      gender: p.gender === 'female' ? 'F' : 'M', passportExpiryDate: p.passportExpiryDate ?? null,
       dateOfBirth: p.dateOfBirth, nationality: p.nationality,
     }))
     const res = await denturPost<WireReservationResponse>('/api/ticket/CreateReservation', { header, passengers })

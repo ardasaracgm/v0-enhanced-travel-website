@@ -95,6 +95,16 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
       .eq('trip_id', tripId)
     if (!pax || pax.length === 0) return { ok: false, error: 'no passengers for ferry reservation' }
 
+    // Fail fast on incomplete identity. reserve() runs AFTER payment, so sending a
+    // passenger with an empty passport/nationality/DOB would earn a confusing Dentur
+    // reject and leave us "paid, no reservation". Zod normally guarantees these on
+    // the ferry passenger schema, but this side-effect must not trust that: bail
+    // with a clear admin-backstop message instead (mirrors issuePolicy's defensiveness).
+    const incomplete = pax.find((p) => !p.passport_number?.trim() || !p.nationality?.trim() || !p.birth_date?.trim())
+    if (incomplete) {
+      return { ok: false, error: `passenger ${incomplete.first_name} ${incomplete.last_name} missing passport/nationality/DOB — manual reservation needed` }
+    }
+
     const lead = pax.find((p) => p.is_lead) ?? pax[0]
     const passengers: FerryReservationPassenger[] = pax.map((p) => ({
       firstName: p.first_name,
