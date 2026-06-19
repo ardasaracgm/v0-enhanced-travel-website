@@ -228,6 +228,15 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   // biriktirilir, trip insert'ten SONRA yazılır.
   const carBookingDrafts: { car_id: string; start_date: string; end_date: string }[] = []
 
+  // Authoritative outbound travel date (sail-out) — drives BOTH per-type ferry
+  // fares (here) and passenger-type derivation (§3 below). Car-only → today (Athens).
+  const outboundTravelDate = outboundDate ?? todayAthensISO()
+  // Per-passenger ferry types for the authoritative per-type fare sum. Same rule
+  // as the passenger records (§3). Empty for car-only (no ferry item).
+  const ferryPassengerTypes = hasFerry
+    ? input.passengers.map((p) => derivePassengerType(p.birthDate, outboundTravelDate))
+    : []
+
   for (const item of input.items) {
     if (item.type === 'ferry') {
       const ferry = await (await getFerryProvider()).getTrip(item.ferryId)
@@ -235,7 +244,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
         return { ok: false, code: 'validation_failed', error: `Ferry not found: ${item.ferryId}` }
       }
       // I/O (getFerryById) stays here; pure assembly lives in the registry resolver.
-      items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount }))
+      items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount, passengerTypes: ferryPassengerTypes }))
     } else if (item.type === 'car_rental') {
       try {
         // Gün + teslim tarihi TEK kaynaktan: pickup/dropoff tarih aralığından türer
@@ -356,11 +365,9 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   }
 
   // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND
-  //    date (sail-out) — never returnDate, never a client-sent type. Car-only
-  //    bookings have no ferry date → fall back to today (Athens); a 21+ driver
-  //    still classifies as 'adult', which is correct.
-  const outboundTravelDate = outboundDate ?? todayAthensISO()
-
+  //    date (sail-out, outboundTravelDate above) — never returnDate, never a
+  //    client-sent type. Car-only bookings have no ferry date → today (Athens);
+  //    a 21+ driver still classifies as 'adult', which is correct.
   const leadPassenger =
     input.passengers.find((p) => p.isLead) ?? input.passengers[0]
 

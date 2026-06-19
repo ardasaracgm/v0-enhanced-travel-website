@@ -1,12 +1,40 @@
 import type { FerryTrip } from './provider'
+import type { PassengerType } from '@/lib/supabase'
 
 /**
- * Per-passenger adult one-way fare for a single sailing (per-row display).
- * Mock has a single 'adult' fare row → preserves old FerryRoute.price.
+ * Per-passenger adult one-way fare for a single sailing (per-row display / the
+ * "from" price). Mock has a single 'adult' fare row → preserves FerryRoute.price.
  */
 export function ferryUnitFare(trip: FerryTrip): number {
   const adult = trip.fares.find((f) => f.passengerType === 'adult') ?? trip.fares[0]
   return adult?.oneWay ?? 0
+}
+
+/**
+ * One passenger's own-type one-way fare. If the provider has no fare for this
+ * type, fall back to the adult fare (then the first row) so a child/infant is
+ * NEVER priced at 0 (free) or NaN — a real Dentur trip returns adult/child/infant,
+ * mock returns only adult, so the fallback is the mock path. The fallback is
+ * warned (it's a money path; a missing real-Dentur fare should be visible).
+ */
+function fareForType(trip: FerryTrip, type: PassengerType): number {
+  const exact = trip.fares.find((f) => f.passengerType === type)
+  if (exact) return exact.oneWay
+  const fallback = trip.fares.find((f) => f.passengerType === 'adult') ?? trip.fares[0]
+  console.warn(
+    `[ferry] no '${type}' fare for ${trip.id} — ${fallback ? `falling back to adult (${fallback.oneWay})` : 'NO fares at all → 0!'}`
+  )
+  return fallback?.oneWay ?? 0
+}
+
+/**
+ * Authoritative ferry total for ONE leg: sum each passenger's own-type one-way
+ * fare. Dentur returns distinct adult/child/infant fares (e.g. 25/20/10 EUR), so
+ * pricing everyone at the adult fare overcharges families. Passenger types are
+ * derived server-side (derivePassengerType) at the outbound date.
+ */
+export function ferryFaresTotal(trip: FerryTrip, passengerTypes: PassengerType[]): number {
+  return passengerTypes.reduce((sum, t) => sum + fareForType(trip, t), 0)
 }
 
 /**

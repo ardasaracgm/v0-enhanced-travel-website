@@ -14,7 +14,7 @@
  * priceAmount is EUR decimal — matches the existing createTrip contract.
  */
 
-import { ferryUnitFare } from '@/lib/ferry/display'
+import { ferryUnitFare, ferryFaresTotal } from '@/lib/ferry/display'
 import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
 import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
@@ -34,14 +34,16 @@ function combineDateAndTime(date: string, time: string): string {
 }
 
 export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
-  const { item, ferry, passengerCount } = ctx
+  const { item, ferry, passengerCount, passengerTypes } = ctx
   return {
     type: 'ferry',
     title: `${ferry.from.name} → ${ferry.to.name} (${ferry.operator})`,
     scheduledAt: combineDateAndTime(item.date, ferry.departureTime),
     endsAt: combineDateAndTime(item.date, ferry.arrivalTime),
     passengerCount,
-    priceAmount: ferryUnitFare(ferry) * passengerCount,
+    // Authoritative: sum each passenger's own-type fare (adult/child/infant),
+    // not adult × count. This is the amount that flows to trips.total_amount → Viva.
+    priceAmount: ferryFaresTotal(ferry, passengerTypes),
     priceCurrency: 'EUR',
     metadata: {
       from_port: ferry.from.name,
@@ -54,6 +56,8 @@ export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
       // Persist the leg so reserveFerry can rebuild the outbound/return request
       // after payment (the booking input's leg is otherwise lost at this point).
       direction: item.leg,
+      // adult "from" reference fare — NOT the per-passenger amount paid (mixed
+      // types pay their own fare; see priceAmount via ferryFaresTotal).
       per_passenger_price: ferryUnitFare(ferry),
     },
   }
