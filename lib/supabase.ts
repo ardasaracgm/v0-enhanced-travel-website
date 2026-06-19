@@ -193,6 +193,19 @@ export interface FerryItemMetadata {
   duration_minutes?: number
   seat_class?: 'economy' | 'business' | 'vip'
   vehicle?: { type: string; plate?: string } | null
+  // The provider sailing id (e.g. "dentur:12345") — written by resolveFerryItem;
+  // reserveFerry strips the prefix back to the Dentur expeditionID.
+  ferry_id?: string
+  // Which leg this row is — written by resolveFerryItem from the booking input.
+  // reserveFerry needs it to rebuild the outbound/return legs at reservation time
+  // (it cannot be inferred from dates alone — a same-day round trip is ambiguous).
+  direction?: 'outbound' | 'return'
+  // --- Dentur reservation result (written by reserveFerry on the OUTBOUND item;
+  //     reserve_state is the state machine, mirroring insurance policy_state) ---
+  reserve_state?: 'pending' | 'reserved' | 'failed'
+  reservation_id?: number          // Dentur reservationID
+  reservation_guid?: string        // Dentur reservationGUID
+  vouchers?: { pnr: number; direction: string; passengerName: string }[]
 }
 
 export interface TransferItemMetadata {

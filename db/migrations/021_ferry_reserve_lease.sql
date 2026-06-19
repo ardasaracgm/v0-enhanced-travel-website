@@ -1,0 +1,41 @@
+-- ============================================================
+-- TravelBeez · Ferry · trip_items.ferry_reserve_lease_at
+-- ============================================================
+-- Race-safe Dentur CreateReservation claim — the ferry twin of 018's
+-- policy_issue_lease_at. reserveFerry reads metadata.reserve_state (jsonb) on the
+-- OUTBOUND ferry item and only calls provider.reserve() when it is not yet
+-- 'reserved'; it then persists the reservation id. Between that read and the
+-- persist there is NO lock, so two concurrent confirm paths (the Viva webhook +
+-- the success-URL action, both run confirmTrip's side-effects) can each see "not
+-- reserved yet" and BOTH call CreateReservation → a DUPLICATE Dentur booking.
+-- Dentur exposes no idempotency key (mirrors Auras), so the lease is the guard.
+--
+-- This nullable timestamp is an atomic single-owner lease, claimed with ONE
+-- conditional UPDATE BEFORE reserve() (twin of 018):
+--   UPDATE public.trip_items SET ferry_reserve_lease_at = now()
+--   WHERE id = $1 AND item_type = 'ferry'
+--     AND (ferry_reserve_lease_at IS NULL
+--          OR ferry_reserve_lease_at < now() - interval '5 minutes')
+--   RETURNING id;
+-- Postgres serialises the concurrent claims via the row lock, so EXACTLY one
+-- caller wins (1 row) and proceeds to reserve(); the other gets 0 rows and skips.
+-- The 5-minute expiry self-heals a lease left stranded by a crash mid-reserve, so
+-- the resumable backstop (a failed reservation retried on the next confirm) is
+-- preserved — unlike a permanent claim.
+--
+-- The lease is claimed on the OUTBOUND item only (a round trip reserves both legs
+-- in a single CreateReservation call → one anchor row owns the lease + result).
+--
+-- Enum YOK → normal transaction güvenli. Run: SQL Editor → New query → Run.
+-- ============================================================
+
+ALTER TABLE public.trip_items
+  ADD COLUMN IF NOT EXISTS ferry_reserve_lease_at timestamptz;
+
+-- ============================================================
+-- VERIFY (ayrı çalıştır):
+--   select column_name, data_type, is_nullable
+--   from information_schema.columns
+--   where table_schema = 'public' and table_name = 'trip_items'
+--     and column_name = 'ferry_reserve_lease_at';
+-- ============================================================

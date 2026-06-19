@@ -51,6 +51,9 @@ export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
       departure_time: ferry.departureTime,
       arrival_time: ferry.arrivalTime,
       ferry_id: ferry.id,
+      // Persist the leg so reserveFerry can rebuild the outbound/return request
+      // after payment (the booking input's leg is otherwise lost at this point).
+      direction: item.leg,
       per_passenger_price: ferryUnitFare(ferry),
     },
   }

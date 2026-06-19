@@ -15,6 +15,7 @@
       "departure_time": "09:00",
       "arrival_time": "10:00",
       "ferry_id": "mock:bk-1",
+      "direction": "outbound",
       "per_passenger_price": 35
     }
   },
