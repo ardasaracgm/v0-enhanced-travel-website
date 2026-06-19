@@ -78,7 +78,9 @@ export async function searchFerriesWithNearestAction(
   for (const candidateDate of candidates) {
     const fresh = await provider.search({ from, to, date: `${candidateDate}T00:00:00`, pax: input.pax })
     const available = fresh.find((t) => t.passengerSeatsAvailable > 0)
-    if (available) return { trips: [], reason: 'no_trips_on_date', nearest: available }
+    // Stamp the candidate date — mock search returns date-less trips; Dentur's is
+    // already this date, so stamping is consistent across providers.
+    if (available) return { trips: [], reason: 'no_trips_on_date', nearest: { ...available, date: candidateDate } }
   }
 
   // 4) No fresh-available candidate within the window (or all probes came back empty).
