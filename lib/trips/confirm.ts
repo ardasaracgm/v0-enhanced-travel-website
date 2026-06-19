@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { issuePolicy } from '@/lib/insurance/issue-policy'
+import { reserveFerry } from '@/lib/ferry/reserve-ferry'
 
 export type ConfirmTripResult =
   | { ok: true; alreadyConfirmed: boolean }
@@ -54,7 +55,30 @@ const issuePolicyEffect: ConfirmSideEffect = async (_supabase, tripId) => {
   }
 }
 
-const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [confirmCarBookings, issuePolicyEffect]
+// ferry → reserve the leg(s) with the provider (Dentur CreateReservation) once
+// the trip is paid. reserveFerry is idempotent (reserve_state machine) and returns
+// skipped:'no_ferry' for trips without a ferry (no-op). Mirrors issuePolicyEffect.
+const reserveFerryEffect: ConfirmSideEffect = async (_supabase, tripId) => {
+  try {
+    const r = await reserveFerry(tripId)
+    if (r.ok) {
+      if (r.skipped === 'no_ferry') return
+      if (r.skipped === 'already_reserved') {
+        console.info(`[confirmTrip] ferry already reserved for trip ${tripId} (idempotent)`)
+      } else if (r.skipped === 'reserving_in_progress') {
+        console.info(`[confirmTrip] ferry reserve in progress by concurrent run for trip ${tripId} — skipped`)
+      } else {
+        console.log(`[confirmTrip] ferry reserved for trip ${tripId} (reservation ${r.reservationId})`)
+      }
+    } else {
+      console.error(`[confirmTrip] reserveFerry failed for trip ${tripId} — admin backstop needed: ${r.error}`)
+    }
+  } catch (err) {
+    console.error(`[confirmTrip] reserveFerry threw for trip ${tripId}:`, err instanceof Error ? err.message : err)
+  }
+}
+
+const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [confirmCarBookings, issuePolicyEffect, reserveFerryEffect]
 
 /**
  * Idempotently confirm a trip. Flips trips→confirmed (FATAL: returns {ok:false}
