@@ -111,6 +111,10 @@ export interface FerryProvider {
   listPorts(): Promise<FerryPort[]>
   /** Search single-leg sailings (Dentur: TripSearch). */
   search(q: FerrySearchQuery): Promise<FerryTrip[]>
+  /** Whole-season schedule, dateless (Dentur: TripsByRoute). Raw data, cached.
+   *  The "nearest date" business logic does NOT live here — it's in the
+   *  action/helper. from/to = canonical port slug. */
+  getRouteSchedule(from: string, to: string): Promise<FerryTrip[]>
   /** Single sailing by canonical id — server-side price re-verification. */
   getTrip(id: string): Promise<FerryTrip | null>
   /** Create a reservation (Dentur: CreateReservation). */

@@ -19,9 +19,20 @@ import type {
   FerryReservationRequest,
   FerryReservationResult,
 } from './provider'
+import { todayAthensISO } from '@/lib/validation/dates'
 
 function portOf(name: string): FerryPort {
   return { id: name.toLowerCase(), name }
+}
+
+function addDaysISO(iso: string, days: number): string {
+  return new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10)
+}
+
+// Trivial calendar: no sailings on Tuesdays (deterministic ~1/7 empty days) so the
+// nearest-date fallback also triggers + is testable under mock. Kept deliberately simple.
+function mockHasSailings(dateISO: string): boolean {
+  return new Date(`${dateISO}T00:00:00Z`).getUTCDay() !== 2  // 2 = Tuesday
 }
 
 /** '1h 30m' | '40m' | '1h 00m' → minutes. */
@@ -62,9 +73,25 @@ export const MockFerryProvider: FerryProvider = {
   },
 
   async search(q: FerrySearchQuery): Promise<FerryTrip[]> {
+    // Blackout days (Tuesdays) return empty → exercises the nearest-date fallback.
+    if (!mockHasSailings(q.date.slice(0, 10))) return []
     // Mock matches by name (case-insensitive); our canonical slug is the
     // lowercased name, so passing the slug through works unchanged.
     return getFerriesForRoute(q.from, q.to).map(toTrip)
+  },
+
+  async getRouteSchedule(from: string, to: string): Promise<FerryTrip[]> {
+    // Stamp the route's fixed sailings onto the next 30 days from today (Athens),
+    // skipping blackout (Tuesday) days — a season-with-gaps for the fallback.
+    const base = getFerriesForRoute(from, to)
+    const today = todayAthensISO()
+    const out: FerryTrip[] = []
+    for (let i = 0; i < 30; i++) {
+      const date = addDaysISO(today, i)
+      if (!mockHasSailings(date)) continue
+      for (const r of base) out.push({ ...toTrip(r), date })
+    }
+    return out
   },
 
   async getTrip(id: string): Promise<FerryTrip | null> {

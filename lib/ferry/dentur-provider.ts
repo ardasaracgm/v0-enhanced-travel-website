@@ -9,6 +9,7 @@ import { slug } from './util'
 const BASE = process.env.DENTUR_API_BASE
 const TOKEN = process.env.DENTUR_API_TOKEN
 const TIMEOUT_MS = 15_000
+const ROUTE_SCHEDULE_TTL_MS = 5 * 60_000
 
 class DenturError extends Error {}
 
@@ -118,6 +119,7 @@ function mapExpedition(e: WireExpedition): FerryTrip {
 // ---- port resolution caches (departures flat; arrivals per-departure) --
 let departuresCache: FerryPort[] | null = null
 const arrivalsCache = new Map<number, FerryPort[]>()
+const scheduleCache = new Map<string, { at: number; trips: FerryTrip[] }>()  // key `${depID}:${arrID}`
 
 async function getDepartures(): Promise<FerryPort[]> {
   if (departuresCache) return departuresCache
@@ -170,6 +172,22 @@ export const DenturFerryProvider: FerryProvider = {
       departureID: dep.providerId, arrivalID: arr.providerId, date: q.date, language: 'tr',
     })
     return (res.trips ?? []).map(mapExpedition)
+  },
+
+  // Whole season (TripsByRoute, dateless), 5-min cache. resolveArrival throws
+  // unknown_arrival when the route isn't offered → action maps it to route_not_offered.
+  async getRouteSchedule(from: string, to: string): Promise<FerryTrip[]> {
+    const dep = await resolveDeparture(from)
+    const arr = await resolveArrival(dep.providerId!, to)
+    const key = `${dep.providerId}:${arr.providerId}`
+    const hit = scheduleCache.get(key)
+    if (hit && Date.now() - hit.at < ROUTE_SCHEDULE_TTL_MS) return hit.trips
+    const res = await denturPost<WireExpeditionResponse>('/api/ticket/TripsByRoute', {
+      departureRegionID: dep.providerId, arrivalRegionID: arr.providerId, language: 'tr',
+    })
+    const trips = (res.trips ?? []).map(mapExpedition)
+    scheduleCache.set(key, { at: Date.now(), trips })
+    return trips
   },
 
   // TripInfo({ tripID }); UNVERIFIED: assumes tripID == expeditionID — confirm live.
