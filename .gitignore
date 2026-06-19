@@ -39,3 +39,4 @@ node_modules
 
 # Local çalışma notu — commit edilmez
 HANDOFF.md
+scripts/dentur-probe.ts
