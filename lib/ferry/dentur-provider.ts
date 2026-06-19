@@ -86,6 +86,19 @@ function normalizeDate(d: string): string {
   return m ? m[1] : d
 }
 
+/**
+ * Reservation DateTime fields (dateOfBirth, passportExpiryDate) → full ISO
+ * date-time. Dentur deserializes with System.Text.Json, which rejects a bare
+ * "YYYY-MM-DD" for a C# DateTime ("could not be converted to System.DateTime")
+ * — diagnosed from a live Step1 400. Append midnight (no offset, so a DOB is not
+ * shifted a day by timezone) when only a date was supplied; leave a full
+ * datetime untouched.
+ */
+function toDenturDateTime(d: string): string {
+  const s = d.trim()
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${s}T00:00:00` : s
+}
+
 function mapFare(f: WireFare): FerryFare {
   return {
     passengerType: mapPassengerType(f.passengerTypeID),
@@ -213,8 +226,9 @@ export const DenturFerryProvider: FerryProvider = {
       firstName: p.firstName, lastName: p.lastName, passportNumber: p.passportNumber,
       // Dentur wants "M"/"F" (swagger PassengerInfo: "M for Male, F for Female").
       // female → 'F'; male AND unspecified → 'M' (house rule: anything non-female → male).
-      gender: p.gender === 'female' ? 'F' : 'M', passportExpiryDate: p.passportExpiryDate ?? null,
-      dateOfBirth: p.dateOfBirth, nationality: p.nationality,
+      gender: p.gender === 'female' ? 'F' : 'M',
+      passportExpiryDate: p.passportExpiryDate ? toDenturDateTime(p.passportExpiryDate) : null,
+      dateOfBirth: toDenturDateTime(p.dateOfBirth), nationality: p.nationality,
     }))
     const res = await denturPost<WireReservationResponse>('/api/ticket/CreateReservation', { header, passengers })
     const ok = !res.errors || res.errors.length === 0
