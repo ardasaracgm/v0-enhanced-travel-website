@@ -106,7 +106,8 @@ export interface FerryReservationResult {
 
 export interface FerryProvider {
   readonly id: FerryProviderId
-  /** Port catalog (Dentur: DepartureRegion + ArrivalRegion, cached). */
+  /** Departure ports (Dentur: DepartureRegion). Arrivals are departure-scoped,
+   *  resolved inside search() — not returned here. Cached. */
   listPorts(): Promise<FerryPort[]>
   /** Search single-leg sailings (Dentur: TripSearch). */
   search(q: FerrySearchQuery): Promise<FerryTrip[]>
