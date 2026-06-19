@@ -4,6 +4,7 @@ import type {
   FerryProvider, FerryTrip, FerryPort, FerryFare,
   FerrySearchQuery, FerryReservationRequest, FerryReservationResult,
 } from './provider'
+import { slug } from './util'
 
 const BASE = process.env.DENTUR_API_BASE
 const TOKEN = process.env.DENTUR_API_TOKEN
@@ -35,8 +36,6 @@ async function denturPost<T>(path: string, body?: unknown): Promise<T> {
     clearTimeout(timer)
   }
 }
-
-const slug = (s: string) => s.trim().toLowerCase().replace(/\s+/g, '-')
 
 // ---- wire types (only the fields we read) ------------------------------
 interface WireDeparture { departureRegionID: number; departureRegionName: string; departureCode: string }
