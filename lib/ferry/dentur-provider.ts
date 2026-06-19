@@ -22,7 +22,10 @@ async function denturPost<T>(path: string, body?: unknown): Promise<T> {
   try {
     const res = await fetch(`${BASE}${path}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      // Raw token in Authorization — NOT `Bearer <token>`. The swagger describes
+      // it as "Bearer token" but the live API returns 401 for a Bearer prefix and
+      // accepts the bare key (verified against the real API).
+      headers: { Authorization: TOKEN as string, 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: ctrl.signal,
       cache: 'no-store',
@@ -59,10 +62,27 @@ interface WireReservationResponse {
   amount: number; currencyType: string | null; voucherDetails: WireVoucherDetail[] | null
 }
 
-// UNVERIFIED: passengerTypeID → canonical type is a best-guess. Replace once the
-// PassengerType endpoint is wired (supersedes the guessed DENTUR_TYPE_ID).
+// Verified against live API: passengerTypeID 1=Yetişkin, 2=Çocuk, 3=Bebek.
 function mapPassengerType(id: number): PassengerType {
   return id === 3 ? 'infant' : id === 2 ? 'child' : 'adult'
+}
+
+/**
+ * Normalize a Dentur clock string to "HH:MM". Live API returns "HH:MM:SS"
+ * (e.g. "09:15:00") while the rest of the app (combineDateAndTime, display,
+ * mock parity) expects "HH:MM". Regex-based — tolerant of single-digit hours
+ * ("9:15") and missing seconds; leaves anything unrecognized untouched so a
+ * format drift surfaces loudly rather than corrupting silently.
+ */
+function normalizeTime(t: string): string {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t.trim())
+  return m ? `${m[1].padStart(2, '0')}:${m[2]}` : t
+}
+
+/** "2026-06-25T00:00:00" → "2026-06-25". Robust to a plain date or a datetime. */
+function normalizeDate(d: string): string {
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.trim())
+  return m ? m[1] : d
 }
 
 function mapFare(f: WireFare): FerryFare {
@@ -83,10 +103,10 @@ function mapExpedition(e: WireExpedition): FerryTrip {
     providerExpeditionId: e.expeditionID,
     from: { id: slug(e.departure), name: e.departure, providerId: e.departureID, code: e.departurePort },
     to:   { id: slug(e.arrivial),  name: e.arrivial,  providerId: e.arrivialID, code: e.arrivialPort }, // sic
-    date: e.departureDate,
-    departureTime: e.departureTime,   // UNVERIFIED TZ: departureTime vs departureTimeTurkiye
-    arrivalTime: e.arrivalTime,
-    durationMinutes: e.duration,      // UNVERIFIED unit (assumed minutes)
+    date: normalizeDate(e.departureDate),
+    departureTime: normalizeTime(e.departureTime),  // "09:15:00" → "09:15" (mock parity)
+    arrivalTime: normalizeTime(e.arrivalTime),
+    durationMinutes: e.duration,      // verified minutes (45 = 09:15→10:00)
     operator: e.companyName,
     vessel: e.ferryName,
     passengerSeatsAvailable: e.passengerRemainingQuota,
