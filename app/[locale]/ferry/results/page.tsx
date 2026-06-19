@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
-import { Ship, Clock, Users, ArrowRight, ChevronLeft, CheckCircle, Anchor, AlertCircle, CalendarClock } from 'lucide-react'
+import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -17,13 +17,15 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import {
   useBooking,
-  getFerriesForRoute,
   selectOutboundFerry,
   selectReturnFerry,
   selectTotalPrice,
-  type FerryRoute,
   type FerryBookingItem,
 } from '@/lib/booking-context'
+import { searchFerriesWithNearestAction, type FerrySearchResult } from '@/lib/actions/ferry-search'
+import { ferryUnitFare } from '@/lib/ferry/display'
+import type { FerryTrip } from '@/lib/ferry/provider'
+import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 
 const cityNames: Record<string, string> = {
   bodrum: 'Bodrum',
@@ -39,8 +41,10 @@ export default function FerryResultsPage() {
   const router = useRouter()
   const t = useTranslations('ferryResults')
   const { state, dispatch } = useBooking()
-  const [ferries, setFerries] = React.useState<FerryRoute[]>([])
-  const [returnFerries, setReturnFerries] = React.useState<FerryRoute[]>([])
+  const [ferries, setFerries] = React.useState<FerryTrip[]>([])
+  const [returnFerries, setReturnFerries] = React.useState<FerryTrip[]>([])
+  const [outResult, setOutResult] = React.useState<FerrySearchResult | null>(null)
+  const [retResult, setRetResult] = React.useState<FerrySearchResult | null>(null)
   const [isSelectingReturn, setIsSelectingReturn] = React.useState(false)
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
@@ -64,8 +68,8 @@ export default function FerryResultsPage() {
       (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
     )
     if (!out) return
-    const routeOk = out.ferry.from.toLowerCase() === state.searchParams.from
-                 && out.ferry.to.toLowerCase() === state.searchParams.to
+    const routeOk = out.ferry.from.id === state.searchParams.from
+                 && out.ferry.to.id === state.searchParams.to
     const paxOk = out.passengerCount === state.searchParams.passengers
     if (!routeOk || !paxOk) {
       dispatch({ type: 'CLEAR_FERRY_SELECTION' })
@@ -74,16 +78,29 @@ export default function FerryResultsPage() {
   }, [state.items, state.searchParams, dispatch])
 
   React.useEffect(() => {
-    const outboundFerries = getFerriesForRoute(state.searchParams.from, state.searchParams.to)
-    setFerries(outboundFerries.map(f => ({ ...f, date: state.searchParams.date })))
-    
-    if (state.searchParams.tripType === 'round-trip') {
-      const returnFerryList = getFerriesForRoute(state.searchParams.to, state.searchParams.from)
-      setReturnFerries(returnFerryList.map(f => ({ ...f, date: state.searchParams.returnDate || '' })))
-    }
+    let cancelled = false
+    const sp = state.searchParams
+    ;(async () => {
+      const out = await searchFerriesWithNearestAction({ from: sp.from, to: sp.to, date: sp.date })
+      if (cancelled) return
+      setFerries(out.trips.map(f => ({ ...f, date: sp.date })))
+      setOutResult(out)
+
+      if (sp.tripType === 'round-trip') {
+        const ret = await searchFerriesWithNearestAction({ from: sp.to, to: sp.from, date: sp.returnDate || '' })
+        if (!cancelled) {
+          setReturnFerries(ret.trips.map(f => ({ ...f, date: sp.returnDate || '' })))
+          setRetResult(ret)
+        }
+      } else {
+        setReturnFerries([])
+        setRetResult(null)
+      }
+    })()
+    return () => { cancelled = true }
   }, [state.searchParams])
 
-  const handleSelectFerry = (ferry: FerryRoute) => {
+  const handleSelectFerry = (ferry: FerryTrip) => {
     dispatch({ type: 'SELECT_FERRY', payload: ferry })
     
     if (state.searchParams.tripType === 'round-trip') {
@@ -91,7 +108,7 @@ export default function FerryResultsPage() {
     }
   }
 
-  const handleSelectReturnFerry = (ferry: FerryRoute) => {
+  const handleSelectReturnFerry = (ferry: FerryTrip) => {
     if (!outbound) return
     dispatch({ type: 'SELECT_RETURN_FERRY', payload: ferry })
   }
@@ -167,16 +184,11 @@ export default function FerryResultsPage() {
                     </div>
                     
                     {ferries.length === 0 ? (
-                      <Card className="bg-card border-border/50">
-                        <CardContent className="p-8 text-center">
-                          <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-foreground mb-2">{t('noFerries.title')}</h3>
-                          <p className="text-muted-foreground mb-4">{t('noFerries.body')}</p>
-                          <Link href="/ferry">
-                            <Button variant="outline">{t('noFerries.cta')}</Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
+                      <FerryResultEmpty
+                        result={outResult}
+                        selectedId={outbound?.id}
+                        onSelectNearest={handleSelectFerry}
+                      />
                     ) : (
                       <div className="space-y-4">
                         {ferries.map((ferry, index) => (
@@ -186,71 +198,11 @@ export default function FerryResultsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                           >
-                            <Card 
-                              className={`bg-card border-2 transition-all cursor-pointer hover:shadow-lg ${
-                                outbound?.id === ferry.id
-                                  ? 'border-primary shadow-lg'
-                                  : 'border-border/50 hover:border-primary/50'
-                              }`}
-                              onClick={() => handleSelectFerry(ferry)}
-                            >
-                              <CardContent className="p-6">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                  <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-                                      <Ship className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <div>
-                                      <p className="font-semibold text-foreground">{ferry.operator}</p>
-                                      <p className="text-sm text-muted-foreground">{ferry.vessel}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-8">
-                                    <div className="text-center">
-                                      <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
-                                      <p className="text-sm text-muted-foreground">{ferry.from}</p>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <div className="w-8 h-0.5 bg-border" />
-                                        <Clock className="h-4 w-4" />
-                                        <span className="text-sm">{ferry.duration}</span>
-                                        <div className="w-8 h-0.5 bg-border" />
-                                      </div>
-                                      <p className="text-xs text-muted-foreground mt-1">{t('direct')}</p>
-                                    </div>
-                                    <div className="text-center">
-                                      <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
-                                      <p className="text-sm text-muted-foreground">{ferry.to}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                      <p className="text-2xl font-bold text-primary">{ferry.price}</p>
-                                      <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-2 items-end">
-                                      <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                        {t('seatsLeft', { count: ferry.availableSeats })}
-                                      </Badge>
-                                      <Button 
-                                        size="sm" 
-                                        className={outbound?.id === ferry.id ? 'bg-primary' : 'bg-primary/80'}
-                                      >
-                                        {outbound?.id === ferry.id ? (
-                                          <>
-                                            <CheckCircle className="h-4 w-4 mr-1" />
-                                            {t('selected')}
-                                          </>
-                                        ) : (
-                                          t('select')
-                                        )}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
+                            <FerryCard
+                              ferry={ferry}
+                              selected={outbound?.id === ferry.id}
+                              onSelect={() => handleSelectFerry(ferry)}
+                            />
                           </motion.div>
                         ))}
                       </div>
@@ -276,82 +228,30 @@ export default function FerryResultsPage() {
                       <Badge variant="secondary">{t('ferriesFound', { count: returnFerries.length })}</Badge>
                     </div>
                     
-                    <div className="space-y-4">
-                      {returnFerries.map((ferry, index) => (
-                        <motion.div
-                          key={ferry.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Card 
-                            className={`bg-card border-2 transition-all cursor-pointer hover:shadow-lg ${
-                              returnF?.id === ferry.id
-                                ? 'border-primary shadow-lg'
-                                : 'border-border/50 hover:border-primary/50'
-                            }`}
-                            onClick={() => handleSelectReturnFerry(ferry)}
+                    {returnFerries.length > 0 ? (
+                      <div className="space-y-4">
+                        {returnFerries.map((ferry, index) => (
+                          <motion.div
+                            key={ferry.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
                           >
-                            <CardContent className="p-6">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-                                    <Ship className="h-8 w-8 text-primary" />
-                                  </div>
-                                  <div>
-                                    <p className="font-semibold text-foreground">{ferry.operator}</p>
-                                    <p className="text-sm text-muted-foreground">{ferry.vessel}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-8">
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
-                                    <p className="text-sm text-muted-foreground">{ferry.from}</p>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <div className="w-8 h-0.5 bg-border" />
-                                      <Clock className="h-4 w-4" />
-                                      <span className="text-sm">{ferry.duration}</span>
-                                      <div className="w-8 h-0.5 bg-border" />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">Direct</p>
-                                  </div>
-                                  <div className="text-center">
-                                    <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
-                                    <p className="text-sm text-muted-foreground">{ferry.to}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  <div className="text-right">
-                                    <p className="text-2xl font-bold text-primary">{ferry.price}</p>
-                                    <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
-                                  </div>
-                                  <div className="flex flex-col gap-2 items-end">
-                                    <Badge variant={ferry.availableSeats > 20 ? 'secondary' : 'destructive'} className="text-xs">
-                                      {t('seatsLeft', { count: ferry.availableSeats })}
-                                    </Badge>
-                                    <Button
-                                      size="sm"
-                                      className={returnF?.id === ferry.id ? 'bg-primary' : 'bg-primary/80'}
-                                    >
-                                      {returnF?.id === ferry.id ? (
-                                        <>
-                                          <CheckCircle className="h-4 w-4 mr-1" />
-                                          {t('selected')}
-                                        </>
-                                      ) : (
-                                        t('select')
-                                      )}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
-                    </div>
+                            <FerryCard
+                              ferry={ferry}
+                              selected={returnF?.id === ferry.id}
+                              onSelect={() => handleSelectReturnFerry(ferry)}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <FerryResultEmpty
+                        result={retResult}
+                        selectedId={returnF?.id}
+                        onSelectNearest={handleSelectReturnFerry}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -370,10 +270,10 @@ export default function FerryResultsPage() {
                               <Ship className="h-4 w-4" />
                               <span>{t('outbound')}</span>
                             </div>
-                            <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
+                            <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{outbound.operator}</p>
-                            <p className="text-primary font-medium mt-2">€{outboundItem!.ferry.price} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
+                            <p className="text-primary font-medium mt-2">€{ferryUnitFare(outboundItem!.ferry)} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
                           </div>
 
                           {returnF && (
@@ -382,10 +282,10 @@ export default function FerryResultsPage() {
                                 <Ship className="h-4 w-4" />
                                 <span>{t('return')}</span>
                               </div>
-                              <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
+                              <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                               <p className="text-sm text-muted-foreground">{returnF.operator}</p>
-                              <p className="text-primary font-medium mt-2">€{returnItem!.ferry.price} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
+                              <p className="text-primary font-medium mt-2">€{ferryUnitFare(returnItem!.ferry)} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
                             </div>
                           )}
 

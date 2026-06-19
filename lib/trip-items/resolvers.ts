@@ -14,6 +14,7 @@
  * priceAmount is EUR decimal — matches the existing createTrip contract.
  */
 
+import { ferryUnitFare } from '@/lib/ferry/display'
 import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
 import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
@@ -36,21 +37,21 @@ export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
   const { item, ferry, passengerCount } = ctx
   return {
     type: 'ferry',
-    title: `${ferry.from} → ${ferry.to} (${ferry.operator})`,
+    title: `${ferry.from.name} → ${ferry.to.name} (${ferry.operator})`,
     scheduledAt: combineDateAndTime(item.date, ferry.departureTime),
     endsAt: combineDateAndTime(item.date, ferry.arrivalTime),
     passengerCount,
-    priceAmount: ferry.price * passengerCount,
+    priceAmount: ferryUnitFare(ferry) * passengerCount,
     priceCurrency: 'EUR',
     metadata: {
-      from_port: ferry.from,
-      to_port: ferry.to,
+      from_port: ferry.from.name,
+      to_port: ferry.to.name,
       operator: ferry.operator,
       vessel: ferry.vessel,
       departure_time: ferry.departureTime,
       arrival_time: ferry.arrivalTime,
       ferry_id: ferry.id,
-      per_passenger_price: ferry.price,
+      per_passenger_price: ferryUnitFare(ferry),
     },
   }
 }

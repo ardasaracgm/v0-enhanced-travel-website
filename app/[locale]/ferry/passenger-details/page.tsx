@@ -82,7 +82,7 @@ export default function PassengerDetailsPage() {
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
-  // The return ferry BookingItem (not just the FerryRoute) — needed to remove
+  // The return ferry BookingItem (not just the FerryTrip) — needed to remove
   // it via the shared remove logic (CLEAR_RETURN_FERRY + one-way reset).
   const returnFerryItem = state.items.find(i => i.type === 'ferry' && i.leg === 'return')
   const removeItem = useRemoveBookingItem()
@@ -187,9 +187,9 @@ export default function PassengerDetailsPage() {
                 </Link>
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold">
-                    <span>{outbound.from}</span>
+                    <span>{outbound.from.name}</span>
                     <ArrowRight className="h-4 w-4" />
-                    <span>{outbound.to}</span>
+                    <span>{outbound.to.name}</span>
                   </div>
                   <p className="text-sm text-primary-foreground/80">
                     {state.searchParams.date} · {outbound.departureTime} - {outbound.arrivalTime}
@@ -430,7 +430,7 @@ export default function PassengerDetailsPage() {
                             <Ship className="h-4 w-4" />
                             <span>{t('summary.outbound')}</span>
                           </div>
-                          <p className="font-semibold text-foreground">{outbound.from} → {outbound.to}</p>
+                          <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
                           <p className="text-sm text-muted-foreground">{state.searchParams.date}</p>
                           <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                           <p className="text-sm text-muted-foreground">{outbound.operator}</p>
@@ -454,7 +454,7 @@ export default function PassengerDetailsPage() {
                                 </button>
                               )}
                             </div>
-                            <p className="font-semibold text-foreground">{returnF.from} → {returnF.to}</p>
+                            <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
                             <p className="text-sm text-muted-foreground">{state.searchParams.returnDate}</p>
                             <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{returnF.operator}</p>

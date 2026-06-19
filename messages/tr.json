@@ -1235,10 +1235,16 @@
     "steps": { "selectFerry": "Feribot Seçimi", "extras": "Ekstralar", "passengers": "Yolcular", "payment": "Ödeme" },
     "outboundHeading": "Gidiş: {from} → {to}",
     "ferriesFound": "{count, plural, one {# sefer bulundu} other {# sefer bulundu}}",
-    "noFerries": {
-      "title": "Sefer bulunamadı",
-      "body": "Bu rota için sefer bulunmuyor. Lütfen farklı bir rota veya tarih deneyin.",
-      "cta": "Aramayı Değiştir"
+    "routeNotOffered": {
+      "title": "Bu rota mevcut değil",
+      "body": "Bu rotada şu an feribot seferi sunmuyoruz. Lütfen farklı bir rota deneyin."
+    },
+    "noTripsOnDate": {
+      "title": "Seçtiğin tarihte sefer yok. En yakın: {date}"
+    },
+    "noTripsInWindow": {
+      "title": "Bu tarih civarında sefer yok",
+      "body": "Seçtiğin tarihe yakın sefer bulunamadı. Lütfen farklı bir tarih dene."
     },
     "direct": "Direkt",
     "perPerson": "kişi başı",

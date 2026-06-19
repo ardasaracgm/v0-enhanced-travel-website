@@ -36,12 +36,13 @@ import {
   selectReturnFerry,
   selectCarRental,
   selectTotalPrice,
-  type FerryRoute,
   type CarRentalSelection,
   type Passenger,
   type BookingItem,
 } from '@/lib/booking-context'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { ferryDisplayPrice } from '@/lib/ferry/display'
+import type { FerryTrip } from '@/lib/ferry/provider'
 import { confirmFromReturn } from '@/lib/actions/confirm-from-return'
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -97,8 +98,8 @@ interface BookingSnapshot {
   contactEmail:       string
   contactPhone:       string
   paymentWhatsAppUrl: string
-  outbound:           FerryRoute | null
-  returnFerry:        FerryRoute | null
+  outbound:           FerryTrip | null
+  returnFerry:        FerryTrip | null
   car:                CarRentalSelection | null
   passengers:         Passenger[]
   searchDate:         string
@@ -184,8 +185,8 @@ export default function ConfirmationPage() {
         searchDate:  state.searchParams.date,
         returnDate:  state.searchParams.returnDate ?? '',
         passengerCount,
-        ferryTotal:  outbound ? outbound.price * passengerCount : 0,
-        returnTotal: returnFerry ? returnFerry.price * passengerCount : 0,
+        ferryTotal:  outbound ? ferryDisplayPrice(outbound, passengerCount) : 0,
+        returnTotal: returnFerry ? ferryDisplayPrice(returnFerry, passengerCount) : 0,
         carTotal:    car ? car.pricePerDay * car.days : 0,
         grandTotal:  selectTotalPrice(state),
         items:       state.items,

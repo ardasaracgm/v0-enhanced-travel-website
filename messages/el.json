@@ -1229,10 +1229,16 @@
     "steps": { "selectFerry": "Επιλογή πλοίου", "extras": "Έξτρα", "passengers": "Επιβάτες", "payment": "Πληρωμή" },
     "outboundHeading": "Μετάβαση: {from} → {to}",
     "ferriesFound": "{count, plural, one {# δρομολόγιο βρέθηκε} other {# δρομολόγια βρέθηκαν}}",
-    "noFerries": {
-      "title": "Δεν βρέθηκαν δρομολόγια",
-      "body": "Δεν υπάρχουν διαθέσιμα δρομολόγια για αυτή τη διαδρομή. Δοκιμάστε διαφορετική διαδρομή ή ημερομηνία.",
-      "cta": "Αλλαγή αναζήτησης"
+    "routeNotOffered": {
+      "title": "Route not available",
+      "body": "We don't currently offer ferries on this route. Please try a different route."
+    },
+    "noTripsOnDate": {
+      "title": "No ferries on your selected date. Nearest available: {date}"
+    },
+    "noTripsInWindow": {
+      "title": "No ferries around this date",
+      "body": "There are no sailings near your selected date. Please try a different date."
     },
     "direct": "Απευθείας",
     "perPerson": "ανά άτομο",

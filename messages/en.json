@@ -1235,10 +1235,16 @@
     "steps": { "selectFerry": "Select Ferry", "extras": "Extras", "passengers": "Passengers", "payment": "Payment" },
     "outboundHeading": "Outbound: {from} to {to}",
     "ferriesFound": "{count, plural, one {# ferry found} other {# ferries found}}",
-    "noFerries": {
-      "title": "No ferries found",
-      "body": "No ferries available for this route. Please try a different route or date.",
-      "cta": "Change Search"
+    "routeNotOffered": {
+      "title": "Route not available",
+      "body": "We don't currently offer ferries on this route. Please try a different route."
+    },
+    "noTripsOnDate": {
+      "title": "No ferries on your selected date. Nearest available: {date}"
+    },
+    "noTripsInWindow": {
+      "title": "No ferries around this date",
+      "body": "There are no sailings near your selected date. Please try a different date."
     },
     "direct": "Direct",
     "perPerson": "per person",

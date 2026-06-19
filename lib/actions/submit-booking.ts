@@ -16,7 +16,7 @@
 import { createTrip, type CreateTripInput, type CreateTripErrorCode } from './create-trip'
 import { createPaymentOrder } from './create-payment-order'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
-import { getFerryById } from '@/lib/ferry-mock-data'
+import { getFerryProvider } from '@/lib/ferry'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
 import { assignPlate, computeEndDate } from '@/lib/car-availability'
@@ -230,7 +230,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
 
   for (const item of input.items) {
     if (item.type === 'ferry') {
-      const ferry = getFerryById(item.ferryId)
+      const ferry = await (await getFerryProvider()).getTrip(item.ferryId)
       if (!ferry) {
         return { ok: false, code: 'validation_failed', error: `Ferry not found: ${item.ferryId}` }
       }

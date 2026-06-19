@@ -41,7 +41,7 @@ function ferryRow(item: FerryBookingItem): ItemSummaryRow {
   const label = item.leg === 'outbound' ? 'Outbound' : 'Return'
   return {
     label,
-    title: `${item.ferry.from} → ${item.ferry.to}`,
+    title: `${item.ferry.from.name} → ${item.ferry.to.name}`,
     detail: `${item.date} · ${item.ferry.departureTime} - ${item.ferry.arrivalTime}`,
     breakdownLabel: `${label} (${item.passengerCount}×)`,
     amount: item.priceAmount,
