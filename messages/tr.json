@@ -1260,6 +1260,7 @@
     "total": "Toplam",
     "continueToPassengers": "Yolcu Bilgilerine Geç",
     "selectReturnHint": "Devam etmek için lütfen bir dönüş feribotu seçin",
+    "sameOperatorDiscount": "Gidiş-dönüş aynı firma indirimi",
     "summaryEmpty": "Rezervasyon özetini görmek için bir feribot seçin",
     "dateChange": { "title": "Tarih Değişikliği", "body": "48 saat öncesine kadar tarih değişikliği için bize ulaşabilirsiniz." }
   },

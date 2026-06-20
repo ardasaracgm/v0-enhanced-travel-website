@@ -23,7 +23,6 @@ import {
   type FerryBookingItem,
 } from '@/lib/booking-context'
 import { searchFerriesWithNearestAction, type FerrySearchResult } from '@/lib/actions/ferry-search'
-import { ferryUnitFare } from '@/lib/ferry/display'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 
@@ -49,15 +48,12 @@ export default function FerryResultsPage() {
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
 
-  // Özet/fiyat tek kaynağı: seçili ferry BOOKING ITEM'ları (priceAmount +
-  // passengerCount saklı). Özet satırı bunlardan beslenir → Total ile her zaman
-  // tutarlı (selectTotalPrice de priceAmount'ı toplar).
-  const outboundItem = state.items.find(
-    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound'
-  ) ?? null
-  const returnItem = state.items.find(
-    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
-  ) ?? null
+  // Round-trip aynı firma → tek indirimli round-trip rezervasyonu (ferryPairPrices
+  // ile aynı tespit: operator eşitliği). Sadece özet notu için; money-path değil.
+  const sameOperatorRoundTrip =
+    state.searchParams.tripType === 'round-trip' &&
+    !!outbound && !!returnF &&
+    outbound.operator === returnF.operator
 
   // Stale seçim koruması: seçili ferry artık güncel rota/yolcu-sayısıyla
   // eşleşmiyorsa geçersiz → temizle. "0 sefer" rota değişiminde özetin hayalet
@@ -287,7 +283,6 @@ export default function FerryResultsPage() {
                             <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{outbound.operator}</p>
-                            <p className="text-primary font-medium mt-2">€{ferryUnitFare(outboundItem!.ferry)} × {outboundItem!.passengerCount} = €{outboundItem!.priceAmount}</p>
                           </div>
 
                           {returnF && (
@@ -299,7 +294,6 @@ export default function FerryResultsPage() {
                               <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                               <p className="text-sm text-muted-foreground">{returnF.operator}</p>
-                              <p className="text-primary font-medium mt-2">€{ferryUnitFare(returnItem!.ferry)} × {returnItem!.passengerCount} = €{returnItem!.priceAmount}</p>
                             </div>
                           )}
 
@@ -312,6 +306,9 @@ export default function FerryResultsPage() {
                               <span className="text-foreground">{t('total')}</span>
                               <span className="text-primary">€{selectTotalPrice(state)}</span>
                             </div>
+                            {sameOperatorRoundTrip && (
+                              <p className="text-xs text-primary mt-2">{t('sameOperatorDiscount')}</p>
+                            )}
                           </div>
 
                           <Button

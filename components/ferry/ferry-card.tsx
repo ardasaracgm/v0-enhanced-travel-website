@@ -111,8 +111,8 @@ export function FerryResultEmpty({
       <div className="space-y-4">
         <Card className="bg-card border-border/50">
           <CardContent className="p-6 text-center">
-            <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-foreground font-medium">{t('noTripsOnDate.title', { date: nearest.date })}</p>
+            <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-3" />
+            <p className="text-destructive font-medium">{t('noTripsOnDate.title', { date: nearest.date })}</p>
           </CardContent>
         </Card>
         <FerryCard
