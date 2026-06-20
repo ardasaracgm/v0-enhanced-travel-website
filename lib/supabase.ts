@@ -200,6 +200,10 @@ export interface FerryItemMetadata {
   // reserveFerry needs it to rebuild the outbound/return legs at reservation time
   // (it cannot be inferred from dates alone — a same-day round trip is ambiguous).
   direction?: 'outbound' | 'return'
+  // True on the RETURN item of a round trip — its priceAmount is a provisional
+  // equal split of the single Dentur round-trip fare (the pair sums to the real
+  // total). reserveFerry later overwrites both legs with the voucherDetails amounts.
+  round_trip_pair?: boolean
   // --- Dentur reservation result (written by reserveFerry on the OUTBOUND item;
   //     reserve_state is the state machine, mirroring insurance policy_state) ---
   reserve_state?: 'pending' | 'reserved' | 'failed'
