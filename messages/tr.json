@@ -1183,6 +1183,7 @@
     "outboundFerry": "Gidiş feribotu",
     "returnFerry": "Dönüş feribotu",
     "carRental": "Araç kiralama",
+    "carRentalRemoveAria": "Aracı kaldır",
     "total": "Toplam",
     "continueToPassengers": "Yolculara Devam Et",
     "skipNoCar": "Atla — araç istemiyorum",

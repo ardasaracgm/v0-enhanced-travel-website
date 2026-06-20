@@ -271,6 +271,15 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     if (validRange) syncCar(car.id, pickupDate, dropoffDate)
   }
 
+  // Özet'teki × — aracı sepetten kaldır: vurguyu da temizle (handleSelectCar
+  // toggle-off ile birebir aynı). Tarih seçicileri korunur — yeniden seçimde
+  // kullanılır; ferry-window advisory yalnız araç date-picker'ında görünür,
+  // araç seçili değilken zararsız. Başka yan etki yok.
+  function handleRemoveCar() {
+    setSelectedModelKey(null)
+    dispatch({ type: 'SET_CAR_RENTAL', payload: null })
+  }
+
   function handlePickupChange(v: string) {
     setPickupDate(v)
     reconcileCar(selectedModelKey, v, dropoffDate)
@@ -846,17 +855,29 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         </div>
                       )}
 
-                      {/* Selected car */}
+                      {/* Selected car — × ile kaldır (valiz/transfer ile aynı desen) */}
                       {selectedCar && dayChosen && (
                         <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                          <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
-                          <p className="font-medium text-foreground text-sm">{selectedCar.model}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {carBookingItem
-                              ? summarizeItem(carBookingItem, locale).detail
-                              : t('dayCount', { count: days })}
-                          </p>
-                          <p className="text-primary text-sm font-semibold mt-1">€{selectedCar.price * days}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
+                              <p className="font-medium text-foreground text-sm">{selectedCar.model}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {carBookingItem
+                                  ? summarizeItem(carBookingItem, locale).detail
+                                  : t('dayCount', { count: days })}
+                              </p>
+                              <p className="text-primary text-sm font-semibold mt-1">€{selectedCar.price * days}</p>
+                            </div>
+                            <button
+                              type="button"
+                              aria-label={t('carRentalRemoveAria')}
+                              onClick={handleRemoveCar}
+                              className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                       )}
 

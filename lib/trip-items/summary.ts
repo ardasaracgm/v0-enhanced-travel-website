@@ -63,6 +63,16 @@ function fmtDate(iso: string, locale: string): string {
   })
 }
 
+// Locale-aware UZUN tarih ("21 Haziran 2026 Pazar" / "Sunday, June 21, 2026"),
+// UTC sabit (ham YYYY-MM-DD'yi parça-parça parse → gün kayması yok). Sıra/dil
+// Intl tarafından locale'e göre belirlenir. Sefer kartı (ferry-card) kullanır.
+export function formatDateLong(iso: string, locale: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale, {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+  })
+}
+
 function carRow(item: CarRentalBookingItem, locale: string): ItemSummaryRow {
   const name = item.brand ? `${item.brand} ${item.model}` : item.model
   const isTr = locale === 'tr'
