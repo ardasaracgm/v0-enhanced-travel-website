@@ -5,7 +5,7 @@ import { getFerryProvider } from '@/lib/ferry'
 import { buildFerryReservationRequest, type FerryLegInput } from '@/lib/ferry/reservation-request'
 import { reconcileVoucherSplit, expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
 import type { FerryItemMetadata } from '@/lib/supabase'
-import type { FerryReservationPassenger } from '@/lib/ferry/provider'
+import type { FerryReservationPassenger, FerryReservationResult } from '@/lib/ferry/provider'
 
 /**
  * reserveFerry — books the trip's ferry leg(s) with the provider (Dentur:
@@ -33,6 +33,10 @@ export type ReserveFerryResult =
   | { ok: false; error: string }
 
 type SupabaseAdmin = ReturnType<typeof getSupabaseAdmin>
+
+// The per-leg shape reserveFerry builds from trip_items (id + typed meta + cents).
+// Named so the extracted persist step can take it verbatim.
+type ReserveLeg = { id: string; meta: FerryItemMetadata; priceCents: number }
 
 export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> {
   const supabase = getSupabaseAdmin()
@@ -140,63 +144,81 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
       return { ok: false, error: `ferry reservation rejected: ${msg}` }
     }
 
-    // ---- Real per-leg split from the voucher amounts (round-trip reconcile) ----
-    // Each voucher is per-passenger-per-leg; summing amount by expeditionID gives
-    // the REAL per-leg fare, correcting our provisional EQUAL split. This must
-    // NEVER move money: the charge already happened against trips.total_amount
-    // (= the provisional total). We only REDISTRIBUTE the same total; if the
-    // voucher total disagrees with what we charged, we touch no price and flag it.
-    // The pure cents math lives in reconcileVoucherSplit (unit-tested in isolation,
-    // exercised by probes); here we only bind its result to the DB writes below.
-    const split = reconcileVoucherSplit(items, result.vouchers ?? [])
-    if (split.mismatch) {
-      console.error(
-        `[reserveFerry] voucher split unusable for trip ${tripId} ` +
-        `(real=${split.realCents}¢ charged=${split.provisionalCents}¢ everyLegMatched=${split.everyLegMatched}) ` +
-        `— keeping provisional split, flagging for reconcile`,
-      )
-    }
-
-    // RETURN leg first (best-effort). If its write fails we DON'T correct outbound
-    // either → both stay provisional-equal and the sum is preserved.
-    let splitApplied = split.totalsMatch
-    if (split.totalsMatch) {
-      for (const ret of items.filter((it) => it.id !== outbound.id)) {
-        const ok = await writeItem(supabase, ret.id, { price_amount: split.correctedCentsByItemId.get(ret.id)! / 100 })
-        if (!ok) splitApplied = false // writeItem logged; leave both legs provisional
-      }
-    }
-
-    // OUTBOUND anchor — CRITICAL idempotency commit barrier (flips reserve_state →
-    // 'reserved'). If it fails the booking EXISTS at the provider but we lost the
-    // PNR → manual reconcile. Its price is corrected ONLY when the return write(s)
-    // landed, so the pair can never end up half-corrected. The real per-voucher
-    // amounts persist on vouchers[] regardless → reconcile data survives even when
-    // the split stays provisional.
-    const persisted: FerryItemMetadata = {
-      ...outbound.meta,
-      reserve_state: 'reserved',
-      reservation_id: result.providerReservationId,
-      reservation_guid: result.providerReservationGuid,
-      vouchers: result.vouchers,
-      ...(split.mismatch ? { amount_mismatch: split.mismatch } : {}),
-    }
-    const outboundCents = splitApplied ? split.correctedCentsByItemId.get(outbound.id)! : undefined
-    const ok = await writeItem(supabase, outbound.id, {
-      metadata: persisted,
-      ...(outboundCents !== undefined ? { price_amount: outboundCents / 100 } : {}),
-    })
-    if (!ok) {
-      console.error('[reserveFerry] CRITICAL: reservation created but persist failed', tripId, 'reservationId=', result.providerReservationId)
-      return { ok: false, error: `reservation ${result.providerReservationId} created but persist failed — manual reconcile` }
-    }
-    return { ok: true, reservationId: result.providerReservationId }
+    // Bind the reconcile + price/PNR writes (the money path). Extracted verbatim so
+    // a probe can exercise it with a synthetic result, no Dentur call. See below.
+    return persistReservationResult(supabase, tripId, items, outbound, result)
   } catch (err) {
     // NON-FATAL. Lease KEPT (not reset): the throw may be a timeout post-creation;
     // the 5-min expiry gates the retry so an in-flight booking is not duplicated.
     console.error('[reserveFerry] failed for trip', tripId, err)
     return { ok: false, error: err instanceof Error ? err.message : 'reserveFerry failed' }
   }
+}
+
+/**
+ * persistReservationResult — binds a SUCCESSFUL provider reservation onto the DB:
+ * reconciles the real per-leg voucher split and commits price/PNR/state. Extracted
+ * from reserveFerry's body VERBATIM (behaviour-preserving) so the money path can be
+ * probed with a synthetic result without calling Dentur. Caller guarantees result.ok.
+ */
+export async function persistReservationResult(
+  supabase: SupabaseAdmin,
+  tripId: string,
+  items: ReserveLeg[],
+  outbound: ReserveLeg,
+  result: FerryReservationResult,
+): Promise<ReserveFerryResult> {
+  // ---- Real per-leg split from the voucher amounts (round-trip reconcile) ----
+  // Each voucher is per-passenger-per-leg; summing amount by expeditionID gives
+  // the REAL per-leg fare, correcting our provisional EQUAL split. This must
+  // NEVER move money: the charge already happened against trips.total_amount
+  // (= the provisional total). We only REDISTRIBUTE the same total; if the
+  // voucher total disagrees with what we charged, we touch no price and flag it.
+  // The pure cents math lives in reconcileVoucherSplit (unit-tested in isolation,
+  // exercised by probes); here we only bind its result to the DB writes below.
+  const split = reconcileVoucherSplit(items, result.vouchers ?? [])
+  if (split.mismatch) {
+    console.error(
+      `[reserveFerry] voucher split unusable for trip ${tripId} ` +
+      `(real=${split.realCents}¢ charged=${split.provisionalCents}¢ everyLegMatched=${split.everyLegMatched}) ` +
+      `— keeping provisional split, flagging for reconcile`,
+    )
+  }
+
+  // RETURN leg first (best-effort). If its write fails we DON'T correct outbound
+  // either → both stay provisional-equal and the sum is preserved.
+  let splitApplied = split.totalsMatch
+  if (split.totalsMatch) {
+    for (const ret of items.filter((it) => it.id !== outbound.id)) {
+      const ok = await writeItem(supabase, ret.id, { price_amount: split.correctedCentsByItemId.get(ret.id)! / 100 })
+      if (!ok) splitApplied = false // writeItem logged; leave both legs provisional
+    }
+  }
+
+  // OUTBOUND anchor — CRITICAL idempotency commit barrier (flips reserve_state →
+  // 'reserved'). If it fails the booking EXISTS at the provider but we lost the
+  // PNR → manual reconcile. Its price is corrected ONLY when the return write(s)
+  // landed, so the pair can never end up half-corrected. The real per-voucher
+  // amounts persist on vouchers[] regardless → reconcile data survives even when
+  // the split stays provisional.
+  const persisted: FerryItemMetadata = {
+    ...outbound.meta,
+    reserve_state: 'reserved',
+    reservation_id: result.providerReservationId,
+    reservation_guid: result.providerReservationGuid,
+    vouchers: result.vouchers,
+    ...(split.mismatch ? { amount_mismatch: split.mismatch } : {}),
+  }
+  const outboundCents = splitApplied ? split.correctedCentsByItemId.get(outbound.id)! : undefined
+  const ok = await writeItem(supabase, outbound.id, {
+    metadata: persisted,
+    ...(outboundCents !== undefined ? { price_amount: outboundCents / 100 } : {}),
+  })
+  if (!ok) {
+    console.error('[reserveFerry] CRITICAL: reservation created but persist failed', tripId, 'reservationId=', result.providerReservationId)
+    return { ok: false, error: `reservation ${result.providerReservationId} created but persist failed — manual reconcile` }
+  }
+  return { ok: true, reservationId: result.providerReservationId }
 }
 
 // One row update for metadata and/or price_amount (jsonb written whole — Supabase
