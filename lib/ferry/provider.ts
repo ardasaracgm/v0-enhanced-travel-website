@@ -99,7 +99,11 @@ export interface FerryReservationResult {
   providerReservationGuid?: string    // Dentur reservationGUID
   amount?: number                     // Dentur amount
   currency?: string                   // Dentur currencyType
-  vouchers?: { pnr: number; direction: string; passengerName: string }[]  // Dentur voucherDetails[]
+  vouchers?: {
+    pnr: number; direction: string; passengerName: string
+    amount?: number       // Dentur voucherDetails[].amount — this voucher's own fare (EUR)
+    expeditionId?: number // Dentur voucherDetails[].tripID (== expeditionID) — the leg match key
+  }[]  // Dentur voucherDetails[]
 }
 
 // ---- The adapter contract ----------------------------------------------

@@ -57,7 +57,14 @@ interface WireExpedition {
   passenger: WireFare[] | null
 }
 interface WireExpeditionResponse { trips: WireExpedition[] | null }
-interface WireVoucherDetail { pnr: number; ticketDirection: string | null; firstName: string | null; lastName: string | null }
+interface WireVoucherDetail {
+  pnr: number; ticketDirection: string | null; firstName: string | null; lastName: string | null
+  // Per-voucher (= per-passenger-per-leg) fields for the post-reserve split.
+  // tripID == expeditionID (TripInfo's key; matches our meta.ferry_id) — NOT ferryId
+  // (that field is the vessel id). amount = this voucher's own fare (EUR decimal).
+  // Names/casing confirmed against the live swagger VoucherDetail schema.
+  amount: number; tripID: number
+}
 interface WireReservationResponse {
   errors: string[] | null; reservationID: number; reservationGUID: string | null
   amount: number; currencyType: string | null; voucherDetails: WireVoucherDetail[] | null
@@ -243,6 +250,8 @@ export const DenturFerryProvider: FerryProvider = {
         pnr: v.pnr,
         direction: v.ticketDirection ?? '',
         passengerName: `${v.firstName ?? ''} ${v.lastName ?? ''}`.trim(),
+        amount: v.amount,
+        expeditionId: v.tripID, // tripID == expeditionID (NOT ferryId/vessel)
       })),
     }
   },
