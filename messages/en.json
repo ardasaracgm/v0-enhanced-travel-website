@@ -1183,6 +1183,7 @@
     "outboundFerry": "Outbound ferry",
     "returnFerry": "Return ferry",
     "carRental": "Car rental",
+    "carRentalRemoveAria": "Remove car rental",
     "total": "Total",
     "continueToPassengers": "Continue to Passengers",
     "skipNoCar": "Skip — no car needed",

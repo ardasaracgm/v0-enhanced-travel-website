@@ -1,12 +1,13 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Ship, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ferryUnitFare, formatDuration } from '@/lib/ferry/display'
+import { formatDateLong } from '@/lib/trip-items/summary'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import type { FerrySearchResult } from '@/lib/actions/ferry-search'
 
@@ -15,6 +16,7 @@ export function FerryCard({
   ferry, selected, onSelect,
 }: { ferry: FerryTrip; selected: boolean; onSelect: () => void }) {
   const t = useTranslations('ferryResults')
+  const locale = useLocale()
   return (
     <Card
       className={`bg-card border-2 transition-all cursor-pointer hover:shadow-lg ${
@@ -37,6 +39,7 @@ export function FerryCard({
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
               <p className="text-sm text-muted-foreground">{ferry.from.name}</p>
+              <p className="text-xs text-muted-foreground">{formatDateLong(ferry.date, locale)}</p>
             </div>
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2 text-muted-foreground">
