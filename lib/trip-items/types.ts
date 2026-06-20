@@ -17,7 +17,7 @@
  */
 
 import type { AnyZodObject } from 'zod'
-import type { TripItemType, TripItemMetadata } from '@/lib/supabase'
+import type { TripItemType, TripItemMetadata, PassengerType } from '@/lib/supabase'
 import type { LuggageCounts } from '@/lib/luggage-rates'
 import type { FerryTrip } from '@/lib/ferry/provider'
 
@@ -121,6 +121,9 @@ export interface FerryResolveCtx {
   /** Resolved schedule (provider.getTrip stays at the call site — I/O upstream). */
   ferry: FerryTrip
   passengerCount: number
+  /** Per-passenger types (derivePassengerType @ outbound date) → authoritative
+   *  per-type fare sum (ferryFaresTotal). Length matches passengerCount. */
+  passengerTypes: PassengerType[]
 }
 
 /** Minimal car row the price resolver needs (from the cars table). */

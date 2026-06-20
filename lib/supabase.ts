@@ -193,6 +193,27 @@ export interface FerryItemMetadata {
   duration_minutes?: number
   seat_class?: 'economy' | 'business' | 'vip'
   vehicle?: { type: string; plate?: string } | null
+  // The provider sailing id (e.g. "dentur:12345") — written by resolveFerryItem;
+  // reserveFerry strips the prefix back to the Dentur expeditionID.
+  ferry_id?: string
+  // Which leg this row is — written by resolveFerryItem from the booking input.
+  // reserveFerry needs it to rebuild the outbound/return legs at reservation time
+  // (it cannot be inferred from dates alone — a same-day round trip is ambiguous).
+  direction?: 'outbound' | 'return'
+  // True on the RETURN item of a round trip — its priceAmount is a provisional
+  // equal split of the single Dentur round-trip fare (the pair sums to the real
+  // total). reserveFerry later overwrites both legs with the voucherDetails amounts.
+  round_trip_pair?: boolean
+  // Reconciliation flag: set when Dentur's voucher total != the charged total —
+  // the provisional split is KEPT (Σ price_amount stays == total_amount == charge)
+  // and this surfaces the discrepancy for the admin backstop. Cents, not float.
+  amount_mismatch?: { charged_cents: number; dentur_cents: number }
+  // --- Dentur reservation result (written by reserveFerry on the OUTBOUND item;
+  //     reserve_state is the state machine, mirroring insurance policy_state) ---
+  reserve_state?: 'pending' | 'reserved' | 'failed'
+  reservation_id?: number          // Dentur reservationID
+  reservation_guid?: string        // Dentur reservationGUID
+  vouchers?: { pnr: number; direction: string; passengerName: string }[]
 }
 
 export interface TransferItemMetadata {

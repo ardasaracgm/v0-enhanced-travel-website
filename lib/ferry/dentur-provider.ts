@@ -57,7 +57,14 @@ interface WireExpedition {
   passenger: WireFare[] | null
 }
 interface WireExpeditionResponse { trips: WireExpedition[] | null }
-interface WireVoucherDetail { pnr: number; ticketDirection: string | null; firstName: string | null; lastName: string | null }
+interface WireVoucherDetail {
+  pnr: number; ticketDirection: string | null; firstName: string | null; lastName: string | null
+  // Per-voucher (= per-passenger-per-leg) fields for the post-reserve split.
+  // tripID == expeditionID (TripInfo's key; matches our meta.ferry_id) — NOT ferryId
+  // (that field is the vessel id). amount = this voucher's own fare (EUR decimal).
+  // Names/casing confirmed against the live swagger VoucherDetail schema.
+  amount: number; tripID: number
+}
 interface WireReservationResponse {
   errors: string[] | null; reservationID: number; reservationGUID: string | null
   amount: number; currencyType: string | null; voucherDetails: WireVoucherDetail[] | null
@@ -84,6 +91,19 @@ function normalizeTime(t: string): string {
 function normalizeDate(d: string): string {
   const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.trim())
   return m ? m[1] : d
+}
+
+/**
+ * Reservation DateTime fields (dateOfBirth, passportExpiryDate) → full ISO
+ * date-time. Dentur deserializes with System.Text.Json, which rejects a bare
+ * "YYYY-MM-DD" for a C# DateTime ("could not be converted to System.DateTime")
+ * — diagnosed from a live Step1 400. Append midnight (no offset, so a DOB is not
+ * shifted a day by timezone) when only a date was supplied; leave a full
+ * datetime untouched.
+ */
+function toDenturDateTime(d: string): string {
+  const s = d.trim()
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${s}T00:00:00` : s
 }
 
 function mapFare(f: WireFare): FerryFare {
@@ -211,8 +231,11 @@ export const DenturFerryProvider: FerryProvider = {
     }
     const passengers = req.passengers.map((p) => ({
       firstName: p.firstName, lastName: p.lastName, passportNumber: p.passportNumber,
-      gender: p.gender, passportExpiryDate: p.passportExpiryDate ?? null,
-      dateOfBirth: p.dateOfBirth, nationality: p.nationality,
+      // Dentur wants "M"/"F" (swagger PassengerInfo: "M for Male, F for Female").
+      // female → 'F'; male AND unspecified → 'M' (house rule: anything non-female → male).
+      gender: p.gender === 'female' ? 'F' : 'M',
+      passportExpiryDate: p.passportExpiryDate ? toDenturDateTime(p.passportExpiryDate) : null,
+      dateOfBirth: toDenturDateTime(p.dateOfBirth), nationality: p.nationality,
     }))
     const res = await denturPost<WireReservationResponse>('/api/ticket/CreateReservation', { header, passengers })
     const ok = !res.errors || res.errors.length === 0
@@ -227,6 +250,8 @@ export const DenturFerryProvider: FerryProvider = {
         pnr: v.pnr,
         direction: v.ticketDirection ?? '',
         passengerName: `${v.firstName ?? ''} ${v.lastName ?? ''}`.trim(),
+        amount: v.amount,
+        expeditionId: v.tripID, // tripID == expeditionID (NOT ferryId/vessel)
       })),
     }
   },

@@ -40,3 +40,11 @@ node_modules
 # Local çalışma notu — commit edilmez
 HANDOFF.md
 scripts/dentur-probe.ts
+scripts/dentur-reserve-probe.ts
+scripts/dentur-gettrip-probe.ts
+scripts/reconcile-live-probe.ts
+scripts/reserve-persist-probe.ts
+scripts/reserve-live-probe.ts
+scripts/reserve-live-probe-rt.ts
+scripts/confirm-live-probe.ts
+scripts/confirm-live-probe-rt.ts

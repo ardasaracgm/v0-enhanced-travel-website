@@ -17,6 +17,8 @@ import { createTrip, type CreateTripInput, type CreateTripErrorCode } from './cr
 import { createPaymentOrder } from './create-payment-order'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { getFerryProvider } from '@/lib/ferry'
+import { ferryPairPrices } from '@/lib/ferry/display'
+import type { FerryTrip } from '@/lib/ferry/provider'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
 import { assignPlate, computeEndDate } from '@/lib/car-availability'
@@ -228,6 +230,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   // biriktirilir, trip insert'ten SONRA yazılır.
   const carBookingDrafts: { car_id: string; start_date: string; end_date: string }[] = []
 
+  // Round-trip ferry pairing: the OUTBOUND schedule's fare table prices the whole
+  // round trip; keep it plus references to both leg items so §2b can re-price the
+  // pair as ONE charge after the loop. (Stay null/empty for one-way & car-only.)
+  let outboundFerryTrip: FerryTrip | null = null
+  let returnFerryTrip: FerryTrip | null = null
+  const ferryItemByLeg: Partial<Record<'outbound' | 'return', CreateTripInput['items'][number]>> = {}
+
+  // Authoritative outbound travel date (sail-out) — drives BOTH per-type ferry
+  // fares (here) and passenger-type derivation (§3 below). Car-only → today (Athens).
+  const outboundTravelDate = outboundDate ?? todayAthensISO()
+  // Per-passenger ferry types for the authoritative per-type fare sum. Same rule
+  // as the passenger records (§3). Empty for car-only (no ferry item).
+  const ferryPassengerTypes = hasFerry
+    ? input.passengers.map((p) => derivePassengerType(p.birthDate, outboundTravelDate))
+    : []
+
   for (const item of input.items) {
     if (item.type === 'ferry') {
       const ferry = await (await getFerryProvider()).getTrip(item.ferryId)
@@ -235,7 +253,13 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
         return { ok: false, code: 'validation_failed', error: `Ferry not found: ${item.ferryId}` }
       }
       // I/O (getFerryById) stays here; pure assembly lives in the registry resolver.
-      items.push(resolveFerryItem({ item, ferry, passengerCount: input.passengerCount }))
+      const ferryItem = resolveFerryItem({ item, ferry, passengerCount: input.passengerCount, passengerTypes: ferryPassengerTypes })
+      // Keep the outbound schedule (round-trip fare authority) + both leg items
+      // so §2b can re-price the pair as one round trip.
+      if (item.leg === 'outbound') outboundFerryTrip = ferry
+      if (item.leg === 'return') returnFerryTrip = ferry
+      ferryItemByLeg[item.leg] = ferryItem
+      items.push(ferryItem)
     } else if (item.type === 'car_rental') {
       try {
         // Gün + teslim tarihi TEK kaynaktan: pickup/dropoff tarih aralığından türer
@@ -355,12 +379,46 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     }
   }
 
-  // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND
-  //    date (sail-out) — never returnDate, never a client-sent type. Car-only
-  //    bookings have no ferry date → fall back to today (Athens); a 21+ driver
-  //    still classifies as 'adult', which is correct.
-  const outboundTravelDate = outboundDate ?? todayAthensISO()
+  // 2b. Round-trip re-pricing. Two ferry legs are ONE Dentur charge, not two
+  //     one-ways: a round trip is a single per-pax fare (returnSameDay when both
+  //     legs sail the same date, else returnDifferentDay — verified live: 1 adult
+  //     = 35 same-day / 40 different-day, vs 50 as 2×25 one-way). We compute the
+  //     pair total from the OUTBOUND schedule's fare table, then split it across
+  //     the two legs in INTEGER CENTS (floor each half, odd cent → outbound) so
+  //     the two priceAmounts sum EXACTLY to the round-trip total — no rounding
+  //     leak before createPaymentOrder's Math.round(total*100) reaches Viva. The
+  //     split is PROVISIONAL: reserveFerry overwrites each leg with the real
+  //     voucherDetails amounts post-payment; round_trip_pair tags the return so
+  //     that step finds the pair. One-way (no return leg) keeps its oneWay sum.
+  const outboundFerryItem = ferryItemByLeg.outbound
+  const returnFerryItem = ferryItemByLeg.return
+  if (outboundFerryItem && returnFerryItem) {
+    // A return leg means round-trip intent. Dates decide same- vs different-day
+    // fare; ferrySchema makes date REQUIRED on every ferry item, but assert here
+    // rather than let a missing date silently fall through to different-day (which
+    // would overcharge ~5 EUR). Explicit error, never a silent mis-price.
+    if (!outboundDate || !returnDate || !outboundFerryTrip || !returnFerryTrip) {
+      return { ok: false, code: 'validation_failed', error: 'Round-trip ferry legs are missing travel dates' }
+    }
+    // Both dates are server-trusted YYYY-MM-DD (no Date/timezone coercion) → a
+    // plain === is the correct same-day test. The per-leg split is the SAME
+    // ferryPairPrices the client cart uses, so cart total == charged total.
+    const sameDay = outboundDate === returnDate
+    const prices = ferryPairPrices(outboundFerryTrip, returnFerryTrip, ferryPassengerTypes, sameDay)
+    outboundFerryItem.priceAmount = prices.outbound
+    returnFerryItem.priceAmount = prices.return ?? returnFerryItem.priceAmount
+    // Tag only a genuine single-reservation round trip (same operator). The
+    // forward-compat different-operator case (prices.pair=false) is two
+    // independent one-ways, NOT one Dentur reservation — never tag it as a pair.
+    if (prices.pair) {
+      returnFerryItem.metadata = { ...returnFerryItem.metadata, round_trip_pair: true }
+    }
+  }
 
+  // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND
+  //    date (sail-out, outboundTravelDate above) — never returnDate, never a
+  //    client-sent type. Car-only bookings have no ferry date → today (Athens);
+  //    a 21+ driver still classifies as 'adult', which is correct.
   const leadPassenger =
     input.passengers.find((p) => p.isLead) ?? input.passengers[0]
 

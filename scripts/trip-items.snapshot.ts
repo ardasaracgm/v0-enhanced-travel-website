@@ -64,6 +64,7 @@ const FIXTURES: Fixture[] = [
         fares: [{ passengerType: 'adult', oneWay: 35, currency: 'EUR' }],
       },
       passengerCount: 2,
+      passengerTypes: ['adult', 'adult'],
     },
   },
   {
