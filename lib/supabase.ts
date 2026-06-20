@@ -204,6 +204,10 @@ export interface FerryItemMetadata {
   // equal split of the single Dentur round-trip fare (the pair sums to the real
   // total). reserveFerry later overwrites both legs with the voucherDetails amounts.
   round_trip_pair?: boolean
+  // Reconciliation flag: set when Dentur's voucher total != the charged total —
+  // the provisional split is KEPT (Σ price_amount stays == total_amount == charge)
+  // and this surfaces the discrepancy for the admin backstop. Cents, not float.
+  amount_mismatch?: { charged_cents: number; dentur_cents: number }
   // --- Dentur reservation result (written by reserveFerry on the OUTBOUND item;
   //     reserve_state is the state machine, mirroring insurance policy_state) ---
   reserve_state?: 'pending' | 'reserved' | 'failed'

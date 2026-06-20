@@ -47,13 +47,17 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
   // 1. ferry items (1 = one-way, 2 = round-trip). Anchor = the outbound row.
   const { data: rows, error: itemErr } = await supabase
     .from('trip_items')
-    .select('id, metadata')
+    .select('id, metadata, price_amount')
     .eq('trip_id', tripId)
     .eq('item_type', 'ferry')
   if (itemErr) return { ok: false, error: `ferry item lookup failed: ${itemErr.message}` }
   if (!rows || rows.length === 0) return { ok: true, skipped: 'no_ferry' }
 
-  const items = rows.map((r) => ({ id: r.id as string, meta: (r.metadata ?? {}) as FerryItemMetadata }))
+  const items = rows.map((r) => ({
+    id: r.id as string,
+    meta: (r.metadata ?? {}) as FerryItemMetadata,
+    priceCents: Math.round(Number(r.price_amount ?? 0) * 100), // cents = float-safe compare unit
+  }))
   const outbound = items.find((r) => r.meta.direction === 'outbound')
   if (!outbound) return { ok: false, error: 'ferry booking has no outbound leg' }
 
@@ -138,21 +142,79 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
     if (!result.ok) {
       // CLEAN provider rejection (no booking created) — mark failed, KEEP the lease
       // (5-min window) so a retry is gated, then surface for the admin backstop.
-      await writeMeta(supabase, outbound.id, { ...outbound.meta, reserve_state: 'failed' })
+      await writeItem(supabase, outbound.id, { metadata: { ...outbound.meta, reserve_state: 'failed' } })
       const msg = (result.errors ?? []).join('; ') || 'provider rejected reservation'
       return { ok: false, error: `ferry reservation rejected: ${msg}` }
     }
 
-    // Persist the reservation onto the outbound anchor. CRITICAL: if this write
-    // fails the booking EXISTS at the provider but we lost the PNR → manual reconcile.
+    // ---- Real per-leg split from the voucher amounts (round-trip reconcile) ----
+    // Each voucher is per-passenger-per-leg; summing amount by expeditionID gives
+    // the REAL per-leg fare, correcting our provisional EQUAL split. This must
+    // NEVER move money: the charge already happened against trips.total_amount
+    // (= the provisional total). We only REDISTRIBUTE the same total; if the
+    // voucher total disagrees with what we charged, we touch no price and flag it.
+    // All equality is INTEGER CENTS — float === on EUR (17.50+17.50 → 35.0000001)
+    // would spuriously trip the mismatch guard. Same discipline as the pricing split.
+    const isRoundTrip = items.length >= 2 // one-way's single leg is already exact
+    const vouchers = result.vouchers ?? []
+    const haveSplit =
+      vouchers.length > 0 &&
+      vouchers.every((v) => typeof v.amount === 'number' && typeof v.expeditionId === 'number')
+
+    // expeditionID → summed voucher cents
+    const realCentsByExp = new Map<number, number>()
+    for (const v of vouchers) {
+      if (typeof v.amount !== 'number' || typeof v.expeditionId !== 'number') continue
+      realCentsByExp.set(v.expeditionId, (realCentsByExp.get(v.expeditionId) ?? 0) + Math.round(v.amount * 100))
+    }
+    const centsForLeg = (it: (typeof items)[number]) =>
+      realCentsByExp.get(expeditionIdFromFerryId(it.meta.ferry_id))
+    const provisionalCents = items.reduce((s, it) => s + it.priceCents, 0)
+    const realCents = items.reduce((s, it) => s + (centsForLeg(it) ?? 0), 0)
+    const everyLegMatched = items.every((it) => centsForLeg(it) !== undefined)
+
+    // Total-preservation guard: apply the split ONLY when we have a complete,
+    // cent-exact voucher breakdown whose total equals what we charged.
+    const totalsMatch = isRoundTrip && haveSplit && everyLegMatched && realCents === provisionalCents
+    if (isRoundTrip && haveSplit && !totalsMatch) {
+      console.error(
+        `[reserveFerry] voucher split unusable for trip ${tripId} ` +
+        `(real=${realCents}¢ charged=${provisionalCents}¢ everyLegMatched=${everyLegMatched}) ` +
+        `— keeping provisional split, flagging for reconcile`,
+      )
+    }
+
+    // RETURN leg first (best-effort). If its write fails we DON'T correct outbound
+    // either → both stay provisional-equal and the sum is preserved.
+    let splitApplied = totalsMatch
+    if (totalsMatch) {
+      for (const ret of items.filter((it) => it.id !== outbound.id)) {
+        const ok = await writeItem(supabase, ret.id, { price_amount: centsForLeg(ret)! / 100 })
+        if (!ok) splitApplied = false // writeItem logged; leave both legs provisional
+      }
+    }
+
+    // OUTBOUND anchor — CRITICAL idempotency commit barrier (flips reserve_state →
+    // 'reserved'). If it fails the booking EXISTS at the provider but we lost the
+    // PNR → manual reconcile. Its price is corrected ONLY when the return write(s)
+    // landed, so the pair can never end up half-corrected. The real per-voucher
+    // amounts persist on vouchers[] regardless → reconcile data survives even when
+    // the split stays provisional.
     const persisted: FerryItemMetadata = {
       ...outbound.meta,
       reserve_state: 'reserved',
       reservation_id: result.providerReservationId,
       reservation_guid: result.providerReservationGuid,
       vouchers: result.vouchers,
+      ...(isRoundTrip && haveSplit && !totalsMatch
+        ? { amount_mismatch: { charged_cents: provisionalCents, dentur_cents: realCents } }
+        : {}),
     }
-    const ok = await writeMeta(supabase, outbound.id, persisted)
+    const outboundCents = splitApplied ? centsForLeg(outbound)! : undefined
+    const ok = await writeItem(supabase, outbound.id, {
+      metadata: persisted,
+      ...(outboundCents !== undefined ? { price_amount: outboundCents / 100 } : {}),
+    })
     if (!ok) {
       console.error('[reserveFerry] CRITICAL: reservation created but persist failed', tripId, 'reservationId=', result.providerReservationId)
       return { ok: false, error: `reservation ${result.providerReservationId} created but persist failed — manual reconcile` }
@@ -166,14 +228,19 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
   }
 }
 
-// jsonb is written whole (Supabase does not partial-merge). Mirrors issuePolicy.
-async function writeMeta(supabase: SupabaseAdmin, itemId: string, metadata: FerryItemMetadata): Promise<boolean> {
+// One row update for metadata and/or price_amount (jsonb written whole — Supabase
+// does not partial-merge). Mirrors issuePolicy's writer, plus the leg price.
+async function writeItem(
+  supabase: SupabaseAdmin,
+  itemId: string,
+  fields: { metadata?: FerryItemMetadata; price_amount?: number },
+): Promise<boolean> {
   const { error } = await supabase
     .from('trip_items')
-    .update({ metadata, updated_at: new Date().toISOString() })
+    .update({ ...fields, updated_at: new Date().toISOString() })
     .eq('id', itemId)
   if (error) {
-    console.error('[reserveFerry] metadata write failed for item', itemId, error.message)
+    console.error('[reserveFerry] item write failed for item', itemId, error.message)
     return false
   }
   return true
