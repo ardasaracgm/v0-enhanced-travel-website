@@ -74,6 +74,20 @@ export default function FerryResultsPage() {
     if (!routeOk || !paxOk) {
       dispatch({ type: 'CLEAR_FERRY_SELECTION' })
       setIsSelectingReturn(false)
+      return
+    }
+    // Round-trip → one-way downgrade leaves a GHOST return item: route/pax still
+    // match, so the guard above doesn't fire, yet the return leg lingers in
+    // items[] — summed by selectTotalPrice, shown in the summary, sent to the
+    // server, and (since repriceFerryItems keys on items, not tripType) used to
+    // price the outbound as a round-trip PAIR. Drop it. One-way only — never
+    // touch a live round-trip selection.
+    if (
+      state.searchParams.tripType === 'one-way' &&
+      state.items.some((i) => i.type === 'ferry' && i.leg === 'return')
+    ) {
+      dispatch({ type: 'CLEAR_RETURN_FERRY' })
+      setIsSelectingReturn(false)
     }
   }, [state.items, state.searchParams, dispatch])
 

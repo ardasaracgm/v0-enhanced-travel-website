@@ -54,7 +54,7 @@ export function FerryCard({
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">{ferryUnitFare(ferry)}</p>
+              <p className="text-2xl font-bold text-primary">€{ferryUnitFare(ferry)}</p>
               <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
             </div>
             <div className="flex flex-col gap-2 items-end">
