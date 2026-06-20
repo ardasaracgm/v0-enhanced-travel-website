@@ -169,6 +169,7 @@ type BookingAction =
   | { type: 'SELECT_RETURN_FERRY'; payload: FerryTrip }
   | { type: 'CLEAR_RETURN_FERRY' }
   | { type: 'CLEAR_FERRY_SELECTION' }
+  | { type: 'RESET_CART' }
   | { type: 'SET_PASSENGERS'; payload: Passenger[] }
   | { type: 'SET_CONTACT'; payload: { email: string; phone: string } }
   | { type: 'SET_CAR_RENTAL'; payload: CarRentalSelection | null }
@@ -286,6 +287,12 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         ...state,
         items: state.items.filter(i => i.type !== 'ferry'),
       }
+    // Yeni arama → sepeti TAMAMEN sıfırla (ferry outbound+return + tüm ekstralar:
+    // car/luggage/transfer/insurance). searchParams ve passengers KORUNUR; yalnız
+    // items boşalır. SADECE ferry/page.tsx handleSearch çağırır — adımlar arası
+    // gezinme, results-içi gidiş/dönüş seçimi ve ödemeye-geç bunu tetiklemez.
+    case 'RESET_CART':
+      return { ...state, items: [] }
     case 'SET_PASSENGERS':
       return {
         ...state,

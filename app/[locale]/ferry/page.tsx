@@ -57,6 +57,9 @@ export default function FerryTicketsPage() {
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const handleSearch = () => {
+    // Gerçek yeni arama → eski sepeti at (stale ferry/ekstra birikmesin). Yalnız
+    // burada; adımlar arası ve results-içi gezinme sepeti korur.
+    dispatch({ type: 'RESET_CART' })
     dispatch({
       type: 'SET_SEARCH_PARAMS',
       payload: {
