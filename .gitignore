@@ -47,3 +47,4 @@ scripts/reserve-persist-probe.ts
 scripts/reserve-live-probe.ts
 scripts/reserve-live-probe-rt.ts
 scripts/confirm-live-probe.ts
+scripts/confirm-live-probe-rt.ts
