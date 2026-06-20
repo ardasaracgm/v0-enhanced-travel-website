@@ -12,7 +12,9 @@
 import * as React from 'react'
 
 import type { FerryTrip } from '@/lib/ferry/provider'
-import { ferryUnitFare } from '@/lib/ferry/display'
+import { ferryUnitFare, ferryPairPrices } from '@/lib/ferry/display'
+import { derivePassengerType } from '@/lib/validation/booking'
+import type { PassengerType } from '@/lib/supabase'
 import type { LuggageCounts } from '@/lib/luggage-rates'
 
 export interface Passenger {
@@ -184,6 +186,43 @@ type BookingAction =
   | { type: 'SET_SUBMIT_ERROR'; payload: string | null }
   | { type: 'RESET' }
 
+/**
+ * Recompute every ferry leg's DISPLAY priceAmount from the authoritative fare
+ * helpers — the SAME ferryPairPrices the server money-path uses, so the cart
+ * total shown equals what Viva is charged (per-pax-type + round-trip single fare,
+ * not adult×N / 2×oneWay). Runs on any change to ferry composition or passengers
+ * so priceAmount is never stale — e.g. dropping the return leg reverts the
+ * outbound from its round-trip half back to its one-way fare.
+ *
+ * Pax types are derived client-side from DOB at the OUTBOUND date with the same
+ * derivePassengerType the server uses (display parity only; the server stays
+ * authoritative). Missing/partial DOB → 'adult' (the fn's own fallback), which
+ * reproduces the prior adult-fare × count display before passengers are entered.
+ */
+function repriceFerryItems(items: BookingItem[], passengers: Passenger[]): BookingItem[] {
+  const outbound = items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'outbound',
+  )
+  if (!outbound) return items
+  const ret = items.find(
+    (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return',
+  )
+
+  const types: PassengerType[] = Array.from({ length: outbound.passengerCount }, (_, i) => {
+    const dob = passengers[i]?.birthDate
+    return dob ? derivePassengerType(dob, outbound.date) : 'adult'
+  })
+
+  const sameDay = !!ret && outbound.date === ret.date
+  const prices = ferryPairPrices(outbound.ferry, ret?.ferry ?? null, types, sameDay)
+
+  return items.map((i) => {
+    if (i.type !== 'ferry') return i
+    if (i.leg === 'outbound') return { ...i, priceAmount: prices.outbound }
+    return { ...i, priceAmount: prices.return ?? i.priceAmount }
+  })
+}
+
 function bookingReducer(state: BookingState, action: BookingAction): BookingState {
   switch (action.type) {
     case 'SET_SEARCH_PARAMS':
@@ -204,10 +243,10 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       return {
         ...state,
-        items: [
-          ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'outbound')),
-          ferryItem,
-        ],
+        items: repriceFerryItems(
+          [...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'outbound')), ferryItem],
+          state.passengers,
+        ),
       }
     }
     // NOTE: reads state.searchParams.passengers to compute the new BookingItem's
@@ -226,16 +265,19 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       }
       return {
         ...state,
-        items: [
-          ...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
-          returnItem,
-        ],
+        items: repriceFerryItems(
+          [...state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')), returnItem],
+          state.passengers,
+        ),
       }
     }
     case 'CLEAR_RETURN_FERRY':
       return {
         ...state,
-        items: state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
+        items: repriceFerryItems(
+          state.items.filter(i => !(i.type === 'ferry' && i.leg === 'return')),
+          state.passengers,
+        ),
       }
     // Tüm ferry item'larını (outbound + return) temizle. Rota veya yolcu sayısı
     // değişince seçim geçersizleşir; results sayfası bunu çağırır (stale-guard).
@@ -245,7 +287,11 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
         items: state.items.filter(i => i.type !== 'ferry'),
       }
     case 'SET_PASSENGERS':
-      return { ...state, passengers: action.payload }
+      return {
+        ...state,
+        passengers: action.payload,
+        items: repriceFerryItems(state.items, action.payload),
+      }
     case 'SET_CONTACT':
       return {
         ...state,

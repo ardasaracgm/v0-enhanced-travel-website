@@ -17,7 +17,7 @@ import { createTrip, type CreateTripInput, type CreateTripErrorCode } from './cr
 import { createPaymentOrder } from './create-payment-order'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { getFerryProvider } from '@/lib/ferry'
-import { ferryRoundTripTotal } from '@/lib/ferry/display'
+import { ferryPairPrices } from '@/lib/ferry/display'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { dateDiffInDays } from '@/lib/normalize-car'
@@ -234,6 +234,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   // round trip; keep it plus references to both leg items so §2b can re-price the
   // pair as ONE charge after the loop. (Stay null/empty for one-way & car-only.)
   let outboundFerryTrip: FerryTrip | null = null
+  let returnFerryTrip: FerryTrip | null = null
   const ferryItemByLeg: Partial<Record<'outbound' | 'return', CreateTripInput['items'][number]>> = {}
 
   // Authoritative outbound travel date (sail-out) — drives BOTH per-type ferry
@@ -256,6 +257,7 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       // Keep the outbound schedule (round-trip fare authority) + both leg items
       // so §2b can re-price the pair as one round trip.
       if (item.leg === 'outbound') outboundFerryTrip = ferry
+      if (item.leg === 'return') returnFerryTrip = ferry
       ferryItemByLeg[item.leg] = ferryItem
       items.push(ferryItem)
     } else if (item.type === 'car_rental') {
@@ -395,19 +397,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     // fare; ferrySchema makes date REQUIRED on every ferry item, but assert here
     // rather than let a missing date silently fall through to different-day (which
     // would overcharge ~5 EUR). Explicit error, never a silent mis-price.
-    if (!outboundDate || !returnDate || !outboundFerryTrip) {
+    if (!outboundDate || !returnDate || !outboundFerryTrip || !returnFerryTrip) {
       return { ok: false, code: 'validation_failed', error: 'Round-trip ferry legs are missing travel dates' }
     }
-    // Both are server-trusted YYYY-MM-DD strings (no Date/timezone coercion) → a
-    // plain === is the correct same-day test.
+    // Both dates are server-trusted YYYY-MM-DD (no Date/timezone coercion) → a
+    // plain === is the correct same-day test. The per-leg split is the SAME
+    // ferryPairPrices the client cart uses, so cart total == charged total.
     const sameDay = outboundDate === returnDate
-    // EUR fare → integer cents → split → back to EUR decimals. The two halves sum
-    // to the same integer cents, so the EUR sum is exact to the cent.
-    const pairTotalCents = Math.round(ferryRoundTripTotal(outboundFerryTrip, ferryPassengerTypes, sameDay) * 100)
-    const half = Math.floor(pairTotalCents / 2)
-    outboundFerryItem.priceAmount = (pairTotalCents - half) / 100 // odd cent → outbound
-    returnFerryItem.priceAmount = half / 100
-    returnFerryItem.metadata = { ...returnFerryItem.metadata, round_trip_pair: true }
+    const prices = ferryPairPrices(outboundFerryTrip, returnFerryTrip, ferryPassengerTypes, sameDay)
+    outboundFerryItem.priceAmount = prices.outbound
+    returnFerryItem.priceAmount = prices.return ?? returnFerryItem.priceAmount
+    // Tag only a genuine single-reservation round trip (same operator). The
+    // forward-compat different-operator case (prices.pair=false) is two
+    // independent one-ways, NOT one Dentur reservation — never tag it as a pair.
+    if (prices.pair) {
+      returnFerryItem.metadata = { ...returnFerryItem.metadata, round_trip_pair: true }
+    }
   }
 
   // 3. Resolve passengers. Type is DERIVED server-side from age at the OUTBOUND

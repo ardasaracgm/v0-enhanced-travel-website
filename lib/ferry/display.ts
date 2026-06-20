@@ -65,6 +65,47 @@ export function ferryRoundTripTotal(
 }
 
 /**
+ * Per-leg display/charge amounts for a ferry booking — THE single source both
+ * the client cart (booking-context reprice) and the server money-path
+ * (submit-booking §2b) use, so what the user sees equals what Viva is charged.
+ *
+ * - One-way (no return): outbound = each pax's own-type one-way fare; pair=false.
+ * - Round-trip, SAME operator: one round-trip charge (returnSameDay/DifferentDay
+ *   from the outbound company's table), split in INTEGER CENTS — floor each half,
+ *   odd cent → outbound — so the two halves sum EXACTLY to the pair total (no
+ *   rounding leak before Viva's Math.round(total*100)); pair=true.
+ * - Round-trip, DIFFERENT operators (forward-compat: multi-provider return lists,
+ *   Kademe 6/7): the round-trip discount is a single-company fare, so it does NOT
+ *   apply — each leg is its own one-way; pair=false (NOT one Dentur reservation).
+ *   Today every route is single-operator, so this branch never triggers and the
+ *   same-operator split is unchanged.
+ *
+ * `pair` mirrors the round_trip_pair tag: true only when the two legs are one
+ * discounted round-trip reservation (same operator). Callers tag off this so the
+ * forward-compat different-operator case is never mislabelled as a pair.
+ */
+export function ferryPairPrices(
+  outbound: FerryTrip,
+  returnTrip: FerryTrip | null,
+  passengerTypes: PassengerType[],
+  sameDay: boolean,
+): { outbound: number; return: number | null; pair: boolean } {
+  if (!returnTrip) {
+    return { outbound: ferryFaresTotal(outbound, passengerTypes), return: null, pair: false }
+  }
+  if (outbound.operator !== returnTrip.operator) {
+    return {
+      outbound: ferryFaresTotal(outbound, passengerTypes),
+      return: ferryFaresTotal(returnTrip, passengerTypes),
+      pair: false,
+    }
+  }
+  const pairTotalCents = Math.round(ferryRoundTripTotal(outbound, passengerTypes, sameDay) * 100)
+  const half = Math.floor(pairTotalCents / 2)
+  return { outbound: (pairTotalCents - half) / 100, return: half / 100, pair: true } // odd cent → outbound
+}
+
+/**
  * Total ferry price = adult one-way fare × passengerCount. Preserves the old
  * confirmation behaviour (outbound.price * passengerCount) exactly under mock.
  *
