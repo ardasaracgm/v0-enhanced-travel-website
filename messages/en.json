@@ -1260,6 +1260,7 @@
     "total": "Total",
     "continueToPassengers": "Continue to Passengers",
     "selectReturnHint": "Please select a return ferry to continue",
+    "sameOperatorDiscount": "Round-trip same-operator discount applied",
     "summaryEmpty": "Select a ferry to see your booking summary",
     "dateChange": { "title": "Date Change", "body": "Contact us for date changes up to 48 hours before departure." }
   },
