@@ -15,6 +15,7 @@
  */
 
 import { ferryUnitFare, ferryFaresTotal } from '@/lib/ferry/display'
+import { portTimezone, zonedDateTime } from '@/lib/ferry/timezone'
 import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
 import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
@@ -27,19 +28,18 @@ import type {
   TransferResolveCtx,
 } from './types'
 
-// date: "2026-06-15", time: "09:00" → "2026-06-15T09:00:00+03:00"
-// Greece timezone (EET, +03 in summer). (was: submit-booking combineDateAndTime)
-function combineDateAndTime(date: string, time: string): string {
-  return `${date}T${time}:00+03:00`
-}
-
 export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
   const { item, ferry, passengerCount, passengerTypes } = ctx
+  // Each instant is built in its OWN port's timezone (DST-aware): departure in
+  // the origin zone, arrival in the destination zone. Turkey is permanent +03
+  // while Greece drops to +02 in winter, so the old hardcoded +03:00 drifted
+  // Greek-side sailings an hour off-season. arrivalTime is taken as destination-
+  // local; provider durationMinutes is the elapsed-time cross-check if revisited.
   return {
     type: 'ferry',
     title: `${ferry.from.name} → ${ferry.to.name} (${ferry.operator})`,
-    scheduledAt: combineDateAndTime(item.date, ferry.departureTime),
-    endsAt: combineDateAndTime(item.date, ferry.arrivalTime),
+    scheduledAt: zonedDateTime(item.date, ferry.departureTime, portTimezone(ferry.from)),
+    endsAt: zonedDateTime(item.date, ferry.arrivalTime, portTimezone(ferry.to)),
     passengerCount,
     // Authoritative: sum each passenger's own-type fare (adult/child/infant),
     // not adult × count. This is the amount that flows to trips.total_amount → Viva.
