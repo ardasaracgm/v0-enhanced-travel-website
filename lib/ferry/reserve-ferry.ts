@@ -3,6 +3,7 @@ import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getFerryProvider } from '@/lib/ferry'
 import { buildFerryReservationRequest, type FerryLegInput } from '@/lib/ferry/reservation-request'
+import { reconcileVoucherSplit, expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
 import type { FerryItemMetadata } from '@/lib/supabase'
 import type { FerryReservationPassenger } from '@/lib/ferry/provider'
 
@@ -32,14 +33,6 @@ export type ReserveFerryResult =
   | { ok: false; error: string }
 
 type SupabaseAdmin = ReturnType<typeof getSupabaseAdmin>
-
-// ferry_id is "<provider>:<nativeId>" (e.g. "dentur:12345"). Strip the provider
-// prefix back to the numeric expeditionID the reservation request needs.
-function expeditionIdFromFerryId(ferryId: string | undefined): number {
-  const n = Number(String(ferryId ?? '').replace(/^[a-z]+:/i, ''))
-  if (!Number.isFinite(n)) throw new RangeError(`ferry item has no numeric expedition id (ferry_id=${ferryId})`)
-  return n
-}
 
 export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> {
   const supabase = getSupabaseAdmin()
@@ -153,43 +146,23 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
     // NEVER move money: the charge already happened against trips.total_amount
     // (= the provisional total). We only REDISTRIBUTE the same total; if the
     // voucher total disagrees with what we charged, we touch no price and flag it.
-    // All equality is INTEGER CENTS — float === on EUR (17.50+17.50 → 35.0000001)
-    // would spuriously trip the mismatch guard. Same discipline as the pricing split.
-    const isRoundTrip = items.length >= 2 // one-way's single leg is already exact
-    const vouchers = result.vouchers ?? []
-    const haveSplit =
-      vouchers.length > 0 &&
-      vouchers.every((v) => typeof v.amount === 'number' && typeof v.expeditionId === 'number')
-
-    // expeditionID → summed voucher cents
-    const realCentsByExp = new Map<number, number>()
-    for (const v of vouchers) {
-      if (typeof v.amount !== 'number' || typeof v.expeditionId !== 'number') continue
-      realCentsByExp.set(v.expeditionId, (realCentsByExp.get(v.expeditionId) ?? 0) + Math.round(v.amount * 100))
-    }
-    const centsForLeg = (it: (typeof items)[number]) =>
-      realCentsByExp.get(expeditionIdFromFerryId(it.meta.ferry_id))
-    const provisionalCents = items.reduce((s, it) => s + it.priceCents, 0)
-    const realCents = items.reduce((s, it) => s + (centsForLeg(it) ?? 0), 0)
-    const everyLegMatched = items.every((it) => centsForLeg(it) !== undefined)
-
-    // Total-preservation guard: apply the split ONLY when we have a complete,
-    // cent-exact voucher breakdown whose total equals what we charged.
-    const totalsMatch = isRoundTrip && haveSplit && everyLegMatched && realCents === provisionalCents
-    if (isRoundTrip && haveSplit && !totalsMatch) {
+    // The pure cents math lives in reconcileVoucherSplit (unit-tested in isolation,
+    // exercised by probes); here we only bind its result to the DB writes below.
+    const split = reconcileVoucherSplit(items, result.vouchers ?? [])
+    if (split.mismatch) {
       console.error(
         `[reserveFerry] voucher split unusable for trip ${tripId} ` +
-        `(real=${realCents}¢ charged=${provisionalCents}¢ everyLegMatched=${everyLegMatched}) ` +
+        `(real=${split.realCents}¢ charged=${split.provisionalCents}¢ everyLegMatched=${split.everyLegMatched}) ` +
         `— keeping provisional split, flagging for reconcile`,
       )
     }
 
     // RETURN leg first (best-effort). If its write fails we DON'T correct outbound
     // either → both stay provisional-equal and the sum is preserved.
-    let splitApplied = totalsMatch
-    if (totalsMatch) {
+    let splitApplied = split.totalsMatch
+    if (split.totalsMatch) {
       for (const ret of items.filter((it) => it.id !== outbound.id)) {
-        const ok = await writeItem(supabase, ret.id, { price_amount: centsForLeg(ret)! / 100 })
+        const ok = await writeItem(supabase, ret.id, { price_amount: split.correctedCentsByItemId.get(ret.id)! / 100 })
         if (!ok) splitApplied = false // writeItem logged; leave both legs provisional
       }
     }
@@ -206,11 +179,9 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
       reservation_id: result.providerReservationId,
       reservation_guid: result.providerReservationGuid,
       vouchers: result.vouchers,
-      ...(isRoundTrip && haveSplit && !totalsMatch
-        ? { amount_mismatch: { charged_cents: provisionalCents, dentur_cents: realCents } }
-        : {}),
+      ...(split.mismatch ? { amount_mismatch: split.mismatch } : {}),
     }
-    const outboundCents = splitApplied ? centsForLeg(outbound)! : undefined
+    const outboundCents = splitApplied ? split.correctedCentsByItemId.get(outbound.id)! : undefined
     const ok = await writeItem(supabase, outbound.id, {
       metadata: persisted,
       ...(outboundCents !== undefined ? { price_amount: outboundCents / 100 } : {}),
