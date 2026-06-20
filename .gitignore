@@ -44,3 +44,4 @@ scripts/dentur-reserve-probe.ts
 scripts/dentur-gettrip-probe.ts
 scripts/reconcile-live-probe.ts
 scripts/reserve-persist-probe.ts
+scripts/reserve-live-probe.ts
