@@ -19,6 +19,26 @@
       "per_passenger_price": 35
     }
   },
+  "ferry/return-2pax": {
+    "type": "ferry",
+    "title": "Kos → Bodrum (Bodrum Express Lines)",
+    "scheduledAt": "2026-07-13T17:00:00+03:00",
+    "endsAt": "2026-07-13T18:00:00+03:00",
+    "passengerCount": 2,
+    "priceAmount": 70,
+    "priceCurrency": "EUR",
+    "metadata": {
+      "from_port": "Kos",
+      "to_port": "Bodrum",
+      "operator": "Bodrum Express Lines",
+      "vessel": "Bodrum Express I",
+      "departure_time": "17:00",
+      "arrival_time": "18:00",
+      "ferry_id": "mock:kb-1",
+      "direction": "return",
+      "per_passenger_price": 35
+    }
+  },
   "car/one-way-4days": {
     "type": "car_rental",
     "title": "Fiat Panda (4 days)",
