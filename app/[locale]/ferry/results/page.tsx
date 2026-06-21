@@ -27,16 +27,7 @@ import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateLong } from '@/lib/trip-items/summary'
-
-const cityNames: Record<string, string> = {
-  bodrum: 'Bodrum',
-  turgutreis: 'Turgutreis',
-  marmaris: 'Marmaris',
-  kusadasi: 'Kusadasi',
-  kos: 'Kos',
-  rhodes: 'Rhodes',
-  samos: 'Samos',
-}
+import { resolvePort } from '@/lib/ferry/ports'
 
 export default function FerryResultsPage() {
   const router = useRouter()
@@ -132,8 +123,15 @@ export default function FerryResultsPage() {
     }
   }
 
-  const fromCity = cityNames[state.searchParams.from] || state.searchParams.from
-  const toCity = cityNames[state.searchParams.to] || state.searchParams.to
+  // Görünen liman adı: kanonik katalogdan, locale-öncelikli (portLabel deseni).
+  // Katalog dışı slug (ör. marmaris) → ham slug'a fallback, mevcut davranışı korur.
+  // Salt gösterim — searchParams/money-path/seçim mantığına dokunmaz.
+  const portName = (s: string) => {
+    const p = resolvePort(s)
+    return p ? (p.name[locale as 'tr' | 'en' | 'el'] ?? p.name.en ?? p.name.tr) : s
+  }
+  const fromCity = portName(state.searchParams.from)
+  const toCity = portName(state.searchParams.to)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
