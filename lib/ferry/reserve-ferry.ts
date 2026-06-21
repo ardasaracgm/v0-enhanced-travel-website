@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getFerryProvider } from '@/lib/ferry'
 import { buildFerryReservationRequest, type FerryLegInput } from '@/lib/ferry/reservation-request'
 import { reconcileVoucherSplit, expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
+import { groupFerryLegs, type ReserveGroup } from '@/lib/ferry/group-legs'
 import type { FerryItemMetadata } from '@/lib/supabase'
 import type { FerryReservationPassenger, FerryReservationResult } from '@/lib/ferry/provider'
 
@@ -58,11 +59,54 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
   const outbound = items.find((r) => r.meta.direction === 'outbound')
   if (!outbound) return { ok: false, error: 'ferry booking has no outbound leg' }
 
-  // Done already? reserve_state on the anchor is the source of truth.
-  if (outbound.meta.reserve_state === 'reserved') return { ok: true, skipped: 'already_reserved' }
+  // Split into reservation GROUPS (pure decision; Commit 4a). For BOTH live shapes
+  // this is EXACTLY ONE group — one-way → [leg]; round-trip reverse-pair →
+  // [outbound, return] — so the loop runs once and reserveGroup executes today's
+  // body verbatim (wire body + persist byte-identical). A second group appears ONLY
+  // for an open-jaw return (probe-only until UI Commit 3), where each leg becomes
+  // its own independent one-way reservation.
+  const groups = groupFerryLegs(items)
+
+  // Reserve each group INDEPENDENTLY: a failing group keeps its own lease + state
+  // and does NOT abort the others (partial success is the natural outcome — no
+  // retry, that is Commit 4d). confirmTrip's non-fatal contract is preserved.
+  const outcomes: ReserveFerryResult[] = []
+  for (const group of groups) {
+    outcomes.push(await reserveGroup(supabase, tripId, group))
+  }
+
+  // CLASSIC byte-identical: a single group → return its result VERBATIM
+  // (reservationId / skipped / error all preserved) — exactly today's return value.
+  if (outcomes.length === 1) return outcomes[0]
+
+  // Multi-group (open-jaw): successful groups stay persisted (each persist committed
+  // independently); surface failure iff any group failed.
+  const failed = outcomes.filter((o): o is Extract<ReserveFerryResult, { ok: false }> => !o.ok)
+  if (failed.length > 0) return { ok: false, error: failed.map((f) => f.error).join(' | ') }
+  return { ok: true }
+}
+
+/**
+ * reserveGroup — reserves ONE group as a single Dentur CreateReservation. This is
+ * reserveFerry's former try-body VERBATIM, parameterised by group (outbound→anchor,
+ * items→group.legs): idempotency gate, atomic lease on the anchor, passenger gather,
+ * build, reserve, persist. For the single-group classic path the statement order is
+ * unchanged, so the wire body + persist stay byte-identical. Per-group isolation: a
+ * throw KEEPS this group's lease (a post-creation timeout must not double-book) and
+ * never touches sibling groups.
+ */
+async function reserveGroup(
+  supabase: SupabaseAdmin,
+  tripId: string,
+  group: ReserveGroup<ReserveLeg>,
+): Promise<ReserveFerryResult> {
+  const { anchor } = group
+
+  // Done already? reserve_state on the anchor is the source of truth for THIS group.
+  if (anchor.meta.reserve_state === 'reserved') return { ok: true, skipped: 'already_reserved' }
 
   try {
-    // ---- ATOMIC LEASE on the outbound anchor — concurrency guard around reserve()
+    // ---- ATOMIC LEASE on the anchor — concurrency guard around reserve()
     // The conditional UPDATE is claimable only when the lease is NULL or older than
     // 5 min (self-heals a crash-stranded lease). Postgres row-lock serialises
     // concurrent claims: exactly ONE gets a row (proceeds), the other gets 0 rows
@@ -71,7 +115,7 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
     const { data: leased, error: leaseErr } = await supabase
       .from('trip_items')
       .update({ ferry_reserve_lease_at: new Date().toISOString() })
-      .eq('id', outbound.id)
+      .eq('id', anchor.id)
       .eq('item_type', 'ferry')
       .or(`ferry_reserve_lease_at.is.null,ferry_reserve_lease_at.lt.${leaseExpiry}`)
       .select('id')
@@ -117,7 +161,7 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
       nationality: p.nationality ?? '',
     }))
 
-    const legs: FerryLegInput[] = items.map((r) => ({
+    const legs: FerryLegInput[] = group.legs.map((r) => ({
       expeditionId: expeditionIdFromFerryId(r.meta.ferry_id),
       direction: r.meta.direction === 'return' ? 'return' : 'outbound',
     }))
@@ -139,14 +183,14 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
     if (!result.ok) {
       // CLEAN provider rejection (no booking created) — mark failed, KEEP the lease
       // (5-min window) so a retry is gated, then surface for the admin backstop.
-      await writeItem(supabase, outbound.id, { metadata: { ...outbound.meta, reserve_state: 'failed' } })
+      await writeItem(supabase, anchor.id, { metadata: { ...anchor.meta, reserve_state: 'failed' } })
       const msg = (result.errors ?? []).join('; ') || 'provider rejected reservation'
       return { ok: false, error: `ferry reservation rejected: ${msg}` }
     }
 
-    // Bind the reconcile + price/PNR writes (the money path). Extracted verbatim so
-    // a probe can exercise it with a synthetic result, no Dentur call. See below.
-    return persistReservationResult(supabase, tripId, items, outbound, result)
+    // Bind the reconcile + price/PNR writes (the money path). group.legs × THIS
+    // group's result.vouchers → the reconcile split stays strictly in-group.
+    return persistReservationResult(supabase, tripId, group.legs, anchor, result)
   } catch (err) {
     // NON-FATAL. Lease KEPT (not reset): the throw may be a timeout post-creation;
     // the 5-min expiry gates the retry so an in-flight booking is not duplicated.
