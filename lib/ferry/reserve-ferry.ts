@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getFerryProvider } from '@/lib/ferry'
 import { buildFerryReservationRequest, type FerryLegInput } from '@/lib/ferry/reservation-request'
 import { reconcileVoucherSplit, expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
-import { groupFerryLegs, type ReserveGroup } from '@/lib/ferry/group-legs'
+import { groupFerryLegs, groupPoNumber, type ReserveGroup } from '@/lib/ferry/group-legs'
 import type { FerryItemMetadata } from '@/lib/supabase'
 import type { FerryReservationPassenger, FerryReservationResult } from '@/lib/ferry/provider'
 
@@ -72,7 +72,7 @@ export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> 
   // retry, that is Commit 4d). confirmTrip's non-fatal contract is preserved.
   const outcomes: ReserveFerryResult[] = []
   for (const group of groups) {
-    outcomes.push(await reserveGroup(supabase, tripId, group))
+    outcomes.push(await reserveGroup(supabase, tripId, group, groups.length))
   }
 
   // CLASSIC byte-identical: a single group → return its result VERBATIM
@@ -99,6 +99,7 @@ async function reserveGroup(
   supabase: SupabaseAdmin,
   tripId: string,
   group: ReserveGroup<ReserveLeg>,
+  groupCount: number,
 ): Promise<ReserveFerryResult> {
   const { anchor } = group
 
@@ -176,7 +177,9 @@ async function reserveGroup(
         email: trip.contact_email,
         telephone: trip.contact_phone,
       },
-      poNumber: trip.reference, // server-authoritative, trip-stable PNR↔trip key
+      // classic single group → bare reference (byte-identical); open-jaw → unique
+      // per-group poNumber (combined CreateReservation rejects a duplicate poNumber).
+      poNumber: groupPoNumber(trip.reference, group, groupCount),
     })
 
     const result = await (await getFerryProvider()).reserve(req)

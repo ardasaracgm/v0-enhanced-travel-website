@@ -17,6 +17,7 @@
  */
 import type { FerryItemMetadata } from '@/lib/supabase'
 import { isReversePair, type ReversePairLeg } from './reverse-pair'
+import { expeditionIdFromFerryId } from './reconcile'
 
 /** The subset of a ferry trip_item grouping reads. reserve-ferry's ReserveLeg
  *  ({ id, meta, priceCents }) satisfies this structurally. */
@@ -55,4 +56,27 @@ export function groupFerryLegs<T extends GroupableLeg>(legs: T[]): ReserveGroup<
   // Otherwise each leg is its own one-way reservation (outbound first if present).
   const ordered = outbound ? [outbound, ...legs.filter((l) => l !== outbound)] : legs
   return ordered.map((l) => ({ kind: 'one_way' as const, anchor: l, legs: [l] }))
+}
+
+/**
+ * groupPoNumber — the Dentur poNumber for ONE reservation group.
+ *
+ *   • classic single group (one-way OR round-trip reverse-pair, groupCount === 1)
+ *     → bare trip.reference, BYTE-IDENTICAL to pre-4c.
+ *   • open-jaw (groupCount > 1) → reference + a per-group suffix (the anchor leg's
+ *     expeditionID). The COMBINED CreateReservation endpoint REJECTS a 2nd call
+ *     carrying a duplicate poNumber (HTTP 400, proven live: R1 cut, R2 same
+ *     poNumber → 400) — so each independent open-jaw reservation needs its own.
+ *
+ * The suffix is reference-PREFIXED (a future voucher→trip lookup groups by
+ * startsWith(reference), not equality) and STABLE across retries (expeditionID is
+ * fixed in metadata, independent of DB row order) — required for 4d retry idempotency.
+ */
+export function groupPoNumber<T extends GroupableLeg>(
+  reference: string,
+  group: ReserveGroup<T>,
+  groupCount: number,
+): string {
+  if (groupCount === 1) return reference
+  return `${reference}-${expeditionIdFromFerryId(group.anchor.meta.ferry_id)}`
 }

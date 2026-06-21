@@ -4,7 +4,7 @@
  * ONE group (byte-identical to today), open-jaw / different-operator / plain
  * one-way → independent one-way groups. Run: npx tsx scripts/group-legs.test.ts
  */
-import { groupFerryLegs, type GroupableLeg } from '../lib/ferry/group-legs'
+import { groupFerryLegs, groupPoNumber, type GroupableLeg } from '../lib/ferry/group-legs'
 import type { FerryItemMetadata } from '../lib/supabase'
 
 let failures = 0
@@ -20,10 +20,11 @@ const leg = (
   operator: string | undefined,
   fromPort: string,
   toPort: string,
+  ferryId = 'dentur:0', // expeditionID source for groupPoNumber suffix
 ): GroupableLeg => ({
   id,
   meta: { from_port: fromPort, to_port: toPort, operator, direction,
-    departure_time: '', arrival_time: '' } as FerryItemMetadata,
+    ferry_id: ferryId, departure_time: '', arrival_time: '' } as FerryItemMetadata,
 })
 
 // project to a comparable shape (ids only)
@@ -77,6 +78,30 @@ eq('operator-undefined both → NOT paired → 2 one_way groups',
   ])),
   [{ kind: 'one_way', anchor: 'OUT', legs: ['OUT'] },
    { kind: 'one_way', anchor: 'RET', legs: ['RET'] }])
+
+// --- groupPoNumber: classic single group → bare reference (byte-identical);
+//     open-jaw → reference + stable per-group expeditionID suffix (must differ) ---
+const owG = groupFerryLegs([leg('OUT', 'outbound', 'DENTUR', 'bodrum', 'kos', 'dentur:13065')])
+eq('one-way poNumber == bare reference',
+  groupPoNumber('TB-26-AAA', owG[0], owG.length), 'TB-26-AAA')
+
+const rtG = groupFerryLegs([
+  leg('OUT', 'outbound', 'DENTUR', 'bodrum', 'kos', 'dentur:13065'),
+  leg('RET', 'return', 'DENTUR', 'kos', 'bodrum', 'dentur:13277'),
+])
+eq('round-trip pair poNumber == bare reference (1 group)',
+  groupPoNumber('TB-26-AAA', rtG[0], rtG.length), 'TB-26-AAA')
+
+const ojG = groupFerryLegs([
+  leg('OUT', 'outbound', 'DENTUR', 'bodrum', 'kos', 'dentur:13065'),
+  leg('RET', 'return', 'DENTUR', 'kos', 'leros', 'dentur:13277'),
+])
+eq('open-jaw g0 poNumber suffixed with expeditionID',
+  groupPoNumber('TB-26-AAA', ojG[0], ojG.length), 'TB-26-AAA-13065')
+eq('open-jaw g1 poNumber suffixed with expeditionID',
+  groupPoNumber('TB-26-AAA', ojG[1], ojG.length), 'TB-26-AAA-13277')
+eq('open-jaw poNumbers differ (no duplicate → no 400)',
+  groupPoNumber('TB-26-AAA', ojG[0], ojG.length) !== groupPoNumber('TB-26-AAA', ojG[1], ojG.length), true)
 
 console.log(failures ? `\n${failures} FAIL` : `\nALL PASS`)
 process.exit(failures ? 1 : 0)
