@@ -1229,6 +1229,15 @@
     }
   },
 
+  "orderSummary": {
+    "breakdown": {
+      "car": "Car ({days}d)",
+      "luggage": "Luggage storage",
+      "transfer": "Transfer",
+      "insurance": "Insurance"
+    }
+  },
+
   "ferryResults": {
     "passengers": "{count, plural, one {# passenger} other {# passengers}}",
     "returnPrefix": "Return:",
@@ -1259,7 +1268,7 @@
     "return": "Return",
     "passengersLabel": "Passengers",
     "total": "Total",
-    "continueToPassengers": "Continue to Passengers",
+    "continueToExtras": "Continue to Add-ons",
     "selectReturnHint": "Please select a return ferry to continue",
     "sameOperatorDiscount": "Round-trip same-operator discount applied",
     "summaryEmpty": "Select a ferry to see your booking summary",

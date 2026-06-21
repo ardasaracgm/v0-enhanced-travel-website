@@ -14,7 +14,7 @@
 
 import * as React from 'react'
 import { X } from 'lucide-react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { useBooking, type BookingItem } from '@/lib/booking-context'
 import { summarizeItem } from '@/lib/trip-items/summary'
@@ -84,6 +84,7 @@ interface OrderSummaryItemsProps {
 export function OrderSummaryItems({ includeFerry = true }: OrderSummaryItemsProps) {
   const { state } = useBooking()
   const locale = useLocale()
+  const t = useTranslations('orderSummary')
   const removeItem = useRemoveBookingItem()
 
   const rows = includeFerry
@@ -94,15 +95,24 @@ export function OrderSummaryItems({ includeFerry = true }: OrderSummaryItemsProp
     <>
       {rows.map((item, i) => {
         const row = summarizeItem(item, locale)
+        // breakdownLabel'ı locale'e bağla — summary.ts İngilizce üretir, tek
+        // tüketici burası. Ferry (Outbound/Return Nx) kapsam dışı → summary.ts
+        // değeri korunur (results'ta bespoke localized kart + includeFerry=false).
+        const label =
+          item.type === 'car_rental' ? t('breakdown.car', { days: item.days })
+          : item.type === 'luggage'  ? t('breakdown.luggage')
+          : item.type === 'transfer' ? t('breakdown.transfer')
+          : item.type === 'insurance' ? t('breakdown.insurance')
+          : row.breakdownLabel
         return (
           <div key={i} className="flex items-center justify-between gap-2 text-sm">
-            <span className="text-muted-foreground">{row.breakdownLabel}</span>
+            <span className="text-muted-foreground">{label}</span>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-foreground">€{row.amount}</span>
               {isRemovable(item) ? (
                 <button
                   type="button"
-                  aria-label={`Remove ${row.breakdownLabel}`}
+                  aria-label={`Remove ${label}`}
                   onClick={() => removeItem(item)}
                   className="text-muted-foreground hover:text-destructive transition-colors"
                 >
