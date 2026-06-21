@@ -5,18 +5,17 @@ import type {
   FerrySearchQuery, FerryReservationRequest, FerryReservationResult,
 } from './provider'
 import { slug } from './util'
+import { DenturError } from './dentur-error'
 
 const BASE = process.env.DENTUR_API_BASE
 const TOKEN = process.env.DENTUR_API_TOKEN
 const TIMEOUT_MS = 15_000
 const ROUTE_SCHEDULE_TTL_MS = 5 * 60_000
 
-class DenturError extends Error {}
-
 /** POST helper: bearer auth, JSON, timeout, meaningful errors (insurance adapter pattern). */
 async function denturPost<T>(path: string, body?: unknown): Promise<T> {
   if (!BASE || !TOKEN) {
-    throw new DenturError('dentur_env_missing: DENTUR_API_BASE / DENTUR_API_TOKEN not set')
+    throw new DenturError('dentur_env_missing: DENTUR_API_BASE / DENTUR_API_TOKEN not set', 'config')
   }
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
@@ -31,11 +30,14 @@ async function denturPost<T>(path: string, body?: unknown): Promise<T> {
       signal: ctrl.signal,
       cache: 'no-store',
     })
-    if (!res.ok) throw new DenturError(`dentur_http_${res.status} on ${path}`)
+    if (!res.ok) throw new DenturError(`dentur_http_${res.status} on ${path}`, 'http', res.status)
     return (await res.json()) as T
   } catch (e) {
     if (e instanceof DenturError) throw e
-    throw new DenturError(`dentur_fetch_failed on ${path}: ${(e as Error).message}`)
+    // The AbortController we own fired ⇒ TIMEOUT (request may have landed → NOT
+    // retryable). Otherwise a pre-connection NETWORK failure (never landed → retryable).
+    const kind = ctrl.signal.aborted || (e as Error)?.name === 'AbortError' ? 'timeout' : 'network'
+    throw new DenturError(`dentur_fetch_failed on ${path}: ${(e as Error).message}`, kind)
   } finally {
     clearTimeout(timer)
   }

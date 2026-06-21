@@ -5,6 +5,7 @@ import { getFerryProvider } from '@/lib/ferry'
 import { buildFerryReservationRequest, type FerryLegInput } from '@/lib/ferry/reservation-request'
 import { reconcileVoucherSplit, expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
 import { groupFerryLegs, groupPoNumber, type ReserveGroup } from '@/lib/ferry/group-legs'
+import { isRetryable, withReserveRetry } from '@/lib/ferry/dentur-error'
 import type { FerryItemMetadata } from '@/lib/supabase'
 import type { FerryReservationPassenger, FerryReservationResult } from '@/lib/ferry/provider'
 
@@ -38,6 +39,10 @@ type SupabaseAdmin = ReturnType<typeof getSupabaseAdmin>
 // The per-leg shape reserveFerry builds from trip_items (id + typed meta + cents).
 // Named so the extracted persist step can take it verbatim.
 type ReserveLeg = { id: string; meta: FerryItemMetadata; priceCents: number }
+
+// Bounded retry for the reserve() transport call — network-only (see isRetryable).
+const RESERVE_MAX_RETRIES = 2
+const RESERVE_BACKOFF_MS = 300 // backoff: 300ms, 600ms
 
 export async function reserveFerry(tripId: string): Promise<ReserveFerryResult> {
   const supabase = getSupabaseAdmin()
@@ -182,7 +187,24 @@ async function reserveGroup(
       poNumber: groupPoNumber(trip.reference, group, groupCount),
     })
 
-    const result = await (await getFerryProvider()).reserve(req)
+    // Reserve with a bounded retry — ONLY a pre-connection network throw re-attempts
+    // (the request never reached Dentur → no booking). A timeout/5xx/config throw
+    // propagates immediately (a booking MAY exist; Dentur has no idempotency key).
+    let result: FerryReservationResult
+    try {
+      result = await withReserveRetry(
+        async () => (await getFerryProvider()).reserve(req),
+        { maxRetries: RESERVE_MAX_RETRIES, backoffMs: RESERVE_BACKOFF_MS },
+      )
+    } catch (reserveErr) {
+      // TERMINAL transport failure (network retries exhausted, OR non-retryable). Mark
+      // this group's anchor failed (admin backstop); lease KEPT (5-min) gates an
+      // immediate retry — a timeout/5xx may have created a booking we won't duplicate.
+      await writeItem(supabase, anchor.id, { metadata: { ...anchor.meta, reserve_state: 'failed' } })
+      console.error('[reserveFerry] reserve transport failure for trip', tripId,
+        isRetryable(reserveErr) ? '(network, retries exhausted)' : '(non-retryable)', reserveErr)
+      return { ok: false, error: reserveErr instanceof Error ? reserveErr.message : 'reserve failed' }
+    }
     if (!result.ok) {
       // CLEAN provider rejection (no booking created) — mark failed, KEEP the lease
       // (5-min window) so a retry is gated, then surface for the admin backstop.
