@@ -39,9 +39,9 @@ export function FerryCard({
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
               <p className="text-sm text-muted-foreground">{ferry.from.name}</p>
-              <p className="text-xs text-muted-foreground">{formatDateLong(ferry.date, locale)}</p>
             </div>
             <div className="flex flex-col items-center">
+              <p className="text-xs text-muted-foreground mb-1">{formatDateLong(ferry.date, locale)}</p>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="w-8 h-0.5 bg-border" />
                 <Clock className="h-4 w-4" />

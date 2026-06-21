@@ -1223,6 +1223,15 @@
     }
   },
 
+  "orderSummary": {
+    "breakdown": {
+      "car": "Αυτοκίνητο ({days} ημ.)",
+      "luggage": "Φύλαξη αποσκευών",
+      "transfer": "Μεταφορά",
+      "insurance": "Ασφάλιση"
+    }
+  },
+
   "ferryResults": {
     "passengers": "{count, plural, one {# επιβάτης} other {# επιβάτες}}",
     "returnPrefix": "Επιστροφή:",
@@ -1253,7 +1262,7 @@
     "return": "Επιστροφή",
     "passengersLabel": "Επιβάτες",
     "total": "Σύνολο",
-    "continueToPassengers": "Συνέχεια στους επιβάτες",
+    "continueToExtras": "Συνέχεια στα έξτρα",
     "selectReturnHint": "Επιλέξτε πλοίο επιστροφής για να συνεχίσετε",
     "sameOperatorDiscount": "Έκπτωση επιστροφής ίδιας εταιρείας",
     "summaryEmpty": "Επιλέξτε ένα πλοίο για να δείτε τη σύνοψη κράτησης",

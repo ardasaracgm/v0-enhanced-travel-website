@@ -1229,6 +1229,15 @@
     }
   },
 
+  "orderSummary": {
+    "breakdown": {
+      "car": "Araç ({days} gün)",
+      "luggage": "Valiz emaneti",
+      "transfer": "Transfer",
+      "insurance": "Sigorta"
+    }
+  },
+
   "ferryResults": {
     "passengers": "{count, plural, one {# yolcu} other {# yolcu}}",
     "returnPrefix": "Dönüş:",
@@ -1259,7 +1268,7 @@
     "return": "Dönüş",
     "passengersLabel": "Yolcular",
     "total": "Toplam",
-    "continueToPassengers": "Yolcu Bilgilerine Geç",
+    "continueToExtras": "Ek Hizmetlere Geç",
     "selectReturnHint": "Devam etmek için lütfen bir dönüş feribotu seçin",
     "sameOperatorDiscount": "Gidiş-dönüş aynı firma indirimi",
     "summaryEmpty": "Rezervasyon özetini görmek için bir feribot seçin",

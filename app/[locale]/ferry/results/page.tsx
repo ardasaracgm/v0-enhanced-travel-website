@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -25,6 +25,8 @@ import {
 import { searchFerriesWithNearestAction, type FerrySearchResult } from '@/lib/actions/ferry-search'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
+import { OrderSummaryItems } from '@/components/booking/order-summary-items'
+import { formatDateLong } from '@/lib/trip-items/summary'
 
 const cityNames: Record<string, string> = {
   bodrum: 'Bodrum',
@@ -39,6 +41,7 @@ const cityNames: Record<string, string> = {
 export default function FerryResultsPage() {
   const router = useRouter()
   const t = useTranslations('ferryResults')
+  const locale = useLocale()
   const { state, dispatch } = useBooking()
   const [ferries, setFerries] = React.useState<FerryTrip[]>([])
   const [returnFerries, setReturnFerries] = React.useState<FerryTrip[]>([])
@@ -281,6 +284,7 @@ export default function FerryResultsPage() {
                               <span>{t('outbound')}</span>
                             </div>
                             <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
+                            <p className="text-sm text-muted-foreground">{formatDateLong(outbound.date, locale)}</p>
                             <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
                             <p className="text-sm text-muted-foreground">{outbound.operator}</p>
                           </div>
@@ -292,8 +296,18 @@ export default function FerryResultsPage() {
                                 <span>{t('return')}</span>
                               </div>
                               <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
+                              <p className="text-sm text-muted-foreground">{formatDateLong(returnF.date, locale)}</p>
                               <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
                               <p className="text-sm text-muted-foreground">{returnF.operator}</p>
+                            </div>
+                          )}
+
+                          {/* Ekstralar (car/luggage/transfer) — passenger-details/
+                              checkout ile aynı paylaşılan bileşen (tek kaynak); toplama
+                              giren her kalem X ile görünür. Ferry bacakları yukarıda. */}
+                          {state.items.some((i) => i.type !== 'ferry') && (
+                            <div className="space-y-2">
+                              <OrderSummaryItems includeFerry={false} />
                             </div>
                           )}
 
@@ -316,7 +330,7 @@ export default function FerryResultsPage() {
                             onClick={handleContinue}
                             disabled={state.searchParams.tripType === 'round-trip' && !returnF}
                           >
-                            {t('continueToPassengers')}
+                            {t('continueToExtras')}
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
 
