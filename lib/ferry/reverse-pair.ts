@@ -15,11 +15,26 @@
  * different-operator return, or an unknown port — is NOT a pair: the two legs
  * stay independent one-ways (no discount, no single reservation).
  */
-import type { FerryTrip } from './provider'
 import { resolvePort } from './ports'
 
-export function isReversePair(a: FerryTrip, b: FerryTrip): boolean {
-  if (a.operator !== b.operator) return false
+/**
+ * The minimal shape isReversePair compares — operator + canonical port ids.
+ * FerryTrip satisfies this structurally (its from/to are FerryPort, which carry
+ * `id`), so existing callers are unaffected; AND reserveFerry can build it from
+ * trip_item metadata (from_port/to_port/operator) where no FerryTrip exists at
+ * reserve time. One predicate, both call sites, no synthetic FerryTrip.
+ */
+export interface ReversePairLeg {
+  operator?: string
+  from: { id: string }
+  to: { id: string }
+}
+
+export function isReversePair(a: ReversePairLeg, b: ReversePairLeg): boolean {
+  // Operator gate. A missing/empty operator can NEVER form a pair — guard it so
+  // two operator-less legs don't false-match via `undefined === undefined`
+  // (defence: Dentur always writes operator, but reserve reads optional metadata).
+  if (!a.operator || a.operator !== b.operator) return false
   const aFrom = resolvePort(a.from.id)
   const aTo = resolvePort(a.to.id)
   const bFrom = resolvePort(b.from.id)
