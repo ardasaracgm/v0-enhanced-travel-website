@@ -11,6 +11,19 @@ export const dynamic = 'force-dynamic'
 // action'daki ALLOWED_PROVIDERS ile hizalı.
 const PROVIDERS = ['cash', 'bank_transfer'] as const
 
+// Ferry reservation state at-a-glance (Dentur reserve, written by reserveFerry onto
+// the ferry item metadata). On a partial open-jaw booking some ferry legs read
+// 'reserved' (green) and others 'failed' (red) — the admin tells them apart visually.
+function FerryReserveBadge({ state }: { state?: string }) {
+  if (state === 'reserved') {
+    return <Badge className="border-transparent bg-green-600 text-white hover:bg-green-600">reserved</Badge>
+  }
+  if (state === 'failed') {
+    return <Badge variant="destructive">reserve failed</Badge>
+  }
+  return <Badge variant="outline" className="text-muted-foreground">not reserved</Badge>
+}
+
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -33,7 +46,7 @@ export default async function AdminTripDetailPage({
 
   const { data: items } = await supabase
     .from('trip_items')
-    .select('item_type, title, scheduled_at, price_amount, price_currency')
+    .select('item_type, title, scheduled_at, price_amount, price_currency, metadata')
     .eq('trip_id', id)
     .order('sequence', { ascending: true })
 
@@ -101,6 +114,13 @@ export default async function AdminTripDetailPage({
                     {i.item_type}
                     {i.scheduled_at ? ` · ${new Date(i.scheduled_at).toLocaleDateString('en-GB')}` : ''}
                   </p>
+                  {i.item_type === 'ferry' && (
+                    <div className="mt-1">
+                      <FerryReserveBadge
+                        state={(i.metadata as { reserve_state?: string } | null)?.reserve_state}
+                      />
+                    </div>
+                  )}
                 </div>
                 <span className="shrink-0 text-sm text-foreground">
                   {i.price_amount} {i.price_currency}
