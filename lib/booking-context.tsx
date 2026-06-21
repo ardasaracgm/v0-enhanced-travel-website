@@ -52,6 +52,12 @@ export interface CarRentalSelection {
 export interface FerryBookingItem {
   type: 'ferry'
   leg: 'outbound' | 'return'
+  // Travel-order index for the N-leg model (Ferryhopper "multiple destinations").
+  // Classic round trip is the 2-leg special case: outbound=0, return=1. ADDITIVE —
+  // `leg` is retained and remains the key every current reader/money-path uses;
+  // legIndex's consumers (N-leg cart UI + route-based reserve grouping) land in
+  // later 3b/3c parts. Optional so persisted (sessionStorage) + older items stay valid.
+  legIndex?: number
   ferryId: string
   ferry: FerryTrip
   date: string           // YYYY-MM-DD snapshot at selection time
@@ -236,6 +242,7 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       const ferryItem: FerryBookingItem = {
         type: 'ferry',
         leg: 'outbound',
+        legIndex: 0,
         ferryId: action.payload.id,
         ferry: action.payload,
         date: state.searchParams.date,
@@ -258,6 +265,7 @@ function bookingReducer(state: BookingState, action: BookingAction): BookingStat
       const returnItem: FerryBookingItem = {
         type: 'ferry',
         leg: 'return',
+        legIndex: 1,
         ferryId: action.payload.id,
         ferry: action.payload,
         date: state.searchParams.returnDate ?? '',
