@@ -183,6 +183,14 @@ export const DenturFerryProvider: FerryProvider = {
     return getDepartures()
   },
 
+  // Arrivals reachable from a departure slug. Reuses resolveDeparture (slug→
+  // regionID) + getArrivals (arrivalsCache). Throws dentur_unknown_departure for
+  // an off-catalog slug — the action catches it and returns [].
+  async listArrivals(departureSlug: string): Promise<FerryPort[]> {
+    const dep = await resolveDeparture(departureSlug)
+    return getArrivals(dep.providerId!)
+  },
+
   async search(q: FerrySearchQuery): Promise<FerryTrip[]> {
     const dep = await resolveDeparture(q.from)
     const arr = await resolveArrival(dep.providerId!, q.to)
