@@ -15,9 +15,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -250,25 +248,15 @@ export default function FerryTicketsPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
-                    <Select value={to} onValueChange={setTo}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('toPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>{t('countryTurkey')}</SelectLabel>
-                          {arrivals.filter((p) => p.country === 'TR').map((p) => (
-                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                        <SelectGroup>
-                          <SelectLabel>{t('countryGreece')}</SelectLabel>
-                          {arrivals.filter((p) => p.country === 'GR').map((p) => (
-                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <PortCombobox
+                      ports={arrivals}
+                      value={to}
+                      onChange={setTo}
+                      placeholder={t('toPlaceholder')}
+                      portLabel={portLabel}
+                      defaultOpenCountry="GR"
+                      countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('departDate')}</label>
@@ -319,25 +307,15 @@ export default function FerryTicketsPage() {
                       {/* Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground">{t('returnToPort')}</label>
-                        <Select value={returnTo} onValueChange={setReturnTo}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('toPlaceholder')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>{t('countryTurkey')}</SelectLabel>
-                              {returnArrivals.filter((p) => p.country === 'TR').map((p) => (
-                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                              ))}
-                            </SelectGroup>
-                            <SelectGroup>
-                              <SelectLabel>{t('countryGreece')}</SelectLabel>
-                              {returnArrivals.filter((p) => p.country === 'GR').map((p) => (
-                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                        <PortCombobox
+                          ports={returnArrivals}
+                          value={returnTo}
+                          onChange={setReturnTo}
+                          placeholder={t('toPlaceholder')}
+                          portLabel={portLabel}
+                          defaultOpenCountry="GR"
+                          countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
+                        />
                       </div>
                     </>
                   )}
