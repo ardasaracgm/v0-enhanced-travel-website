@@ -9,7 +9,6 @@ import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -34,6 +33,7 @@ import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/tru
 import { useBooking } from '@/lib/booking-context'
 import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from '@/lib/actions/ferry-catalog'
 import { PortCombobox } from '@/components/ferry/port-combobox'
+import { DateRangeField } from '@/components/ferry/date-range-field'
 
 const routes = [
   { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
@@ -108,7 +108,9 @@ export default function FerryTicketsPage() {
   // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
   const canSearch =
     departures.length > 0 && !!from && !!to &&
-    (tripType !== 'round-trip' || !!returnTo)
+    // Round-trip → dönüş varışı VE dönüş tarihi zorunlu (yarım-range engeli:
+    // gidiş seçilip dönüş seçilmemiş aralıkla aramayı bloke eder).
+    (tripType !== 'round-trip' || (!!returnTo && !!returnDate))
 
   const handleSearch = () => {
     if (!canSearch) return
@@ -226,8 +228,9 @@ export default function FerryTicketsPage() {
                 </div>
                 <div
                   className={
-                    // Tek-yön = 5 hücre (from, to, date, pax, button) → tek satır.
-                    // Round-trip = 8 hücre → mevcut 4-col, 2 satır (değişmez).
+                    // Tek-yön = 5 hücre (from, to, dateRange, pax, button) → tek satır.
+                    // Round-trip = 7 hücre (from, to, dateRange, returnFrom, returnTo,
+                    //   pax, button) → 4-col, 2. satırda 3 dolu (tek-satır işi sonraya).
                     // İki tam literal string (Tailwind JIT runtime'da birleştiremez).
                     tripType === 'one-way'
                       ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'
@@ -259,35 +262,22 @@ export default function FerryTicketsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('departDate')}</label>
-                    <Input
-                      type="date"
-                      className="h-10"
-                      min={todayAthens}
-                      max="2099-12-31"
-                      value={date}
-                      onChange={(e) => {
-                        const newDate = e.target.value
-                        setDate(newDate)
-                        // Clear a now-invalid return date — the min attribute
-                        // won't retroactively wipe an already-selected value.
-                        if (returnDate && returnDate < newDate) setReturnDate('')
-                      }}
+                    <label className="text-sm font-medium text-foreground">
+                      {tripType === 'round-trip'
+                        ? `${t('departDate')} – ${t('returnDate')}`
+                        : t('departDate')}
+                    </label>
+                    <DateRangeField
+                      mode={tripType === 'round-trip' ? 'range' : 'single'}
+                      date={date}
+                      returnDate={returnDate}
+                      onDateChange={setDate}
+                      onReturnDateChange={setReturnDate}
+                      minDate={todayAthens}
+                      locale={locale}
+                      placeholder={t('departDate')}
                     />
                   </div>
-                  {tripType === 'round-trip' && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">{t('returnDate')}</label>
-                      <Input
-                        type="date"
-                        className="h-10"
-                        min={date || todayAthens}
-                        max="2099-12-31"
-                        value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                      />
-                    </div>
-                  )}
                   {tripType === 'round-trip' && (
                     <>
                       {/* Dönüş kalkışı: outbound varışına kilitli, salt-gösterim. */}
