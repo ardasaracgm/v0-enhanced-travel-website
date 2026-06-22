@@ -35,6 +35,7 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { useBooking } from '@/lib/booking-context'
 import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from '@/lib/actions/ferry-catalog'
+import { PortCombobox } from '@/components/ferry/port-combobox'
 
 const routes = [
   { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
@@ -237,25 +238,15 @@ export default function FerryTicketsPage() {
                 >
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
-                    <Select value={from} onValueChange={setFrom}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('fromPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>{t('countryTurkey')}</SelectLabel>
-                          {departures.filter((p) => p.country === 'TR').map((p) => (
-                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                        <SelectGroup>
-                          <SelectLabel>{t('countryGreece')}</SelectLabel>
-                          {departures.filter((p) => p.country === 'GR').map((p) => (
-                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <PortCombobox
+                      ports={departures}
+                      value={from}
+                      onChange={setFrom}
+                      placeholder={t('fromPlaceholder')}
+                      portLabel={portLabel}
+                      defaultOpenCountry="TR"
+                      countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
