@@ -89,6 +89,7 @@ export function DateRangeField({
             mode="range"
             locale={dfLocale}
             disabled={disabled}
+            min={1}
             numberOfMonths={2}
             selected={{
               from: date ? parseISO(date) : undefined,

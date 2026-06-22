@@ -321,6 +321,7 @@
     "swapPorts": "Limanları değiştir",
     "departDate": "Gidiş tarihi",
     "returnDate": "Dönüş tarihi",
+    "roundTripDates": "Gidiş-dönüş tarihi",
     "returnFromPort": "Dönüş kalkışı",
     "returnToPort": "Dönüş varışı",
     "oneWay": "Tek yön",

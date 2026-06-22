@@ -321,6 +321,7 @@
     "swapPorts": "Swap ports",
     "departDate": "Departure date",
     "returnDate": "Return date",
+    "roundTripDates": "Round-trip dates",
     "returnFromPort": "Return from",
     "returnToPort": "Return to",
     "oneWay": "One way",

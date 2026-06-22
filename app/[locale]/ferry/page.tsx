@@ -311,7 +311,7 @@ export default function FerryTicketsPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
                       {tripType === 'round-trip'
-                        ? `${t('departDate')} – ${t('returnDate')}`
+                        ? t('roundTripDates')
                         : t('departDate')}
                     </label>
                     <DateRangeField
