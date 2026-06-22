@@ -4,6 +4,7 @@ import { getFerryProvider } from '@/lib/ferry'
 import { slug } from '@/lib/ferry/util'
 import { nearestCandidateDates, MAX_NEAREST_PROBES } from '@/lib/ferry/nearest'
 import { todayAthensISO } from '@/lib/validation/dates'
+import { addDaysISO } from '@/lib/trip-items/summary'
 import type { FerryTrip } from '@/lib/ferry/provider'
 
 export interface FerrySearchActionInput {
@@ -89,4 +90,53 @@ export async function searchFerriesWithNearestAction(
     `${candidates.length} candidate(s) probed, no fresh availability`,
   )
   return { trips: [], reason: 'no_trips_in_window' }
+}
+
+export interface RouteAvailability {
+  /** Sezon ufku (sefer-günlerinin min–max'ı) içinde sefer-günü OLMAYAN günler
+   *  (YYYY-MM-DD). DateRangeField.disabledDates'i besler — bu günler takvimde kapalı. */
+  disabledDates: string[]
+  /** Gün (YYYY-MM-DD) → o gün kalkan sefer sayısı. Şimdilik tüketilmiyor; ileride
+   *  gün-başı sefer-sayısı badge'i (custom DayButton) için action'da hazır durur. */
+  countByDate: Record<string, number>
+}
+
+/**
+ * Sefer-availability takvimi (Adım 2). provider.getRouteSchedule (Dentur
+ * TripsByRoute, dateless, 5-dk cache) → gün→sayı indirgemesi + sezon ufku
+ * tümleyeni. SALT GÖRÜNTÜ: searchParams/pricing/reserve'e DOKUNMAZ; yalnız
+ * DateRangeField'ı kısıtlar. Bilinmeyen rota → boş availability (tüm günler
+ * açık; kullanıcı yine arar, nearest-fallback devrede).
+ */
+export async function getRouteScheduleAction(
+  from: string,
+  to: string,
+): Promise<RouteAvailability> {
+  const provider = await getFerryProvider()
+  let schedule: FerryTrip[]
+  try {
+    schedule = await provider.getRouteSchedule(slug(from), slug(to))
+  } catch (e) {
+    if (isUnknownRouteError(e)) return { disabledDates: [], countByDate: {} }
+    throw e
+  }
+
+  // Gün → sefer sayısı.
+  const countByDate: Record<string, number> = {}
+  for (const t of schedule) {
+    const d = t.date.slice(0, 10)
+    countByDate[d] = (countByDate[d] ?? 0) + 1
+  }
+
+  const sailing = Object.keys(countByDate).sort()
+  if (sailing.length === 0) return { disabledDates: [], countByDate }
+
+  // Sezon ufku = min–max sefer-günü. Aralıktaki sefersiz günler = tümleyen → kapalı.
+  // Ufuk dışı (max sonrası) günler set'te değil → takvimde açık kalır (round-trip MVP
+  // kararı + nearest-fallback sefersiz güne aramayı zaten yakalar).
+  const disabledDates: string[] = []
+  for (let d = sailing[0]; d <= sailing[sailing.length - 1]; d = addDaysISO(d, 1)) {
+    if (!(d in countByDate)) disabledDates.push(d)
+  }
+  return { disabledDates, countByDate }
 }

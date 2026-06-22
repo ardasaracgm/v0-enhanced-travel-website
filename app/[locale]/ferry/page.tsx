@@ -32,6 +32,7 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { useBooking } from '@/lib/booking-context'
 import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from '@/lib/actions/ferry-catalog'
+import { getRouteScheduleAction, type RouteAvailability } from '@/lib/actions/ferry-search'
 import { PortCombobox } from '@/components/ferry/port-combobox'
 import { DateRangeField } from '@/components/ferry/date-range-field'
 
@@ -61,6 +62,8 @@ export default function FerryTicketsPage() {
   const [arrivals, setArrivals] = React.useState<CatalogPort[]>([])
   // Dönüş varış kataloğu: kalkışı = outbound varışı ('to'). Adım 2 deseni.
   const [returnArrivals, setReturnArrivals] = React.useState<CatalogPort[]>([])
+  // Sefer-availability: seçili OUTBOUND hat (from→to) sezon takvimi.
+  const [availability, setAvailability] = React.useState<RouteAvailability | null>(null)
 
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -103,6 +106,24 @@ export default function FerryTicketsPage() {
     })
     return () => { alive = false }
   }, [tripType, to, from])
+
+  // Sefer-availability: seçili OUTBOUND hat (from→to) için sezon takvimi — sefersiz
+  // günler kapatılır. Eager (arrivals deseni gibi) from/to değişince çeker; server
+  // 5-dk cache. Round-trip MVP: dönüş bacağı ayrı hat olsa da takvim outbound'u
+  // kısıtlar (dönüş rafine sonra; nearest-fallback dönüşte devrede). SALT GÖRÜNTÜ.
+  React.useEffect(() => {
+    if (!from || !to) { setAvailability(null); return }
+    let alive = true
+    getRouteScheduleAction(from, to).then((a) => { if (alive) setAvailability(a) })
+    return () => { alive = false }
+  }, [from, to])
+
+  // availability → DateRangeField.disabledDates. Yokken (loading / rota yok) boş Set
+  // → tüm günler açık (Adım 1 davranışı). Money-path dışı, salt takvim kısıtı.
+  const disabledDateSet = React.useMemo(
+    () => new Set(availability?.disabledDates ?? []),
+    [availability],
+  )
 
   // Catalog still loading (departures empty) or no valid arrival picked → block search.
   // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
@@ -276,6 +297,7 @@ export default function FerryTicketsPage() {
                       minDate={todayAthens}
                       locale={locale}
                       placeholder={t('departDate')}
+                      disabledDates={disabledDateSet}
                     />
                   </div>
                   {tripType === 'round-trip' && (
