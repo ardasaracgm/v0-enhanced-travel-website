@@ -72,6 +72,16 @@ export const MockFerryProvider: FerryProvider = {
     return [...seen.values()]
   },
 
+  // Arrivals for a departure slug — derived from the route table (mock has no
+  // region ids; matches by lowercased name === slug, as search() does).
+  async listArrivals(departureSlug: string): Promise<FerryPort[]> {
+    const seen = new Map<string, FerryPort>()
+    for (const r of mockFerries) {
+      if (r.from.toLowerCase() === departureSlug) seen.set(r.to.toLowerCase(), portOf(r.to))
+    }
+    return [...seen.values()]
+  },
+
   async search(q: FerrySearchQuery): Promise<FerryTrip[]> {
     // Blackout days (Tuesdays) return empty → exercises the nearest-date fallback.
     if (!mockHasSailings(q.date.slice(0, 10))) return []

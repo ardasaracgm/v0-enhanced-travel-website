@@ -44,6 +44,8 @@ scripts/dentur-catalog-probe.ts
 scripts/dentur-route-e2e-probe.ts
 scripts/dentur-reserve-probe.ts
 scripts/dentur-gettrip-probe.ts
+scripts/dentur-country-probe.ts
+scripts/ports.test.ts
 scripts/reconcile-live-probe.ts
 scripts/reserve-persist-probe.ts
 scripts/reserve-live-probe.ts

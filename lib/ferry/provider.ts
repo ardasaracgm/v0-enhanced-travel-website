@@ -113,6 +113,10 @@ export interface FerryProvider {
   /** Departure ports (Dentur: DepartureRegion). Arrivals are departure-scoped,
    *  resolved inside search() — not returned here. Cached. */
   listPorts(): Promise<FerryPort[]>
+  /** Arrival ports reachable FROM a departure (Dentur: ArrivalRegion). Departure
+   *  passed as canonical slug; the adapter resolves it to its own region id. Used
+   *  by the dependent dropdown — NOT part of the search/money path. Cached. */
+  listArrivals(departureSlug: string): Promise<FerryPort[]>
   /** Search single-leg sailings (Dentur: TripSearch). */
   search(q: FerrySearchQuery): Promise<FerryTrip[]>
   /** Whole-season schedule, dateless (Dentur: TripsByRoute). Raw data, cached.

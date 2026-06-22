@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from '@/i18n/routing'
 import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,7 +15,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -32,6 +34,7 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { useBooking } from '@/lib/booking-context'
+import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from '@/lib/actions/ferry-catalog'
 
 const routes = [
   { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
@@ -45,6 +48,7 @@ const FAQ_COUNT = 6
 
 export default function FerryTicketsPage() {
   const t = useTranslations('ferryPage')
+  const locale = useLocale()
   const router = useRouter()
   const { state, dispatch } = useBooking()
   const [tripType, setTripType] = React.useState<'one-way' | 'round-trip'>('one-way')
@@ -52,11 +56,63 @@ export default function FerryTicketsPage() {
   const [to, setTo] = React.useState('kos')
   const [date, setDate] = React.useState('')
   const [returnDate, setReturnDate] = React.useState('')
+  const [returnTo, setReturnTo] = React.useState('')
   const [passengers, setPassengers] = React.useState('2')
+  const [departures, setDepartures] = React.useState<CatalogPort[]>([])
+  const [arrivals, setArrivals] = React.useState<CatalogPort[]>([])
+  // Dönüş varış kataloğu: kalkışı = outbound varışı ('to'). Adım 2 deseni.
+  const [returnArrivals, setReturnArrivals] = React.useState<CatalogPort[]>([])
 
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
+  // Display name by locale, with en→tr fallback (el may be a TODO in ports.ts).
+  const portLabel = React.useCallback(
+    (p: CatalogPort) => p.name[locale as 'tr' | 'en' | 'el'] ?? p.name.en ?? p.name.tr,
+    [locale],
+  )
+
+  // Load the live departure catalog once.
+  React.useEffect(() => {
+    let alive = true
+    getDeparturePortsAction().then((d) => { if (alive) setDepartures(d) })
+    return () => { alive = false }
+  }, [])
+
+  // Dependent arrivals: refetch when departure changes; reset a now-invalid 'to'.
+  React.useEffect(() => {
+    let alive = true
+    getArrivalPortsAction(from).then((a) => {
+      if (!alive) return
+      setArrivals(a)
+      setTo((prev) => (a.some((p) => p.slug === prev) ? prev : a[0]?.slug ?? ''))
+    })
+    return () => { alive = false }
+  }, [from])
+
+  // Açık-jaw dönüş varışları: dönüş kalkışı = outbound varışı ('to').
+  // Default seçim = outbound kalkışı ('from') → klasik gidiş-dönüş (byte-identical).
+  React.useEffect(() => {
+    if (tripType !== 'round-trip' || !to) { setReturnArrivals([]); return }
+    let alive = true
+    getArrivalPortsAction(to).then((a) => {
+      if (!alive) return
+      setReturnArrivals(a)
+      setReturnTo((prev) => {
+        const want = prev || from
+        return a.some((p) => p.slug === want) ? want : a[0]?.slug ?? ''
+      })
+    })
+    return () => { alive = false }
+  }, [tripType, to, from])
+
+  // Catalog still loading (departures empty) or no valid arrival picked → block search.
+  // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
+  const canSearch =
+    departures.length > 0 && !!from && !!to &&
+    (tripType !== 'round-trip' || !!returnTo)
+
   const handleSearch = () => {
+    if (!canSearch) return
     // Gerçek yeni arama → eski sepeti at (stale ferry/ekstra birikmesin). Yalnız
     // burada; adımlar arası ve results-içi gezinme sepeti korur.
     dispatch({ type: 'RESET_CART' })
@@ -69,6 +125,10 @@ export default function FerryTicketsPage() {
         passengers: parseInt(passengers),
         tripType,
         returnDate: tripType === 'round-trip' ? returnDate : undefined,
+        // returnFrom = outbound varışı (hep), returnTo = kullanıcı seçimi.
+        // Klasik gidiş-dönüş: returnTo === from → results swap'ıyla byte-identical.
+        returnFrom: tripType === 'round-trip' ? to : undefined,
+        returnTo: tripType === 'round-trip' ? returnTo : undefined,
       },
     })
     router.push('/ferry/results')
@@ -165,7 +225,7 @@ export default function FerryTicketsPage() {
                     </div>
                   </RadioGroup>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
                     <Select value={from} onValueChange={setFrom}>
@@ -173,10 +233,18 @@ export default function FerryTicketsPage() {
                         <SelectValue placeholder={t('fromPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="bodrum">{t('portBodrum')}</SelectItem>
-                        <SelectItem value="turgutreis">{t('portTurgutreis')}</SelectItem>
-                        <SelectItem value="marmaris">{t('portMarmaris')}</SelectItem>
-                        <SelectItem value="kusadasi">{t('portKusadasi')}</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel>{t('countryTurkey')}</SelectLabel>
+                          {departures.filter((p) => p.country === 'TR').map((p) => (
+                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>{t('countryGreece')}</SelectLabel>
+                          {departures.filter((p) => p.country === 'GR').map((p) => (
+                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                   </div>
@@ -187,9 +255,18 @@ export default function FerryTicketsPage() {
                         <SelectValue placeholder={t('toPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kos">{t('portKos')}</SelectItem>
-                        <SelectItem value="rhodes">{t('portRhodes')}</SelectItem>
-                        <SelectItem value="samos">{t('portSamos')}</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel>{t('countryTurkey')}</SelectLabel>
+                          {arrivals.filter((p) => p.country === 'TR').map((p) => (
+                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>{t('countryGreece')}</SelectLabel>
+                          {arrivals.filter((p) => p.country === 'GR').map((p) => (
+                            <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                   </div>
@@ -223,6 +300,47 @@ export default function FerryTicketsPage() {
                       />
                     </div>
                   )}
+                  {tripType === 'round-trip' && (
+                    <>
+                      {/* Dönüş kalkışı: outbound varışına kilitli, salt-gösterim. */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">{t('returnFromPort')}</label>
+                        <Select value={to} disabled>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {arrivals.filter((p) => p.slug === to).map((p) => (
+                              <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">{t('returnToPort')}</label>
+                        <Select value={returnTo} onValueChange={setReturnTo}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('toPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>{t('countryTurkey')}</SelectLabel>
+                              {returnArrivals.filter((p) => p.country === 'TR').map((p) => (
+                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                            <SelectGroup>
+                              <SelectLabel>{t('countryGreece')}</SelectLabel>
+                              {returnArrivals.filter((p) => p.country === 'GR').map((p) => (
+                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
                     <Select value={passengers} onValueChange={setPassengers}>
@@ -243,6 +361,7 @@ export default function FerryTicketsPage() {
                     <Button
                       className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
                       onClick={handleSearch}
+                      disabled={!canSearch}
                     >
                       {t('searchButton')}
                     </Button>

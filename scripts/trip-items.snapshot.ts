@@ -68,6 +68,29 @@ const FIXTURES: Fixture[] = [
     },
   },
   {
+    // Return leg (reverse route Kos→Bodrum) resolver shield. Locks the Greek-origin
+    // departure timezone (Europe/Athens — the outbound fixture only covers the Turkish
+    // side), the reversed title, and direction:'return'. NOTE: does NOT capture pair
+    // pricing — the resolver prices each leg per-leg (ferryFaresTotal); the round-trip
+    // discount + integer-cent split live in submit-booking §2b, locked separately by
+    // scripts/ferry-pair-prices.test.ts.
+    name: 'ferry/return-2pax',
+    type: 'ferry',
+    ctx: {
+      item: { type: 'ferry', leg: 'return', ferryId: 'mock:kb-1', date: '2026-07-13' },
+      ferry: {
+        id: 'mock:kb-1', provider: 'mock',
+        from: { id: 'kos', name: 'Kos' }, to: { id: 'bodrum', name: 'Bodrum' },
+        date: '', departureTime: '17:00', arrivalTime: '18:00', durationMinutes: 60,
+        operator: 'Bodrum Express Lines', vessel: 'Bodrum Express I',
+        passengerSeatsAvailable: 45,
+        fares: [{ passengerType: 'adult', oneWay: 35, currency: 'EUR' }],
+      },
+      passengerCount: 2,
+      passengerTypes: ['adult', 'adult'],
+    },
+  },
+  {
     name: 'car/one-way-4days',
     type: 'car_rental',
     ctx: {

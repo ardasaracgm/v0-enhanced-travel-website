@@ -320,6 +320,8 @@
     "toPort": "To port",
     "departDate": "Departure date",
     "returnDate": "Return date",
+    "returnFromPort": "Return from",
+    "returnToPort": "Return to",
     "oneWay": "One way",
     "roundTrip": "Round trip",
     "searchButton": "Search Ferries",

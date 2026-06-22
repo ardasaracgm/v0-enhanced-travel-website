@@ -27,16 +27,7 @@ import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateLong } from '@/lib/trip-items/summary'
-
-const cityNames: Record<string, string> = {
-  bodrum: 'Bodrum',
-  turgutreis: 'Turgutreis',
-  marmaris: 'Marmaris',
-  kusadasi: 'Kusadasi',
-  kos: 'Kos',
-  rhodes: 'Rhodes',
-  samos: 'Samos',
-}
+import { resolvePort } from '@/lib/ferry/ports'
 
 export default function FerryResultsPage() {
   const router = useRouter()
@@ -87,6 +78,24 @@ export default function FerryResultsPage() {
     ) {
       dispatch({ type: 'CLEAR_RETURN_FERRY' })
       setIsSelectingReturn(false)
+      return
+    }
+    // Round-trip return leg stale-guard: seçili dönüş, güncel returnFrom/returnTo
+    // (klasik fallback = to/from) ile eşleşmiyorsa geçersiz → temizle. Açık-jaw
+    // rota değişiminde özetin hayalet dönüş bacağı göstermesini engeller.
+    if (state.searchParams.tripType === 'round-trip') {
+      const ret = state.items.find(
+        (i): i is FerryBookingItem => i.type === 'ferry' && i.leg === 'return'
+      )
+      if (ret) {
+        const sp = state.searchParams
+        const retOk = ret.ferry.from.id === (sp.returnFrom ?? sp.to)
+                   && ret.ferry.to.id === (sp.returnTo ?? sp.from)
+        if (!retOk) {
+          dispatch({ type: 'CLEAR_RETURN_FERRY' })
+          setIsSelectingReturn(false)
+        }
+      }
     }
   }, [state.items, state.searchParams, dispatch])
 
@@ -100,7 +109,9 @@ export default function FerryResultsPage() {
       setOutResult(out)
 
       if (sp.tripType === 'round-trip') {
-        const ret = await searchFerriesWithNearestAction({ from: sp.to, to: sp.from, date: sp.returnDate || '' })
+        // Açık-jaw: dönüş bacağı returnFrom/returnTo ile bağımsız aranır.
+        // Klasik fallback (returnFrom ?? sp.to, returnTo ?? sp.from) = eski swap.
+        const ret = await searchFerriesWithNearestAction({ from: sp.returnFrom ?? sp.to, to: sp.returnTo ?? sp.from, date: sp.returnDate || '' })
         if (!cancelled) {
           setReturnFerries(ret.trips.map(f => ({ ...f, date: sp.returnDate || '' })))
           setRetResult(ret)
@@ -132,8 +143,20 @@ export default function FerryResultsPage() {
     }
   }
 
-  const fromCity = cityNames[state.searchParams.from] || state.searchParams.from
-  const toCity = cityNames[state.searchParams.to] || state.searchParams.to
+  // Görünen liman adı: kanonik katalogdan, locale-öncelikli (portLabel deseni).
+  // Katalog dışı slug (ör. marmaris) → ham slug'a fallback, mevcut davranışı korur.
+  // Salt gösterim — searchParams/money-path/seçim mantığına dokunmaz.
+  const portName = (s: string) => {
+    const p = resolvePort(s)
+    return p ? (p.name[locale as 'tr' | 'en' | 'el'] ?? p.name.en ?? p.name.tr) : s
+  }
+  const fromCity = portName(state.searchParams.from)
+  const toCity = portName(state.searchParams.to)
+  // Açık-jaw dönüş: kalkış = returnFrom (klasik fallback to), varış = returnTo
+  // (klasik fallback from). Klasik gidiş-dönüşte returnFromCity=toCity ve
+  // returnToCity=fromCity → mevcut gösterimle birebir aynı kalır.
+  const returnFromCity = portName(state.searchParams.returnFrom ?? state.searchParams.to)
+  const returnToCity = portName(state.searchParams.returnTo ?? state.searchParams.from)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -158,7 +181,7 @@ export default function FerryResultsPage() {
                     {state.searchParams.tripType === 'round-trip' && (
                       <>
                         <ArrowRight className="h-4 w-4" />
-                        <span>{fromCity}</span>
+                        <span>{returnToCity}</span>
                       </>
                     )}
                   </div>
@@ -235,7 +258,7 @@ export default function FerryResultsPage() {
                           {t('backToOutbound')}
                         </Button>
                         <h2 className="text-xl font-bold text-foreground">
-                          {t('returnHeading', { to: toCity, from: fromCity })}
+                          {t('returnHeading', { to: returnFromCity, from: returnToCity })}
                         </h2>
                       </div>
                       <Badge variant="secondary">{t('ferriesFound', { count: returnFerries.length })}</Badge>
