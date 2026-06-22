@@ -263,17 +263,7 @@ export default function FerryTicketsPage() {
                     </div>
                   </RadioGroup>
                 </div>
-                <div
-                  className={
-                    // Tek-yön = 5 hücre (from, to, dateRange, pax, button) → tek satır.
-                    // Round-trip = 6 hücre (from, to, dateRange, returnTo, pax, button);
-                    //   returnFrom (=to) returnTo etiketinde satır-içi → tek satır.
-                    // İki tam literal string (Tailwind JIT runtime'da birleştiremez).
-                    tripType === 'one-way'
-                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'
-                      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4'
-                  }
-                >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
                     <PortCombobox
@@ -326,26 +316,30 @@ export default function FerryTicketsPage() {
                       disabledDates={disabledDateSet}
                     />
                   </div>
-                  {tripType === 'round-trip' && (
-                    // Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). Dönüş
-                    // kalkışı (=to) etiketin başında satır-içi gösterilir (returnFrom
-                    // ayrı alanı kaldırıldı → tek satır). Money-path değişmez.
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground truncate">
-                        <span className="font-normal text-muted-foreground">{toName} → </span>
-                        {t('returnToPort')}
-                      </label>
-                      <PortCombobox
-                        ports={returnArrivals}
-                        value={returnTo}
-                        onChange={setReturnTo}
-                        placeholder={t('toPlaceholder')}
-                        portLabel={portLabel}
-                        defaultOpenCountry="GR"
-                        countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
-                      />
-                    </div>
-                  )}
+                  {/* Dönüş varışı slot — kolonu HER ZAMAN işgal eder (one-way'de boş
+                      yer tutar) → tek-yön↔gidiş-dönüş toggle'da ortak 5 alan (Kalkış/
+                      Varış/Tarih/Yolcu/Ara) aynı pikselde sabit kalır. İçerik sadece
+                      round-trip'te; dönüş kalkışı (=to) etikette satır-içi. İleride
+                      multi-leg için doğal slot. Money-path değişmez. */}
+                  <div className="space-y-2">
+                    {tripType === 'round-trip' && (
+                      <>
+                        <label className="text-sm font-medium text-foreground truncate">
+                          <span className="font-normal text-muted-foreground">{toName} → </span>
+                          {t('returnToPort')}
+                        </label>
+                        <PortCombobox
+                          ports={returnArrivals}
+                          value={returnTo}
+                          onChange={setReturnTo}
+                          placeholder={t('toPlaceholder')}
+                          portLabel={portLabel}
+                          defaultOpenCountry="GR"
+                          countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
+                        />
+                      </>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
                     <Select value={passengers} onValueChange={setPassengers}>
