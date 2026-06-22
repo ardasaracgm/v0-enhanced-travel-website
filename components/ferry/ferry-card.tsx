@@ -24,10 +24,10 @@ export function FerryCard({
       }`}
       onClick={onSelect}
     >
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-primary/10 flex items-center justify-center">
               <Ship className="h-8 w-8 text-primary" />
             </div>
             <div>
@@ -36,8 +36,8 @@ export function FerryCard({
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-8">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{ferry.departureTime}</p>
+            <div className="flex-1 md:flex-none text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{ferry.departureTime}</p>
               <p className="text-sm text-muted-foreground">{ferry.from.name}</p>
             </div>
             <div className="flex flex-col items-center">
@@ -50,17 +50,17 @@ export function FerryCard({
               </div>
               <p className="text-xs text-muted-foreground mt-1">{t('direct')}</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
+            <div className="flex-1 md:flex-none text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{ferry.arrivalTime}</p>
               <p className="text-sm text-muted-foreground">{ferry.to.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-4 md:justify-start">
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">€{ferryUnitFare(ferry)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">€{ferryUnitFare(ferry)}</p>
               <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
             </div>
-            <div className="flex flex-col gap-2 items-end">
+            <div className="flex flex-row items-center gap-2 sm:flex-col sm:items-end">
               <Badge variant={ferry.passengerSeatsAvailable > 20 ? 'secondary' : 'destructive'} className="text-xs">
                 {t('seatsLeft', { count: ferry.passengerSeatsAvailable })}
               </Badge>
