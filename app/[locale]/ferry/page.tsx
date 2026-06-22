@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { useRouter } from '@/i18n/routing'
-import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight } from 'lucide-react'
+import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight, Minus, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -11,13 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Accordion,
   AccordionContent,
@@ -45,6 +38,15 @@ const routes = [
 
 // FAQ content lives in i18n (ferryPage.faq{n}Q / faq{n}A).
 const FAQ_COUNT = 6
+
+// Yolcu üst sınırı: Dentur'da sabit per-rezervasyon cap YOK (paxlimit probe ile
+// kanıtlandı — 8 pax/390 koltuk kabul); tavan sefer kotası. 11 = makul üst sınır
+// (Ferryhopper 9 / Yeşil Marmaris 10 referans). Insurance MAX_TRAVELLERS=9'dan
+// AYRI bilinçli (farklı domain). Fiyat lineer → money-path etkilenmez.
+const FERRY_MIN_PAX = 1
+const FERRY_MAX_PAX = 11
+const clampPax = (n: number) =>
+  Math.min(FERRY_MAX_PAX, Math.max(FERRY_MIN_PAX, Number.isFinite(n) ? n : FERRY_MIN_PAX))
 
 export default function FerryTicketsPage() {
   const t = useTranslations('ferryPage')
@@ -342,18 +344,41 @@ export default function FerryTicketsPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
-                    <Select value={passengers} onValueChange={setPassengers}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('passengersLabel')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <SelectItem key={n} value={String(n)}>
-                            {t('passengerOption', { count: n })}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* Stepper: elle yazılabilir + -/+ . min 1, max FERRY_MAX_PAX.
+                        setPassengers string besler (mevcut sözleşme; handleSearch
+                        parseInt eder → searchParams.passengers number). Money-path
+                        değişmez — sadece değer aralığı 5→11. */}
+                    <div className="flex h-10 items-stretch rounded-md border border-input bg-background">
+                      <button
+                        type="button"
+                        aria-label={t('passengersDecrease')}
+                        onClick={() => setPassengers(String(clampPax(parseInt(passengers || '1', 10) - 1)))}
+                        disabled={parseInt(passengers || '1', 10) <= FERRY_MIN_PAX}
+                        className="flex w-9 shrink-0 items-center justify-center rounded-l-md text-muted-foreground hover:bg-accent disabled:opacity-40 disabled:hover:bg-transparent"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={passengers}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '')
+                          setPassengers(raw === '' ? '' : String(clampPax(parseInt(raw, 10))))
+                        }}
+                        onBlur={() => { if (passengers === '') setPassengers(String(FERRY_MIN_PAX)) }}
+                        className="w-full min-w-0 border-x border-input bg-transparent text-center text-sm focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        aria-label={t('passengersIncrease')}
+                        onClick={() => setPassengers(String(clampPax(parseInt(passengers || '1', 10) + 1)))}
+                        disabled={parseInt(passengers || '1', 10) >= FERRY_MAX_PAX}
+                        className="flex w-9 shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:bg-accent disabled:opacity-40 disabled:hover:bg-transparent"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">&nbsp;</label>

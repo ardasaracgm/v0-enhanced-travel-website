@@ -343,6 +343,8 @@
     "portRhodes": "Ρόδος, Ελλάδα",
     "portSamos": "Σάμος, Ελλάδα",
     "passengersLabel": "Επιβάτες",
+    "passengersDecrease": "Μείωση επιβατών",
+    "passengersIncrease": "Αύξηση επιβατών",
     "passengerOption": "{count, plural, one {# Επιβάτης} other {# Επιβάτες}}",
     "popularRoutesSubtitle": "Απευθείας συνδέσεις από τις τουρκικές ακτές στα ελληνικά νησιά",
     "countryTurkey": "Τουρκία",

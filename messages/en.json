@@ -343,6 +343,8 @@
     "portRhodes": "Rhodes, Greece",
     "portSamos": "Samos, Greece",
     "passengersLabel": "Passengers",
+    "passengersDecrease": "Decrease passengers",
+    "passengersIncrease": "Increase passengers",
     "passengerOption": "{count, plural, one {# Passenger} other {# Passengers}}",
     "popularRoutesSubtitle": "Direct connections from Turkish coast to Greek islands",
     "countryTurkey": "Turkey",

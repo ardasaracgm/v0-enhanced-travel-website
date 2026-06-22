@@ -343,6 +343,8 @@
     "portRhodes": "Rodos, Yunanistan",
     "portSamos": "Sisam, Yunanistan",
     "passengersLabel": "Yolcu",
+    "passengersDecrease": "Yolcu azalt",
+    "passengersIncrease": "Yolcu artır",
     "passengerOption": "{count, plural, other {# Yolcu}}",
     "popularRoutesSubtitle": "Türkiye kıyılarından Yunan adalarına doğrudan bağlantılar",
     "countryTurkey": "Türkiye",
