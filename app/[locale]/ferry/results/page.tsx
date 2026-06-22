@@ -28,6 +28,7 @@ import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateLong } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
+import { isReversePair } from '@/lib/ferry/reverse-pair'
 
 export default function FerryResultsPage() {
   const router = useRouter()
@@ -42,12 +43,13 @@ export default function FerryResultsPage() {
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
 
-  // Round-trip aynı firma → tek indirimli round-trip rezervasyonu (ferryPairPrices
-  // ile aynı tespit: operator eşitliği). Sadece özet notu için; money-path değil.
-  const sameOperatorRoundTrip =
+  // İndirimli round-trip = reverse-pair (aynı firma + ters rota), ferryPairPrices &
+  // groupFerryLegs ile AYNI tespit. Açık-jaw (Kos→Turgutreis) → false → not yok.
+  // Sadece özet notu için; money-path değil.
+  const isRoundTripPair =
     state.searchParams.tripType === 'round-trip' &&
     !!outbound && !!returnF &&
-    outbound.operator === returnF.operator
+    isReversePair(outbound, returnF)
 
   // Stale seçim koruması: seçili ferry artık güncel rota/yolcu-sayısıyla
   // eşleşmiyorsa geçersiz → temizle. "0 sefer" rota değişiminde özetin hayalet
@@ -343,7 +345,7 @@ export default function FerryResultsPage() {
                               <span className="text-foreground">{t('total')}</span>
                               <span className="text-primary">€{selectTotalPrice(state)}</span>
                             </div>
-                            {sameOperatorRoundTrip && (
+                            {isRoundTripPair && (
                               <p className="text-xs text-primary mt-2">{t('sameOperatorDiscount')}</p>
                             )}
                           </div>

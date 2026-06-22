@@ -1,5 +1,6 @@
 import type { FerryTrip, FerryFare } from './provider'
 import type { PassengerType } from '@/lib/supabase'
+import { isReversePair } from './reverse-pair'
 
 /**
  * Per-passenger adult one-way fare for a single sailing (per-row display / the
@@ -70,15 +71,14 @@ export function ferryRoundTripTotal(
  * (submit-booking §2b) use, so what the user sees equals what Viva is charged.
  *
  * - One-way (no return): outbound = each pax's own-type one-way fare; pair=false.
- * - Round-trip, SAME operator: one round-trip charge (returnSameDay/DifferentDay
- *   from the outbound company's table), split in INTEGER CENTS — floor each half,
- *   odd cent → outbound — so the two halves sum EXACTLY to the pair total (no
- *   rounding leak before Viva's Math.round(total*100)); pair=true.
- * - Round-trip, DIFFERENT operators (forward-compat: multi-provider return lists,
- *   Kademe 6/7): the round-trip discount is a single-company fare, so it does NOT
- *   apply — each leg is its own one-way; pair=false (NOT one Dentur reservation).
- *   Today every route is single-operator, so this branch never triggers and the
- *   same-operator split is unchanged.
+ * - Round-trip REVERSE PAIR (same operator + route flipped): one round-trip charge
+ *   (returnSameDay/DifferentDay from the outbound company's table), split in INTEGER
+ *   CENTS — floor each half, odd cent → outbound — so the two halves sum EXACTLY to
+ *   the pair total (no rounding leak before Viva's Math.round(total*100)); pair=true.
+ * - NOT a reverse pair — a DIFFERENT operator OR an OPEN-JAW return (Bodrum→Kos out,
+ *   Kos→Turgutreis back): the round-trip discount is one company's reverse-route fare,
+ *   so it does NOT apply — each leg is its own one-way; pair=false (NOT one Dentur
+ *   reservation). groupFerryLegs uses the SAME isReversePair, so charge == reserve cost.
  *
  * `pair` mirrors the round_trip_pair tag: true only when the two legs are one
  * discounted round-trip reservation (same operator). Callers tag off this so the
@@ -93,7 +93,9 @@ export function ferryPairPrices(
   if (!returnTrip) {
     return { outbound: ferryFaresTotal(outbound, passengerTypes), return: null, pair: false }
   }
-  if (outbound.operator !== returnTrip.operator) {
+  // A discounted round-trip is ONE company's reverse route. Different operator OR
+  // an open-jaw return (Kos→Turgutreis, not Kos→Bodrum) → two independent one-ways.
+  if (!isReversePair(outbound, returnTrip)) {
     return {
       outbound: ferryFaresTotal(outbound, passengerTypes),
       return: ferryFaresTotal(returnTrip, passengerTypes),

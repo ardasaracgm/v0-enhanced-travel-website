@@ -24,33 +24,45 @@ const fare = (
   returnSameDay?: number, returnDifferentDay?: number,
 ): FerryFare => ({ passengerType, oneWay, returnSameDay, returnDifferentDay, currency: 'EUR' })
 
-// Only operator + fares are read by ferryPairPrices; cast a minimal shape.
-const trip = (operator: string, fares: FerryFare[]): FerryTrip =>
-  ({ operator, fares } as unknown as FerryTrip)
+// operator + from/to + fares are read (isReversePair needs canonical port ids).
+const trip = (operator: string, from: string, to: string, fares: FerryFare[]): FerryTrip =>
+  ({ operator, from: { id: from }, to: { id: to }, fares } as unknown as FerryTrip)
 
 // --- one-way: each pax's own-type one-way fare; return null; pair false ---
-const owTrip = trip('OP', [fare('adult', 25, 35, 40), fare('child', 20, 28, 32)])
+const owTrip = trip('OP', 'bodrum', 'kos', [fare('adult', 25, 35, 40), fare('child', 20, 28, 32)])
 eq('one-way 1 adult',        ferryPairPrices(owTrip, null, ['adult'], false),            { outbound: 25, return: null, pair: false })
 eq('one-way adult+child sum', ferryPairPrices(owTrip, null, ['adult', 'child'], false),  { outbound: 45, return: null, pair: false })
 
-// --- round-trip, SAME operator: single fare split in integer cents ---
-const rtTrip = trip('OP', [fare('adult', 25, 35, 40)])
-eq('rt same-day 35 → 17.50/17.50',  ferryPairPrices(rtTrip, rtTrip, ['adult'], true),  { outbound: 17.5, return: 17.5, pair: true })
-eq('rt diff-day 40 → 20/20',        ferryPairPrices(rtTrip, rtTrip, ['adult'], false), { outbound: 20, return: 20, pair: true })
+// --- round-trip REVERSE PAIR (same operator + flipped route): single fare split ---
+const rtOut = trip('OP', 'bodrum', 'kos', [fare('adult', 25, 35, 40)])
+const rtRet = trip('OP', 'kos', 'bodrum', [fare('adult', 25, 35, 40)])
+eq('rt same-day 35 → 17.50/17.50',  ferryPairPrices(rtOut, rtRet, ['adult'], true),  { outbound: 17.5, return: 17.5, pair: true })
+eq('rt diff-day 40 → 20/20',        ferryPairPrices(rtOut, rtRet, ['adult'], false), { outbound: 20, return: 20, pair: true })
 
 // odd cent → outbound (locks the rounding direction, money-path parity)
-const oddTrip = trip('OP', [fare('adult', 17.51, 17.51, 17.51)])
-eq('rt odd cent 17.51 → 8.76/8.75', ferryPairPrices(oddTrip, oddTrip, ['adult'], true), { outbound: 8.76, return: 8.75, pair: true })
+const oddOut = trip('OP', 'bodrum', 'kos', [fare('adult', 17.51, 17.51, 17.51)])
+const oddRet = trip('OP', 'kos', 'bodrum', [fare('adult', 17.51, 17.51, 17.51)])
+eq('rt odd cent 17.51 → 8.76/8.75', ferryPairPrices(oddOut, oddRet, ['adult'], true), { outbound: 8.76, return: 8.75, pair: true })
 
 // mock fallback: no returnSameDay/DifferentDay → ferryRoundTripTotal = 2×oneWay
-const mockTrip = trip('OP', [fare('adult', 25)])
-eq('rt mock fallback 2×25 → 25/25', ferryPairPrices(mockTrip, mockTrip, ['adult'], true), { outbound: 25, return: 25, pair: true })
+const mockOut = trip('OP', 'bodrum', 'kos', [fare('adult', 25)])
+const mockRet = trip('OP', 'kos', 'bodrum', [fare('adult', 25)])
+eq('rt mock fallback 2×25 → 25/25', ferryPairPrices(mockOut, mockRet, ['adult'], true), { outbound: 25, return: 25, pair: true })
 
-// --- forward-compat: DIFFERENT operators → no round-trip discount, pair FALSE ---
-const opA = trip('OP-A', [fare('adult', 25, 35, 40)]) // would be 35 if it were a pair
-const opB = trip('OP-B', [fare('adult', 30, 38, 44)])
+// --- DIFFERENT operators (reverse route but operator gate) → no discount, pair FALSE ---
+const opA = trip('OP-A', 'bodrum', 'kos', [fare('adult', 25, 35, 40)]) // would be 35 if it were a pair
+const opB = trip('OP-B', 'kos', 'bodrum', [fare('adult', 30, 38, 44)])
 eq('diff-operator → two one-ways, no discount', ferryPairPrices(opA, opB, ['adult'], true),
    { outbound: 25, return: 30, pair: false })
+
+// --- OPEN-JAW: same operator, return is NOT the reverse route (Kos→Turgutreis) ---
+// The €10 discount bug: operator-only logic priced this as a 40 round-trip; the fix
+// treats it as two independent one-ways (25+25=50), pair=false → no round_trip_pair
+// tag → consistent with groupFerryLegs booking two separate reservations.
+const ojOut = trip('OP', 'bodrum', 'kos', [fare('adult', 25, 35, 40)])
+const ojRet = trip('OP', 'kos', 'turgutreis', [fare('adult', 25, 35, 40)])
+eq('open-jaw same-operator diff-arrival → 25/25, no discount, pair=false',
+   ferryPairPrices(ojOut, ojRet, ['adult'], true), { outbound: 25, return: 25, pair: false })
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED')
 process.exit(failures ? 1 : 0)
