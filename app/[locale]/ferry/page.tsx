@@ -225,7 +225,16 @@ export default function FerryTicketsPage() {
                     </div>
                   </RadioGroup>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div
+                  className={
+                    // Tek-yön = 5 hücre (from, to, date, pax, button) → tek satır.
+                    // Round-trip = 8 hücre → mevcut 4-col, 2 satır (değişmez).
+                    // İki tam literal string (Tailwind JIT runtime'da birleştiremez).
+                    tripType === 'one-way'
+                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'
+                      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'
+                  }
+                >
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
                     <Select value={from} onValueChange={setFrom}>
