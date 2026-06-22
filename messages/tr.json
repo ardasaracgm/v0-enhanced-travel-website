@@ -320,6 +320,8 @@
     "toPort": "Varış limanı",
     "departDate": "Gidiş tarihi",
     "returnDate": "Dönüş tarihi",
+    "returnFromPort": "Dönüş kalkışı",
+    "returnToPort": "Dönüş varışı",
     "oneWay": "Tek yön",
     "roundTrip": "Gidiş-dönüş",
     "searchButton": "Feribot Ara",

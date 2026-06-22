@@ -56,9 +56,12 @@ export default function FerryTicketsPage() {
   const [to, setTo] = React.useState('kos')
   const [date, setDate] = React.useState('')
   const [returnDate, setReturnDate] = React.useState('')
+  const [returnTo, setReturnTo] = React.useState('')
   const [passengers, setPassengers] = React.useState('2')
   const [departures, setDepartures] = React.useState<CatalogPort[]>([])
   const [arrivals, setArrivals] = React.useState<CatalogPort[]>([])
+  // Dönüş varış kataloğu: kalkışı = outbound varışı ('to'). Adım 2 deseni.
+  const [returnArrivals, setReturnArrivals] = React.useState<CatalogPort[]>([])
 
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -86,8 +89,27 @@ export default function FerryTicketsPage() {
     return () => { alive = false }
   }, [from])
 
+  // Açık-jaw dönüş varışları: dönüş kalkışı = outbound varışı ('to').
+  // Default seçim = outbound kalkışı ('from') → klasik gidiş-dönüş (byte-identical).
+  React.useEffect(() => {
+    if (tripType !== 'round-trip' || !to) { setReturnArrivals([]); return }
+    let alive = true
+    getArrivalPortsAction(to).then((a) => {
+      if (!alive) return
+      setReturnArrivals(a)
+      setReturnTo((prev) => {
+        const want = prev || from
+        return a.some((p) => p.slug === want) ? want : a[0]?.slug ?? ''
+      })
+    })
+    return () => { alive = false }
+  }, [tripType, to, from])
+
   // Catalog still loading (departures empty) or no valid arrival picked → block search.
-  const canSearch = departures.length > 0 && !!from && !!to
+  // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
+  const canSearch =
+    departures.length > 0 && !!from && !!to &&
+    (tripType !== 'round-trip' || !!returnTo)
 
   const handleSearch = () => {
     if (!canSearch) return
@@ -103,6 +125,10 @@ export default function FerryTicketsPage() {
         passengers: parseInt(passengers),
         tripType,
         returnDate: tripType === 'round-trip' ? returnDate : undefined,
+        // returnFrom = outbound varışı (hep), returnTo = kullanıcı seçimi.
+        // Klasik gidiş-dönüş: returnTo === from → results swap'ıyla byte-identical.
+        returnFrom: tripType === 'round-trip' ? to : undefined,
+        returnTo: tripType === 'round-trip' ? returnTo : undefined,
       },
     })
     router.push('/ferry/results')
@@ -199,7 +225,7 @@ export default function FerryTicketsPage() {
                     </div>
                   </RadioGroup>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
                     <Select value={from} onValueChange={setFrom}>
@@ -273,6 +299,47 @@ export default function FerryTicketsPage() {
                         onChange={(e) => setReturnDate(e.target.value)}
                       />
                     </div>
+                  )}
+                  {tripType === 'round-trip' && (
+                    <>
+                      {/* Dönüş kalkışı: outbound varışına kilitli, salt-gösterim. */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">{t('returnFromPort')}</label>
+                        <Select value={to} disabled>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {arrivals.filter((p) => p.slug === to).map((p) => (
+                              <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">{t('returnToPort')}</label>
+                        <Select value={returnTo} onValueChange={setReturnTo}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('toPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>{t('countryTurkey')}</SelectLabel>
+                              {returnArrivals.filter((p) => p.country === 'TR').map((p) => (
+                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                            <SelectGroup>
+                              <SelectLabel>{t('countryGreece')}</SelectLabel>
+                              {returnArrivals.filter((p) => p.country === 'GR').map((p) => (
+                                <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
                   )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>

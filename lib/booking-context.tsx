@@ -124,6 +124,10 @@ export interface BookingState {
     passengers: number
     tripType: 'one-way' | 'round-trip'
     returnDate?: string
+    /** Açık-jaw: dönüş kalkışı (hep outbound varışı). Yoksa eski swap (sp.to). */
+    returnFrom?: string
+    /** Açık-jaw: dönüş varışı (kullanıcı seçimi). Yoksa eski swap (sp.from). */
+    returnTo?: string
   }
   passengers: Passenger[]
   contactEmail: string
