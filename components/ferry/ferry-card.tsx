@@ -26,7 +26,7 @@ export function FerryCard({
     >
       <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center gap-4 md:justify-start">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-primary/10 flex items-center justify-center">
               <Ship className="h-8 w-8 text-primary" />
             </div>
@@ -55,16 +55,16 @@ export function FerryCard({
               <p className="text-sm text-muted-foreground">{ferry.to.name}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-4 md:justify-start">
-            <div className="text-right">
+          <div className="grid grid-cols-3 items-center gap-2 md:flex md:items-center md:justify-start md:gap-4">
+            <div className="justify-self-start text-left md:justify-self-auto md:text-right">
               <p className="text-xl sm:text-2xl font-bold text-primary">€{ferryUnitFare(ferry)}</p>
               <p className="text-sm text-muted-foreground">{t('perPerson')}</p>
             </div>
-            <div className="flex flex-row items-center gap-2 sm:flex-col sm:items-end">
-              <Badge variant={ferry.passengerSeatsAvailable > 20 ? 'secondary' : 'destructive'} className="text-xs">
+            <div className="contents md:flex md:flex-col md:gap-2 md:items-end">
+              <Badge variant={ferry.passengerSeatsAvailable > 20 ? 'secondary' : 'destructive'} className="text-xs justify-self-center max-w-full whitespace-normal text-center md:max-w-none md:whitespace-nowrap">
                 {t('seatsLeft', { count: ferry.passengerSeatsAvailable })}
               </Badge>
-              <Button size="sm" className={selected ? 'bg-primary' : 'bg-primary/80'}>
+              <Button size="sm" className={`justify-self-end ${selected ? 'bg-primary' : 'bg-primary/80'}`}>
                 {selected ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-1" />
