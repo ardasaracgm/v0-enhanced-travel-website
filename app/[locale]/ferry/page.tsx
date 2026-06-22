@@ -125,6 +125,14 @@ export default function FerryTicketsPage() {
     [availability],
   )
 
+  // Dönüş kalkışı = outbound varışı ('to'); ayrı alan yerine returnTo etiketinde
+  // satır-içi gösterilir (tek-satır form). Salt görüntü — handleSearch returnFrom'u
+  // doğrudan 'to'dan türetir, money-path değişmez.
+  const toName = (() => {
+    const p = arrivals.find((x) => x.slug === to)
+    return p ? portLabel(p) : to
+  })()
+
   // Catalog still loading (departures empty) or no valid arrival picked → block search.
   // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
   const canSearch =
@@ -258,12 +266,12 @@ export default function FerryTicketsPage() {
                 <div
                   className={
                     // Tek-yön = 5 hücre (from, to, dateRange, pax, button) → tek satır.
-                    // Round-trip = 7 hücre (from, to, dateRange, returnFrom, returnTo,
-                    //   pax, button) → 4-col, 2. satırda 3 dolu (tek-satır işi sonraya).
+                    // Round-trip = 6 hücre (from, to, dateRange, returnTo, pax, button);
+                    //   returnFrom (=to) returnTo etiketinde satır-içi → tek satır.
                     // İki tam literal string (Tailwind JIT runtime'da birleştiremez).
                     tripType === 'one-way'
                       ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'
-                      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'
+                      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4'
                   }
                 >
                   <div className="space-y-2">
@@ -319,35 +327,24 @@ export default function FerryTicketsPage() {
                     />
                   </div>
                   {tripType === 'round-trip' && (
-                    <>
-                      {/* Dönüş kalkışı: outbound varışına kilitli, salt-gösterim. */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">{t('returnFromPort')}</label>
-                        <Select value={to} disabled>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {arrivals.filter((p) => p.slug === to).map((p) => (
-                              <SelectItem key={p.slug} value={p.slug}>{portLabel(p)}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">{t('returnToPort')}</label>
-                        <PortCombobox
-                          ports={returnArrivals}
-                          value={returnTo}
-                          onChange={setReturnTo}
-                          placeholder={t('toPlaceholder')}
-                          portLabel={portLabel}
-                          defaultOpenCountry="GR"
-                          countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
-                        />
-                      </div>
-                    </>
+                    // Dönüş varışı: serbest seçim (getArrivalPortsAction(to)). Dönüş
+                    // kalkışı (=to) etiketin başında satır-içi gösterilir (returnFrom
+                    // ayrı alanı kaldırıldı → tek satır). Money-path değişmez.
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground truncate">
+                        <span className="font-normal text-muted-foreground">{toName} → </span>
+                        {t('returnToPort')}
+                      </label>
+                      <PortCombobox
+                        ports={returnArrivals}
+                        value={returnTo}
+                        onChange={setReturnTo}
+                        placeholder={t('toPlaceholder')}
+                        portLabel={portLabel}
+                        defaultOpenCountry="GR"
+                        countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
+                      />
+                    </div>
                   )}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
