@@ -318,6 +318,7 @@
     "searchTitle": "Feribot Ara",
     "fromPort": "Kalkış limanı",
     "toPort": "Varış limanı",
+    "swapPorts": "Limanları değiştir",
     "departDate": "Gidiş tarihi",
     "returnDate": "Dönüş tarihi",
     "returnFromPort": "Dönüş kalkışı",

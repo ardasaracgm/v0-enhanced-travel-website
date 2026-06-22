@@ -133,6 +133,14 @@ export default function FerryTicketsPage() {
     // gidiş seçilip dönüş seçilmemiş aralıkla aramayı bloke eder).
     (tripType !== 'round-trip' || (!!returnTo && !!returnDate))
 
+  const swapPorts = () => {
+    // from↔to çevir; arrivals / returnArrivals / availability effect'leri (from/to
+    // deps) otomatik yeniden çalışır → katalog + takvim doğru refetch. Money-path
+    // dışı — yalnız mevcut UI setter'ları.
+    setFrom(to)
+    setTo(from)
+  }
+
   const handleSearch = () => {
     if (!canSearch) return
     // Gerçek yeni arama → eski sepeti at (stale ferry/ekstra birikmesin). Yalnız
@@ -270,8 +278,18 @@ export default function FerryTicketsPage() {
                       countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
+                    {/* from↔to swap — md+ (yan yana) görünür. Mobil dikey stack'te
+                        swap, merged route box ile (Commit B) gelecek. Salt UI state. */}
+                    <button
+                      type="button"
+                      onClick={swapPorts}
+                      aria-label={t('swapPorts')}
+                      className="hidden md:flex absolute -left-6 top-8 z-10 h-8 w-8 items-center justify-center rounded-full border border-input bg-background shadow-sm hover:bg-accent"
+                    >
+                      <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
+                    </button>
                     <PortCombobox
                       ports={arrivals}
                       value={to}

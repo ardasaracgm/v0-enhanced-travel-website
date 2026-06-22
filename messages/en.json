@@ -318,6 +318,7 @@
     "searchTitle": "Search Ferries",
     "fromPort": "From port",
     "toPort": "To port",
+    "swapPorts": "Swap ports",
     "departDate": "Departure date",
     "returnDate": "Return date",
     "returnFromPort": "Return from",
