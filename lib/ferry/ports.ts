@@ -27,30 +27,43 @@ export interface Port {
   /** Readable name variants (other languages / app slugs) that must resolve to
    *  this port. Folded via slug() at lookup; need not be pre-slugged. */
   aliases?: string[]
+  /** UN/LOCODE (city level). Canonical, provider-independent identity. */
+  unlocode?: string
+  /** Canonical berth identity — UNLOCODE-NNNN. First berth = -0001, numbered by
+   *  the API that first defined the port (Dentur). Multi-berth cities (e.g.
+   *  Bodrum Kale vs Cruise) add -0002… when a 2nd provider/berth lands. */
+  berthId?: string
+  /** UI grouping key (= unlocode). Berths of the same city share it once
+   *  multi-berth grouping is needed; today one berth/city so unused in UI. */
+  cityGroup?: string
+  /** Provider code mapping (e.g. { dentur: '19' }). NOT yet load-bearing —
+   *  Dentur regionID is resolved live by name today; populated when a 2nd ferry
+   *  API integrates and static disambiguation is required. */
+  providerIds?: Record<string, string>
 }
 
 /** All 17 Dentur regions. Order: TR side first, then GR side. */
 export const PORTS: Port[] = [
   // ----- Türkiye (TR) -----
-  { slug: 'bodrum',      country: 'TR', name: { tr: 'Bodrum',      en: 'Bodrum',      el: 'Μπόντρουμ' } },
-  { slug: 'turgutreis',  country: 'TR', name: { tr: 'Turgutreis',  en: 'Turgutreis'  /* TODO(el) */ } },
-  { slug: 'fethiye',     country: 'TR', name: { tr: 'Fethiye',     en: 'Fethiye'     /* TODO(el) */ } },
-  { slug: 'cesme',       country: 'TR', name: { tr: 'Çeşme',       en: 'Cesme',       el: 'Τσεσμές' } },
-  { slug: 'ayvalik',     country: 'TR', name: { tr: 'Ayvalık',     en: 'Ayvalik',     el: 'Αϊβαλί' }, aliases: ['Ayvali'] },
-  { slug: 'kusadasi',    country: 'TR', name: { tr: 'Kuşadası',    en: 'Kusadasi'    /* TODO(el) */ } },
-  { slug: 'dikili',      country: 'TR', name: { tr: 'Dikili',      en: 'Dikili'      /* TODO(el) */ } },
-  { slug: 'seferihisar', country: 'TR', name: { tr: 'Seferihisar', en: 'Seferihisar' /* TODO(el) */ } },
-  { slug: 'aliaga',      country: 'TR', name: { tr: 'Aliağa',      en: 'Aliaga'      /* TODO(el) */ } },
+  { slug: 'bodrum',      country: 'TR', name: { tr: 'Bodrum',      en: 'Bodrum',      el: 'Μπόντρουμ' }, unlocode: 'TRBXN', berthId: 'TRBXN-0001', cityGroup: 'TRBXN' },
+  { slug: 'turgutreis',  country: 'TR', name: { tr: 'Turgutreis',  en: 'Turgutreis'  /* TODO(el) */ }, unlocode: 'TRTUR', berthId: 'TRTUR-0001', cityGroup: 'TRTUR' },
+  { slug: 'fethiye',     country: 'TR', name: { tr: 'Fethiye',     en: 'Fethiye'     /* TODO(el) */ }, unlocode: 'TRFET', berthId: 'TRFET-0001', cityGroup: 'TRFET' },
+  { slug: 'cesme',       country: 'TR', name: { tr: 'Çeşme',       en: 'Cesme',       el: 'Τσεσμές' }, unlocode: 'TRCES', berthId: 'TRCES-0001', cityGroup: 'TRCES' },
+  { slug: 'ayvalik',     country: 'TR', name: { tr: 'Ayvalık',     en: 'Ayvalik',     el: 'Αϊβαλί' }, aliases: ['Ayvali'], unlocode: 'TRAYV', berthId: 'TRAYV-0001', cityGroup: 'TRAYV' },
+  { slug: 'kusadasi',    country: 'TR', name: { tr: 'Kuşadası',    en: 'Kusadasi'    /* TODO(el) */ }, unlocode: 'TRKUS', berthId: 'TRKUS-0001', cityGroup: 'TRKUS' },
+  { slug: 'dikili',      country: 'TR', name: { tr: 'Dikili',      en: 'Dikili'      /* TODO(el) */ }, unlocode: 'TRDIK', berthId: 'TRDIK-0001', cityGroup: 'TRDIK' },
+  { slug: 'seferihisar', country: 'TR', name: { tr: 'Seferihisar', en: 'Seferihisar' /* TODO(el) */ }, unlocode: 'TRSFH', berthId: 'TRSFH-0001', cityGroup: 'TRSFH' },
+  { slug: 'aliaga',      country: 'TR', name: { tr: 'Aliağa',      en: 'Aliaga'      /* TODO(el) */ }, unlocode: 'TRALI', berthId: 'TRALI-0001', cityGroup: 'TRALI' },
 
   // ----- Ελλάδα / Yunanistan (GR) -----
-  { slug: 'kos',           country: 'GR', name: { tr: 'Kos',      en: 'Kos',      el: 'Κως' },      aliases: ['İstanköy'] },
-  { slug: 'kalymnos',      country: 'GR', name: { tr: 'Kalimnos', en: 'Kalymnos', el: 'Κάλυμνος' }, aliases: ['Kalimnos'] },
-  { slug: 'samos',         country: 'GR', name: { tr: 'Sisam',    en: 'Samos',    el: 'Σάμος' },    aliases: ['Sisam'] },
-  { slug: 'rodos',         country: 'GR', name: { tr: 'Rodos',    en: 'Rhodes',   el: 'Ρόδος' },    aliases: ['Rhodes', 'Rodi'] },
-  { slug: 'leros',         country: 'GR', name: { tr: 'Leros',    en: 'Leros',    el: 'Λέρος' } },
-  { slug: 'chios-(sakiz)', country: 'GR', name: { tr: 'Sakız',    en: 'Chios',    el: 'Χίος' },     aliases: ['Chios', 'Sakız', 'Sakiz'] },
-  { slug: 'midilli',       country: 'GR', name: { tr: 'Midilli',  en: 'Lesvos',   el: 'Λέσβος' },   aliases: ['Lesvos', 'Mytilene', 'Mitilini', 'Lesbos'] },
-  { slug: 'patmos',        country: 'GR', name: { tr: 'Patmos',   en: 'Patmos',   el: 'Πάτμος' } },
+  { slug: 'kos',           country: 'GR', name: { tr: 'Kos',      en: 'Kos',      el: 'Κως' },      aliases: ['İstanköy'], unlocode: 'GRKGS', berthId: 'GRKGS-0001', cityGroup: 'GRKGS' },
+  { slug: 'kalymnos',      country: 'GR', name: { tr: 'Kalimnos', en: 'Kalymnos', el: 'Κάλυμνος' }, aliases: ['Kalimnos'], unlocode: 'GRKMI', berthId: 'GRKMI-0001', cityGroup: 'GRKMI' },
+  { slug: 'samos',         country: 'GR', name: { tr: 'Sisam',    en: 'Samos',    el: 'Σάμος' },    aliases: ['Sisam'], unlocode: 'GRSMI', berthId: 'GRSMI-0001', cityGroup: 'GRSMI' },
+  { slug: 'rodos',         country: 'GR', name: { tr: 'Rodos',    en: 'Rhodes',   el: 'Ρόδος' },    aliases: ['Rhodes', 'Rodi'], unlocode: 'GRRHO', berthId: 'GRRHO-0001', cityGroup: 'GRRHO' },
+  { slug: 'leros',         country: 'GR', name: { tr: 'Leros',    en: 'Leros',    el: 'Λέρος' }, unlocode: 'GRLRS', berthId: 'GRLRS-0001', cityGroup: 'GRLRS' },
+  { slug: 'chios-(sakiz)', country: 'GR', name: { tr: 'Sakız',    en: 'Chios',    el: 'Χίος' },     aliases: ['Chios', 'Sakız', 'Sakiz'], unlocode: 'GRJKH', berthId: 'GRJKH-0001', cityGroup: 'GRJKH' },
+  { slug: 'midilli',       country: 'GR', name: { tr: 'Midilli',  en: 'Lesvos',   el: 'Λέσβος' },   aliases: ['Lesvos', 'Mytilene', 'Mitilini', 'Lesbos'], unlocode: 'GRMJT', berthId: 'GRMJT-0001', cityGroup: 'GRMJT' },
+  { slug: 'patmos',        country: 'GR', name: { tr: 'Patmos',   en: 'Patmos',   el: 'Πάτμος' }, unlocode: 'GRPMS', berthId: 'GRPMS-0001', cityGroup: 'GRPMS' },
 ]
 
 /**
