@@ -149,13 +149,20 @@
     "tabs": {
       "ferry": "Ferry",
       "cars": "Cars",
-      "hotels": "Hotels",
-      "tours": "Tours"
+      "transfer": "Bodrum Transfer",
+      "insurance": "Insurance",
+      "visa": "Visa"
     },
-    "searchFerry": "Search Ferry Tickets",
-    "searchCars": "Search Cars",
-    "searchHotels": "Search Hotels",
-    "searchTours": "Search Tours"
+    "serviceCta": {
+      "carsDesc": "Pickup at Kos Port, wide fleet",
+      "carsButton": "Rent a Car",
+      "transferDesc": "Bodrum airport ↔ hotel transfer",
+      "transferButton": "Book Transfer",
+      "insuranceDesc": "Schengen-approved travel insurance",
+      "insuranceButton": "Get Insurance",
+      "visaDesc": "Greece visa on arrival application",
+      "visaButton": "Apply for Visa"
+    }
   },
 
   "searchForm": {

@@ -10,12 +10,10 @@ import {
   ChevronRight,
   MapPin,
   Menu,
-  Search,
   Users,
   Ship,
   Car,
   CarTaxiFront,
-  Hotel,
   Compass,
   FileText,
   Shield,
@@ -40,20 +38,12 @@ import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FerrySearchForm } from "@/components/ferry/ferry-search-form";
 
 export default function TravelBeez() {
   const t = useTranslations("hero");
-  const tForm = useTranslations("searchForm");
   const tBar = useTranslations("trustBar");
   const tLic = useTranslations("license");
   const tOffice = useTranslations("kosOffice");
@@ -69,7 +59,6 @@ export default function TravelBeez() {
   const tWa = useTranslations("whatsappCta");
   const tFooter = useTranslations("homeFooter");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const islands = [
     { id: "kos", image: "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=800&q=80" },
@@ -143,6 +132,22 @@ export default function TravelBeez() {
     { key: "visa", icon: <FileText className="h-8 w-8" />, title: tSvc("s5Title"), description: tSvc("s5Desc") },
     { key: "tours", icon: <Compass className="h-8 w-8" />, title: tSvc("s4Title"), description: tSvc("s4Desc") },
     { key: "packagePickup", icon: <Package className="h-8 w-8" />, title: tSvc("s6Title"), description: tSvc("s6Desc") },
+  ];
+
+  // Hero arama widget'ının ferry-dışı 4 sekmesi: kısa açıklama + servis sayfasına
+  // CTA (locale-aware Link). Route tek kaynak SERVICE_ROUTES'tan. Ferry sekmesi
+  // ayrı (tam <FerrySearchForm bare/>). İkonlar services dizisiyle aynı patern.
+  const heroServiceTabs: {
+    value: string;
+    svc: ServiceKey;
+    icon: React.ComponentType<{ className?: string }>;
+    descKey: string;
+    buttonKey: string;
+  }[] = [
+    { value: "cars", svc: "carRental", icon: Car, descKey: "serviceCta.carsDesc", buttonKey: "serviceCta.carsButton" },
+    { value: "transfer", svc: "transfer", icon: CarTaxiFront, descKey: "serviceCta.transferDesc", buttonKey: "serviceCta.transferButton" },
+    { value: "insurance", svc: "insurance", icon: Shield, descKey: "serviceCta.insuranceDesc", buttonKey: "serviceCta.insuranceButton" },
+    { value: "visa", svc: "visa", icon: FileText, descKey: "serviceCta.visaDesc", buttonKey: "serviceCta.visaButton" },
   ];
 
   // Inline footer "Hizmetler" kolonu — grid'le aynı tek kaynak (SERVICE_ROUTES).
@@ -268,7 +273,7 @@ export default function TravelBeez() {
               </motion.div>
             </div>
 
-            {/* Search Tabs */}
+            {/* Search Widget — 5 sekme: Feribot tam form, diğerleri servis CTA */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -278,7 +283,7 @@ export default function TravelBeez() {
               <Card className="border-0 shadow-xl bg-card/95 backdrop-blur">
                 <CardContent className="p-0">
                   <Tabs defaultValue="ferry" className="w-full">
-                    <TabsList className="w-full grid grid-cols-4 rounded-t-lg rounded-b-none h-14 bg-muted/50">
+                    <TabsList className="w-full grid grid-cols-5 rounded-t-lg rounded-b-none h-14 bg-muted/50">
                       <TabsTrigger
                         value="ferry"
                         className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none first:rounded-tl-lg"
@@ -286,285 +291,44 @@ export default function TravelBeez() {
                         <Ship className="h-4 w-4" />
                         <span className="hidden sm:inline">{t("tabs.ferry")}</span>
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="cars"
-                        className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none"
-                      >
-                        <Car className="h-4 w-4" />
-                        <span className="hidden sm:inline">{t("tabs.cars")}</span>
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="hotels"
-                        className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none"
-                      >
-                        <Hotel className="h-4 w-4" />
-                        <span className="hidden sm:inline">{t("tabs.hotels")}</span>
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="tours"
-                        className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none last:rounded-tr-lg"
-                      >
-                        <Compass className="h-4 w-4" />
-                        <span className="hidden sm:inline">{t("tabs.tours")}</span>
-                      </TabsTrigger>
+                      {heroServiceTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                          <TabsTrigger
+                            key={tab.value}
+                            value={tab.value}
+                            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none last:rounded-tr-lg"
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="hidden sm:inline">{t(`tabs.${tab.value}`)}</span>
+                          </TabsTrigger>
+                        );
+                      })}
                     </TabsList>
-                    <div className="p-6">
-                      <TabsContent value="ferry" className="mt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("from")}
-                            </label>
-                            <Select defaultValue="bodrum">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("departure")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="bodrum">
-                                  {tForm("portBodrum")}
-                                </SelectItem>
-                                <SelectItem value="marmaris">
-                                  {tForm("portMarmaris")}
-                                </SelectItem>
-                                <SelectItem value="kusadasi">
-                                  {tForm("portKusadasi")}
-                                </SelectItem>
-                                <SelectItem value="fethiye">
-                                  {tForm("portFethiye")}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                    {/* Feribot: tam arama formu (bare → hero kartının içine düz gömülür) */}
+                    <TabsContent value="ferry" className="mt-0">
+                      <FerrySearchForm bare />
+                    </TabsContent>
+                    {/* Diğer 4 servis: kısa açıklama + servis sayfasına CTA (Link) */}
+                    {heroServiceTabs.map((tab) => {
+                      const Icon = tab.icon;
+                      const { href } = SERVICE_ROUTES[tab.svc];
+                      return (
+                        <TabsContent key={tab.value} value={tab.value} className="mt-0 p-6 md:p-8">
+                          <div className="flex flex-col items-center gap-4 py-8 text-center">
+                            <Icon className="h-10 w-10 text-primary" />
+                            <p className="text-muted-foreground max-w-md">{t(tab.descKey)}</p>
+                            <Button
+                              asChild
+                              size="lg"
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            >
+                              <Link href={href}>{t(tab.buttonKey)}</Link>
+                            </Button>
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("to")}
-                            </label>
-                            <Select defaultValue="kos">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("destination")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kos">{tForm("destKos")}</SelectItem>
-                                <SelectItem value="rhodes">
-                                  {tForm("destRhodes")}
-                                </SelectItem>
-                                <SelectItem value="samos">
-                                  {tForm("destSamos")}
-                                </SelectItem>
-                                <SelectItem value="leros">
-                                  {tForm("destLeros")}
-                                </SelectItem>
-                                <SelectItem value="patmos">
-                                  {tForm("destPatmos")}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("date")}
-                            </label>
-                            <Input type="date" className="h-10" min={todayAthens} />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("passengers")}
-                            </label>
-                            <Select defaultValue="2">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("passengers")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">{tForm("passengerCount", { count: 1 })}</SelectItem>
-                                <SelectItem value="2">{tForm("passengerCount", { count: 2 })}</SelectItem>
-                                <SelectItem value="3">{tForm("passengerCount", { count: 3 })}</SelectItem>
-                                <SelectItem value="4">{tForm("passengerCount", { count: 4 })}</SelectItem>
-                                <SelectItem value="5">{tForm("passengerCountMax")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
-                          <Search className="h-4 w-4 mr-2" />
-                          {t("searchFerry")}
-                        </Button>
-                      </TabsContent>
-                      <TabsContent value="cars" className="mt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("island")}
-                            </label>
-                            <Select defaultValue="kos">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("selectIsland")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kos">Kos</SelectItem>
-                                <SelectItem value="rhodes">Rhodes</SelectItem>
-                                <SelectItem value="samos">Samos</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("pickupDate")}
-                            </label>
-                            <Input type="date" className="h-10" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("returnDateCar")}
-                            </label>
-                            <Input type="date" className="h-10" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("carType")}
-                            </label>
-                            <Select defaultValue="any">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("carType")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="any">{tForm("carAny")}</SelectItem>
-                                <SelectItem value="mini">
-                                  {tForm("carMini")}
-                                </SelectItem>
-                                <SelectItem value="economy">
-                                  {tForm("carEconomy")}
-                                </SelectItem>
-                                <SelectItem value="compact">
-                                  {tForm("carCompact")}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
-                          <Search className="h-4 w-4 mr-2" />
-                          {t("searchCars")}
-                        </Button>
-                      </TabsContent>
-                      <TabsContent value="hotels" className="mt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("island")}
-                            </label>
-                            <Select defaultValue="kos">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("selectIsland")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kos">Kos</SelectItem>
-                                <SelectItem value="rhodes">Rhodes</SelectItem>
-                                <SelectItem value="samos">Samos</SelectItem>
-                                <SelectItem value="leros">Leros</SelectItem>
-                                <SelectItem value="patmos">Patmos</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("checkIn")}
-                            </label>
-                            <Input type="date" className="h-10" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("checkOut")}
-                            </label>
-                            <Input type="date" className="h-10" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("guests")}
-                            </label>
-                            <Select defaultValue="2">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("guests")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">{tForm("guestCount", { count: 1 })}</SelectItem>
-                                <SelectItem value="2">{tForm("guestCount", { count: 2 })}</SelectItem>
-                                <SelectItem value="3">{tForm("guestCount", { count: 3 })}</SelectItem>
-                                <SelectItem value="4">{tForm("guestCount", { count: 4 })}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
-                          <Search className="h-4 w-4 mr-2" />
-                          {t("searchHotels")}
-                        </Button>
-                      </TabsContent>
-                      <TabsContent value="tours" className="mt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("island")}
-                            </label>
-                            <Select defaultValue="kos">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("selectIsland")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kos">Kos</SelectItem>
-                                <SelectItem value="rhodes">Rhodes</SelectItem>
-                                <SelectItem value="samos">Samos</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("tourType")}
-                            </label>
-                            <Select defaultValue="any">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("tourType")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="any">{tForm("tourAll")}</SelectItem>
-                                <SelectItem value="boat">{tForm("tourBoat")}</SelectItem>
-                                <SelectItem value="cultural">
-                                  {tForm("tourCultural")}
-                                </SelectItem>
-                                <SelectItem value="adventure">
-                                  {tForm("tourAdventure")}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("date")}
-                            </label>
-                            <Input type="date" className="h-10" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                              {tForm("participants")}
-                            </label>
-                            <Select defaultValue="2">
-                              <SelectTrigger>
-                                <SelectValue placeholder={tForm("people")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">{tForm("personCount", { count: 1 })}</SelectItem>
-                                <SelectItem value="2">{tForm("personCount", { count: 2 })}</SelectItem>
-                                <SelectItem value="3">{tForm("personCount", { count: 3 })}</SelectItem>
-                                <SelectItem value="4">{tForm("personCountMax")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground h-12">
-                          <Search className="h-4 w-4 mr-2" />
-                          {t("searchTours")}
-                        </Button>
-                      </TabsContent>
-                    </div>
+                        </TabsContent>
+                      );
+                    })}
                   </Tabs>
                 </CardContent>
               </Card>

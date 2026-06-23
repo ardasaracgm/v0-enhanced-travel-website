@@ -149,13 +149,20 @@
     "tabs": {
       "ferry": "Feribot",
       "cars": "Araç",
-      "hotels": "Otel",
-      "tours": "Tur"
+      "transfer": "Bodrum Transfer",
+      "insurance": "Sigorta",
+      "visa": "Vize"
     },
-    "searchFerry": "Feribot Bileti Ara",
-    "searchCars": "Araç Ara",
-    "searchHotels": "Otel Ara",
-    "searchTours": "Tur Ara"
+    "serviceCta": {
+      "carsDesc": "Kos limanında teslim, geniş filo",
+      "carsButton": "Araç Kirala",
+      "transferDesc": "Bodrum havalimanı ↔ otel transferi",
+      "transferButton": "Transfer Rezerve Et",
+      "insuranceDesc": "Schengen onaylı seyahat sigortası",
+      "insuranceButton": "Sigorta Al",
+      "visaDesc": "Kapıda Yunanistan vizesi başvurusu",
+      "visaButton": "Vize Başvurusu"
+    }
   },
 
   "searchForm": {
