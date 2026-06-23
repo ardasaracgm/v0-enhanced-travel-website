@@ -46,6 +46,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--cal-selected))',
           foreground: 'hsl(var(--cal-selected-foreground))',
         },
+        'cal-today': 'hsl(var(--cal-today))',
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',

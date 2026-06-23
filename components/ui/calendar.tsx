@@ -114,7 +114,7 @@ function Calendar({
         range_middle: cn('rounded-none', defaultClassNames.range_middle),
         range_end: cn('rounded-r-md bg-cal-selected/15', defaultClassNames.range_end),
         today: cn(
-          'bg-cal-selected/15 text-foreground rounded-md data-[selected=true]:rounded-none',
+          'text-cal-today ring-1 ring-inset ring-cal-today rounded-md data-[selected=true]:ring-0 data-[selected=true]:rounded-none',
           defaultClassNames.today,
         ),
         outside: cn(

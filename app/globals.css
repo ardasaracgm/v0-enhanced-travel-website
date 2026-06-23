@@ -30,6 +30,9 @@
        ayrışık). today = bunun /15 pastel hali (date-range-field/calendar). */
     --cal-selected: 184 70% 40%;
     --cal-selected-foreground: 0 0% 100%;
+    /* Takvim "bugün" işareti: parlament mavi, DOLGUSUZ (ring + metin); seçili
+       turkuaz dolgusundan ayrışık. */
+    --cal-today: 210 80% 35%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 210 20% 90%;
@@ -67,6 +70,7 @@
     --accent-foreground: 0 0% 98%;
     --cal-selected: 184 62% 46%;
     --cal-selected-foreground: 0 0% 100%;
+    --cal-today: 210 75% 62%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
