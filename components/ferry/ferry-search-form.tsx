@@ -177,8 +177,10 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
   // İç içerik tek yerde (DRY) — sarmalayıcı bare'e göre değişir, JSX kopyalanmaz.
   const inner = (
     <>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>
+        <div className={bare
+          ? 'flex flex-col md:flex-row md:items-center md:justify-end gap-4 mb-3'
+          : 'flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6'}>
+          {!bare && <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>}
           <RadioGroup
             value={tripType}
             onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
@@ -197,7 +199,9 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
             </div>
           </RadioGroup>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className={bare
+          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3'
+          : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4'}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
             <PortCombobox
@@ -329,7 +333,7 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
   // bare: kendi kartı olan kabın (hero) içine düz gömme — padding korunur,
   // Card/CardContent chrome atlanır. className padding'i de override edebilir (twMerge).
   if (bare) {
-    return <div className={cn('p-6 md:p-8', className)}>{inner}</div>
+    return <div className={cn('p-4 md:p-5', className)}>{inner}</div>
   }
 
   return (
