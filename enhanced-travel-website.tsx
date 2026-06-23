@@ -306,7 +306,7 @@ export default function TravelBeez() {
                       })}
                     </TabsList>
                     {/* Feribot: tam arama formu (bare → hero kartının içine düz gömülür) */}
-                    <TabsContent value="ferry" className="mt-0">
+                    <TabsContent value="ferry" className="mt-0 sm:min-h-[212px]">
                       <FerrySearchForm bare />
                     </TabsContent>
                     {/* Diğer 4 servis: kısa açıklama + servis sayfasına CTA (Link) */}
@@ -314,8 +314,12 @@ export default function TravelBeez() {
                       const Icon = tab.icon;
                       const { href } = SERVICE_ROUTES[tab.svc];
                       return (
-                        <TabsContent key={tab.value} value={tab.value} className="mt-0 p-6 md:p-8">
-                          <div className="flex flex-col items-center gap-4 py-8 text-center">
+                        <TabsContent
+                          key={tab.value}
+                          value={tab.value}
+                          className="mt-0 p-6 sm:min-h-[212px] flex flex-col justify-center"
+                        >
+                          <div className="flex flex-col items-center gap-4 text-center">
                             <Icon className="h-10 w-10 text-primary" />
                             <p className="text-muted-foreground max-w-md">{t(tab.descKey)}</p>
                             <Button
