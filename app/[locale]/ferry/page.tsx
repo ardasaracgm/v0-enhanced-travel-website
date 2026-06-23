@@ -2,15 +2,12 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { useRouter } from '@/i18n/routing'
-import { Ship, Calendar, Users, MapPin, Clock, ChevronRight, CheckCircle, Star, Anchor, ArrowRight, ArrowLeftRight, Minus, Plus } from 'lucide-react'
+import { Ship, Calendar, Users, MapPin, Clock, CheckCircle, Star, Anchor, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Accordion,
   AccordionContent,
@@ -23,11 +20,8 @@ import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
-import { useBooking } from '@/lib/booking-context'
-import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from '@/lib/actions/ferry-catalog'
-import { getRouteScheduleAction, type RouteAvailability } from '@/lib/actions/ferry-search'
-import { PortCombobox } from '@/components/ferry/port-combobox'
-import { DateRangeField } from '@/components/ferry/date-range-field'
+import { FerrySearchForm } from '@/components/ferry/ferry-search-form'
+import { slug } from '@/lib/ferry/util'
 
 const routes = [
   { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
@@ -39,140 +33,12 @@ const routes = [
 // FAQ content lives in i18n (ferryPage.faq{n}Q / faq{n}A).
 const FAQ_COUNT = 6
 
-// Yolcu üst sınırı: Dentur'da sabit per-rezervasyon cap YOK (paxlimit probe ile
-// kanıtlandı — 8 pax/390 koltuk kabul); tavan sefer kotası. 11 = makul üst sınır
-// (Ferryhopper 9 / Yeşil Marmaris 10 referans). Insurance MAX_TRAVELLERS=9'dan
-// AYRI bilinçli (farklı domain). Fiyat lineer → money-path etkilenmez.
-const FERRY_MIN_PAX = 1
-const FERRY_MAX_PAX = 11
-const clampPax = (n: number) =>
-  Math.min(FERRY_MAX_PAX, Math.max(FERRY_MIN_PAX, Number.isFinite(n) ? n : FERRY_MIN_PAX))
-
 export default function FerryTicketsPage() {
   const t = useTranslations('ferryPage')
-  const locale = useLocale()
-  const router = useRouter()
-  const { state, dispatch } = useBooking()
-  const [tripType, setTripType] = React.useState<'one-way' | 'round-trip'>('one-way')
-  const [from, setFrom] = React.useState('bodrum')
-  const [to, setTo] = React.useState('kos')
-  const [date, setDate] = React.useState('')
-  const [returnDate, setReturnDate] = React.useState('')
-  const [returnTo, setReturnTo] = React.useState('')
-  const [passengers, setPassengers] = React.useState('2')
-  const [departures, setDepartures] = React.useState<CatalogPort[]>([])
-  const [arrivals, setArrivals] = React.useState<CatalogPort[]>([])
-  // Dönüş varış kataloğu: kalkışı = outbound varışı ('to'). Adım 2 deseni.
-  const [returnArrivals, setReturnArrivals] = React.useState<CatalogPort[]>([])
-  // Sefer-availability: seçili OUTBOUND hat (from→to) sezon takvimi.
-  const [availability, setAvailability] = React.useState<RouteAvailability | null>(null)
-
-  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
-
-  // Display name by locale, with en→tr fallback (el may be a TODO in ports.ts).
-  const portLabel = React.useCallback(
-    (p: CatalogPort) => p.name[locale as 'tr' | 'en' | 'el'] ?? p.name.en ?? p.name.tr,
-    [locale],
-  )
-
-  // Load the live departure catalog once.
-  React.useEffect(() => {
-    let alive = true
-    getDeparturePortsAction().then((d) => { if (alive) setDepartures(d) })
-    return () => { alive = false }
-  }, [])
-
-  // Dependent arrivals: refetch when departure changes; reset a now-invalid 'to'.
-  React.useEffect(() => {
-    let alive = true
-    getArrivalPortsAction(from).then((a) => {
-      if (!alive) return
-      setArrivals(a)
-      setTo((prev) => (a.some((p) => p.slug === prev) ? prev : a[0]?.slug ?? ''))
-    })
-    return () => { alive = false }
-  }, [from])
-
-  // Açık-jaw dönüş varışları: dönüş kalkışı = outbound varışı ('to').
-  // Default seçim = outbound kalkışı ('from') → klasik gidiş-dönüş (byte-identical).
-  React.useEffect(() => {
-    if (tripType !== 'round-trip' || !to) { setReturnArrivals([]); return }
-    let alive = true
-    getArrivalPortsAction(to).then((a) => {
-      if (!alive) return
-      setReturnArrivals(a)
-      setReturnTo((prev) => {
-        const want = prev || from
-        return a.some((p) => p.slug === want) ? want : a[0]?.slug ?? ''
-      })
-    })
-    return () => { alive = false }
-  }, [tripType, to, from])
-
-  // Sefer-availability: seçili OUTBOUND hat (from→to) için sezon takvimi — sefersiz
-  // günler kapatılır. Eager (arrivals deseni gibi) from/to değişince çeker; server
-  // 5-dk cache. Round-trip MVP: dönüş bacağı ayrı hat olsa da takvim outbound'u
-  // kısıtlar (dönüş rafine sonra; nearest-fallback dönüşte devrede). SALT GÖRÜNTÜ.
-  React.useEffect(() => {
-    if (!from || !to) { setAvailability(null); return }
-    let alive = true
-    getRouteScheduleAction(from, to).then((a) => { if (alive) setAvailability(a) })
-    return () => { alive = false }
-  }, [from, to])
-
-  // availability → DateRangeField.disabledDates. Yokken (loading / rota yok) boş Set
-  // → tüm günler açık (Adım 1 davranışı). Money-path dışı, salt takvim kısıtı.
-  const disabledDateSet = React.useMemo(
-    () => new Set(availability?.disabledDates ?? []),
-    [availability],
-  )
-
-  // Dönüş kalkışı = outbound varışı ('to'); ayrı alan yerine returnTo etiketinde
-  // satır-içi gösterilir (tek-satır form). Salt görüntü — handleSearch returnFrom'u
-  // doğrudan 'to'dan türetir, money-path değişmez.
-  const toName = (() => {
-    const p = arrivals.find((x) => x.slug === to)
-    return p ? portLabel(p) : to
-  })()
-
-  // Catalog still loading (departures empty) or no valid arrival picked → block search.
-  // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
-  const canSearch =
-    departures.length > 0 && !!from && !!to &&
-    // Round-trip → dönüş varışı VE dönüş tarihi zorunlu (yarım-range engeli:
-    // gidiş seçilip dönüş seçilmemiş aralıkla aramayı bloke eder).
-    (tripType !== 'round-trip' || (!!returnTo && !!returnDate))
-
-  const swapPorts = () => {
-    // from↔to çevir; arrivals / returnArrivals / availability effect'leri (from/to
-    // deps) otomatik yeniden çalışır → katalog + takvim doğru refetch. Money-path
-    // dışı — yalnız mevcut UI setter'ları.
-    setFrom(to)
-    setTo(from)
-  }
-
-  const handleSearch = () => {
-    if (!canSearch) return
-    // Gerçek yeni arama → eski sepeti at (stale ferry/ekstra birikmesin). Yalnız
-    // burada; adımlar arası ve results-içi gezinme sepeti korur.
-    dispatch({ type: 'RESET_CART' })
-    dispatch({
-      type: 'SET_SEARCH_PARAMS',
-      payload: {
-        from,
-        to,
-        date,
-        passengers: parseInt(passengers),
-        tripType,
-        returnDate: tripType === 'round-trip' ? returnDate : undefined,
-        // returnFrom = outbound varışı (hep), returnTo = kullanıcı seçimi.
-        // Klasik gidiş-dönüş: returnTo === from → results swap'ıyla byte-identical.
-        returnFrom: tripType === 'round-trip' ? to : undefined,
-        returnTo: tripType === 'round-trip' ? returnTo : undefined,
-      },
-    })
-    router.push('/ferry/results')
-  }
+  // Routes kartı "Book" → arama formunu from/to ile ön-doldur. Form state'i kendi
+  // içinde (extract sonrası); key-remount + initial ile mount anında beslenir.
+  const [routeKey, setRouteKey] = React.useState(0)
+  const [searchInitial, setSearchInitial] = React.useState<{ from?: string; to?: string }>()
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -243,156 +109,7 @@ export default function FerryTicketsPage() {
         {/* Search Section */}
         <section className="w-full py-12 md:py-16 -mt-8 relative z-10">
           <div className="container px-4 md:px-6">
-            <Card className="border-0 shadow-2xl bg-card">
-              <CardContent className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                  <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>
-                  <RadioGroup
-                    value={tripType}
-                    onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="one-way" id="one-way" />
-                      <Label htmlFor="one-way" className="cursor-pointer">{t('oneWay')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="round-trip" id="round-trip" />
-                      <Label htmlFor="round-trip" className="cursor-pointer flex items-center gap-1">
-                        <ArrowLeftRight className="h-4 w-4" />
-                        {t('roundTrip')}
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
-                    <PortCombobox
-                      ports={departures}
-                      value={from}
-                      onChange={setFrom}
-                      placeholder={t('fromPlaceholder')}
-                      portLabel={portLabel}
-                      defaultOpenCountry="TR"
-                      countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
-                    />
-                  </div>
-                  <div className="space-y-2 relative">
-                    <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
-                    {/* from↔to swap — md+ (yan yana) görünür. Mobil dikey stack'te
-                        swap, merged route box ile (Commit B) gelecek. Salt UI state. */}
-                    <button
-                      type="button"
-                      onClick={swapPorts}
-                      aria-label={t('swapPorts')}
-                      className="hidden md:flex absolute -left-6 top-8 z-10 h-8 w-8 items-center justify-center rounded-full border border-input bg-background shadow-sm hover:bg-accent"
-                    >
-                      <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
-                    </button>
-                    <PortCombobox
-                      ports={arrivals}
-                      value={to}
-                      onChange={setTo}
-                      placeholder={t('toPlaceholder')}
-                      portLabel={portLabel}
-                      defaultOpenCountry="GR"
-                      countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
-                      {tripType === 'round-trip'
-                        ? t('roundTripDates')
-                        : t('departDate')}
-                    </label>
-                    <DateRangeField
-                      mode={tripType === 'round-trip' ? 'range' : 'single'}
-                      date={date}
-                      returnDate={returnDate}
-                      onDateChange={setDate}
-                      onReturnDateChange={setReturnDate}
-                      minDate={todayAthens}
-                      locale={locale}
-                      placeholder={t('departDate')}
-                      disabledDates={disabledDateSet}
-                    />
-                  </div>
-                  {/* Dönüş varışı slot — kolonu HER ZAMAN işgal eder (one-way'de boş
-                      yer tutar) → tek-yön↔gidiş-dönüş toggle'da ortak 5 alan (Kalkış/
-                      Varış/Tarih/Yolcu/Ara) aynı pikselde sabit kalır. İçerik sadece
-                      round-trip'te; dönüş kalkışı (=to) etikette satır-içi. İleride
-                      multi-leg için doğal slot. Money-path değişmez. */}
-                  <div className="space-y-2">
-                    {tripType === 'round-trip' && (
-                      <>
-                        <label className="text-sm font-medium text-foreground truncate">
-                          <span className="font-normal text-muted-foreground">{toName} → </span>
-                          {t('returnToPort')}
-                        </label>
-                        <PortCombobox
-                          ports={returnArrivals}
-                          value={returnTo}
-                          onChange={setReturnTo}
-                          placeholder={t('toPlaceholder')}
-                          portLabel={portLabel}
-                          defaultOpenCountry="GR"
-                          countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
-                        />
-                      </>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
-                    {/* Stepper: elle yazılabilir + -/+ . min 1, max FERRY_MAX_PAX.
-                        setPassengers string besler (mevcut sözleşme; handleSearch
-                        parseInt eder → searchParams.passengers number). Money-path
-                        değişmez — sadece değer aralığı 5→11. */}
-                    <div className="flex h-10 items-stretch rounded-md border border-input bg-background">
-                      <button
-                        type="button"
-                        aria-label={t('passengersDecrease')}
-                        onClick={() => setPassengers(String(clampPax(parseInt(passengers || '1', 10) - 1)))}
-                        disabled={parseInt(passengers || '1', 10) <= FERRY_MIN_PAX}
-                        className="flex w-9 shrink-0 items-center justify-center rounded-l-md text-muted-foreground hover:bg-accent disabled:opacity-40 disabled:hover:bg-transparent"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={passengers}
-                        onChange={(e) => {
-                          const raw = e.target.value.replace(/\D/g, '')
-                          setPassengers(raw === '' ? '' : String(clampPax(parseInt(raw, 10))))
-                        }}
-                        onBlur={() => { if (passengers === '') setPassengers(String(FERRY_MIN_PAX)) }}
-                        className="w-full min-w-0 border-x border-input bg-transparent text-center text-sm focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        aria-label={t('passengersIncrease')}
-                        onClick={() => setPassengers(String(clampPax(parseInt(passengers || '1', 10) + 1)))}
-                        disabled={parseInt(passengers || '1', 10) >= FERRY_MAX_PAX}
-                        className="flex w-9 shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:bg-accent disabled:opacity-40 disabled:hover:bg-transparent"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">&nbsp;</label>
-                    <Button
-                      className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
-                      onClick={handleSearch}
-                      disabled={!canSearch}
-                    >
-                      {t('searchButton')}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FerrySearchForm key={routeKey} initial={searchInitial} />
           </div>
         </section>
 
@@ -450,8 +167,11 @@ export default function FerryTicketsPage() {
                           size="sm" 
                           className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={() => {
-                            setFrom(route.from.toLowerCase())
-                            setTo(route.to.toLowerCase())
+                            // slug() = mevcut .toLowerCase() ile byte-identical (ASCII
+                            // tek-kelime isimler) + Türkçe/boşluk için sağlam. Marmaris→
+                            // Rhodes bugünkü gibi katalog-dışı kalır (form to'yu boşaltır).
+                            setSearchInitial({ from: slug(route.from), to: slug(route.to) })
+                            setRouteKey((k) => k + 1)
                             window.scrollTo({ top: 0, behavior: 'smooth' })
                           }}
                         >
