@@ -36,6 +36,11 @@ interface FerrySearchFormProps {
     from: string; to: string; date: string; passengers: string
     tripType: 'one-way' | 'round-trip'; returnDate: string; returnTo: string
   }>
+  /** true → <Card>/<CardContent> sarmalayıcıyı atla, sadece iç içeriği (başlık
+   *  satırı + grid) bir <div className={cn('p-6 md:p-8', className)}> içinde render
+   *  et. Hero gibi kendi kartı olan bir kabın içine çift-kart/çift-padding olmadan
+   *  gömmek için (Parça 2b tüketir). Verilmezse bugünkü <Card> çıktısı birebir. */
+  bare?: boolean
 }
 
 /**
@@ -43,7 +48,7 @@ interface FerrySearchFormProps {
  * Tek kaynak: hem ferry sayfası hem ana sayfa hero kullanır. Davranış birebir;
  * RESET_CART → SET_SEARCH_PARAMS → push('/ferry/results') zinciri değişmez.
  */
-export function FerrySearchForm({ className, initial }: FerrySearchFormProps) {
+export function FerrySearchForm({ className, initial, bare }: FerrySearchFormProps) {
   const t = useTranslations('ferryPage')
   const locale = useLocale()
   const router = useRouter()
@@ -169,9 +174,9 @@ export function FerrySearchForm({ className, initial }: FerrySearchFormProps) {
     router.push('/ferry/results')
   }
 
-  return (
-    <Card className={cn('border-0 shadow-2xl bg-card', className)}>
-      <CardContent className="p-6 md:p-8">
+  // İç içerik tek yerde (DRY) — sarmalayıcı bare'e göre değişir, JSX kopyalanmaz.
+  const inner = (
+    <>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>
           <RadioGroup
@@ -318,7 +323,18 @@ export function FerrySearchForm({ className, initial }: FerrySearchFormProps) {
             </Button>
           </div>
         </div>
-      </CardContent>
+    </>
+  )
+
+  // bare: kendi kartı olan kabın (hero) içine düz gömme — padding korunur,
+  // Card/CardContent chrome atlanır. className padding'i de override edebilir (twMerge).
+  if (bare) {
+    return <div className={cn('p-6 md:p-8', className)}>{inner}</div>
+  }
+
+  return (
+    <Card className={cn('border-0 shadow-2xl bg-card', className)}>
+      <CardContent className="p-6 md:p-8">{inner}</CardContent>
     </Card>
   )
 }
