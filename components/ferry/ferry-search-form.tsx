@@ -259,10 +259,10 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
               Varış/Tarih/Yolcu/Ara) aynı pikselde sabit kalır. İçerik sadece
               round-trip'te; dönüş kalkışı (=to) etikette satır-içi. İleride
               multi-leg için doğal slot. Money-path değişmez. */}
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             {tripType === 'round-trip' && (
               <>
-                <label className="text-sm font-medium text-foreground truncate">
+                <label className="block text-sm font-medium text-foreground truncate">
                   <span className="font-normal text-muted-foreground">{toName} → </span>
                   {t('returnToPort')}
                 </label>
