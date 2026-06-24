@@ -51,6 +51,10 @@ export function DateRangeField({
   disabledDates, dayModifiers, dayModifiersClassNames,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false)
+  // Popover oturumunun İLK tıkını işaretler (Bug 2): yeni açılışta true, ilk
+  // onSelect'te tüketilir. Önceden DOLU seçim varken oturumun ilk tıkı eski
+  // aralığı uzatmak yerine tıklanan günde taze {t,t} başlatır.
+  const freshSessionRef = React.useRef(false)
   const dfLocale = LOCALES[locale as keyof typeof LOCALES] ?? enUS
   const fmt = (s: string) => format(parseISO(s), 'd MMM', { locale: dfLocale })
 
@@ -70,7 +74,13 @@ export function DateRangeField({
         : placeholder
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        if (o) freshSessionRef.current = true // yeni oturum: ilk tık reset adayı
+        setOpen(o)
+      }}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -89,16 +99,51 @@ export function DateRangeField({
             mode="range"
             locale={dfLocale}
             disabled={disabled}
-            min={1}
             numberOfMonths={2}
             selected={{
               from: date ? parseISO(date) : undefined,
               to: returnDate ? parseISO(returnDate) : undefined,
             }}
-            onSelect={(r: DateRange | undefined) => {
-              onDateChange(r?.from ? format(r.from, 'yyyy-MM-dd') : '')
-              onReturnDateChange(r?.to ? format(r.to, 'yyyy-MM-dd') : '')
-              if (r?.from && r?.to) setOpen(false)
+            onSelect={(r: DateRange | undefined, triggerDate: Date) => {
+              // Bug 2: bu popover oturumunun İLK tıkı VE önceden DOLU bir seçim
+              // (aynı-gün {X,X} VEYA çok-gün {X,Y} fark etmez) varsa, react-day-picker
+              // addToRange eski aralığı uzatır/uca yapıştırır → gidişi değiştirmek çift
+              // tık ister. Onu yok sayıp tıklanan günde taze {t,t} başlatıyoruz (popover
+              // açık kalır; kullanıcı uzatır ya da aynı günü onaylar). Bayrak oturumun
+              // ilk tıkını ayırt eder: oturum-İÇİ 2. tık bu daldan geçmez → çok-gün ileri
+              // akış (boş→X→Y) ve taze aynı-gün→uzak-gün uzatması korunur.
+              const firstPickOfSession = freshSessionRef.current
+              freshSessionRef.current = false
+              if (firstPickOfSession && date && returnDate && triggerDate) {
+                const t = format(triggerDate, 'yyyy-MM-dd')
+                onDateChange(t)
+                onReturnDateChange(t)
+                return
+              }
+              // Aynı-gün gidiş-dönüş (günübirlik feribot) geçerli senaryo → from===to
+              // seçilebilmeli. min={1} KALDIRILDI: onunla ilk tık to:undefined bırakıp
+              // aynı güne 2. tık seçimi siliyordu (from===to yapısal imkânsızdı). min=0
+              // (varsayılan) ile ilk tık {from:X,to:X} kurar.
+              //
+              // Auto-close net kuralı (sezgisel sayım değil — r'den türetilir, bkz.
+              // addToRange/useRange kaynağı):
+              //  • r={from,to}, from!==to → çok-gün tamam → kapat.
+              //  • r={from,to}, from===to → tek-gün yeni kuruldu → AÇIK kal (ikinci gün
+              //    tıklayıp uzatılabilsin VEYA aynı gün onaylanabilsin).
+              //  • r=undefined → min=0'da yalnız "aynı-gün hücresine 2. tık" bunu üretir
+              //    → onay say: seçimi KORU + kapat (silme).
+              if (r?.from && r?.to) {
+                const fromStr = format(r.from, 'yyyy-MM-dd')
+                const toStr = format(r.to, 'yyyy-MM-dd')
+                onDateChange(fromStr)
+                onReturnDateChange(toStr)
+                if (fromStr !== toStr) setOpen(false)
+              } else if (date && returnDate && date === returnDate) {
+                setOpen(false) // aynı-gün hücresine 2. tık = onay → seçim sabit, kapat
+              } else {
+                onDateChange('')
+                onReturnDateChange('')
+              }
             }}
             modifiers={dayModifiers}
             modifiersClassNames={dayModifiersClassNames}
