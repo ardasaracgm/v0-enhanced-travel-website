@@ -93,7 +93,7 @@ export function Car2HeroCarousel({ cars, onCardClick }: Car2HeroCarouselProps) {
                 key={car.id || car.model}
                 type="button"
                 onClick={() => onCardClick(car.id)}
-                className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-white/10 shadow-lg ring-1 ring-white/20 transition-transform hover:-translate-y-1"
+                className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5 transition-transform hover:-translate-y-1"
               >
                 <Image
                   src={car.image}

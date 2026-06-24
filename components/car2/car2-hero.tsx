@@ -18,9 +18,8 @@ import {
 import { Car2HeroCarousel } from '@/components/car2/car2-hero-carousel'
 import type { NormalizedCar } from '@/lib/normalize-car'
 
-// Kos coastline (same Greek-sea shot the homepage hero uses); no local harbor
-// asset exists yet. images.unsplash.com is whitelisted in next.config.
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=1920&q=80'
+// Textless Kos harbor shot (no cars/text), provided for the car2 hero.
+const HERO_IMAGE = '/cars/kos-hero.webp'
 
 interface Car2HeroProps {
   pickupDate: string
@@ -57,7 +56,7 @@ export function Car2Hero({
     <section className="relative w-full overflow-hidden py-16 md:py-24">
       <div className="absolute inset-0">
         <Image src={HERO_IMAGE} alt={t('heroTitle')} fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/50 via-foreground/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/20" />
       </div>
 
       <div className="container relative px-4 md:px-6">
@@ -68,7 +67,7 @@ export function Car2Hero({
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm font-medium text-primary-foreground"
+                className="mb-6 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
               >
                 <Car className="h-4 w-4" />
                 {t('heroBadge')}
@@ -77,7 +76,7 @@ export function Car2Hero({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="mb-6 text-balance text-4xl font-bold text-white md:text-5xl lg:text-6xl"
+                className="mb-6 text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
               >
                 {t('heroTitle')}
               </motion.h1>
@@ -85,7 +84,7 @@ export function Car2Hero({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-pretty text-lg text-white/90 md:text-xl"
+                className="text-pretty text-lg text-blue-950/80 md:text-xl"
               >
                 {t('heroSubtitle')}
               </motion.p>
