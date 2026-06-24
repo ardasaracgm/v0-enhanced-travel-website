@@ -80,6 +80,9 @@ export default function Car2Page() {
     const res = await checkModelAvailability(pickupDate, rentalDays)
     setAvailability(res.ok ? res.availability : null)
     setSearching(false)
+    if (res.ok) {
+      document.getElementById('car2-fleet')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   // Grouped cars carry model_key in `id` → that's the dispatch/availability key.

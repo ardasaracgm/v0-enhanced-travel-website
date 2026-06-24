@@ -24,7 +24,7 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
   const t = useTranslations('car2')
 
   return (
-    <section id="car2-fleet" className="w-full py-16 md:py-24">
+    <section id="car2-fleet" className="w-full scroll-mt-24 py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-amber-500">{t('fleetEyebrow')}</p>
@@ -112,6 +112,9 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
                           >
                             {soldOut ? t('unavailableButton') : t('selectButton')}
                           </Button>
+                          {availability == null && (
+                            <p className="text-center text-xs text-muted-foreground">{t('selectDatesHint')}</p>
+                          )}
                           <a
                             href={buildCar2WhatsAppLink(locale)}
                             target="_blank"

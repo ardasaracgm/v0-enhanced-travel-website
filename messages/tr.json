@@ -1652,6 +1652,7 @@
     "carouselNext": "Sonraki",
     "carouselGoTo": "{index}. araca git",
     "fleetEyebrow": "Araç Filomuz",
-    "heroFleetYear": "Tüm araçlarımız 2026 model"
+    "heroFleetYear": "Tüm araçlarımız 2026 model",
+    "selectDatesHint": "Fiyat/uygunluk için yukarıdan tarih seçin"
   }
 }
