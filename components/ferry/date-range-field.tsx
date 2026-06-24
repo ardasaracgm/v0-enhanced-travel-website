@@ -93,7 +93,7 @@ export function DateRangeField({
           <CalendarIcon className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-0">
+      <PopoverContent align="center" collisionPadding={8} className="w-auto p-0">
         {mode === 'range' ? (
           <Calendar
             mode="range"
