@@ -118,7 +118,7 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
                             rel="noopener noreferrer"
                             className="block"
                           >
-                            <Button variant="outline" className="w-full">
+                            <Button className="w-full bg-[#25D366] text-white hover:bg-[#25D366]/90">
                               {t('emptyCta')}
                             </Button>
                           </a>
