@@ -528,6 +528,7 @@ export interface VisaApplication {
 export interface Car {
   id: string
   available: boolean
+  coming_soon?: boolean
   price: number
   image: string
 
@@ -593,6 +594,7 @@ export async function getAvailableCars(): Promise<{
     .from('cars')
     .select('*')
     .eq('available', true)
+    .order('coming_soon', { ascending: true })
     .order('price_per_day', { ascending: true })
 
   if (error) {

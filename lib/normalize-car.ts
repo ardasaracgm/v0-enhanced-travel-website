@@ -17,6 +17,7 @@ export interface NormalizedCar {
   badge?: string
   description?: string
   available: boolean
+  comingSoon: boolean
 }
 
 /**
@@ -107,6 +108,7 @@ export function normalizeCar(car: CarType | Record<string, unknown>): Normalized
     badge: getString('badge') || undefined,
     description: getString('description') || 'Reliable vehicle for exploring Kos Island.',
     available: carRecord.available !== false,
+    comingSoon: carRecord.coming_soon === true,
   }
 }
 
