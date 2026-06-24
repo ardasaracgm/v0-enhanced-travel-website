@@ -1656,6 +1656,7 @@
     "selectDatesHint": "Pick dates above for price and availability",
     "searchDatesLabel": "Dates",
     "searchDatesPlaceholder": "Pickup – Return",
-    "availableLabel": "Available"
+    "availableLabel": "Available",
+    "comingSoon": "Coming Soon"
   }
 }

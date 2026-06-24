@@ -1650,6 +1650,7 @@
     "selectDatesHint": "Επιλέξτε ημερομηνίες παραπάνω για να δείτε τιμές και διαθεσιμότητα",
     "searchDatesLabel": "Ημερομηνίες",
     "searchDatesPlaceholder": "Παραλαβή – Επιστροφή",
-    "availableLabel": "Διαθέσιμο"
+    "availableLabel": "Διαθέσιμο",
+    "comingSoon": "Σύντομα διαθέσιμο"
   }
 }

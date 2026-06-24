@@ -1656,6 +1656,7 @@
     "selectDatesHint": "Fiyat/uygunluk için yukarıdan tarih seçin",
     "searchDatesLabel": "Tarihler",
     "searchDatesPlaceholder": "Alış – İade",
-    "availableLabel": "Müsait"
+    "availableLabel": "Müsait",
+    "comingSoon": "Çok Yakında"
   }
 }

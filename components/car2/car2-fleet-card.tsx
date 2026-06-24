@@ -52,6 +52,11 @@ export function Car2FleetCard({
   // (a freshly-mounted empty card never hits the server). The shared cache
   // dedupes the identical calls fired when all cards re-seed at once.
   React.useEffect(() => {
+    // coming_soon → never bookable; skip the availability query entirely.
+    if (car.comingSoon) {
+      setAvailabilityCount(null)
+      return
+    }
     const valid = !!pickup && !!dropoff && dateDiffInDays(pickup, dropoff) >= 0
     if (!valid) {
       setAvailabilityCount(null)
@@ -74,7 +79,7 @@ export function Car2FleetCard({
       cancelled = true
       clearTimeout(timer)
     }
-  }, [pickup, dropoff, car.id])
+  }, [pickup, dropoff, car.id, car.comingSoon])
 
   const valid = !!pickup && !!dropoff && dateDiffInDays(pickup, dropoff) >= 0
   const soldOut = availabilityCount === 0
@@ -96,6 +101,11 @@ export function Car2FleetCard({
             {car.type && (
               <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
                 {car.type}
+              </span>
+            )}
+            {car.comingSoon && (
+              <span className="absolute right-3 top-3 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-blue-950">
+                {t('comingSoon')}
               </span>
             )}
           </div>
@@ -136,29 +146,36 @@ export function Car2FleetCard({
                   {t('selectButton')}
                 </Button>
               </div>
-              {/* bağımsız tarih aralığı */}
-              <DateRangeField
-                mode="range"
-                date={pickup}
-                returnDate={dropoff}
-                onDateChange={setPickup}
-                onReturnDateChange={setDropoff}
-                minDate={todayAthens}
-                locale={locale}
-                placeholder={t('searchDatesPlaceholder')}
-              />
-              {/* müsaitlik — yalnız etiket, sayı YOK */}
-              <div className="text-center text-xs">
-                {!valid ? (
-                  <span className="text-muted-foreground">{t('selectDatesHint')}</span>
-                ) : availabilityCount == null ? (
-                  <span className="text-muted-foreground">…</span>
-                ) : soldOut ? (
-                  <span className="font-medium text-destructive">{t('unavailableButton')}</span>
-                ) : (
-                  <span className="font-medium text-green-600">{t('availableLabel')}</span>
-                )}
-              </div>
+              {car.comingSoon ? (
+                /* coming_soon: no picker / no availability — never bookable */
+                <div className="text-center text-xs font-medium text-amber-600">{t('comingSoon')}</div>
+              ) : (
+                <>
+                  {/* bağımsız tarih aralığı */}
+                  <DateRangeField
+                    mode="range"
+                    date={pickup}
+                    returnDate={dropoff}
+                    onDateChange={setPickup}
+                    onReturnDateChange={setDropoff}
+                    minDate={todayAthens}
+                    locale={locale}
+                    placeholder={t('searchDatesPlaceholder')}
+                  />
+                  {/* müsaitlik — yalnız etiket, sayı YOK */}
+                  <div className="text-center text-xs">
+                    {!valid ? (
+                      <span className="text-muted-foreground">{t('selectDatesHint')}</span>
+                    ) : availabilityCount == null ? (
+                      <span className="text-muted-foreground">…</span>
+                    ) : soldOut ? (
+                      <span className="font-medium text-destructive">{t('unavailableButton')}</span>
+                    ) : (
+                      <span className="font-medium text-green-600">{t('availableLabel')}</span>
+                    )}
+                  </div>
+                </>
+              )}
               <a href={buildCar2WhatsAppLink(locale)} target="_blank" rel="noopener noreferrer" className="block">
                 <Button className="w-full bg-[#25D366] text-white hover:bg-[#25D366]/90">
                   {t('emptyCta')}
