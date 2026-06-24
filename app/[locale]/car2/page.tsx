@@ -1,19 +1,28 @@
 'use client'
 
 import * as React from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter } from '@/i18n/routing'
 
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { Car2Hero } from '@/components/car2/car2-hero'
 import { Car2TrustBar } from '@/components/car2/car2-trust-bar'
-import { dateDiffInDays } from '@/lib/normalize-car'
+import { Car2FleetGrid } from '@/components/car2/car2-fleet-grid'
+import { getAvailableCars } from '@/lib/supabase'
+import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
+import { useBooking } from '@/lib/booking-context'
+import { checkModelAvailability } from '@/lib/actions/car-availability-action'
 
-// car2 — rebuilt car-rental surface. Unlinked preview route (services.ts still
-// points /car-rental at the old page). page.tsx owns the search state; the hero
-// form and the (later) fleet grid share it via props.
+const PICKUP_LOCATION = 'Kos Port'
+
+// car2 — rebuilt car-rental surface. Unlinked preview route. page.tsx owns the
+// search state + car/availability data; the hero form and fleet grid share it.
 export default function Car2Page() {
   const t = useTranslations('car2')
+  const locale = useLocale()
+  const router = useRouter()
+  const { dispatch } = useBooking()
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   const [pickupDate, setPickupDate] = React.useState('')
@@ -21,19 +30,67 @@ export default function Car2Page() {
   const [driverAge, setDriverAge] = React.useState('25+')
   const [searchError, setSearchError] = React.useState<string | null>(null)
 
-  // Inclusive day count, matching the rest of the app (dropoff = pickup + days-1).
-  // Same-day (diff 0) is a valid 1-day rental, so the floor is >= 0.
+  const [cars, setCars] = React.useState<NormalizedCar[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
+  const [searching, setSearching] = React.useState(false)
+
   const datesChosen = !!pickupDate && !!dropoffDate
   const validRange = datesChosen && dateDiffInDays(pickupDate, dropoffDate) >= 0
+  const rentalDays = validRange ? dateDiffInDays(pickupDate, dropoffDate) + 1 : 0
 
-  // Availability fetch lands with the fleet grid (C3) that consumes it; here we
-  // only validate that a usable date range is chosen.
-  function handleSearch() {
+  // Real DB cars only — no hardcoded fallback fleet (the old one carried a
+  // Citroën Ami that isn't in the pool). Empty DB → grid's empty state.
+  React.useEffect(() => {
+    async function fetchCars() {
+      setLoading(true)
+      const { data, isEmpty } = await getAvailableCars()
+      setCars(isEmpty || !data || data.length === 0 ? [] : groupByModelKey(data.map(normalizeCar)))
+      setLoading(false)
+    }
+    fetchCars()
+  }, [])
+
+  // Dates changed → prior availability is stale; force a fresh search before a
+  // car can be selected (closes the stale-map hole).
+  React.useEffect(() => {
+    setAvailability(null)
+  }, [pickupDate, dropoffDate])
+
+  async function handleSearch() {
     if (!validRange) {
       setSearchError(t('selectDatesFirst'))
       return
     }
     setSearchError(null)
+    setSearching(true)
+    const res = await checkModelAvailability(pickupDate, rentalDays)
+    setAvailability(res.ok ? res.availability : null)
+    setSearching(false)
+  }
+
+  // Grouped cars carry model_key in `id` → that's the dispatch/availability key.
+  // Payload shape mirrors car-rental/page.tsx exactly (the /car-rental/driver
+  // flow + server price lookup depend on these field names).
+  function handleSelect(car: NormalizedCar) {
+    if (!validRange) {
+      setSearchError(t('selectDatesFirst'))
+      return
+    }
+    dispatch({
+      type: 'SET_CAR_RENTAL',
+      payload: {
+        modelKey: car.id,
+        model: car.model,
+        pricePerDay: car.price,
+        days: rentalDays,
+        pickupLocation: PICKUP_LOCATION,
+        dropoffLocation: PICKUP_LOCATION,
+        pickupAt: pickupDate,
+        dropoffAt: dropoffDate,
+      },
+    })
+    router.push('/car-rental/driver')
   }
 
   return (
@@ -45,6 +102,7 @@ export default function Car2Page() {
           dropoffDate={dropoffDate}
           driverAge={driverAge}
           todayAthens={todayAthens}
+          searching={searching}
           searchError={searchError}
           onPickupDateChange={setPickupDate}
           onDropoffDateChange={setDropoffDate}
@@ -52,7 +110,15 @@ export default function Car2Page() {
           onSearch={handleSearch}
         />
         <Car2TrustBar />
-        {/* fleet · included · why · destinations · faq · cta — sonraki commit'ler */}
+        <Car2FleetGrid
+          cars={cars}
+          loading={loading}
+          availability={availability}
+          validRange={validRange}
+          locale={locale}
+          onSelect={handleSelect}
+        />
+        {/* included · why · destinations · faq · cta — sonraki commit'ler */}
       </main>
       <Footer />
     </div>
