@@ -18,12 +18,12 @@ import { Car2FloatingWhatsApp } from '@/components/car2/car2-floating-whatsapp'
 import { getAvailableCars } from '@/lib/supabase'
 import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { useBooking } from '@/lib/booking-context'
-import { checkModelAvailability } from '@/lib/actions/car-availability-action'
 
 const PICKUP_LOCATION = 'Kos Port'
 
-// car2 — rebuilt car-rental surface. Unlinked preview route. page.tsx owns the
-// search state + car/availability data; the hero form and fleet grid share it.
+// car2 — rebuilt car-rental surface. Unlinked preview route. The hero search is
+// a "seed": pressing it pushes its dates to every fleet card (via seedNonce) and
+// scrolls to the fleet. Each card then owns its dates + availability on its own.
 export default function Car2Page() {
   const t = useTranslations('car2')
   const locale = useLocale()
@@ -31,19 +31,16 @@ export default function Car2Page() {
   const { dispatch } = useBooking()
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
-  const [pickupDate, setPickupDate] = React.useState('')
-  const [dropoffDate, setDropoffDate] = React.useState('')
+  const [seedPickup, setSeedPickup] = React.useState('')
+  const [seedDropoff, setSeedDropoff] = React.useState('')
+  const [seedNonce, setSeedNonce] = React.useState(0)
   const [driverAge, setDriverAge] = React.useState('25+')
   const [searchError, setSearchError] = React.useState<string | null>(null)
 
   const [cars, setCars] = React.useState<NormalizedCar[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
-  const [searching, setSearching] = React.useState(false)
 
-  const datesChosen = !!pickupDate && !!dropoffDate
-  const validRange = datesChosen && dateDiffInDays(pickupDate, dropoffDate) >= 0
-  const rentalDays = validRange ? dateDiffInDays(pickupDate, dropoffDate) + 1 : 0
+  const seedValid = !!seedPickup && !!seedDropoff && dateDiffInDays(seedPickup, seedDropoff) >= 0
 
   // Hero carousel card → scroll to that model's grid card (fallback: the grid
   // section). Pure DOM navigation, no selection/booking.
@@ -64,46 +61,33 @@ export default function Car2Page() {
     fetchCars()
   }, [])
 
-  // Dates changed → prior availability is stale; force a fresh search before a
-  // car can be selected (closes the stale-map hole).
-  React.useEffect(() => {
-    setAvailability(null)
-  }, [pickupDate, dropoffDate])
-
-  async function handleSearch() {
-    if (!validRange) {
+  // Hero "Search" = seed all cards with these dates (bump the nonce so every
+  // card re-adopts them, discarding per-card overrides) + scroll to the fleet.
+  // No availability call here — each card queries its own dates.
+  function handleSearch() {
+    if (!seedValid) {
       setSearchError(t('selectDatesFirst'))
       return
     }
     setSearchError(null)
-    setSearching(true)
-    const res = await checkModelAvailability(pickupDate, rentalDays)
-    setAvailability(res.ok ? res.availability : null)
-    setSearching(false)
-    if (res.ok) {
-      document.getElementById('car2-fleet')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    setSeedNonce((n) => n + 1)
+    document.getElementById('car2-fleet')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // Grouped cars carry model_key in `id` → that's the dispatch/availability key.
-  // Payload shape mirrors car-rental/page.tsx exactly (the /car-rental/driver
-  // flow + server price lookup depend on these field names).
-  function handleSelect(car: NormalizedCar) {
-    if (!validRange) {
-      setSearchError(t('selectDatesFirst'))
-      return
-    }
+  // Card passes its own (independent) dates; payload fields are identical to
+  // car-rental/page.tsx — only the date source changed (page state → card).
+  function handleSelect(car: NormalizedCar, pickup: string, dropoff: string) {
     dispatch({
       type: 'SET_CAR_RENTAL',
       payload: {
         modelKey: car.id,
         model: car.model,
         pricePerDay: car.price,
-        days: rentalDays,
+        days: dateDiffInDays(pickup, dropoff) + 1,
         pickupLocation: PICKUP_LOCATION,
         dropoffLocation: PICKUP_LOCATION,
-        pickupAt: pickupDate,
-        dropoffAt: dropoffDate,
+        pickupAt: pickup,
+        dropoffAt: dropoff,
       },
     })
     router.push('/car-rental/driver')
@@ -114,14 +98,13 @@ export default function Car2Page() {
       <Header />
       <main className="flex-1">
         <Car2Hero
-          pickupDate={pickupDate}
-          dropoffDate={dropoffDate}
+          pickupDate={seedPickup}
+          dropoffDate={seedDropoff}
           driverAge={driverAge}
           todayAthens={todayAthens}
-          searching={searching}
           searchError={searchError}
-          onPickupDateChange={setPickupDate}
-          onDropoffDateChange={setDropoffDate}
+          onPickupDateChange={setSeedPickup}
+          onDropoffDateChange={setSeedDropoff}
           onDriverAgeChange={setDriverAge}
           onSearch={handleSearch}
           cars={cars}
@@ -131,10 +114,12 @@ export default function Car2Page() {
         <Car2FleetGrid
           cars={cars}
           loading={loading}
-          availability={availability}
-          validRange={validRange}
           locale={locale}
           onSelect={handleSelect}
+          seedPickup={seedPickup}
+          seedDropoff={seedDropoff}
+          seedNonce={seedNonce}
+          todayAthens={todayAthens}
         />
         <Car2Included />
         <Car2WhyUs />

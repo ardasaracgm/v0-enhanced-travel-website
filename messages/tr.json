@@ -1655,6 +1655,7 @@
     "heroFleetYear": "Tüm araçlarımız 2026 model",
     "selectDatesHint": "Fiyat/uygunluk için yukarıdan tarih seçin",
     "searchDatesLabel": "Tarihler",
-    "searchDatesPlaceholder": "Alış – İade"
+    "searchDatesPlaceholder": "Alış – İade",
+    "availableLabel": "Müsait"
   }
 }

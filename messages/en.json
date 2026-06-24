@@ -1655,6 +1655,7 @@
     "heroFleetYear": "Our entire fleet is 2026 models",
     "selectDatesHint": "Pick dates above for price and availability",
     "searchDatesLabel": "Dates",
-    "searchDatesPlaceholder": "Pickup – Return"
+    "searchDatesPlaceholder": "Pickup – Return",
+    "availableLabel": "Available"
   }
 }

@@ -26,7 +26,6 @@ interface Car2HeroProps {
   dropoffDate: string
   driverAge: string
   todayAthens: string
-  searching: boolean
   searchError: string | null
   onPickupDateChange: (v: string) => void
   onDropoffDateChange: (v: string) => void
@@ -41,7 +40,6 @@ export function Car2Hero({
   dropoffDate,
   driverAge,
   todayAthens,
-  searching,
   searchError,
   onPickupDateChange,
   onDropoffDateChange,
@@ -139,7 +137,7 @@ export function Car2Hero({
                     </Select>
                   </div>
 
-                  <Button onClick={onSearch} disabled={searching} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button onClick={onSearch} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
                     {t('searchButton')}
                   </Button>
                   {searchError && <p className="text-sm text-destructive">{searchError}</p>}

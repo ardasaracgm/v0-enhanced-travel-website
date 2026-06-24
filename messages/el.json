@@ -1649,6 +1649,7 @@
     "heroFleetYear": "Όλος ο στόλος μας αποτελείται από μοντέλα του 2026",
     "selectDatesHint": "Επιλέξτε ημερομηνίες παραπάνω για να δείτε τιμές και διαθεσιμότητα",
     "searchDatesLabel": "Ημερομηνίες",
-    "searchDatesPlaceholder": "Παραλαβή – Επιστροφή"
+    "searchDatesPlaceholder": "Παραλαβή – Επιστροφή",
+    "availableLabel": "Διαθέσιμο"
   }
 }
