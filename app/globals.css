@@ -33,6 +33,9 @@
     /* Takvim "bugün" işareti: parlament mavi, DOLGUSUZ (ring + metin); seçili
        turkuaz dolgusundan ayrışık. */
     --cal-today: 210 80% 35%;
+    /* Aynı-gün gidiş-dönüş karesinin DÖNÜŞ yarısı (çapraz alt-sağ). Gidiş =
+       cal-selected turkuaz; dönüş = ayrışık mavi (today-ring'den de farklı). */
+    --cal-return: 215 65% 50%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 210 20% 90%;
@@ -71,6 +74,7 @@
     --cal-selected: 184 62% 46%;
     --cal-selected-foreground: 0 0% 100%;
     --cal-today: 210 75% 62%;
+    --cal-return: 215 70% 62%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
