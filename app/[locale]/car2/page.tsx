@@ -45,6 +45,13 @@ export default function Car2Page() {
   const validRange = datesChosen && dateDiffInDays(pickupDate, dropoffDate) >= 0
   const rentalDays = validRange ? dateDiffInDays(pickupDate, dropoffDate) + 1 : 0
 
+  // Hero carousel card → scroll to that model's grid card (fallback: the grid
+  // section). Pure DOM navigation, no selection/booking.
+  function handleHeroCardClick(modelKey: string) {
+    const el = document.getElementById(`car-${modelKey}`) ?? document.getElementById('car2-fleet')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   // Real DB cars only — no hardcoded fallback fleet (the old one carried a
   // Citroën Ami that isn't in the pool). Empty DB → grid's empty state.
   React.useEffect(() => {
@@ -114,6 +121,8 @@ export default function Car2Page() {
           onDropoffDateChange={setDropoffDate}
           onDriverAgeChange={setDriverAge}
           onSearch={handleSearch}
+          cars={cars}
+          onCardClick={handleHeroCardClick}
         />
         <Car2TrustBar />
         <Car2FleetGrid

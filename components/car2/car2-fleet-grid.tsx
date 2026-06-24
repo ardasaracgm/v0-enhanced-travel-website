@@ -24,7 +24,7 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
   const t = useTranslations('car2')
 
   return (
-    <section className="w-full py-16 md:py-24">
+    <section id="car2-fleet" className="w-full py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">{t('fleetTitle')}</h2>
@@ -58,6 +58,8 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
               return (
                 <motion.div
                   key={car.id || car.model}
+                  id={`car-${car.id}`}
+                  className="scroll-mt-24"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}

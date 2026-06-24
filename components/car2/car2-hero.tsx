@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Car2HeroCarousel } from '@/components/car2/car2-hero-carousel'
+import type { NormalizedCar } from '@/lib/normalize-car'
 
 // Kos coastline (same Greek-sea shot the homepage hero uses); no local harbor
 // asset exists yet. images.unsplash.com is whitelisted in next.config.
@@ -31,6 +33,8 @@ interface Car2HeroProps {
   onDropoffDateChange: (v: string) => void
   onDriverAgeChange: (v: string) => void
   onSearch: () => void
+  cars: NormalizedCar[]
+  onCardClick: (modelKey: string) => void
 }
 
 export function Car2Hero({
@@ -44,6 +48,8 @@ export function Car2Hero({
   onDropoffDateChange,
   onDriverAgeChange,
   onSearch,
+  cars,
+  onCardClick,
 }: Car2HeroProps) {
   const t = useTranslations('car2')
 
@@ -56,91 +62,96 @@ export function Car2Hero({
 
       <div className="container relative px-4 md:px-6">
         <div className="grid items-center gap-10 lg:grid-cols-2">
-          {/* Copy */}
-          <div className="max-w-xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm font-medium text-primary-foreground"
-            >
-              <Car className="h-4 w-4" />
-              {t('heroBadge')}
+          {/* Left: copy + search card */}
+          <div className="max-w-xl space-y-8">
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm font-medium text-primary-foreground"
+              >
+                <Car className="h-4 w-4" />
+                {t('heroBadge')}
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-6 text-balance text-4xl font-bold text-white md:text-5xl lg:text-6xl"
+              >
+                {t('heroTitle')}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-pretty text-lg text-white/90 md:text-xl"
+              >
+                {t('heroSubtitle')}
+              </motion.p>
+            </div>
+
+            {/* Search card — content unchanged, relocated to the left column */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <Card className="border-0 shadow-2xl">
+                <CardContent className="grid gap-4 p-6 md:p-8">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{t('searchPickupLabel')}</label>
+                    <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-sm text-foreground">
+                      <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                      <span>{t('searchPickupValue')}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">{t('searchPickupDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10"
+                        min={todayAthens}
+                        max={dropoffDate || '2099-12-31'}
+                        value={pickupDate}
+                        onChange={(e) => onPickupDateChange(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">{t('searchReturnDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10"
+                        min={pickupDate || todayAthens}
+                        max="2099-12-31"
+                        value={dropoffDate}
+                        onChange={(e) => onDropoffDateChange(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{t('searchAgeLabel')}</label>
+                    <Select value={driverAge} onValueChange={onDriverAgeChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="21-24">{t('searchAge2124')}</SelectItem>
+                        <SelectItem value="25+">{t('searchAge25plus')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button onClick={onSearch} disabled={searching} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                    {t('searchButton')}
+                  </Button>
+                  {searchError && <p className="text-sm text-destructive">{searchError}</p>}
+                </CardContent>
+              </Card>
             </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mb-6 text-balance text-4xl font-bold text-white md:text-5xl lg:text-6xl"
-            >
-              {t('heroTitle')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-pretty text-lg text-white/90 md:text-xl"
-            >
-              {t('heroSubtitle')}
-            </motion.p>
           </div>
 
-          {/* Search card */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="border-0 shadow-2xl">
-              <CardContent className="grid gap-4 p-6 md:p-8">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">{t('searchPickupLabel')}</label>
-                  <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-sm text-foreground">
-                    <MapPin className="h-4 w-4 shrink-0 text-primary" />
-                    <span>{t('searchPickupValue')}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('searchPickupDateLabel')}</label>
-                    <Input
-                      type="date"
-                      className="h-10"
-                      min={todayAthens}
-                      max={dropoffDate || '2099-12-31'}
-                      value={pickupDate}
-                      onChange={(e) => onPickupDateChange(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('searchReturnDateLabel')}</label>
-                    <Input
-                      type="date"
-                      className="h-10"
-                      min={pickupDate || todayAthens}
-                      max="2099-12-31"
-                      value={dropoffDate}
-                      onChange={(e) => onDropoffDateChange(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">{t('searchAgeLabel')}</label>
-                  <Select value={driverAge} onValueChange={onDriverAgeChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="21-24">{t('searchAge2124')}</SelectItem>
-                      <SelectItem value="25+">{t('searchAge25plus')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button onClick={onSearch} disabled={searching} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  {t('searchButton')}
-                </Button>
-                {searchError && <p className="text-sm text-destructive">{searchError}</p>}
-              </CardContent>
-            </Card>
-          </motion.div>
+          {/* Right: car carousel */}
+          <Car2HeroCarousel cars={cars} onCardClick={onCardClick} />
         </div>
       </div>
     </section>
