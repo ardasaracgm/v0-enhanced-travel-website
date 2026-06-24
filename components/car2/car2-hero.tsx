@@ -160,7 +160,7 @@ export function Car2Hero({
 
           {/* Right: car carousel — vertically centered in the stretched column
               so its controls roughly bottom-align with the search card */}
-          <div className="flex h-full flex-col justify-center">
+          <div className="flex h-full flex-col justify-end">
             <Car2HeroCarousel cars={cars} onCardClick={onCardClick} />
           </div>
         </div>
