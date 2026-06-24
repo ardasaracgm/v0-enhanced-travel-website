@@ -13,6 +13,8 @@ import { Car2Included } from '@/components/car2/car2-included'
 import { Car2WhyUs } from '@/components/car2/car2-why-us'
 import { Car2Destinations } from '@/components/car2/car2-destinations'
 import { Car2Faq } from '@/components/car2/car2-faq'
+import { Car2Cta } from '@/components/car2/car2-cta'
+import { Car2FloatingWhatsApp } from '@/components/car2/car2-floating-whatsapp'
 import { getAvailableCars } from '@/lib/supabase'
 import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { useBooking } from '@/lib/booking-context'
@@ -126,9 +128,10 @@ export default function Car2Page() {
         <Car2WhyUs />
         <Car2Destinations />
         <Car2Faq />
-        {/* cta — sonraki commit */}
+        <Car2Cta />
       </main>
       <Footer />
+      <Car2FloatingWhatsApp />
     </div>
   )
 }
