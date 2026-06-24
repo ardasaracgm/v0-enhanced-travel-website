@@ -1,13 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Car, MapPin, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Car2HeroCarousel } from '@/components/car2/car2-hero-carousel'
+import { DateRangeField } from '@/components/ferry/date-range-field'
 import type { NormalizedCar } from '@/lib/normalize-car'
 
 // Textless Kos harbor shot (no cars/text), provided for the car2 hero.
@@ -51,6 +51,7 @@ export function Car2Hero({
   onCardClick,
 }: Car2HeroProps) {
   const t = useTranslations('car2')
+  const locale = useLocale()
 
   return (
     <section className="relative w-full overflow-hidden py-16 md:py-24">
@@ -111,29 +112,18 @@ export function Car2Hero({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">{t('searchPickupDateLabel')}</label>
-                      <Input
-                        type="date"
-                        className="h-10"
-                        min={todayAthens}
-                        max={dropoffDate || '2099-12-31'}
-                        value={pickupDate}
-                        onChange={(e) => onPickupDateChange(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">{t('searchReturnDateLabel')}</label>
-                      <Input
-                        type="date"
-                        className="h-10"
-                        min={pickupDate || todayAthens}
-                        max="2099-12-31"
-                        value={dropoffDate}
-                        onChange={(e) => onDropoffDateChange(e.target.value)}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{t('searchDatesLabel')}</label>
+                    <DateRangeField
+                      mode="range"
+                      date={pickupDate}
+                      returnDate={dropoffDate}
+                      onDateChange={onPickupDateChange}
+                      onReturnDateChange={onDropoffDateChange}
+                      minDate={todayAthens}
+                      locale={locale}
+                      placeholder={t('searchDatesPlaceholder')}
+                    />
                   </div>
 
                   <div className="space-y-2">
