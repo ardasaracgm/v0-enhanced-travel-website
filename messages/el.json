@@ -1641,6 +1641,9 @@
     "ctaSearchButton": "Αναζήτηση αυτοκινήτων",
     "ctaWhatsappButton": "Μήνυμα στο WhatsApp",
     "ctaSupportLabel": "Γραμμή υποστήριξης WhatsApp 24 ώρες το 24ωρο, 7 ημέρες την εβδομάδα",
-    "floatLabel": "Μήνυμα στο WhatsApp"
+    "floatLabel": "Μήνυμα στο WhatsApp",
+    "carouselPrev": "Προηγούμενο",
+    "carouselNext": "Επόμενο",
+    "carouselGoTo": "Μετάβαση στη διαφάνεια {index}"
   }
 }

@@ -1647,6 +1647,9 @@
     "ctaSearchButton": "Araç Ara",
     "ctaWhatsappButton": "WhatsApp ile Yazın",
     "ctaSupportLabel": "7/24 WhatsApp Destek Hattı",
-    "floatLabel": "WhatsApp ile Yazın"
+    "floatLabel": "WhatsApp ile Yazın",
+    "carouselPrev": "Önceki",
+    "carouselNext": "Sonraki",
+    "carouselGoTo": "{index}. araca git"
   }
 }

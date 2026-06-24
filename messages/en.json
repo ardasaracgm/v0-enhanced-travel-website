@@ -1647,6 +1647,9 @@
     "ctaSearchButton": "Search Cars",
     "ctaWhatsappButton": "Message on WhatsApp",
     "ctaSupportLabel": "24/7 WhatsApp Support Line",
-    "floatLabel": "Message on WhatsApp"
+    "floatLabel": "Message on WhatsApp",
+    "carouselPrev": "Previous",
+    "carouselNext": "Next",
+    "carouselGoTo": "Go to slide {index}"
   }
 }
