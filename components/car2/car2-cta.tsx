@@ -31,7 +31,7 @@ export function Car2Cta() {
               {t('ctaSearchButton')}
             </Button>
             <a href={buildCar2WhatsAppLink(locale)} target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="w-full gap-2 bg-amber-400 text-blue-950 hover:bg-amber-300">
+              <Button size="lg" className="w-full gap-2 bg-[#25D366] text-white hover:bg-[#25D366]/90">
                 <MessageCircle className="h-5 w-5" />
                 {t('ctaWhatsappButton')}
               </Button>

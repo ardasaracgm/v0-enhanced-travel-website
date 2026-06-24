@@ -1645,6 +1645,7 @@
     "carouselPrev": "Προηγούμενο",
     "carouselNext": "Επόμενο",
     "carouselGoTo": "Μετάβαση στη διαφάνεια {index}",
-    "fleetEyebrow": "Ο στόλος μας"
+    "fleetEyebrow": "Ο στόλος μας",
+    "heroFleetYear": "Όλος ο στόλος μας αποτελείται από μοντέλα του 2026"
   }
 }

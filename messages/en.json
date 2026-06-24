@@ -1651,6 +1651,7 @@
     "carouselPrev": "Previous",
     "carouselNext": "Next",
     "carouselGoTo": "Go to slide {index}",
-    "fleetEyebrow": "Our Fleet"
+    "fleetEyebrow": "Our Fleet",
+    "heroFleetYear": "Our entire fleet is 2026 models"
   }
 }

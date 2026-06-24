@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import { Car, MapPin } from 'lucide-react'
+import { Car, MapPin, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -60,7 +60,7 @@ export function Car2Hero({
       </div>
 
       <div className="container relative px-4 md:px-6">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
+        <div className="grid items-stretch gap-10 lg:grid-cols-2">
           {/* Left: copy + search card */}
           <div className="max-w-xl space-y-8">
             <div>
@@ -88,6 +88,15 @@ export function Car2Hero({
               >
                 {t('heroSubtitle')}
               </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white"
+              >
+                <Sparkles className="h-4 w-4 text-amber-400" />
+                {t('heroFleetYear')}
+              </motion.div>
             </div>
 
             {/* Search card — content unchanged, relocated to the left column */}
@@ -149,8 +158,11 @@ export function Car2Hero({
             </motion.div>
           </div>
 
-          {/* Right: car carousel */}
-          <Car2HeroCarousel cars={cars} onCardClick={onCardClick} />
+          {/* Right: car carousel — vertically centered in the stretched column
+              so its controls roughly bottom-align with the search card */}
+          <div className="flex h-full flex-col justify-center">
+            <Car2HeroCarousel cars={cars} onCardClick={onCardClick} />
+          </div>
         </div>
       </div>
     </section>

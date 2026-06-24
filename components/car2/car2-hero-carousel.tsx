@@ -101,6 +101,9 @@ export function Car2HeroCarousel({ cars, onCardClick }: Car2HeroCarouselProps) {
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                <span className="absolute left-2 top-2 z-10 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-blue-950">
+                  2026
+                </span>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <span className="absolute inset-x-0 bottom-0 p-3 text-left text-sm font-semibold text-white">
                   {car.model}
