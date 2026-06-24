@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
-import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock } from 'lucide-react'
+import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,8 @@ import {
   type FerryBookingItem,
 } from '@/lib/booking-context'
 import { searchFerriesWithNearestAction, type FerrySearchResult } from '@/lib/actions/ferry-search'
+import { addDaysISO } from '@/lib/trip-items/summary'
+import { qualifiesSameDayReturn } from '@/lib/ferry/min-connection'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
@@ -42,6 +44,59 @@ export default function FerryResultsPage() {
   const [isSelectingReturn, setIsSelectingReturn] = React.useState(false)
   const outbound = selectOutboundFerry(state)
   const returnF = selectReturnFerry(state)
+
+  // Aynı-gün gidiş-dönüş: 3 saat min aktarma payı (yolcu adada kalıp dönüşe
+  // yetişsin). Yalnız sameDay dalında — farklı-gün/tek-yön dokunulmaz. Filtre
+  // seçili outbound varışına bağlı (outbound yokken filtrelenemez → ham liste).
+  const sameDay =
+    state.searchParams.tripType === 'round-trip' &&
+    !!state.searchParams.returnDate &&
+    state.searchParams.date === state.searchParams.returnDate
+
+  const qualifyingReturns = React.useMemo(
+    () =>
+      sameDay && outbound
+        ? returnFerries.filter((f) =>
+            qualifiesSameDayReturn(outbound.arrivalTime, f.departureTime),
+          )
+        : returnFerries,
+    [sameDay, outbound, returnFerries],
+  )
+
+  // Aynı gün sefer VAR ama hepsi 3h-altı → ertesi güne kay (farklı gün, saat
+  // kısıtı yok). null = kayma yok (filtre geçen var / sameDay değil / o gün hiç
+  // sefer yok → mevcut nearest-fallback devrede). Tam result saklanır: nextDate
+  // de boşsa FerryResultEmpty onun nearest'ını (+2) gösterir, sonsuz boşluk yok.
+  const [nextDayReturn, setNextDayReturn] =
+    React.useState<{ date: string; result: FerrySearchResult } | null>(null)
+  React.useEffect(() => {
+    const sp = state.searchParams
+    const slid =
+      isSelectingReturn && sameDay && !!outbound &&
+      returnFerries.length > 0 && qualifyingReturns.length === 0
+    if (!slid) { setNextDayReturn(null); return }
+    let cancelled = false
+    const nextDate = addDaysISO(sp.returnDate || sp.date, 1)
+    ;(async () => {
+      const res = await searchFerriesWithNearestAction({
+        from: sp.returnFrom ?? sp.to, to: sp.returnTo ?? sp.from, date: nextDate,
+      })
+      if (!cancelled) {
+        setNextDayReturn({
+          date: nextDate,
+          result: { ...res, trips: res.trips.map((f) => ({ ...f, date: nextDate })) },
+        })
+      }
+    })()
+    return () => { cancelled = true }
+    // outbound?.id/arrivalTime value-dep (selector ref'i değil) → re-fetch loop yok.
+  }, [isSelectingReturn, sameDay, outbound?.id, outbound?.arrivalTime, returnFerries.length, qualifyingReturns.length])
+
+  // Görüntü türetmeleri: filtreli liste / ertesi-gün kayma / boş-durum result'ı.
+  const ndTrips = nextDayReturn?.result.trips ?? []
+  const showReturns = qualifyingReturns.length > 0 ? qualifyingReturns : ndTrips
+  const slidToNextDay = qualifyingReturns.length === 0 && ndTrips.length > 0
+  const emptyReturnResult = nextDayReturn ? nextDayReturn.result : retResult
 
   // İndirimli round-trip = reverse-pair (aynı firma + ters rota), ferryPairPrices &
   // groupFerryLegs ile AYNI tespit. Açık-jaw (Kos→Turgutreis) → false → not yok.
@@ -189,7 +244,7 @@ export default function FerryResultsPage() {
                   </div>
                   <p className="text-sm text-primary-foreground/80">
                     {state.searchParams.date} · {t('passengers', { count: state.searchParams.passengers })}
-                    {state.searchParams.tripType === 'round-trip' && ` · ${t('returnPrefix')} ${state.searchParams.returnDate}`}
+                    {state.searchParams.tripType === 'round-trip' && ` · ${t('returnPrefix')} ${returnF?.date ?? state.searchParams.returnDate}`}
                   </p>
                 </div>
               </div>
@@ -263,12 +318,21 @@ export default function FerryResultsPage() {
                           {t('returnHeading', { to: returnFromCity, from: returnToCity })}
                         </h2>
                       </div>
-                      <Badge variant="secondary">{t('ferriesFound', { count: returnFerries.length })}</Badge>
+                      <Badge variant="secondary">{t('ferriesFound', { count: showReturns.length })}</Badge>
                     </div>
-                    
-                    {returnFerries.length > 0 ? (
+
+                    {showReturns.length > 0 ? (
                       <div className="space-y-4">
-                        {returnFerries.map((ferry, index) => (
+                        {/* Aynı gün 3h+ yoksa ertesi güne kaydık → kullanıcıya neden. */}
+                        {slidToNextDay && nextDayReturn && (
+                          <Card className="bg-card border-border/50">
+                            <CardContent className="p-6 text-center">
+                              <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-3" />
+                              <p className="text-destructive font-medium">{t('noSameDayConnection.title', { date: nextDayReturn.date })}</p>
+                            </CardContent>
+                          </Card>
+                        )}
+                        {showReturns.map((ferry, index) => (
                           <motion.div
                             key={ferry.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -285,7 +349,7 @@ export default function FerryResultsPage() {
                       </div>
                     ) : (
                       <FerryResultEmpty
-                        result={retResult}
+                        result={emptyReturnResult}
                         selectedId={returnF?.id}
                         onSelectNearest={handleSelectReturnFerry}
                       />

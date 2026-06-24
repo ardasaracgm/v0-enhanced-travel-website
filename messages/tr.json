@@ -1265,6 +1265,9 @@
     "noTripsOnDate": {
       "title": "Seçtiğin tarihte sefer yok. En yakın: {date}"
     },
+    "noSameDayConnection": {
+      "title": "Aynı gün gidişten sonra en az 3 saat aktarma payı olan dönüş yok. En yakın uygun dönüş: {date}"
+    },
     "noTripsInWindow": {
       "title": "Bu tarih civarında sefer yok",
       "body": "Seçtiğin tarihe yakın sefer bulunamadı. Lütfen farklı bir tarih dene."

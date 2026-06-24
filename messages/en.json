@@ -1265,6 +1265,9 @@
     "noTripsOnDate": {
       "title": "No ferries on your selected date. Nearest available: {date}"
     },
+    "noSameDayConnection": {
+      "title": "No same-day return leaves at least 3 hours after arrival. Nearest available return: {date}"
+    },
     "noTripsInWindow": {
       "title": "No ferries around this date",
       "body": "There are no sailings near your selected date. Please try a different date."
