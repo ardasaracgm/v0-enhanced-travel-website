@@ -1644,6 +1644,7 @@
     "floatLabel": "Μήνυμα στο WhatsApp",
     "carouselPrev": "Προηγούμενο",
     "carouselNext": "Επόμενο",
-    "carouselGoTo": "Μετάβαση στη διαφάνεια {index}"
+    "carouselGoTo": "Μετάβαση στη διαφάνεια {index}",
+    "fleetEyebrow": "Ο στόλος μας"
   }
 }

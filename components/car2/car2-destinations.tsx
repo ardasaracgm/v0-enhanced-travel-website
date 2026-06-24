@@ -17,12 +17,12 @@ export function Car2Destinations() {
     <section className="w-full py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">{t('destTitle')}</h2>
+          <h2 className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.2em] text-amber-500">{t('destTitle')}</h2>
           <p className="text-lg text-muted-foreground">{t('destSubtitle')}</p>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {DESTS.map(({ key, img }) => (
-            <div key={key} className="group relative aspect-[4/5] overflow-hidden rounded-2xl">
+            <div key={key} className="group relative aspect-[4/5] overflow-hidden rounded-3xl">
               <Image
                 src={img}
                 alt={t(key)}

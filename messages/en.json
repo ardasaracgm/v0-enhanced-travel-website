@@ -1650,6 +1650,7 @@
     "floatLabel": "Message on WhatsApp",
     "carouselPrev": "Previous",
     "carouselNext": "Next",
-    "carouselGoTo": "Go to slide {index}"
+    "carouselGoTo": "Go to slide {index}",
+    "fleetEyebrow": "Our Fleet"
   }
 }

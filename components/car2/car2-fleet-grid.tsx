@@ -27,7 +27,8 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
     <section id="car2-fleet" className="w-full py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">{t('fleetTitle')}</h2>
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-amber-500">{t('fleetEyebrow')}</p>
+          <h2 className="mb-4 text-3xl font-bold text-blue-950 md:text-4xl">{t('fleetTitle')}</h2>
           <p className="text-lg text-muted-foreground">{t('fleetSubtitle')}</p>
         </div>
 
@@ -65,7 +66,7 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
                 >
-                  <Card className="h-full overflow-hidden border-border/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                  <Card className="h-full overflow-hidden rounded-3xl border-border/50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <CardContent className="flex h-full flex-col p-0">
                       <div className="relative h-48 bg-gradient-to-br from-muted to-muted/50">
                         <Image src={car.image} alt={car.model} fill className="object-cover" />
@@ -76,7 +77,7 @@ export function Car2FleetGrid({ cars, loading, availability, validRange, locale,
                         )}
                       </div>
                       <div className="flex flex-1 flex-col p-5">
-                        <h3 className="mb-3 text-xl font-bold text-foreground">{car.model}</h3>
+                        <h3 className="mb-3 text-xl font-bold text-blue-950">{car.model}</h3>
                         <div className="mb-5 grid grid-cols-2 gap-2 text-sm text-foreground">
                           <div className="flex items-center gap-2">
                             <Fuel className="h-4 w-4 text-primary" />

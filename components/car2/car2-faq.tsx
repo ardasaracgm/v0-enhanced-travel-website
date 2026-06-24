@@ -15,7 +15,7 @@ export function Car2Faq() {
     <section className="w-full bg-secondary/30 py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto max-w-3xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">{t('faqTitle')}</h2>
+          <h2 className="mb-12 text-center text-sm font-semibold uppercase tracking-[0.2em] text-blue-950">{t('faqTitle')}</h2>
           <Accordion type="single" collapsible className="w-full">
             {Array.from({ length: FAQ_COUNT }, (_, i) => i + 1).map((n) => (
               <AccordionItem key={n} value={`item-${n}`} className="border-border/50">
