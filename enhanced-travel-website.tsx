@@ -317,7 +317,7 @@ export default function TravelBeez() {
                         <TabsContent
                           key={tab.value}
                           value={tab.value}
-                          className="mt-0 p-4 sm:min-h-[172px] flex flex-col justify-center"
+                          className="mt-0 p-4 sm:min-h-[172px] data-[state=active]:flex flex-col justify-center"
                         >
                           <div className="flex flex-col items-center gap-4 text-center">
                             <Icon className="h-10 w-10 text-primary" />
