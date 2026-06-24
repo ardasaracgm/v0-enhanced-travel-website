@@ -9,6 +9,8 @@ import { Footer } from '@/components/islandbee/footer'
 import { Car2Hero } from '@/components/car2/car2-hero'
 import { Car2TrustBar } from '@/components/car2/car2-trust-bar'
 import { Car2FleetGrid } from '@/components/car2/car2-fleet-grid'
+import { Car2Included } from '@/components/car2/car2-included'
+import { Car2WhyUs } from '@/components/car2/car2-why-us'
 import { getAvailableCars } from '@/lib/supabase'
 import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from '@/lib/normalize-car'
 import { useBooking } from '@/lib/booking-context'
@@ -118,7 +120,9 @@ export default function Car2Page() {
           locale={locale}
           onSelect={handleSelect}
         />
-        {/* included · why · destinations · faq · cta — sonraki commit'ler */}
+        <Car2Included />
+        <Car2WhyUs />
+        {/* destinations · faq · cta — sonraki commit'ler */}
       </main>
       <Footer />
     </div>
