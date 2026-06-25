@@ -250,29 +250,30 @@ export default function CheckoutPage() {
       <Header />
 
       <main className="flex-1">
-        {/* Header Bar */}
-        <section className="w-full py-6 bg-primary text-primary-foreground">
+        {/* Context header — car2 idiom: white bg, amber eyebrow, blue-950 title.
+            Payment/confirm step (not a hero): no bg image, stays compact. */}
+        <section className="w-full border-b border-border/50 bg-white py-8">
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <Link href={carOnly ? '/car-rental/driver' : '/ferry/passenger-details'}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-primary-foreground hover:bg-primary-foreground/10"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="flex items-start gap-3">
+                <Link
+                  href={carOnly ? '/car-rental/driver' : '/ferry/passenger-details'}
+                  aria-label="Back"
+                  className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-blue-950 hover:bg-blue-950/5"
+                >
+                  <ChevronLeft className="h-5 w-5" />
                 </Link>
                 <div>
-                  <h1 className="text-lg font-semibold">{t('title')}</h1>
-                  <p className="text-sm text-primary-foreground/80">
-                    {t('subtitle')}
-                  </p>
+                  <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950">
+                    <CheckCircle className="h-4 w-4" />
+                    {t('eyebrow')}
+                  </span>
+                  <h1 className="text-3xl font-bold text-blue-950 md:text-4xl">{t('title')}</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <Lock className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-sm font-medium text-blue-950">
+                <Lock className="h-4 w-4 text-amber-600" />
                 <span>{t('secureBadge')}</span>
               </div>
             </div>
