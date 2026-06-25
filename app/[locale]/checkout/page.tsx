@@ -213,7 +213,7 @@ export default function CheckoutPage() {
       console.error('[checkout] submit threw:', err)
       dispatch({
         type: 'SET_SUBMIT_ERROR',
-        payload: 'Unexpected error. Please try again or contact us on WhatsApp.',
+        payload: t('error.unexpected'),
       })
       setIsProcessing(false)
     }
@@ -265,15 +265,15 @@ export default function CheckoutPage() {
                   </Button>
                 </Link>
                 <div>
-                  <h1 className="text-lg font-semibold">Review & Confirm</h1>
+                  <h1 className="text-lg font-semibold">{t('title')}</h1>
                   <p className="text-sm text-primary-foreground/80">
-                    Review your booking. Payment via WhatsApp after confirmation.
+                    {t('subtitle')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
                 <Lock className="h-4 w-4" />
-                <span>Secure booking</span>
+                <span>{t('secureBadge')}</span>
               </div>
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-lg">
                       {outbound ? <Ship className="h-5 w-5 text-primary" /> : <Car className="h-5 w-5 text-primary" />}
-                      Your Trip
+                      {t('yourTrip')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-lg">
                       <User className="h-5 w-5 text-primary" />
-                      {outbound ? 'Passengers' : 'Driver'} ({state.passengers.length})
+                      {outbound ? t('passengersTitle') : t('driverTitle')} ({state.passengers.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -344,20 +344,20 @@ export default function CheckoutPage() {
                             <p className="font-medium text-foreground">{passenger.firstName} {passenger.lastName}</p>
                             {outbound ? (
                               <p className="text-sm text-muted-foreground">
-                                {passenger.nationality} · Passport: {passenger.passportNumber}
+                                {passenger.nationality} · {t('passportLabel')} {passenger.passportNumber}
                               </p>
                             ) : (passenger.birthDate || passenger.licenseExpiry) ? (
                               <p className="text-sm text-muted-foreground">
                                 {[
-                                  passenger.birthDate && `DOB: ${passenger.birthDate}`,
-                                  passenger.licenseExpiry && `Licence exp: ${passenger.licenseExpiry}`,
+                                  passenger.birthDate && `${t('dobLabel')} ${passenger.birthDate}`,
+                                  passenger.licenseExpiry && `${t('licenceExpLabel')} ${passenger.licenseExpiry}`,
                                 ].filter(Boolean).join(' · ')}
                               </p>
                             ) : null}
                           </div>
                           {index === 0 && (
                             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                              Lead
+                              {t('leadBadge')}
                             </span>
                           )}
                         </div>
@@ -365,7 +365,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="mt-4 pt-4 border-t border-border/50">
                       <p className="text-sm text-muted-foreground">
-                        Contact: {state.contactEmail} · {state.contactPhone}
+                        {t('contactLabel')} {state.contactEmail} · {state.contactPhone}
                       </p>
                     </div>
                   </CardContent>
@@ -376,15 +376,13 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-lg">
                       <MessageCircle className="h-5 w-5 text-[#25D366]" />
-                      Payment
+                      {t('paymentTitle')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="p-4 bg-[#25D366]/10 border border-[#25D366]/30 rounded-xl">
                       <p className="text-sm text-foreground leading-relaxed">
-                        After confirming your booking, we&apos;ll send a secure payment link
-                        on WhatsApp. {outbound ? 'Your seats are reserved' : 'Your car is reserved'} while
-                        we coordinate payment. Online card payment (Viva Wallet) is launching soon.
+                        {t('paymentNote')}
                       </p>
                     </div>
                   </CardContent>
@@ -394,7 +392,7 @@ export default function CheckoutPage() {
                 {state.submitError && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Booking could not be completed</AlertTitle>
+                    <AlertTitle>{t('errorTitle')}</AlertTitle>
                     <AlertDescription>{state.submitError}</AlertDescription>
                   </Alert>
                 )}
@@ -473,7 +471,7 @@ export default function CheckoutPage() {
 
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-foreground mb-6">Order Summary</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-6">{t('orderSummary')}</h3>
 
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -481,15 +479,15 @@ export default function CheckoutPage() {
                               incl. luggage (shared with passenger-details). */}
                           <OrderSummaryItems />
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Booking Fee</span>
-                            <span className="text-green-600">Free</span>
+                            <span className="text-muted-foreground">{t('bookingFee')}</span>
+                            <span className="text-green-600">{t('free')}</span>
                           </div>
                         </div>
 
                         <Separator />
 
                         <div className="flex items-center justify-between text-lg font-bold">
-                          <span className="text-foreground">Total</span>
+                          <span className="text-foreground">{t('total')}</span>
                           <span className="text-primary">
                             €{selectTotalPrice(state)}
                           </span>
@@ -506,19 +504,17 @@ export default function CheckoutPage() {
                           />
                           <div className="space-y-1">
                             <Label htmlFor="terms" className="text-sm cursor-pointer">
-                              I agree to the{' '}
-                              <Link href="/terms" className="text-primary hover:underline">
-                                Terms of Service
-                              </Link>{' '}
-                              and{' '}
-                              <Link href="/privacy" className="text-primary hover:underline">
-                                Privacy Policy
-                              </Link>
+                              {t.rich('termsAgree', {
+                                terms: (chunks) => (
+                                  <Link href="/terms" className="text-primary hover:underline">{chunks}</Link>
+                                ),
+                                privacy: (chunks) => (
+                                  <Link href="/privacy" className="text-primary hover:underline">{chunks}</Link>
+                                ),
+                              })}
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              By confirming this booking, you agree to the{' '}
-                              {outbound ? 'ferry operator' : 'car rental supplier'}&apos;s terms and
-                              TravelBeez&apos;s booking conditions.
+                              {t('termsNote', { supplier: outbound ? t('supplierFerry') : t('supplierCar') })}
                             </p>
                           </div>
                         </div>
@@ -535,19 +531,19 @@ export default function CheckoutPage() {
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                               />
-                              Processing...
+                              {t('processing')}
                             </>
                           ) : (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              Confirm Booking
+                              {t('confirmButton')}
                             </>
                           )}
                         </Button>
 
                         {!acceptTerms && (
                           <p className="text-sm text-muted-foreground text-center">
-                            Please accept the terms to continue
+                            {t('acceptTermsHint')}
                           </p>
                         )}
                         {acceptTerms && insuranceBlocking && (
@@ -558,9 +554,9 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
-                        <TrustItem icon={CalendarClock} title="Flexible Date Change" desc={outbound ? 'Up to 48 hours before departure' : 'Up to 48 hours before pickup'} />
-                        <TrustItem icon={MessageCircle} title="WhatsApp Support" desc="Talk to us anytime" />
-                        <TrustItem icon={CheckCircle} title="Instant Confirmation" desc="Reference sent immediately" />
+                        <TrustItem icon={CalendarClock} title={t('flexTitle')} desc={outbound ? t('flexBeforeDeparture') : t('flexBeforePickup')} />
+                        <TrustItem icon={MessageCircle} title={t('supportTitle')} desc={t('supportDesc')} />
+                        <TrustItem icon={CheckCircle} title={t('instantTitle')} desc={t('instantDesc')} />
                       </div>
                     </CardContent>
                   </Card>
