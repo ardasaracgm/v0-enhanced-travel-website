@@ -27,6 +27,13 @@ interface DateRangeFieldProps {
   locale: string
   /** Boşken trigger metni. */
   placeholder?: string
+  /**
+   * Popover'ın yatay (align ekseni) offset'i, px. Default 0 → ferry davranışı
+   * AYNEN korunur. Dikey kart bağlamlarında (car-rental hero/kart) takvim ızgarası
+   * (Calendar p-2 = 8px iç boşluk) input metniyle (px-3 = 12px) hizalansın diye
+   * +4 geçilir. Radix Content.alignOffset'e iletilir.
+   */
+  alignOffset?: number
 
   // ─── Adım 2 hazırlığı: opsiyonel passthrough. Adım 1'de GEÇİLMEZ → davranış değişmez. ───
   /** Verilirse bu günler disabled (sefer yok). undefined → tüm günler açık (Adım 1). */
@@ -47,7 +54,7 @@ const LOCALES = { tr, en: enUS, el } as const
  */
 export function DateRangeField({
   mode, date, returnDate, onDateChange, onReturnDateChange,
-  minDate, locale, placeholder,
+  minDate, locale, placeholder, alignOffset = 0,
   disabledDates, dayModifiers, dayModifiersClassNames,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false)
@@ -93,7 +100,7 @@ export function DateRangeField({
           <CalendarIcon className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" collisionPadding={8} className="w-auto p-0">
+      <PopoverContent align="start" alignOffset={alignOffset} collisionPadding={8} className="w-auto p-0">
         {mode === 'range' ? (
           <Calendar
             mode="range"

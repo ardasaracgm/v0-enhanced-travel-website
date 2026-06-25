@@ -161,6 +161,7 @@ export function Car2FleetCard({
                     minDate={todayAthens}
                     locale={locale}
                     placeholder={t('searchDatesPlaceholder')}
+                    alignOffset={4}
                   />
                   {/* müsaitlik — yalnız etiket, sayı YOK */}
                   <div className="text-center text-xs">

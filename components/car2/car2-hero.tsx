@@ -121,6 +121,7 @@ export function Car2Hero({
                       minDate={todayAthens}
                       locale={locale}
                       placeholder={t('searchDatesPlaceholder')}
+                      alignOffset={4}
                     />
                   </div>
 
