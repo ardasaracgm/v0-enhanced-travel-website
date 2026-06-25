@@ -1027,6 +1027,8 @@
   },
 
   "carRentalDriver": {
+    "eyebrow": "Driver Details",
+    "whatsappHelp": "Get help on WhatsApp",
     "heading": "Driver details",
     "subheading": "We need the main driver's details to confirm your rental.",
     "driverTitle": "Main driver",

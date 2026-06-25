@@ -1027,6 +1027,8 @@
   },
 
   "carRentalDriver": {
+    "eyebrow": "Sürücü Bilgileri",
+    "whatsappHelp": "WhatsApp'tan yardım al",
     "heading": "Sürücü bilgileri",
     "subheading": "Kiralamanızı onaylamak için ana sürücünün bilgilerine ihtiyacımız var.",
     "driverTitle": "Ana sürücü",
