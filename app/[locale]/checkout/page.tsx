@@ -476,9 +476,9 @@ export default function CheckoutPage() {
                     </Card>
                   )}
 
-                  <Card className="bg-card border-border/50">
+                  <Card className="rounded-3xl border-border/50 shadow-sm">
                     <CardContent className="p-6">
-                      <h3 className="text-lg font-bold text-foreground mb-6">{t('orderSummary')}</h3>
+                      <h3 className="text-lg font-bold text-blue-950 mb-6">{t('orderSummary')}</h3>
 
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -494,7 +494,7 @@ export default function CheckoutPage() {
                         <Separator />
 
                         <div className="flex items-center justify-between text-lg font-bold">
-                          <span className="text-foreground">{t('total')}</span>
+                          <span className="text-blue-950">{t('total')}</span>
                           <span className="text-primary">
                             €{selectTotalPrice(state)}
                           </span>
@@ -527,7 +527,7 @@ export default function CheckoutPage() {
                         </div>
 
                         <Button
-                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
+                          className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
                           onClick={handleConfirm}
                           disabled={!acceptTerms || isProcessing || insuranceBlocking}
                         >
@@ -597,7 +597,7 @@ function TrustItem({
     <div className="flex items-start gap-3">
       <Icon className="h-5 w-5 text-green-500 mt-0.5" />
       <div>
-        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-sm font-medium text-blue-950">{title}</p>
         <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
     </div>
