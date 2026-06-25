@@ -55,7 +55,6 @@ export function Car2Hero({
     <section className="relative w-full overflow-hidden py-16 md:py-24">
       <div className="absolute inset-0">
         <Image src={HERO_IMAGE} alt={t('heroTitle')} fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/20" />
       </div>
 
       <div className="container relative px-4 md:px-6">
