@@ -18,6 +18,7 @@ import { useLocale, useTranslations } from 'next-intl'
 
 import { useBooking, type BookingItem } from '@/lib/booking-context'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { serviceVisual, type ServiceTone } from '@/lib/service-theme'
 import { assertNever } from '@/lib/trip-items/types'
 
 // Only the outbound ferry leg is permanent. Everything else — return ferry,
@@ -68,12 +69,28 @@ export function useRemoveBookingItem(): (item: BookingItem) => void {
   )
 }
 
+// Sol kenar şeridi renkleri — class literal'leri BURADA (component taranır),
+// service-theme'de yalnız token. none = görünmez şerit (insurance/bilinmeyen),
+// hizalama korunur. SADECE showTone=true iken uygulanır (checkout).
+const TONE_BORDER: Record<ServiceTone, string> = {
+  ferry: 'border-blue-400',
+  transfer: 'border-green-400',
+  car: 'border-purple-400',
+  luggage: 'border-amber-400',
+  none: 'border-transparent',
+}
+
 interface OrderSummaryItemsProps {
   /**
    * When false, ferry legs are omitted — the page renders them as detail cards
    * above (passenger). Checkout includes them as compact rows (default).
    */
   includeFerry?: boolean
+  /**
+   * When true, each row gets a thin left tone strip (service-keyed). Checkout
+   * only — passenger-details/results pass nothing → no visual change.
+   */
+  showTone?: boolean
 }
 
 /**
@@ -81,7 +98,7 @@ interface OrderSummaryItemsProps {
  * page's existing `space-y-*` container). Each removable row carries an X; a
  * fixed-width spacer keeps the € column aligned for non-removable rows.
  */
-export function OrderSummaryItems({ includeFerry = true }: OrderSummaryItemsProps) {
+export function OrderSummaryItems({ includeFerry = true, showTone = false }: OrderSummaryItemsProps) {
   const { state } = useBooking()
   const locale = useLocale()
   const t = useTranslations('orderSummary')
@@ -105,7 +122,12 @@ export function OrderSummaryItems({ includeFerry = true }: OrderSummaryItemsProp
           : item.type === 'insurance' ? t('breakdown.insurance')
           : row.breakdownLabel
         return (
-          <div key={i} className="flex items-center justify-between gap-2 text-sm">
+          <div
+            key={i}
+            className={`flex items-center justify-between gap-2 text-sm ${
+              showTone ? `border-l-2 pl-2 ${TONE_BORDER[serviceVisual(item).tone]}` : ''
+            }`}
+          >
             <span className="text-muted-foreground">{label}</span>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-foreground">€{row.amount}</span>

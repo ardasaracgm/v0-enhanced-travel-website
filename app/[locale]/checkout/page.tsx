@@ -541,7 +541,7 @@ export default function CheckoutPage() {
                         <div className="space-y-2">
                           {/* Generic breakdown — one removable line per item
                               incl. luggage (shared with passenger-details). */}
-                          <OrderSummaryItems />
+                          <OrderSummaryItems showTone />
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">{t('bookingFee')}</span>
                             <span className="text-green-600">{t('free')}</span>
