@@ -14,6 +14,7 @@ import {
   MessageCircle,
   CalendarClock,
   ShieldCheck,
+  ChevronDown,
   Car,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -80,6 +81,10 @@ export default function CheckoutPage() {
   // Forced active choice (AB Madde 22): mount'ta hiçbiri seçili değil; kullanıcı
   // none/tier'den birini seçmeli. 'none' de geçerli aktif seçimdir.
   const [insuranceChoiceMade, setInsuranceChoiceMade] = React.useState(false)
+  // Collapse: "Sigorta istemiyorum" seçilince plan listesi kapanır (sadece checkout;
+  // standalone wizard'da none yok, bu davranış oraya taşınmaz). Salt görünüm.
+  const [insCollapsed, setInsCollapsed] = React.useState(false)
+  const [insHeroError, setInsHeroError] = React.useState(false)
   // Hydrate'le gelen tier de yapılmış seçim sayılır (back-navigation).
   const insuranceChosen = insuranceChoiceMade || !!insuranceItem
   // Sigorta SADECE quote yüklenirken VEYA tier'lar gösterilip henüz seçilmemişken
@@ -118,7 +123,8 @@ export default function CheckoutPage() {
 
   function handleInsuranceChange(value: string) {
     setInsuranceChoiceMade(true) // none de tier de geçerli aktif seçim
-    if (value === 'none') { dispatch({ type: 'REMOVE_INSURANCE' }); return }
+    if (value === 'none') { setInsCollapsed(true); dispatch({ type: 'REMOVE_INSURANCE' }); return }
+    setInsCollapsed(false)
     const tariff = insTariffs.find((tf) => String(tf.tariffId) === value)
     if (!tariff || !outboundItem) return
     dispatch({
@@ -418,7 +424,21 @@ export default function CheckoutPage() {
                       Hata olursa bölüm sessizce gizlenir; checkout kırılmaz. */}
                   {/* Insurance upsell is travel/ferry-only — hidden for car-only. */}
                   {outbound && !insFailed && (
-                    <Card className="rounded-3xl border-border/50 shadow-sm">
+                    <Card className="overflow-hidden rounded-3xl border-border/50 shadow-sm">
+                      {/* Full-width hero banner — car2 paterni (overflow-hidden card
+                          + relative fill image). Görsel yüklenmezse degrade kalır. */}
+                      <div className="relative h-32 bg-gradient-to-br from-primary/10 to-muted">
+                        {!insHeroError && (
+                          <Image
+                            src="/services/insurance-hero.webp"
+                            alt={tIns('heading')}
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 33vw"
+                            className="object-cover"
+                            onError={() => setInsHeroError(true)}
+                          />
+                        )}
+                      </div>
                       <CardContent className="p-6 space-y-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -439,6 +459,18 @@ export default function CheckoutPage() {
                             <Skeleton className="h-11 w-full" />
                             <Skeleton className="h-11 w-full" />
                           </div>
+                        ) : insCollapsed ? (
+                          /* "Sigorta istemiyorum" seçili → liste kapalı; tıkla → aç. */
+                          <button
+                            type="button"
+                            onClick={() => setInsCollapsed(false)}
+                            className="flex w-full items-center justify-between rounded-xl border-2 border-border/50 px-3 py-2 text-sm text-foreground transition-all hover:border-primary/50"
+                          >
+                            <span className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-muted-foreground" /> {tIns('none')}
+                            </span>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          </button>
                         ) : (
                           <RadioGroup
                             value={insuranceItem ? String(insuranceItem.tariffId) : (insuranceChoiceMade ? 'none' : '')}

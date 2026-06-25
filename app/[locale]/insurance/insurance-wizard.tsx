@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { CheckCircle } from 'lucide-react'
 
@@ -53,6 +54,7 @@ export function InsuranceWizard() {
   const today = todayAthensISO()
 
   const [step, setStep] = React.useState(0)
+  const [heroError, setHeroError] = React.useState(false) // banner fallback; salt görünüm
 
   // Adım 1
   const [dateFrom, setDateFrom] = React.useState('')
@@ -218,6 +220,21 @@ export function InsuranceWizard() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      {/* Full-width hero banner (rounded-3xl) — checkout kartıyla aynı görsel.
+          Collapse YOK (standalone'da "none" seçeneği yok). Salt görünüm. */}
+      <div className="relative h-40 overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 to-muted">
+        {!heroError && (
+          <Image
+            src="/services/insurance-hero.webp"
+            alt={t('heroTitle')}
+            fill
+            sizes="(max-width: 768px) 100vw, 672px"
+            className="object-cover"
+            priority
+            onError={() => setHeroError(true)}
+          />
+        )}
+      </div>
       <div className="text-center">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('heroTitle')}</h1>
         <p className="mt-2 text-muted-foreground">{t('heroSubtitle')}</p>
