@@ -44,6 +44,7 @@ import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only gu
 import { submitBooking } from '@/lib/actions/submit-booking'
 import { assertNever } from '@/lib/trip-items/types'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { serviceVisual, type ServiceTone, type ServiceVisual } from '@/lib/service-theme'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
@@ -316,22 +317,26 @@ export default function CheckoutPage() {
                         now appears here too — was previously only in the total. */}
                     {state.items.map((item, i) => {
                       const row = summarizeItem(item, locale)
+                      const visual = serviceVisual(item)
                       return (
                         <div
                           key={i}
-                          className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-2xl"
+                          className={`flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 rounded-2xl ${TONE_BG[visual.tone]}`}
                         >
-                          <div>
-                            <p className="text-sm text-muted-foreground">{row.label}</p>
-                            <p className="font-semibold text-blue-950">{row.title}</p>
-                            {row.detail && (
-                              <p className="text-sm text-muted-foreground">{row.detail}</p>
-                            )}
-                            {item.type === 'car_rental' && (
-                              <p className="text-xs text-muted-foreground mt-1">{tExtras('dailyRateNotice')}</p>
-                            )}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <ServiceThumb visual={visual} alt={row.title} />
+                            <div className="min-w-0">
+                              <p className="text-sm text-muted-foreground">{row.label}</p>
+                              <p className="font-semibold text-blue-950">{row.title}</p>
+                              {row.detail && (
+                                <p className="text-sm text-muted-foreground">{row.detail}</p>
+                              )}
+                              {item.type === 'car_rental' && (
+                                <p className="text-xs text-muted-foreground mt-1">{tExtras('dailyRateNotice')}</p>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-lg font-bold text-primary mt-2 md:mt-0">
+                          <p className="text-lg font-bold text-primary mt-2 md:mt-0 shrink-0">
                             €{row.amount}
                           </p>
                         </div>
@@ -635,6 +640,45 @@ export default function CheckoutPage() {
 // ============================================================
 // Subcomponents
 // ============================================================
+
+// Pastel zemin: class literal'leri BURADA (app/ taranır), service-theme'de
+// token. 'none' = mevcut görünüm (insurance/bilinmeyen) — regresyon yok.
+const TONE_BG: Record<ServiceTone, string> = {
+  ferry: 'bg-blue-50/40',
+  transfer: 'bg-green-50/40',
+  car: 'bg-purple-50/40',
+  luggage: 'bg-amber-50/40',
+  none: 'bg-secondary/50',
+}
+
+// Satır thumbnail'i — kendi onError state'ini tutar. fallbackSrc varsa (car:
+// koscar) bir kez swap, yoksa/sonra sessizce gizlenir (degrade). Salt görünüm.
+function ServiceThumb({
+  visual,
+  alt,
+}: {
+  visual: ServiceVisual
+  alt: string
+}) {
+  const [src, setSrc] = React.useState(visual.src)
+  if (!src) return null
+  return (
+    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/70 ring-1 ring-black/5">
+      <Image
+        src={src}
+        alt={alt || visual.alt}
+        fill
+        sizes="56px"
+        className="object-cover"
+        onError={() =>
+          setSrc((cur) =>
+            visual.fallbackSrc && cur !== visual.fallbackSrc ? visual.fallbackSrc : null
+          )
+        }
+      />
+    </div>
+  )
+}
 
 function TrustItem({
   icon: Icon,
