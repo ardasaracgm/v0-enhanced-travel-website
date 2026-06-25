@@ -321,11 +321,11 @@ export default function CheckoutPage() {
                       return (
                         <div
                           key={i}
-                          className={`flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 rounded-2xl ${TONE_BG[visual.tone]}`}
+                          className={`flex items-stretch justify-between gap-3 overflow-hidden rounded-2xl ${TONE_BG[visual.tone]}`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex items-stretch min-w-0 flex-1">
                             <ServiceThumb visual={visual} alt={row.title} />
-                            <div className="min-w-0">
+                            <div className="min-w-0 py-4 pl-4">
                               <p className="text-sm text-muted-foreground">{row.label}</p>
                               <p className="font-semibold text-blue-950">{row.title}</p>
                               {row.detail && (
@@ -336,7 +336,7 @@ export default function CheckoutPage() {
                               )}
                             </div>
                           </div>
-                          <p className="text-lg font-bold text-primary mt-2 md:mt-0 shrink-0">
+                          <p className="text-lg font-bold text-primary self-center pr-4 shrink-0">
                             €{row.amount}
                           </p>
                         </div>
@@ -644,10 +644,10 @@ export default function CheckoutPage() {
 // Pastel zemin: class literal'leri BURADA (app/ taranır), service-theme'de
 // token. 'none' = mevcut görünüm (insurance/bilinmeyen) — regresyon yok.
 const TONE_BG: Record<ServiceTone, string> = {
-  ferry: 'bg-blue-50/40',
-  transfer: 'bg-green-50/40',
-  car: 'bg-purple-50/40',
-  luggage: 'bg-amber-50/40',
+  ferry: 'bg-blue-50/60',
+  transfer: 'bg-green-50/60',
+  car: 'bg-purple-50/60',
+  luggage: 'bg-amber-50/60',
   none: 'bg-secondary/50',
 }
 
@@ -663,12 +663,12 @@ function ServiceThumb({
   const [src, setSrc] = React.useState(visual.src)
   if (!src) return null
   return (
-    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/70 ring-1 ring-black/5">
+    <div className="relative w-20 shrink-0 self-stretch overflow-hidden bg-white/70">
       <Image
         src={src}
         alt={alt || visual.alt}
         fill
-        sizes="56px"
+        sizes="80px"
         className="object-cover"
         onError={() =>
           setSrc((cur) =>
