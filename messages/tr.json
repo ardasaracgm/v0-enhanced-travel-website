@@ -1151,8 +1151,41 @@
 
   "checkout": {
     "error": {
-      "carUnavailable": "Seçtiğiniz araç bu tarihlerde müsait değil, lütfen başka tarih veya araç seçin."
-    }
+      "carUnavailable": "Seçtiğiniz araç bu tarihlerde müsait değil, lütfen başka tarih veya araç seçin.",
+      "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin veya WhatsApp'tan bize ulaşın."
+    },
+    "title": "Gözden Geçir ve Onayla",
+    "subtitle": "Rezervasyonunu gözden geçir ve onayla.",
+    "secureBadge": "Güvenli rezervasyon",
+    "yourTrip": "Seyahatin",
+    "passengersTitle": "Yolcular",
+    "driverTitle": "Sürücü",
+    "passportLabel": "Pasaport:",
+    "dobLabel": "Doğum tarihi:",
+    "licenceExpLabel": "Ehliyet bitiş:",
+    "leadBadge": "Birincil",
+    "contactLabel": "İletişim:",
+    "paymentTitle": "Ödeme",
+    "paymentNote": "Ödeme için banka onay sayfasına yönlendirileceksiniz.",
+    "errorTitle": "Rezervasyon tamamlanamadı",
+    "orderSummary": "Sipariş Özeti",
+    "bookingFee": "Rezervasyon Ücreti",
+    "free": "Ücretsiz",
+    "total": "Toplam",
+    "processing": "İşleniyor...",
+    "confirmButton": "Rezervasyonu Onayla",
+    "acceptTermsHint": "Devam etmek için lütfen şartları kabul edin",
+    "termsAgree": "<terms>Hizmet Şartları</terms>'nı ve <privacy>Gizlilik Politikası</privacy>'nı kabul ediyorum",
+    "termsNote": "Bu rezervasyonu onaylayarak {supplier} şartlarını ve TravelBeez'in rezervasyon koşullarını kabul edersiniz.",
+    "supplierFerry": "feribot operatörünün",
+    "supplierCar": "araç kiralama tedarikçisinin",
+    "flexTitle": "Esnek Tarih Değişikliği",
+    "flexBeforeDeparture": "Kalkıştan 48 saat öncesine kadar",
+    "flexBeforePickup": "Alıştan 48 saat öncesine kadar",
+    "supportTitle": "WhatsApp Desteği",
+    "supportDesc": "Bize istediğin zaman ulaş",
+    "instantTitle": "Anında Onay",
+    "instantDesc": "Referans hemen gönderilir"
   },
 
   "checkoutInsurance": {

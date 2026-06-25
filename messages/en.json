@@ -1151,8 +1151,41 @@
 
   "checkout": {
     "error": {
-      "carUnavailable": "The car you selected is not available for these dates. Please choose different dates or another car."
-    }
+      "carUnavailable": "The car you selected is not available for these dates. Please choose different dates or another car.",
+      "unexpected": "Unexpected error. Please try again or contact us on WhatsApp."
+    },
+    "title": "Review & Confirm",
+    "subtitle": "Review your booking and confirm.",
+    "secureBadge": "Secure booking",
+    "yourTrip": "Your Trip",
+    "passengersTitle": "Passengers",
+    "driverTitle": "Driver",
+    "passportLabel": "Passport:",
+    "dobLabel": "DOB:",
+    "licenceExpLabel": "Licence exp:",
+    "leadBadge": "Lead",
+    "contactLabel": "Contact:",
+    "paymentTitle": "Payment",
+    "paymentNote": "You'll be redirected to your bank's secure payment page.",
+    "errorTitle": "Booking could not be completed",
+    "orderSummary": "Order Summary",
+    "bookingFee": "Booking Fee",
+    "free": "Free",
+    "total": "Total",
+    "processing": "Processing...",
+    "confirmButton": "Confirm Booking",
+    "acceptTermsHint": "Please accept the terms to continue",
+    "termsAgree": "I agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+    "termsNote": "By confirming this booking, you agree to the {supplier}'s terms and TravelBeez's booking conditions.",
+    "supplierFerry": "ferry operator",
+    "supplierCar": "car rental supplier",
+    "flexTitle": "Flexible Date Change",
+    "flexBeforeDeparture": "Up to 48 hours before departure",
+    "flexBeforePickup": "Up to 48 hours before pickup",
+    "supportTitle": "WhatsApp Support",
+    "supportDesc": "Talk to us anytime",
+    "instantTitle": "Instant Confirmation",
+    "instantDesc": "Reference sent immediately"
   },
 
   "checkoutInsurance": {
