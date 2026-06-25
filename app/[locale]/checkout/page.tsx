@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
 import { useLocale, useTranslations } from 'next-intl'
 import {
@@ -33,6 +34,7 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import {
   useBooking,
   selectOutboundFerry,
+  selectCarRental,
   selectTotalPrice,
   type FerryBookingItem,
   type InsuranceBookingItem,
@@ -55,6 +57,10 @@ export default function CheckoutPage() {
   // Car-only standalone (no ferry but a car item) → route nav links to the
   // car-rental flow instead of /ferry.
   const carOnly = !outbound && state.items.some((i) => i.type === 'car_rental')
+  // Car image for the summary (car-rental flow only) — same /cars/<modelKey>.webp
+  // convention + koscar fallback as the driver page. No payload change.
+  const car = selectCarRental(state)
+  const [carImgError, setCarImgError] = React.useState(false)
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
 
@@ -476,7 +482,21 @@ export default function CheckoutPage() {
                     </Card>
                   )}
 
-                  <Card className="rounded-3xl border-border/50 shadow-sm">
+                  <Card className="overflow-hidden rounded-3xl border-border/50 shadow-sm">
+                    {/* Car image — car-rental flow only (ferry has no car). Same
+                        /cars/<modelKey>.webp convention as the driver page. */}
+                    {carOnly && car && (
+                      <div className="relative h-40 bg-gradient-to-br from-muted to-muted/50">
+                        <Image
+                          src={carImgError || !car.modelKey ? '/cars/koscar.webp' : `/cars/${car.modelKey}.webp`}
+                          alt={car.model}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                          className="object-cover"
+                          onError={() => setCarImgError(true)}
+                        />
+                      </div>
+                    )}
                     <CardContent className="p-6">
                       <h3 className="text-lg font-bold text-blue-950 mb-6">{t('orderSummary')}</h3>
 
