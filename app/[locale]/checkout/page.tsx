@@ -53,7 +53,6 @@ export default function CheckoutPage() {
   const locale = useLocale() as Locale
   const t = useTranslations('checkout')
   const tIns = useTranslations('checkoutInsurance')
-  const tExtras = useTranslations('extrasPage')
   const { state, dispatch } = useBooking()
   const outbound = selectOutboundFerry(state)
   // Car-only standalone (no ferry but a car item) → route nav links to the
@@ -330,9 +329,6 @@ export default function CheckoutPage() {
                               <p className="font-semibold text-blue-950">{row.title}</p>
                               {row.detail && (
                                 <p className="text-sm text-muted-foreground">{row.detail}</p>
-                              )}
-                              {item.type === 'car_rental' && (
-                                <p className="text-xs text-muted-foreground mt-1">{tExtras('dailyRateNotice')}</p>
                               )}
                             </div>
                           </div>

@@ -37,8 +37,26 @@ export interface ItemSummaryRow {
   amount: number
 }
 
-function ferryRow(item: FerryBookingItem): ItemSummaryRow {
-  const label = item.leg === 'outbound' ? 'Outbound' : 'Return'
+// Display label çevirileri. Bu dosya saf/izomorfik (next-intl hook/getTranslations
+// kullanılamaz) ama zaten locale'e dallanıyor (carRow gün, insuranceRow teminat).
+// Statik map → checkout "Your Trip" + confirmation + breakdown TEK kaynaktan tutarlı.
+// Bilinmeyen locale → en fallback. (el/luggage native onayı bekliyor.)
+const LABELS = {
+  outbound:  { en: 'Outbound',         tr: 'Gidiş',             el: 'Μετάβαση' },
+  return:    { en: 'Return',           tr: 'Dönüş',             el: 'Επιστροφή' },
+  car:       { en: 'Car Rental',       tr: 'Araç Kiralama',     el: 'Ενοικίαση Αυτοκινήτου' },
+  luggage:   { en: 'Luggage storage',  tr: 'Valiz emaneti',     el: 'Φύλαξη αποσκευών' },
+  insurance: { en: 'Travel insurance', tr: 'Seyahat Sigortası', el: 'Ταξιδιωτική Ασφάλιση' },
+  transfer:  { en: 'Transfer',         tr: 'Transfer',          el: 'Μεταφορά' },
+} as const
+
+function pickLabel(key: keyof typeof LABELS, locale: string): string {
+  const row = LABELS[key] as Record<string, string>
+  return row[locale] ?? row.en
+}
+
+function ferryRow(item: FerryBookingItem, locale: string): ItemSummaryRow {
+  const label = pickLabel(item.leg, locale)
   return {
     label,
     title: `${item.ferry.from.name} → ${item.ferry.to.name}`,
@@ -81,7 +99,7 @@ function carRow(item: CarRentalBookingItem, locale: string): ItemSummaryRow {
   // → her iki akışta da doğru. days/fiyat DEĞİŞMEZ, yalnız görünüm.
   const dropoff = addDaysISO(item.pickupAt, item.days - 1)
   return {
-    label: 'Car Rental',
+    label: pickLabel('car', locale),
     title: name,
     detail: isTr
       ? `Alış: ${fmtDate(item.pickupAt, locale)} · Teslim: ${fmtDate(dropoff, locale)} · ${item.days} ${dayWord}`
@@ -91,10 +109,10 @@ function carRow(item: CarRentalBookingItem, locale: string): ItemSummaryRow {
   }
 }
 
-function luggageRow(item: LuggageBookingItem): ItemSummaryRow {
+function luggageRow(item: LuggageBookingItem, locale: string): ItemSummaryRow {
   const pieces = item.counts.small + item.counts.medium + item.counts.large
   return {
-    label: 'Luggage storage',
+    label: pickLabel('luggage', locale),
     title: `${pieces} ${pieces === 1 ? 'piece' : 'pieces'}`,
     detail: `${item.dropOffDate} → ${item.pickupDate}`,
     breakdownLabel: 'Luggage storage',
@@ -107,7 +125,7 @@ function luggageRow(item: LuggageBookingItem): ItemSummaryRow {
 function insuranceRow(item: InsuranceBookingItem, locale: string): ItemSummaryRow {
   const coverage = item.coverageValue.toLocaleString(locale)
   return {
-    label: 'Travel insurance',
+    label: pickLabel('insurance', locale),
     title: locale === 'tr' ? `${coverage}€ teminat` : `€${coverage} cover`,
     detail: `${item.touristCount} ${item.touristCount === 1 ? 'traveller' : 'travellers'}`,
     breakdownLabel: 'Insurance',
@@ -117,14 +135,14 @@ function insuranceRow(item: InsuranceBookingItem, locale: string): ItemSummaryRo
 
 // Bodrum kalkış transfer'i — etiketler statik TRANSFER_REGIONS'tan (client-safe).
 // Round-trip iki bacak: legCount detayda; başlık pickup ↔ rota.
-function transferRow(item: TransferBookingItem): ItemSummaryRow {
+function transferRow(item: TransferBookingItem, locale: string): ItemSummaryRow {
   const region = TRANSFER_REGIONS[item.regionId as keyof typeof TRANSFER_REGIONS]
   const legCount = (item.outbound ? 1 : 0) + (item.return ? 1 : 0)
   const firstLeg = item.outbound ?? item.return
   const routeLabel =
     region?.routes.find((r) => r.id === firstLeg?.routeId)?.label ?? firstLeg?.routeId ?? ''
   return {
-    label: 'Transfer',
+    label: pickLabel('transfer', locale),
     title: region ? `${region.pickupLabel} ↔ ${routeLabel}` : item.title,
     detail: `${legCount} ${legCount === 1 ? 'leg' : 'legs'}`,
     breakdownLabel: 'Transfer',
@@ -149,15 +167,15 @@ const ITEM_SUMMARY = {
 export function summarizeItem(item: BookingItem, locale: string = 'en'): ItemSummaryRow {
   switch (item.type) {
     case 'ferry':
-      return ITEM_SUMMARY.ferry(item)
+      return ITEM_SUMMARY.ferry(item, locale)
     case 'car_rental':
       return ITEM_SUMMARY.car_rental(item, locale)
     case 'luggage':
-      return ITEM_SUMMARY.luggage(item)
+      return ITEM_SUMMARY.luggage(item, locale)
     case 'insurance':
       return ITEM_SUMMARY.insurance(item, locale)
     case 'transfer':
-      return ITEM_SUMMARY.transfer(item)
+      return ITEM_SUMMARY.transfer(item, locale)
     default:
       return assertNever(item, 'summary booking item')
   }

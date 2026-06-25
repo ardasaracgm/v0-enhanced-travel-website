@@ -1167,7 +1167,7 @@
     "leadBadge": "Lead",
     "contactLabel": "Contact:",
     "paymentTitle": "Payment",
-    "paymentNote": "You'll be redirected to your bank's secure payment page.",
+    "paymentNote": "You'll be redirected to your bank to pay.",
     "errorTitle": "Booking could not be completed",
     "orderSummary": "Order Summary",
     "bookingFee": "Booking Fee",
