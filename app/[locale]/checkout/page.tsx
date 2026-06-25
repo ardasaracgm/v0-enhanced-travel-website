@@ -290,10 +290,12 @@ export default function CheckoutPage() {
               {/* Summary */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Booking Overview */}
-                <Card className="bg-card border-border/50">
+                <Card className="rounded-3xl border-border/50 shadow-sm">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-lg">
-                      {outbound ? <Ship className="h-5 w-5 text-primary" /> : <Car className="h-5 w-5 text-primary" />}
+                    <CardTitle className="flex items-center gap-3 text-lg text-blue-950">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                        {outbound ? <Ship className="h-5 w-5 text-amber-600" /> : <Car className="h-5 w-5 text-amber-600" />}
+                      </div>
                       {t('yourTrip')}
                     </CardTitle>
                   </CardHeader>
@@ -305,11 +307,11 @@ export default function CheckoutPage() {
                       return (
                         <div
                           key={i}
-                          className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-xl"
+                          className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/50 rounded-2xl"
                         >
                           <div>
                             <p className="text-sm text-muted-foreground">{row.label}</p>
-                            <p className="font-semibold text-foreground">{row.title}</p>
+                            <p className="font-semibold text-blue-950">{row.title}</p>
                             {row.detail && (
                               <p className="text-sm text-muted-foreground">{row.detail}</p>
                             )}
@@ -327,10 +329,12 @@ export default function CheckoutPage() {
                 </Card>
 
                 {/* Passengers Summary */}
-                <Card className="bg-card border-border/50">
+                <Card className="rounded-3xl border-border/50 shadow-sm">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-lg">
-                      <User className="h-5 w-5 text-primary" />
+                    <CardTitle className="flex items-center gap-3 text-lg text-blue-950">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                        <User className="h-5 w-5 text-amber-600" />
+                      </div>
                       {outbound ? t('passengersTitle') : t('driverTitle')} ({state.passengers.length})
                     </CardTitle>
                   </CardHeader>
@@ -372,16 +376,18 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
-                {/* Payment Info — explains the WhatsApp-based flow */}
-                <Card className="bg-card border-border/50">
+                {/* Payment Info — bank-redirect (Viva). Lock icon, neutral box. */}
+                <Card className="rounded-3xl border-border/50 shadow-sm">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-lg">
-                      <MessageCircle className="h-5 w-5 text-[#25D366]" />
+                    <CardTitle className="flex items-center gap-3 text-lg text-blue-950">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Lock className="h-5 w-5 text-primary" />
+                      </div>
                       {t('paymentTitle')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="p-4 bg-[#25D366]/10 border border-[#25D366]/30 rounded-xl">
+                    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
                       <p className="text-sm text-foreground leading-relaxed">
                         {t('paymentNote')}
                       </p>
@@ -406,7 +412,7 @@ export default function CheckoutPage() {
                       Hata olursa bölüm sessizce gizlenir; checkout kırılmaz. */}
                   {/* Insurance upsell is travel/ferry-only — hidden for car-only. */}
                   {outbound && !insFailed && (
-                    <Card className="bg-card border-border/50">
+                    <Card className="rounded-3xl border-border/50 shadow-sm">
                       <CardContent className="p-6 space-y-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
