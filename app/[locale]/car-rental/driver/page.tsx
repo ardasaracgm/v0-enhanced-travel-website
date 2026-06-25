@@ -117,18 +117,18 @@ export default function CarRentalDriverPage() {
       <main className="flex-1">
         {/* Context header — car2 idiom: white bg, amber eyebrow, blue-950 title.
             Functional (not a marketing hero): no background image, stays compact. */}
-        <section className="w-full border-b border-border/50 bg-white py-8">
+        <section className="w-full border-b border-border/50 bg-white py-5">
           <div className="container px-4 md:px-6">
             <Link
               href="/car-rental"
-              className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-blue-950 hover:text-primary"
+              className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-blue-950 hover:text-primary"
             >
               <ChevronLeft className="h-4 w-4" />
               {t('noCar.cta')}
             </Link>
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950">
+                <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950">
                   <Car className="h-4 w-4" />
                   {t('eyebrow')}
                 </span>
@@ -149,13 +149,13 @@ export default function CarRentalDriverPage() {
         <BookingStepper flow="car" current="driver" />
 
         {/* Driver form + summary */}
-        <section className="w-full py-8 md:py-12">
+        <section className="w-full py-6 md:py-8">
           <div className="container px-4 md:px-6">
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-3 gap-6">
               {/* Form */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-5">
                 <div>
-                  <h2 className="text-2xl font-bold text-blue-950 mb-2">{t('heading')}</h2>
+                  <h2 className="text-2xl font-bold text-blue-950 mb-1">{t('heading')}</h2>
                   <p className="text-muted-foreground">{t('subheading')}</p>
                 </div>
 
