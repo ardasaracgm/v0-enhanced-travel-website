@@ -16,12 +16,12 @@ export function Car2Included() {
   return (
     <section className="w-full py-16 md:py-20">
       <div className="container px-4 md:px-6">
-        <h2 className="mb-10 text-center text-sm font-semibold uppercase tracking-[0.2em] text-amber-500">{t('includedTitle')}</h2>
+        <h2 className="mb-10 text-center text-sm font-bold uppercase tracking-[0.2em] text-amber-600">{t('includedTitle')}</h2>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-6">
           {ITEMS.map(({ Icon, key }) => (
             <div key={key} className="flex flex-col items-center text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Icon className="h-6 w-6 text-primary" />
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                <Icon className="h-8 w-8 text-blue-800" />
               </div>
               <p className="text-sm font-semibold text-foreground">{t(`${key}Title`)}</p>
               <p className="mt-1 text-xs text-muted-foreground">{t(`${key}Desc`)}</p>

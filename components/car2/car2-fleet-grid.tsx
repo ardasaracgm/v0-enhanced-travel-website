@@ -36,7 +36,7 @@ export function Car2FleetGrid({
     <section id="car2-fleet" className="w-full scroll-mt-24 py-16 md:py-24">
       <div className="container px-4 md:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-amber-500">{t('fleetEyebrow')}</p>
+          <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-600">{t('fleetEyebrow')}</p>
           <h2 className="mb-4 text-3xl font-bold text-blue-950 md:text-4xl">{t('fleetTitle')}</h2>
           <p className="text-lg text-muted-foreground">{t('fleetSubtitle')}</p>
         </div>
