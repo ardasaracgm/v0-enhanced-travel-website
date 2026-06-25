@@ -154,11 +154,6 @@ export default function CarRentalDriverPage() {
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Form */}
               <div className="lg:col-span-2 space-y-5">
-                <div>
-                  <h2 className="text-2xl font-bold text-blue-950 mb-1">{t('heading')}</h2>
-                  <p className="text-muted-foreground">{t('subheading')}</p>
-                </div>
-
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                   <Card className="rounded-3xl border-border/50 shadow-sm">
                     <CardHeader>
@@ -168,6 +163,7 @@ export default function CarRentalDriverPage() {
                         </div>
                         {t('driverTitle')}
                       </CardTitle>
+                      <p className="text-sm text-muted-foreground">{t('subheading')}</p>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
@@ -232,7 +228,7 @@ export default function CarRentalDriverPage() {
 
                 {/* Contact */}
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
-                  <Card className="rounded-3xl border-border/50 shadow-sm">
+                  <Card className="rounded-3xl border-border/50 bg-blue-50 shadow-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-3 text-lg text-blue-950">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -240,9 +236,9 @@ export default function CarRentalDriverPage() {
                         </div>
                         {tp('contact.title')}
                       </CardTitle>
+                      <p className="text-sm text-muted-foreground">{tp('contact.subtitle')}</p>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">{tp('contact.subtitle')}</p>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="contactEmail">{tp('contact.email')} *</Label>
