@@ -102,7 +102,9 @@
   }
   html, body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    /* clip = yatayı kırpar ama scroll-container OLUŞTURMAZ → position: sticky
+       viewport'a göre çalışır (hidden body'yi scroll-container yapıp sticky'yi bozuyordu) */
+    overflow-x: clip;
     max-width: 100%;
   }
   html {
