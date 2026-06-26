@@ -738,12 +738,11 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </div>
                 </div>
 
-                {/* Görsel TAM GENİŞLİK (header altı, grid üstü); object-contain → tam görünür */}
-                {luggageThumbSrc && (
-                  <div className="relative w-full h-40 overflow-hidden rounded-lg bg-white/70">
-                    <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-contain" />
-                  </div>
-                )}
+                {/* Görsel HEP görünür (header altı, grid üstü) — seçim yokken karışık
+                    sizes fallback. 3:2 alan + cover → boşluksuz, kırpmasız tam doldurur. */}
+                <div className="relative w-full aspect-[3/2] overflow-hidden rounded-lg bg-white/70">
+                  <Image src={luggageThumbSrc ?? '/services/luggage-sizes.webp'} alt="Luggage storage" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
+                </div>
                 {/* 3'lü grid (Küçük|Orta|Büyük) — tık=+1 döngü (handleCycleLuggageSize AYNEN);
                     ×N rozet kutu İÇİNDE; üst köşe × = o boyutu 0'a sıfırla (handleResetLuggageSize). */}
                 <div className="grid grid-cols-3 gap-3">
