@@ -762,7 +762,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 )}
 
                 {/* Car cards */}
-                <div className={`grid sm:grid-cols-2 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
+                <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
                   {cars.map((car, index) => {
                     const isSelected = selectedModelKey === car.id
                     const lineTotal = car.price * days
@@ -776,22 +776,22 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         transition={{ delay: index * 0.08 }}
                       >
                         <Card
-                          className={`bg-card border-2 transition-all ${
+                          className={`group bg-card border-2 transition-all ${
                             isUnavailable
                               ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
                               : isSelected
-                                ? 'border-primary shadow-lg cursor-pointer hover:shadow-lg'
+                                ? 'border-purple-400 shadow-lg cursor-pointer hover:shadow-lg'
                                 : 'border-border/50 hover:border-primary/50 cursor-pointer hover:shadow-lg'
                           }`}
                           onClick={() => { if (!isUnavailable) handleSelectCar(car) }}
                         >
                           <CardContent className="p-0">
-                            <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
+                            <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-muted">
                               <Image
                                 src={car.image}
                                 alt={car.model}
                                 fill
-                                className="object-cover"
+                                className="object-cover transition-all duration-300 lg:group-hover:object-contain"
                                 sizes="(max-width: 640px) 100vw, 50vw"
                               />
                               {car.badge && (
@@ -800,7 +800,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                                 </Badge>
                               )}
                               {isSelected && (
-                                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+                                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center">
                                   <CheckCircle className="h-4 w-4 text-primary-foreground" />
                                 </div>
                               )}
@@ -849,7 +849,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                                 <Button
                                   size="sm"
                                   variant={isSelected ? 'default' : 'outline'}
-                                  className={isSelected ? 'bg-primary text-primary-foreground' : ''}
+                                  className={isSelected ? 'bg-purple-500 text-white hover:bg-purple-600' : ''}
                                   onClick={e => { e.stopPropagation(); handleSelectCar(car) }}
                                 >
                                   {isSelected ? (
