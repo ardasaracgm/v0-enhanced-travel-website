@@ -471,21 +471,20 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {/* Araç grid — eski alt full-width section'dan taşındı (içerik aynen) */}
                 {carAvailable && (
             <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
-                  <p className="text-muted-foreground">
-                    {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">{t('dailyRateNotice')}</p>
-                </div>
-
-                {/* Kiralama tarihleri — iki date seçici (standalone deseni). Alış
-                    ön-dolu (gidiş feribotu), teslim seçilir. Gün = dateDiff+1.
-                    Ferry penceresi dışına çıkınca yumuşak uyarı (engel yok). */}
+                {/* Başlık + tek-cümle açıklama + tarihler — kompakt dikey blok (space-y-3) */}
                 <div className="space-y-3">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
+                    </p>
+                  </div>
+
+                  {/* Tarih seçiciler — label'lar inline, iki input + gün TEK satır.
+                      Input value/onChange/min/max AYNEN (yalnız label yeri + sarmalayıcı). */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
+                      {t('pickupDateLabel')}
                       <Input
                         type="date"
                         className="h-10 w-44"
@@ -494,9 +493,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         value={pickupDate}
                         onChange={e => handlePickupChange(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-foreground">{t('dropoffDateLabel')}</label>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
+                      {t('dropoffDateLabel')}
                       <Input
                         type="date"
                         className="h-10 w-44"
@@ -504,13 +503,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         value={dropoffDate}
                         onChange={e => handleDropoffChange(e.target.value)}
                       />
-                    </div>
+                    </label>
                     {validRange && (
-                      <span className="text-sm text-muted-foreground pb-2.5">
+                      <span className="text-sm text-muted-foreground">
                         {t('dayCount', { count: days })}
                       </span>
                     )}
                   </div>
+
                   {outsideWindow && returnItem && (
                     <p className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
