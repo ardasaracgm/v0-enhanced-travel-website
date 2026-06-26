@@ -805,16 +805,18 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                       {t('total')}: <span className="inline-block min-w-[4.5rem] text-right text-lg font-bold text-blue-950">€{fmtEur(transferTotalPrice)}</span>
                     </span>
-                    {transferItem && (
-                      <button
-                        type="button"
-                        aria-label={t('transfer.removeAria')}
-                        onClick={handleRemoveTransfer}
-                        className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
+                    {/* × hep render — yer-rezerve; transferItem yoksa görünmez+tıklanmaz
+                        (belirince/kaybolunca başlık itilmez). Tıklama handler'ı aynen. */}
+                    <button
+                      type="button"
+                      aria-label={t('transfer.removeAria')}
+                      aria-hidden={!transferItem}
+                      tabIndex={transferItem ? undefined : -1}
+                      onClick={handleRemoveTransfer}
+                      className={`shrink-0 text-muted-foreground hover:text-destructive transition-colors ${transferItem ? '' : 'invisible pointer-events-none'}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
 
