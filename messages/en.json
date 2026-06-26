@@ -1216,6 +1216,7 @@
     "pickupDateLabel": "Pickup date",
     "dropoffDateLabel": "Drop-off date",
     "dateRangePlaceholder": "Pickup – drop-off date",
+    "serviceBadge": { "car": "Car", "luggage": "Luggage", "transfer": "Transfer" },
     "windowWarning": "Your rental dates fall outside the ferry window ({from} → {to}). That's fine — you'll just be charged for the full period.",
     "selectDays": "Select days",
     "selectDayWarning": "Please choose the rental duration.",

@@ -436,6 +436,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     dispatch({ type: 'REMOVE_TRANSFER' })
   }
 
+  // Üst hizmet rozetleri — yalnız gate-açık hizmetler; active = sepette mi (salt OKUMA).
+  // tone literal'leri SUMMARY_TONE_* üzerinden (purge-safe). id'ler scroll hedefi.
+  const serviceBadges: { id: string; Icon: typeof Car; label: string; active: boolean; tone: ServiceTone }[] = []
+  if (carAvailable) serviceBadges.push({ id: 'svc-car', Icon: Car, label: t('serviceBadge.car'), active: !!carBookingItem, tone: 'car' })
+  if (luggageAvailable) serviceBadges.push({ id: 'svc-luggage', Icon: Luggage, label: t('serviceBadge.luggage'), active: !!luggageItem, tone: 'luggage' })
+  if (transferAvailable && transferRegion) serviceBadges.push({ id: 'svc-transfer', Icon: Bus, label: t('serviceBadge.transfer'), active: !!transferItem, tone: 'transfer' })
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -471,6 +478,33 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           </div>
         </section>
 
+        {/* Hizmet rozet şeridi — gate-açık hizmetler; alınmışsa tone dolu, değilse soluk.
+            Tıklayınca ilgili kart id'sine smooth scroll (salt navigasyon, veri yazma YOK). */}
+        {serviceBadges.length > 0 && (
+          <section className="w-full pt-4">
+            <div className="container px-4 md:px-6">
+              <div className="flex flex-wrap gap-2">
+                {serviceBadges.map(({ id, Icon, label, active, tone }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-colors ${
+                      active
+                        ? `${SUMMARY_TONE_BG[tone]} ${SUMMARY_TONE_BORDER[tone]} text-foreground`
+                        : 'bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                    {active && <CheckCircle className="h-3.5 w-3.5" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Progress Bar — 4 steps */}
         <BookingStepper flow="ferry" current="extras" />
 
@@ -484,7 +518,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                 {/* Araç grid — eski alt full-width section'dan taşındı (içerik aynen) */}
                 {carAvailable && (
-            <div className="space-y-6">
+            <div id="svc-car" className="space-y-6 scroll-mt-24">
                 {/* Başlık SOLDA + tarih satırı SAĞDA aynı hizada (md+); mobilde alt alta.
                     windowWarning tam-genişlik altta kalır (space-y-3'ün 2. child'ı). */}
                 <div className="space-y-3">
@@ -688,7 +722,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {(luggageAvailable || (transferAvailable && transferRegion)) && (
               <div className="grid sm:grid-cols-2 gap-6">
                 {luggageAvailable && (
-            <Card className="bg-amber-50/60 border-2 border-border/50 overflow-hidden">
+            <Card id="svc-luggage" className="bg-amber-50/60 border-2 border-border/50 overflow-hidden scroll-mt-24">
               <CardContent className="p-5 space-y-4">
                 {/* HEADER tam genişlik (görselin üstünde) — içerik aynen */}
                 <div className="flex items-start justify-between gap-3 min-h-[5rem]">
@@ -824,7 +858,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
             </Card>
                 )}
                 {transferAvailable && transferRegion && (
-            <Card className="bg-green-50/60 border-2 border-border/50 overflow-hidden">
+            <Card id="svc-transfer" className="bg-green-50/60 border-2 border-border/50 overflow-hidden scroll-mt-24">
               <CardContent className="p-5 space-y-4">
                 {/* HEADER tam genişlik (görselin üstünde) — içerik aynen */}
                 <div className="flex items-start justify-between gap-3 min-h-[5rem]">
