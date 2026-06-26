@@ -1196,6 +1196,8 @@
   "extrasPage": {
     "totalPrice": "Συνολική τιμή",
     "returnPrefix": "Επιστροφή:",
+    "outboundPrefix": "Μετάβαση:",
+    "editFerryDetails": "Αλλαγή στοιχείων πλοίου",
     "steps": {
       "selectFerry": "Επιλογή πλοίου",
       "extras": "Έξτρα",

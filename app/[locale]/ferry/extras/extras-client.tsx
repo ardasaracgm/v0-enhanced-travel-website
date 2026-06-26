@@ -47,13 +47,23 @@ import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkModelAvailability } from '@/lib/actions/car-availability-action'
-import { transferVehicleVisual, luggageVisual } from '@/lib/service-theme'
+import { serviceVisual, transferVehicleVisual, luggageVisual, type ServiceTone } from '@/lib/service-theme'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
 // UI'da gösterilen boyutlar — 'bag' enum'u kasıtlı dışarıda (small'a eşit, gizli).
 const LUGGAGE_SIZES = ['small', 'medium', 'large'] as const
 type LuggageDisplaySize = (typeof LUGGAGE_SIZES)[number]
+
+// Özet kutusu sol kenar tone şeridi — checkout OrderSummaryItems diliyle aynı.
+// Class literal'i burada (extras taranır); none = görünmez (hizalama korunur).
+const SUMMARY_TONE_BORDER: Record<ServiceTone, string> = {
+  ferry: 'border-blue-400',
+  transfer: 'border-green-400',
+  car: 'border-purple-400',
+  luggage: 'border-amber-400',
+  none: 'border-transparent',
+}
 
 interface ExtrasClientProps {
   cars: NormalizedCar[]
@@ -352,6 +362,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const transferVehicleSrc = transferVehicleVisual(transferVehicleId)
   // Aktif boyutlardan (adet>0) sol flush thumbnail; boyut seçilene dek null → gizli.
   const luggageThumbSrc = luggageVisual(LUGGAGE_SIZES.filter(s => luggageCounts[s] > 0))
+  // Alt feribot barı thumbnail — gidiş rotasından (serviceVisual ferry → ülke çifti).
+  const ferryBarSrc = outboundItem ? serviceVisual(outboundItem).src : null
 
   // Seçili rota+araç, açık bacak(lar)a kopyalanır → outbound/return. Geçersizse
   // (rota/araç yok ya da iki toggle kapalı) sepetten çıkar. Model iki-bacak kalır.
@@ -865,14 +877,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <h3 className="text-lg font-bold text-foreground">{t('bookingSummary')}</h3>
 
                       {/* Ferry lines */}
-                      <div className="p-3 bg-secondary/50 rounded-xl">
+                      <div className={`p-3 bg-secondary/50 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.ferry}`}>
                         <p className="text-xs text-muted-foreground mb-1">{t('outboundFerry')}</p>
                         <p className="font-medium text-foreground text-sm">{outbound.from.name} → {outbound.to.name}</p>
                         <p className="text-xs text-muted-foreground">{outbound.departureTime} · {outbound.operator}</p>
                       </div>
 
                       {returnF && (
-                        <div className="p-3 bg-secondary/50 rounded-xl">
+                        <div className={`p-3 bg-secondary/50 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.ferry}`}>
                           <p className="text-xs text-muted-foreground mb-1">{t('returnFerry')}</p>
                           <p className="font-medium text-foreground text-sm">{returnF.from.name} → {returnF.to.name}</p>
                           <p className="text-xs text-muted-foreground">{returnF.departureTime} · {returnF.operator}</p>
@@ -881,7 +893,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Selected car — × ile kaldır (valiz/transfer ile aynı desen) */}
                       {selectedCar && dayChosen && (
-                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.car}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
@@ -907,7 +919,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Valiz emaneti — cart'taki item'dan; × ile komple kaldır */}
                       {luggageItem && (
-                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.luggage}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('luggage.summaryLabel')}</p>
@@ -928,7 +940,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Bodrum transfer — cart'taki item'dan; × ile kaldır */}
                       {transferItem && (
-                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.transfer}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('transfer.summaryLabel')}</p>
@@ -982,6 +994,38 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
               </div>
 
             </div>
+          </div>
+        </section>
+
+        {/* Alt feribot özeti — gidiş+dönüş tek kompakt bar; "değiştir" → results.
+            Üst header'dan bağımsız, salt görünüm (eş bilgiyi bilinçli tekrar eder). */}
+        <section className="w-full py-6">
+          <div className="container px-4 md:px-6">
+            <Card className="overflow-hidden border-2 border-border/50">
+              <CardContent className="p-0">
+                <div className="flex items-stretch">
+                  {ferryBarSrc && (
+                    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
+                      <Image src={ferryBarSrc} alt="Ferry" fill sizes="96px" className="object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 p-5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-foreground">{outbound.from.name} ↔ {outbound.to.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('outboundPrefix')} {outboundItem?.date} {outbound.departureTime}
+                        {returnF && returnItem && (
+                          <> · {t('returnPrefix')} {returnItem.date} {returnF.departureTime}</>
+                        )}
+                      </p>
+                    </div>
+                    <Link href="/ferry/results">
+                      <Button variant="outline" size="sm" className="shrink-0">{t('editFerryDetails')}</Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </main>

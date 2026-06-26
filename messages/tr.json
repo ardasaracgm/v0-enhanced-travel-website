@@ -1202,6 +1202,8 @@
   "extrasPage": {
     "totalPrice": "Toplam Fiyat",
     "returnPrefix": "Dönüş:",
+    "outboundPrefix": "Gidiş:",
+    "editFerryDetails": "Feribot detaylarını değiştir",
     "steps": {
       "selectFerry": "Feribot Seçimi",
       "extras": "Ekstralar",
