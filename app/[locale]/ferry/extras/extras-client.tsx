@@ -659,114 +659,110 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
               <div className="grid sm:grid-cols-2 gap-6">
                 {luggageAvailable && (
             <Card className="bg-amber-50/60 border-2 border-border/50 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="flex flex-col">
-                  {/* Üst flush thumbnail — aktif boyuta göre döner (tek/karışık);
-                      seçilene dek gizli. Salt görünüm. */}
+              <CardContent className="p-5 space-y-4">
+                {/* HEADER tam genişlik (görselin üstünde) — içerik aynen */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Luggage className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground leading-tight">{t('luggage.heading')}</h2>
+                      <p className="text-xs text-muted-foreground">{t('luggage.subheading')}</p>
+                    </div>
+                  </div>
+
+                  {/* Sağ grup: canlı toplam (koşulsuz, Toplam: €0'dan başlar) + (i) boyut rehberi */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                      {t('total')}: <span className="text-primary">€{luggageTotalPrice}</span>
+                    </span>
+                  {/* Boyut rehberi — (i) hover (desktop) / tap (mobil); İngilizce hardcode, fiyat YOK */}
+                  <Popover open={sizeTipOpen} onOpenChange={setSizeTipOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Luggage size guide"
+                        onPointerEnter={e => { if (e.pointerType === 'mouse') setSizeTipOpen(true) }}
+                        onPointerLeave={e => { if (e.pointerType === 'mouse') setSizeTipOpen(false) }}
+                        className="shrink-0 text-sky-600 hover:text-primary transition-colors"
+                      >
+                        <Info className="h-5 w-5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="left"
+                      align="start"
+                      className="w-auto max-w-sm p-0"
+                      onOpenAutoFocus={e => e.preventDefault()}
+                    >
+                      <div className="divide-y divide-border text-xs">
+                        <div className="px-3 py-2 font-medium text-foreground">Size guide</div>
+                        <div className="px-3 py-2">
+                          <p className="font-semibold text-foreground">Small (S)</p>
+                          <p className="text-muted-foreground">Cabin bag · 55×40×25 cm · Backpack, carry-on</p>
+                        </div>
+                        <div className="px-3 py-2">
+                          <p className="font-semibold text-foreground">Medium (M)</p>
+                          <p className="text-muted-foreground">Checked bag · 70×45×30 cm · 4–7 day suitcase</p>
+                        </div>
+                        <div className="px-3 py-2">
+                          <p className="font-semibold text-foreground">Large (L)</p>
+                          <p className="text-muted-foreground">Large checked · 80×55×35+ cm · Family / long-trip case</p>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  {luggageItem && (
+                    <button
+                      type="button"
+                      aria-label={t('luggage.removeAria')}
+                      onClick={handleRemoveLuggage}
+                      className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                  </div>
+                </div>
+
+                {/* ALT: sol görsel + sağ DİKEY boyut listesi (yan yana) */}
+                <div className="flex gap-4">
                   {luggageThumbSrc && (
-                    <div className="relative w-full h-40 overflow-hidden rounded-t-lg bg-white/70">
-                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
+                    <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
+                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-cover" />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0 p-5 space-y-4">
-                    {/* Heading + slogan — ince üst; sağ üstte (i) boyut rehberi */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <Luggage className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-bold text-foreground leading-tight">{t('luggage.heading')}</h2>
-                          <p className="text-xs text-muted-foreground">{t('luggage.subheading')}</p>
-                        </div>
-                      </div>
-
-                      {/* Sağ grup: canlı toplam (koşulsuz, Toplam: €0'dan başlar) + (i) boyut rehberi */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                          {t('total')}: <span className="text-primary">€{luggageTotalPrice}</span>
-                        </span>
-                      {/* Boyut rehberi — (i) hover (desktop) / tap (mobil); İngilizce hardcode, fiyat YOK */}
-                      <Popover open={sizeTipOpen} onOpenChange={setSizeTipOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label="Luggage size guide"
-                            onPointerEnter={e => { if (e.pointerType === 'mouse') setSizeTipOpen(true) }}
-                            onPointerLeave={e => { if (e.pointerType === 'mouse') setSizeTipOpen(false) }}
-                            className="shrink-0 text-sky-600 hover:text-primary transition-colors"
-                          >
-                            <Info className="h-5 w-5" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          side="left"
-                          align="start"
-                          className="w-auto max-w-sm p-0"
-                          onOpenAutoFocus={e => e.preventDefault()}
-                        >
-                          <div className="divide-y divide-border text-xs">
-                            <div className="px-3 py-2 font-medium text-foreground">Size guide</div>
-                            <div className="px-3 py-2">
-                              <p className="font-semibold text-foreground">Small (S)</p>
-                              <p className="text-muted-foreground">Cabin bag · 55×40×25 cm · Backpack, carry-on</p>
-                            </div>
-                            <div className="px-3 py-2">
-                              <p className="font-semibold text-foreground">Medium (M)</p>
-                              <p className="text-muted-foreground">Checked bag · 70×45×30 cm · 4–7 day suitcase</p>
-                            </div>
-                            <div className="px-3 py-2">
-                              <p className="font-semibold text-foreground">Large (L)</p>
-                              <p className="text-muted-foreground">Large checked · 80×55×35+ cm · Family / long-trip case</p>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      {luggageItem && (
+                  {/* Dikey liste — her satır tam genişlik; tıkla-döngü + counts AYNEN.
+                      ×N rozet satır içi sağda (absolute değil). */}
+                  <div className="flex-1 flex flex-col gap-2">
+                    {LUGGAGE_SIZES.map(size => {
+                      const count = luggageCounts[size]
+                      const selected = count >= 1
+                      return (
                         <button
+                          key={size}
                           type="button"
-                          aria-label={t('luggage.removeAria')}
-                          onClick={handleRemoveLuggage}
-                          className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                          onClick={() => handleCycleLuggageSize(size)}
+                          className={`flex items-center justify-between gap-2 w-full rounded-xl border-2 px-3 py-2 text-left transition-all ${
+                            selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                          }`}
                         >
-                          <X className="h-4 w-4" />
+                          <span className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground leading-tight">{t(`luggage.size.${size}`)}</span>
+                            <span className="text-xs font-semibold text-primary">
+                              €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
+                            </span>
+                          </span>
+                          {/* ×N rozeti ilk parçadan itibaren (×1 dahil) */}
+                          {count >= 1 && (
+                            <span className="min-w-[1.5rem] h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
+                              ×{count}
+                            </span>
+                          )}
                         </button>
-                      )}
-                      </div>
-                    </div>
-
-                    {/* Tek satır: boyut segment + adet + ekle (mobilde wrap) */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      {/* Boyut chip'leri — yatay, kendi aralarında eşit esner (flex-1); adet/buton sabit */}
-                      <div className="flex-1 flex items-center gap-2 min-w-[12rem]">
-                        {LUGGAGE_SIZES.map(size => {
-                          const count = luggageCounts[size]
-                          const selected = count >= 1
-                          return (
-                            <button
-                              key={size}
-                              type="button"
-                              onClick={() => handleCycleLuggageSize(size)}
-                              className={`relative flex-1 flex flex-col items-center rounded-xl border-2 px-3 py-1.5 transition-all ${
-                                selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                              }`}
-                            >
-                              {/* ×N rozeti ilk parçadan itibaren (×1 dahil) */}
-                              {count >= 1 && (
-                                <span className="absolute -bottom-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
-                                  ×{count}
-                                </span>
-                              )}
-                              <span className="text-sm font-medium text-foreground leading-tight whitespace-nowrap">{t(`luggage.size.${size}`)}</span>
-                              <span className="text-xs font-semibold text-primary">
-                                €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                    </div>
+                      )
+                    })}
                   </div>
                 </div>
               </CardContent>
@@ -774,88 +770,86 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 )}
                 {transferAvailable && transferRegion && (
             <Card className="bg-green-50/60 border-2 border-border/50 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="flex flex-col">
-                  {/* Üst flush thumbnail — seçili araca göre döner (vito/sprinter);
-                      seçilene dek gizli. Salt görünüm. */}
+              <CardContent className="p-5 space-y-4">
+                {/* HEADER tam genişlik (görselin üstünde) — içerik aynen */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Bus className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
+                      <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                      {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
+                    </span>
+                    {transferItem && (
+                      <button
+                        type="button"
+                        aria-label={t('transfer.removeAria')}
+                        onClick={handleRemoveTransfer}
+                        className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* ALT: sol görsel + sağ DİKEY seçenekler (rota → araç → toggle) */}
+                <div className="flex gap-4">
                   {transferVehicleSrc && (
-                    <div className="relative w-full h-40 overflow-hidden rounded-t-lg bg-white/70">
-                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
+                    <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
+                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-cover" />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0 p-5 space-y-4">
-                    {/* Heading + canlı toplam */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <Bus className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
-                          <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                          {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
-                        </span>
-                        {transferItem && (
-                          <button
-                            type="button"
-                            aria-label={t('transfer.removeAria')}
-                            onClick={handleRemoveTransfer}
-                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
+                  <div className="flex-1 flex flex-col gap-3">
+                    {/* Rota dropdown — handler aynen */}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
+                      <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
+                        <SelectTrigger className="w-56">
+                          <SelectValue placeholder={t('transfer.selectRoute')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {transferRegion.routes.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {/* Rota + araç */}
-                    <div className="flex flex-wrap items-end gap-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
-                        <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
-                          <SelectTrigger className="w-56">
-                            <SelectValue placeholder={t('transfer.selectRoute')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {transferRegion.routes.map((r) => (
-                              <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
-                        <div className="flex items-center gap-2">
-                          {transferRegion.vehicles.map((v) => {
-                            const selected = transferVehicleId === v.id
-                            const priceEur = transferRoute
-                              ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
-                              : null
-                            return (
-                              <button
-                                key={v.id}
-                                type="button"
-                                onClick={() => handleTransferVehicle(v.id)}
-                                className={`flex flex-col items-start rounded-xl border-2 px-3 py-1.5 transition-all ${
-                                  selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                                }`}
-                              >
-                                <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
-                                <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                                  <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                                  {priceEur != null && (
-                                    <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
-                                  )}
-                                </span>
-                              </button>
-                            )
-                          })}
-                        </div>
+                    {/* Araç — DİKEY liste (container flex-col, button'lar w-full); handler aynen */}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
+                      <div className="flex flex-col gap-2">
+                        {transferRegion.vehicles.map((v) => {
+                          const selected = transferVehicleId === v.id
+                          const priceEur = transferRoute
+                            ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
+                            : null
+                          return (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => handleTransferVehicle(v.id)}
+                              className={`flex flex-col items-start w-full rounded-xl border-2 px-3 py-1.5 transition-all ${
+                                selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                              }`}
+                            >
+                              <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
+                              <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                                <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                                {priceEur != null && (
+                                  <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
+                                )}
+                              </span>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
 
