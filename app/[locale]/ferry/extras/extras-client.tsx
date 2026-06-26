@@ -460,11 +460,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         {/* Progress Bar — 4 steps */}
         <BookingStepper flow="ferry" current="extras" />
 
-        {/* Luggage drop-off — yalnız emanet sunulan adalarda (gate); tam genişlik
-            (sigorta ödeme adımına taşındı). */}
-        {luggageAvailable && (
+        {/* ÜST ROW — sol: valiz + transfer (yan yana) | sağ: özet sticky.
+            Kenar 1: ikisi de gate-off ise sol blok render olmaz, özet tam genişlik kalır. */}
         <section className="w-full pt-8 md:pt-12">
           <div className="container px-4 md:px-6">
+            <div className="grid lg:grid-cols-3 gap-8">
+              {(luggageAvailable || (transferAvailable && transferRegion)) && (
+              <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
+                {luggageAvailable && (
             <Card className="bg-amber-50/60 border-2 border-border/50 overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex flex-col">
@@ -578,15 +581,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </section>
-        )}
-
-        {/* Bodrum transfer — yalnız kalkış portunda transfer firması varsa (gate,
-            origin = searchParams.from). Tam genişlik, luggage deseni. */}
-        {transferAvailable && transferRegion && (
-        <section className="w-full pt-8 md:pt-12">
-          <div className="container px-4 md:px-6">
+                )}
+                {transferAvailable && transferRegion && (
             <Card className="bg-green-50/60 border-2 border-border/50 overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex flex-col">
@@ -688,200 +684,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </section>
-        )}
-
-        {/* Car Grid */}
-        <section className="w-full py-8 md:py-12">
-          <div className="container px-4 md:px-6">
-            <div className="grid lg:grid-cols-3 gap-8">
-
-              {/* Araç — yalnız araç sunulan adalarda (gate). Sidebar (sağ) hep kalır. */}
-              {carAvailable && (
-              <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
-                  <p className="text-muted-foreground">
-                    {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">{t('dailyRateNotice')}</p>
-                </div>
-
-                {/* Kiralama tarihleri — iki date seçici (standalone deseni). Alış
-                    ön-dolu (gidiş feribotu), teslim seçilir. Gün = dateDiff+1.
-                    Ferry penceresi dışına çıkınca yumuşak uyarı (engel yok). */}
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
-                      <Input
-                        type="date"
-                        className="h-10 w-44"
-                        min={todayAthens}
-                        max={dropoffDate || undefined}
-                        value={pickupDate}
-                        onChange={e => handlePickupChange(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-foreground">{t('dropoffDateLabel')}</label>
-                      <Input
-                        type="date"
-                        className="h-10 w-44"
-                        min={pickupDate || todayAthens}
-                        value={dropoffDate}
-                        onChange={e => handleDropoffChange(e.target.value)}
-                      />
-                    </div>
-                    {validRange && (
-                      <span className="text-sm text-muted-foreground pb-2.5">
-                        {t('dayCount', { count: days })}
-                      </span>
-                    )}
-                  </div>
-                  {outsideWindow && returnItem && (
-                    <p className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
-                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                      {t('windowWarning', { from: outboundItem.date, to: returnItem.date })}
-                    </p>
-                  )}
-                </div>
-
-                {/* Empty state */}
-                {cars.length === 0 && (
-                  <Card className="bg-card border-border/50">
-                    <CardContent className="p-8 text-center">
-                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">{t('noCarsTitle')}</h3>
-                      <p className="text-muted-foreground mb-4">{t('noCarsBody')}</p>
-                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
-                    </CardContent>
-                  </Card>
                 )}
-
-                {/* Tüm araçlar bu tarihlerde dolu — boş-state pattern'iyle bilgilendir */}
-                {cars.length > 0 && availability != null && cars.every(c => (availability[c.id] ?? 0) === 0) && (
-                  <Card className="bg-card border-border/50">
-                    <CardContent className="p-8 text-center">
-                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-4">{t('car.allRented')}</p>
-                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Car cards */}
-                <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
-                  {cars.map((car, index) => {
-                    const isSelected = selectedModelKey === car.id
-                    const lineTotal = car.price * days
-                    const qty = availability?.[car.id]
-                    const isUnavailable = availability != null && qty === 0
-                    return (
-                      <motion.div
-                        key={car.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.08 }}
-                      >
-                        <Card
-                          className={`group bg-card border-2 transition-all ${
-                            isUnavailable
-                              ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
-                              : isSelected
-                                ? 'border-purple-400 shadow-lg cursor-pointer hover:shadow-lg'
-                                : 'border-border/50 hover:border-primary/50 cursor-pointer hover:shadow-lg'
-                          }`}
-                          onClick={() => { if (!isUnavailable) handleSelectCar(car) }}
-                        >
-                          <CardContent className="p-0">
-                            <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-muted">
-                              <Image
-                                src={car.image}
-                                alt={car.model}
-                                fill
-                                className="object-cover transition-all duration-300 lg:group-hover:object-contain"
-                                sizes="(max-width: 640px) 100vw, 50vw"
-                              />
-                              {car.badge && (
-                                <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
-                                  {car.badge}
-                                </Badge>
-                              )}
-                              {isSelected && (
-                                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center">
-                                  <CheckCircle className="h-4 w-4 text-primary-foreground" />
-                                </div>
-                              )}
-                              {isUnavailable && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-                                  <Badge variant="secondary" className="bg-background/90 text-foreground gap-1">
-                                    <AlertCircle className="h-3.5 w-3.5" />
-                                    {t('car.unavailable')}
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="p-4 space-y-3">
-                              <div>
-                                <p className="font-semibold text-foreground">{car.model}</p>
-                                <p className="text-xs text-muted-foreground">{car.type}</p>
-                              </div>
-
-                              {/* Spec chips */}
-                              <div className="flex flex-wrap gap-1.5">
-                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
-                                  <Fuel className="h-3 w-3" />
-                                  {car.specs.fuel}
-                                </span>
-                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
-                                  <Users className="h-3 w-3" />
-                                  {t('seatCount', { count: Number(car.specs.seats) })}
-                                </span>
-                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
-                                  <Settings className="h-3 w-3" />
-                                  {car.specs.transmission}
-                                </span>
-                              </div>
-
-                              {/* Pricing */}
-                              <div className="flex items-end justify-between pt-1">
-                                <div>
-                                  <p className="text-xl font-bold text-primary">€{car.price}<span className="text-sm font-normal text-muted-foreground">{t('perDay')}</span></p>
-                                  {dayChosen && (
-                                    <p className="text-xs text-muted-foreground">
-                                      {t('dayCount', { count: days })} = <span className="font-medium text-foreground">€{lineTotal}</span>
-                                    </p>
-                                  )}
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant={isSelected ? 'default' : 'outline'}
-                                  className={isSelected ? 'bg-purple-500 text-white hover:bg-purple-600' : ''}
-                                  onClick={e => { e.stopPropagation(); handleSelectCar(car) }}
-                                >
-                                  {isSelected ? (
-                                    <><CheckCircle className="h-3.5 w-3.5 mr-1" />{t('added')}</>
-                                  ) : (
-                                    <><Car className="h-3.5 w-3.5 mr-1" />{t('add')}</>
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    )
-                  })}
-                </div>
               </div>
               )}
 
-              {/* Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24">
+                <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6 space-y-4">
                       <h3 className="text-lg font-bold text-foreground">{t('bookingSummary')}</h3>
@@ -1006,6 +814,192 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
             </div>
           </div>
         </section>
+
+        {/* Car Grid — tam genişlik alt row */}
+        {carAvailable && (
+        <section className="w-full py-8 md:py-12">
+          <div className="container px-4 md:px-6">
+            <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
+                  <p className="text-muted-foreground">
+                    {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">{t('dailyRateNotice')}</p>
+                </div>
+
+                {/* Kiralama tarihleri — iki date seçici (standalone deseni). Alış
+                    ön-dolu (gidiş feribotu), teslim seçilir. Gün = dateDiff+1.
+                    Ferry penceresi dışına çıkınca yumuşak uyarı (engel yok). */}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-end gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">{t('pickupDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10 w-44"
+                        min={todayAthens}
+                        max={dropoffDate || undefined}
+                        value={pickupDate}
+                        onChange={e => handlePickupChange(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">{t('dropoffDateLabel')}</label>
+                      <Input
+                        type="date"
+                        className="h-10 w-44"
+                        min={pickupDate || todayAthens}
+                        value={dropoffDate}
+                        onChange={e => handleDropoffChange(e.target.value)}
+                      />
+                    </div>
+                    {validRange && (
+                      <span className="text-sm text-muted-foreground pb-2.5">
+                        {t('dayCount', { count: days })}
+                      </span>
+                    )}
+                  </div>
+                  {outsideWindow && returnItem && (
+                    <p className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      {t('windowWarning', { from: outboundItem.date, to: returnItem.date })}
+                    </p>
+                  )}
+                </div>
+
+                {/* Empty state */}
+                {cars.length === 0 && (
+                  <Card className="bg-card border-border/50">
+                    <CardContent className="p-8 text-center">
+                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{t('noCarsTitle')}</h3>
+                      <p className="text-muted-foreground mb-4">{t('noCarsBody')}</p>
+                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Tüm araçlar bu tarihlerde dolu — boş-state pattern'iyle bilgilendir */}
+                {cars.length > 0 && availability != null && cars.every(c => (availability[c.id] ?? 0) === 0) && (
+                  <Card className="bg-card border-border/50">
+                    <CardContent className="p-8 text-center">
+                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">{t('car.allRented')}</p>
+                      <Button onClick={handleSkip} variant="outline">{t('continueWithoutCar')}</Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Car cards */}
+                <div className={`grid sm:grid-cols-2 lg:grid-cols-4 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
+                  {cars.map((car, index) => {
+                    const isSelected = selectedModelKey === car.id
+                    const lineTotal = car.price * days
+                    const qty = availability?.[car.id]
+                    const isUnavailable = availability != null && qty === 0
+                    return (
+                      <motion.div
+                        key={car.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.08 }}
+                      >
+                        <Card
+                          className={`group bg-card border-2 transition-all ${
+                            isUnavailable
+                              ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
+                              : isSelected
+                                ? 'border-purple-400 shadow-lg cursor-pointer hover:shadow-lg'
+                                : 'border-border/50 hover:border-primary/50 cursor-pointer hover:shadow-lg'
+                          }`}
+                          onClick={() => { if (!isUnavailable) handleSelectCar(car) }}
+                        >
+                          <CardContent className="p-0">
+                            <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-muted">
+                              <Image
+                                src={car.image}
+                                alt={car.model}
+                                fill
+                                className="object-cover transition-all duration-300 lg:group-hover:object-contain"
+                                sizes="(max-width: 640px) 100vw, 50vw"
+                              />
+                              {car.badge && (
+                                <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
+                                  {car.badge}
+                                </Badge>
+                              )}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center">
+                                  <CheckCircle className="h-4 w-4 text-primary-foreground" />
+                                </div>
+                              )}
+                              {isUnavailable && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                                  <Badge variant="secondary" className="bg-background/90 text-foreground gap-1">
+                                    <AlertCircle className="h-3.5 w-3.5" />
+                                    {t('car.unavailable')}
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="p-4 space-y-3">
+                              <div>
+                                <p className="font-semibold text-foreground">{car.model}</p>
+                                <p className="text-xs text-muted-foreground">{car.type}</p>
+                              </div>
+
+                              {/* Spec chips */}
+                              <div className="flex flex-wrap gap-1.5">
+                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
+                                  <Fuel className="h-3 w-3" />
+                                  {car.specs.fuel}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
+                                  <Users className="h-3 w-3" />
+                                  {t('seatCount', { count: Number(car.specs.seats) })}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-xs bg-secondary rounded-full px-2 py-0.5 text-secondary-foreground">
+                                  <Settings className="h-3 w-3" />
+                                  {car.specs.transmission}
+                                </span>
+                              </div>
+
+                              {/* Pricing */}
+                              <div className="flex items-end justify-between pt-1">
+                                <div>
+                                  <p className="text-xl font-bold text-primary">€{car.price}<span className="text-sm font-normal text-muted-foreground">{t('perDay')}</span></p>
+                                  {dayChosen && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('dayCount', { count: days })} = <span className="font-medium text-foreground">€{lineTotal}</span>
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant={isSelected ? 'default' : 'outline'}
+                                  className={isSelected ? 'bg-purple-500 text-white hover:bg-purple-600' : ''}
+                                  onClick={e => { e.stopPropagation(); handleSelectCar(car) }}
+                                >
+                                  {isSelected ? (
+                                    <><CheckCircle className="h-3.5 w-3.5 mr-1" />{t('added')}</>
+                                  ) : (
+                                    <><Car className="h-3.5 w-3.5 mr-1" />{t('add')}</>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+            </div>
+          </div>
+        </section>
+        )}
 
         {/* Alt feribot özeti — gidiş+dönüş tek kompakt bar; "değiştir" → results.
             Üst header'dan bağımsız, salt görünüm (eş bilgiyi bilinçli tekrar eder). */}
