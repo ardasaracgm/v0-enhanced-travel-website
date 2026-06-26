@@ -1215,6 +1215,7 @@
     "howManyDays": "Kaç gün?",
     "pickupDateLabel": "Alış tarihi",
     "dropoffDateLabel": "Teslim tarihi",
+    "dateRangePlaceholder": "Alış – teslim tarihi",
     "windowWarning": "Kiralama tarihleriniz feribot aralığının dışında ({from} → {to}). Sorun değil — yalnızca seçtiğiniz tüm dönem için ücretlendirilirsiniz.",
     "selectDays": "Gün seçiniz",
     "selectDayWarning": "Lütfen kiralama gün sayısını seçin.",

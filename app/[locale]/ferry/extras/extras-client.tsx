@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/popover'
 
 import { BookingStepper } from '@/components/booking/stepper'
+import { DateRangeField } from '@/components/ferry/date-range-field'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
@@ -497,32 +497,25 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       </p>
                     </div>
 
-                    {/* Sağ — tarih seçiciler (label'lar inline, alış/teslim/gün).
-                        Input value/onChange/min/max + handler'lar AYNEN. */}
+                    {/* Sağ — tek alan tarih picker (DateRangeField, car2-hero paterni) + gün.
+                        ⚠️ onChange handler'ları handlePickupChange/handleDropoffChange (reconcileCar
+                        sepet senkronu) — düz setPickupDate/setDropoffDate DEĞİL. */}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:justify-end">
-                      <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
-                        {t('pickupDateLabel')}
-                        <Input
-                          type="date"
-                          className="h-10 w-44"
-                          min={todayAthens}
-                          max={dropoffDate || undefined}
-                          value={pickupDate}
-                          onChange={e => handlePickupChange(e.target.value)}
+                      <div className="w-64">
+                        <DateRangeField
+                          mode="range"
+                          date={pickupDate}
+                          returnDate={dropoffDate}
+                          onDateChange={handlePickupChange}
+                          onReturnDateChange={handleDropoffChange}
+                          minDate={todayAthens}
+                          locale={locale}
+                          placeholder={t('dateRangePlaceholder')}
+                          alignOffset={4}
                         />
-                      </label>
-                      <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
-                        {t('dropoffDateLabel')}
-                        <Input
-                          type="date"
-                          className="h-10 w-44"
-                          min={pickupDate || todayAthens}
-                          value={dropoffDate}
-                          onChange={e => handleDropoffChange(e.target.value)}
-                        />
-                      </label>
+                      </div>
                       {validRange && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
                           {t('dayCount', { count: days })}
                         </span>
                       )}

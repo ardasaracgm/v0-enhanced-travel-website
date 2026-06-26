@@ -1209,6 +1209,7 @@
     "howManyDays": "Πόσες ημέρες;",
     "pickupDateLabel": "Ημερομηνία παραλαβής",
     "dropoffDateLabel": "Ημερομηνία παράδοσης",
+    "dateRangePlaceholder": "Παραλαβή – παράδοση",
     "windowWarning": "Οι ημερομηνίες ενοικίασης είναι εκτός του διαστήματος του πλοίου ({from} → {to}). Δεν πειράζει — θα χρεωθείτε για όλη την περίοδο.",
     "selectDays": "Select days",
     "selectDayWarning": "Please choose the rental duration.",
