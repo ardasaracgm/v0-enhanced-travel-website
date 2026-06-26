@@ -47,7 +47,7 @@ import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkModelAvailability } from '@/lib/actions/car-availability-action'
-import { transferVehicleVisual } from '@/lib/service-theme'
+import { transferVehicleVisual, luggageVisual } from '@/lib/service-theme'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -350,6 +350,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
   // Seçili araca göre sol flush thumbnail; araç seçilene dek null → görsel gizli.
   const transferVehicleSrc = transferVehicleVisual(transferVehicleId)
+  // Aktif boyutlardan (adet>0) sol flush thumbnail; boyut seçilene dek null → gizli.
+  const luggageThumbSrc = luggageVisual(LUGGAGE_SIZES.filter(s => luggageCounts[s] > 0))
 
   // Seçili rota+araç, açık bacak(lar)a kopyalanır → outbound/return. Geçersizse
   // (rota/araç yok ya da iki toggle kapalı) sepetten çıkar. Model iki-bacak kalır.
@@ -441,10 +443,17 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         {luggageAvailable && (
         <section className="w-full pt-8 md:pt-12">
           <div className="container px-4 md:px-6">
-            <div>
-              <div>
-                <Card className="bg-card border-2 border-border/50">
-                  <CardContent className="p-5 space-y-4">
+            <Card className="bg-amber-50/60 border-2 border-border/50 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="flex items-stretch">
+                  {/* Sol flush thumbnail — aktif boyuta göre döner (tek/karışık);
+                      seçilene dek gizli. Salt görünüm. */}
+                  {luggageThumbSrc && (
+                    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
+                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="96px" className="object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 p-5 space-y-4">
                     {/* Heading + slogan — ince üst; sağ üstte (i) boyut rehberi */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -543,10 +552,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       </div>
 
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
         )}

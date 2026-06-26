@@ -45,8 +45,15 @@ export function serviceVisual(item: BookingItem): ServiceVisual {
         alt: 'Car rental',
         tone: 'car',
       }
-    case 'luggage':
-      return { src: '/services/luggage-sizes.webp', alt: 'Luggage storage', tone: 'luggage' }
+    case 'luggage': {
+      // Aktif boyutlar (adet>0) → tek boyut tekil görsel, 2+ karışık. extras kartı
+      // local state'ten, bu dal item.counts'tan aynı luggageVisual'ı tüketir.
+      // counts tipte zorunlu ama sessionStorage hydrasyonu bozuk veri üretebilir:
+      // defansif (?.[s] ?? 0) → counts eksikse aktif yok → null → tone korunur, crash yok.
+      const c = item.counts
+      const active = (['small', 'medium', 'large'] as const).filter(s => (c?.[s] ?? 0) > 0)
+      return { src: luggageVisual(active), alt: 'Luggage storage', tone: 'luggage' }
+    }
     case 'insurance':
     default:
       // insurance + ileride eklenecek tipler: görsel yok, mevcut zemin korunur.
@@ -61,4 +68,13 @@ export function transferVehicleVisual(vehicleId: string | null | undefined): str
   return vehicleId === 'vito' || vehicleId === 'sprinter'
     ? `/services/transfer-${vehicleId}.webp`
     : null
+}
+
+// Luggage thumbnail path'i — aktif boyutlardan (adet>0) türer. 0 boyut→null
+// (görsel gizli), tek boyut→o boyutun görseli, 2+ →karışık sizes.webp. Hem extras
+// kartı (local counts) hem serviceVisual luggage dalı (item.counts) tek kaynaktan.
+export function luggageVisual(activeSizes: readonly string[]): string | null {
+  if (activeSizes.length === 0) return null
+  if (activeSizes.length === 1) return `/services/luggage-${activeSizes[0]}.webp`
+  return '/services/luggage-sizes.webp'
 }
