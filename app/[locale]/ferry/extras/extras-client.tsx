@@ -730,7 +730,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="flex gap-4">
                   {luggageThumbSrc && (
                     <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
-                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-cover" />
+                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-contain" />
                     </div>
                   )}
                   {/* Dikey liste — her satır tam genişlik; tıkla-döngü + counts AYNEN.
@@ -803,7 +803,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="flex gap-4">
                   {transferVehicleSrc && (
                     <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
-                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-cover" />
+                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-contain" />
                     </div>
                   )}
                   <div className="flex-1 flex flex-col gap-3">
