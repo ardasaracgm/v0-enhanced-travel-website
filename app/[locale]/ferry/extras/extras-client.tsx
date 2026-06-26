@@ -467,12 +467,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           <div className="container px-4 md:px-6">
             <Card className="bg-amber-50/60 border-2 border-border/50 overflow-hidden">
               <CardContent className="p-0">
-                <div className="flex items-stretch">
-                  {/* Sol flush thumbnail — aktif boyuta göre döner (tek/karışık);
+                <div className="flex flex-col">
+                  {/* Üst flush thumbnail — aktif boyuta göre döner (tek/karışık);
                       seçilene dek gizli. Salt görünüm. */}
                   {luggageThumbSrc && (
-                    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
-                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="192px" quality={90} className="object-cover" />
+                    <div className="relative w-full h-40 overflow-hidden rounded-t-lg bg-white/70">
+                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-5 space-y-4">
@@ -589,12 +589,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           <div className="container px-4 md:px-6">
             <Card className="bg-green-50/60 border-2 border-border/50 overflow-hidden">
               <CardContent className="p-0">
-                <div className="flex items-stretch">
-                  {/* Sol flush thumbnail — seçili araca göre döner (vito/sprinter);
+                <div className="flex flex-col">
+                  {/* Üst flush thumbnail — seçili araca göre döner (vito/sprinter);
                       seçilene dek gizli. Salt görünüm. */}
                   {transferVehicleSrc && (
-                    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
-                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="192px" quality={90} className="object-cover" />
+                    <div className="relative w-full h-40 overflow-hidden rounded-t-lg bg-white/70">
+                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-5 space-y-4">
