@@ -471,44 +471,48 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {/* Araç grid — eski alt full-width section'dan taşındı (içerik aynen) */}
                 {carAvailable && (
             <div className="space-y-6">
-                {/* Başlık + tek-cümle açıklama + tarihler — kompakt dikey blok (space-y-3) */}
+                {/* Başlık SOLDA + tarih satırı SAĞDA aynı hizada (md+); mobilde alt alta.
+                    windowWarning tam-genişlik altta kalır (space-y-3'ün 2. child'ı). */}
                 <div className="space-y-3">
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
-                    </p>
-                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    {/* Sol — başlık + tek-cümle açıklama */}
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground mb-1">{t('heading')}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {t('subheading', { location: DEFAULT_PICKUP_LOCATION })}
+                      </p>
+                    </div>
 
-                  {/* Tarih seçiciler — label'lar inline, iki input + gün TEK satır.
-                      Input value/onChange/min/max AYNEN (yalnız label yeri + sarmalayıcı). */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
-                      {t('pickupDateLabel')}
-                      <Input
-                        type="date"
-                        className="h-10 w-44"
-                        min={todayAthens}
-                        max={dropoffDate || undefined}
-                        value={pickupDate}
-                        onChange={e => handlePickupChange(e.target.value)}
-                      />
-                    </label>
-                    <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
-                      {t('dropoffDateLabel')}
-                      <Input
-                        type="date"
-                        className="h-10 w-44"
-                        min={pickupDate || todayAthens}
-                        value={dropoffDate}
-                        onChange={e => handleDropoffChange(e.target.value)}
-                      />
-                    </label>
-                    {validRange && (
-                      <span className="text-sm text-muted-foreground">
-                        {t('dayCount', { count: days })}
-                      </span>
-                    )}
+                    {/* Sağ — tarih seçiciler (label'lar inline, alış/teslim/gün).
+                        Input value/onChange/min/max + handler'lar AYNEN. */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:justify-end">
+                      <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
+                        {t('pickupDateLabel')}
+                        <Input
+                          type="date"
+                          className="h-10 w-44"
+                          min={todayAthens}
+                          max={dropoffDate || undefined}
+                          value={pickupDate}
+                          onChange={e => handlePickupChange(e.target.value)}
+                        />
+                      </label>
+                      <label className="flex items-center gap-2 text-sm font-medium text-foreground whitespace-nowrap">
+                        {t('dropoffDateLabel')}
+                        <Input
+                          type="date"
+                          className="h-10 w-44"
+                          min={pickupDate || todayAthens}
+                          value={dropoffDate}
+                          onChange={e => handleDropoffChange(e.target.value)}
+                        />
+                      </label>
+                      {validRange && (
+                        <span className="text-sm text-muted-foreground">
+                          {t('dayCount', { count: days })}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {outsideWindow && returnItem && (
