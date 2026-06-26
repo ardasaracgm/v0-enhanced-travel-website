@@ -687,7 +687,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   {/* Sağ grup: canlı toplam (koşulsuz, Toplam: €0'dan başlar) + (i) boyut rehberi */}
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                      {t('total')}: <span className="text-primary">€{luggageTotalPrice}</span>
+                      {t('total')}: <span className="text-lg font-bold text-blue-950">€{luggageTotalPrice}</span>
                     </span>
                   {/* Boyut rehberi — (i) hover (desktop) / tap (mobil); İngilizce hardcode, fiyat YOK */}
                   <Popover open={sizeTipOpen} onOpenChange={setSizeTipOpen}>
@@ -765,17 +765,17 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         <button
                           type="button"
                           onClick={() => handleCycleLuggageSize(size)}
-                          className={`flex flex-col items-center gap-1 w-full rounded-xl border-2 px-3 py-3 transition-all ${
+                          className={`flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 w-full rounded-xl border-2 px-2 py-2.5 transition-all ${
                             selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
                           }`}
                         >
-                          <span className="text-sm font-medium text-foreground leading-tight text-center">{t(`luggage.size.${size}`)}</span>
-                          <span className="text-xs font-semibold text-primary">
+                          <span className="text-sm font-medium text-foreground leading-tight">{t(`luggage.size.${size}`)}</span>
+                          <span className="text-xs font-semibold text-primary whitespace-nowrap">
                             €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
                           </span>
-                          {/* ×N rozeti kutu içinde (×1 dahil) */}
+                          {/* ×N rozeti satır içi yatay (×1 dahil) */}
                           {count >= 1 && (
-                            <span className="mt-1 min-w-[1.5rem] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                            <span className="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
                               ×{count}
                             </span>
                           )}
