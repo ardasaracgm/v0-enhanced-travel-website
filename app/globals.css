@@ -116,3 +116,14 @@
     --removed-body-scroll-bar-size: 0 !important;
   }
 }
+
+@layer utilities {
+  /* Scroll çubuğunu gizle (görünüm temiz) — fonksiyon korunur. Slider'da ok + snap affordance yeter. */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+}

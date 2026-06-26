@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
-import { Car, ChevronLeft, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X, Bus } from 'lucide-react'
+import { Car, ChevronLeft, ChevronRight, ArrowRight, CheckCircle, AlertCircle, Fuel, Users, Settings, Luggage, Info, X, Bus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -95,6 +95,8 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   // Tarih-bazlı müsaitlik: server'dan { model_key: müsait_plaka_sayısı }. null = henüz gelmedi.
   const [availability, setAvailability] = React.useState<Record<string, number> | null>(null)
   const [availLoading, setAvailLoading] = React.useState(false)
+  // Araç slider yatay scroll ref'i — ok butonları scrollBy ile kullanır (state değil)
+  const carScrollRef = React.useRef<HTMLDivElement>(null)
 
   // Luggage UI state (display); cart state reducer'da.
   const luggageItem = state.items.find(
@@ -558,8 +560,29 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </Card>
                 )}
 
-                {/* Car cards */}
-                <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-4 ${availLoading ? 'opacity-60 transition-opacity' : ''}`}>
+                {/* Car slider — tek satır yatay scroll (native snap) + desktop ok'ları */}
+                <div className="relative">
+                  {/* sol/sağ ok — yalnız desktop (lg); scrollBy bir kart (304px = w-72 + gap) */}
+                  <button
+                    type="button"
+                    aria-label="Scroll cars left"
+                    onClick={() => carScrollRef.current?.scrollBy({ left: -304, behavior: 'smooth' })}
+                    className="hidden lg:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Scroll cars right"
+                    onClick={() => carScrollRef.current?.scrollBy({ left: 304, behavior: 'smooth' })}
+                    className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <div
+                    ref={carScrollRef}
+                    className={`flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 scrollbar-hide ${availLoading ? 'opacity-60 transition-opacity' : ''}`}
+                  >
                   {cars.map((car, index) => {
                     const isSelected = selectedModelKey === car.id
                     const lineTotal = car.price * days
@@ -568,12 +591,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     return (
                       <motion.div
                         key={car.id}
+                        className="shrink-0 w-72 snap-start"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.08 }}
                       >
                         <Card
-                          className={`group bg-card border-2 transition-all ${
+                          className={`group bg-card border-2 transition-all h-full ${
                             isUnavailable
                               ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
                               : isSelected
@@ -662,6 +686,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       </motion.div>
                     )
                   })}
+                  </div>
                 </div>
             </div>
                 )}
