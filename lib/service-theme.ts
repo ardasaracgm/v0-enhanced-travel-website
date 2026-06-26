@@ -36,9 +36,7 @@ export function serviceVisual(item: BookingItem): ServiceVisual {
     case 'transfer': {
       // İlk dolu bacaktan araç tipi (round-trip iki bacak aynı bölge).
       const v = item.outbound?.vehicleId ?? item.return?.vehicleId
-      const src =
-        v === 'vito' || v === 'sprinter' ? `/services/transfer-${v}.webp` : null
-      return { src, alt: 'Transfer', tone: 'transfer' }
+      return { src: transferVehicleVisual(v), alt: 'Transfer', tone: 'transfer' }
     }
     case 'car_rental':
       return {
@@ -54,4 +52,13 @@ export function serviceVisual(item: BookingItem): ServiceVisual {
       // insurance + ileride eklenecek tipler: görsel yok, mevcut zemin korunur.
       return { src: null, alt: '', tone: 'none' }
   }
+}
+
+// Transfer thumbnail path'i — seçili araç tipinden (vito/sprinter) türer.
+// Hem checkout serviceVisual transfer dalı (item bacağından) hem extras kartı
+// (local seçim state'inden) tek kaynaktan tüketir. Salt path mantığı.
+export function transferVehicleVisual(vehicleId: string | null | undefined): string | null {
+  return vehicleId === 'vito' || vehicleId === 'sprinter'
+    ? `/services/transfer-${vehicleId}.webp`
+    : null
 }

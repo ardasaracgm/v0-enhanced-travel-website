@@ -47,6 +47,7 @@ import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkModelAvailability } from '@/lib/actions/car-availability-action'
+import { transferVehicleVisual } from '@/lib/service-theme'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -347,6 +348,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const transferLegCount = (transferOutbound ? 1 : 0) + (transferReturn ? 1 : 0)
   const transferTotalPrice = transferPerLegEur * transferLegCount
 
+  // Seçili araca göre sol flush thumbnail; araç seçilene dek null → görsel gizli.
+  const transferVehicleSrc = transferVehicleVisual(transferVehicleId)
+
   // Seçili rota+araç, açık bacak(lar)a kopyalanır → outbound/return. Geçersizse
   // (rota/araç yok ya da iki toggle kapalı) sepetten çıkar. Model iki-bacak kalır.
   function syncTransfer(routeId: string | null, vehicleId: string | null, outOn: boolean, retOn: boolean) {
@@ -552,93 +556,104 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
         {transferAvailable && transferRegion && (
         <section className="w-full pt-8 md:pt-12">
           <div className="container px-4 md:px-6">
-            <Card className="bg-card border-2 border-border/50">
-              <CardContent className="p-5 space-y-4">
-                {/* Heading + canlı toplam */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Bus className="h-5 w-5 text-primary" />
+            <Card className="bg-green-50/60 border-2 border-border/50 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="flex items-stretch">
+                  {/* Sol flush thumbnail — seçili araca göre döner (vito/sprinter);
+                      seçilene dek gizli. Salt görünüm. */}
+                  {transferVehicleSrc && (
+                    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
+                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="96px" className="object-cover" />
                     </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
-                      <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                      {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
-                    </span>
-                    {transferItem && (
-                      <button
-                        type="button"
-                        aria-label={t('transfer.removeAria')}
-                        onClick={handleRemoveTransfer}
-                        className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Rota + araç */}
-                <div className="flex flex-wrap items-end gap-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
-                    <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
-                      <SelectTrigger className="w-56">
-                        <SelectValue placeholder={t('transfer.selectRoute')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {transferRegion.routes.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
-                    <div className="flex items-center gap-2">
-                      {transferRegion.vehicles.map((v) => {
-                        const selected = transferVehicleId === v.id
-                        const priceEur = transferRoute
-                          ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
-                          : null
-                        return (
+                  )}
+                  <div className="flex-1 min-w-0 p-5 space-y-4">
+                    {/* Heading + canlı toplam */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Bus className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
+                          <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                          {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
+                        </span>
+                        {transferItem && (
                           <button
-                            key={v.id}
                             type="button"
-                            onClick={() => handleTransferVehicle(v.id)}
-                            className={`flex flex-col items-start rounded-xl border-2 px-3 py-1.5 transition-all ${
-                              selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                            }`}
+                            aria-label={t('transfer.removeAria')}
+                            onClick={handleRemoveTransfer}
+                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
                           >
-                            <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
-                            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                              <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                              {priceEur != null && (
-                                <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
-                              )}
-                            </span>
+                            <X className="h-4 w-4" />
                           </button>
-                        )
-                      })}
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Rota + araç */}
+                    <div className="flex flex-wrap items-end gap-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
+                        <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
+                          <SelectTrigger className="w-56">
+                            <SelectValue placeholder={t('transfer.selectRoute')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {transferRegion.routes.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
+                        <div className="flex items-center gap-2">
+                          {transferRegion.vehicles.map((v) => {
+                            const selected = transferVehicleId === v.id
+                            const priceEur = transferRoute
+                              ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
+                              : null
+                            return (
+                              <button
+                                key={v.id}
+                                type="button"
+                                onClick={() => handleTransferVehicle(v.id)}
+                                className={`flex flex-col items-start rounded-xl border-2 px-3 py-1.5 transition-all ${
+                                  selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                                }`}
+                              >
+                                <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
+                                <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                                  <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                                  {priceEur != null && (
+                                    <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
+                                  )}
+                                </span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* İki bağımsız bacak toggle'ı — en az biri açık olmalı */}
+                    <div className="flex flex-wrap items-center gap-6 pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Switch checked={transferOutbound} onCheckedChange={handleTransferOutbound} />
+                        <span className="text-sm text-foreground">{t('transfer.outbound')}</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Switch checked={transferReturn} onCheckedChange={handleTransferReturn} />
+                        <span className="text-sm text-foreground">{t('transfer.return')}</span>
+                      </label>
                     </div>
                   </div>
-                </div>
-
-                {/* İki bağımsız bacak toggle'ı — en az biri açık olmalı */}
-                <div className="flex flex-wrap items-center gap-6 pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Switch checked={transferOutbound} onCheckedChange={handleTransferOutbound} />
-                    <span className="text-sm text-foreground">{t('transfer.outbound')}</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Switch checked={transferReturn} onCheckedChange={handleTransferReturn} />
-                    <span className="text-sm text-foreground">{t('transfer.return')}</span>
-                  </label>
                 </div>
               </CardContent>
             </Card>
