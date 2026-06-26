@@ -803,7 +803,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                      {t('total')}: <span className="text-primary">€{fmtEur(transferTotalPrice)}</span>
+                      {t('total')}: <span className="text-lg font-bold text-blue-950">€{fmtEur(transferTotalPrice)}</span>
                     </span>
                     {transferItem && (
                       <button
@@ -818,71 +818,62 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </div>
                 </div>
 
-                {/* ALT: sol görsel + sağ DİKEY seçenekler (rota → araç → toggle) */}
-                <div className="flex gap-4">
-                  {transferVehicleSrc && (
-                    <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
-                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-contain" />
-                    </div>
-                  )}
-                  <div className="flex-1 flex flex-col gap-3">
-                    {/* Rota dropdown — handler aynen */}
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-medium text-muted-foreground">{t('transfer.route')}</span>
-                      <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
-                        <SelectTrigger className="w-56">
-                          <SelectValue placeholder={t('transfer.selectRoute')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {transferRegion.routes.map((r) => (
-                            <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                {/* Gidiş/Dönüş toggle — görselin ÜSTÜNDE, 2'li grid (mantık aynen) */}
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer rounded-xl border-2 border-border/50 px-3 py-2">
+                    <Switch checked={transferOutbound} onCheckedChange={handleTransferOutbound} />
+                    <span className="text-sm text-foreground">{t('transfer.outbound')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer rounded-xl border-2 border-border/50 px-3 py-2">
+                    <Switch checked={transferReturn} onCheckedChange={handleTransferReturn} />
+                    <span className="text-sm text-foreground">{t('transfer.return')}</span>
+                  </label>
+                </div>
 
-                    {/* Araç — DİKEY liste (container flex-col, button'lar w-full); handler aynen */}
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-medium text-muted-foreground">{t('transfer.vehicle')}</span>
-                      <div className="flex flex-col gap-2">
-                        {transferRegion.vehicles.map((v) => {
-                          const selected = transferVehicleId === v.id
-                          const priceEur = transferRoute
-                            ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
-                            : null
-                          return (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={() => handleTransferVehicle(v.id)}
-                              className={`flex flex-col items-start w-full rounded-xl border-2 px-3 py-1.5 transition-all ${
-                                selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                              }`}
-                            >
-                              <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
-                              <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                                <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                                {priceEur != null && (
-                                  <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
-                                )}
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
+                {/* ANA GÖRSEL — seçime göre (vito/sprinter), seçilmeden hero; hep görünür.
+                    w-full 3:2 cover (valiz paterni). */}
+                <div className="relative w-full aspect-[3/2] overflow-hidden rounded-lg bg-white/70">
+                  <Image src={transferVehicleSrc ?? '/services/transfer-hero.webp'} alt="Transfer" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-cover" />
+                </div>
 
-                    {/* İki bağımsız bacak toggle'ı — en az biri açık olmalı */}
-                    <div className="flex flex-wrap items-center gap-6 pt-1">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Switch checked={transferOutbound} onCheckedChange={handleTransferOutbound} />
-                        <span className="text-sm text-foreground">{t('transfer.outbound')}</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Switch checked={transferReturn} onCheckedChange={handleTransferReturn} />
-                        <span className="text-sm text-foreground">{t('transfer.return')}</span>
-                      </label>
-                    </div>
+                {/* Görsel altı: rota dropdown (label yok, placeholder yeter) + Vito/Sprinter 2'li grid */}
+                <div className="space-y-3">
+                  <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('transfer.selectRoute')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {transferRegion.routes.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {transferRegion.vehicles.map((v) => {
+                      const selected = transferVehicleId === v.id
+                      const priceEur = transferRoute
+                        ? ((transferRoute.prices as Record<string, number>)[v.id] ?? 0) / 100
+                        : null
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => handleTransferVehicle(v.id)}
+                          className={`flex flex-col items-start w-full rounded-xl border-2 px-3 py-1.5 transition-all ${
+                            selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                          }`}
+                        >
+                          <span className="text-sm font-medium text-foreground whitespace-nowrap">{v.label}</span>
+                          <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                            <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                            {priceEur != null && (
+                              <span className="text-primary font-semibold ml-1">€{fmtEur(priceEur)}{t('transfer.perLeg')}</span>
+                            )}
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               </CardContent>
