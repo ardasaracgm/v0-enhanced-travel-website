@@ -664,7 +664,8 @@ function ServiceThumb({
         src={src}
         alt={alt || visual.alt}
         fill
-        sizes="80px"
+        sizes="192px"
+        quality={90}
         className="object-cover"
         onError={() =>
           setSrc((cur) =>

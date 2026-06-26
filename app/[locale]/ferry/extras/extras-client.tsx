@@ -65,6 +65,16 @@ const SUMMARY_TONE_BORDER: Record<ServiceTone, string> = {
   none: 'border-transparent',
 }
 
+// Özet kutusu pastel zemini — checkout TONE_BG ile birebir (app/ taranır,
+// purge-safe). Sol şeridin üstüne hizmet rengi zemin.
+const SUMMARY_TONE_BG: Record<ServiceTone, string> = {
+  ferry: 'bg-blue-50/60',
+  transfer: 'bg-green-50/60',
+  car: 'bg-purple-50/60',
+  luggage: 'bg-amber-50/60',
+  none: 'bg-secondary/50',
+}
+
 interface ExtrasClientProps {
   cars: NormalizedCar[]
 }
@@ -462,7 +472,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       seçilene dek gizli. Salt görünüm. */}
                   {luggageThumbSrc && (
                     <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
-                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="96px" className="object-cover" />
+                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="192px" quality={90} className="object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-5 space-y-4">
@@ -584,7 +594,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       seçilene dek gizli. Salt görünüm. */}
                   {transferVehicleSrc && (
                     <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
-                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="96px" className="object-cover" />
+                      <Image src={transferVehicleSrc} alt="Transfer" fill sizes="192px" quality={90} className="object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-5 space-y-4">
@@ -877,14 +887,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       <h3 className="text-lg font-bold text-foreground">{t('bookingSummary')}</h3>
 
                       {/* Ferry lines */}
-                      <div className={`p-3 bg-secondary/50 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.ferry}`}>
+                      <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
                         <p className="text-xs text-muted-foreground mb-1">{t('outboundFerry')}</p>
                         <p className="font-medium text-foreground text-sm">{outbound.from.name} → {outbound.to.name}</p>
                         <p className="text-xs text-muted-foreground">{outbound.departureTime} · {outbound.operator}</p>
                       </div>
 
                       {returnF && (
-                        <div className={`p-3 bg-secondary/50 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.ferry}`}>
+                        <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
                           <p className="text-xs text-muted-foreground mb-1">{t('returnFerry')}</p>
                           <p className="font-medium text-foreground text-sm">{returnF.from.name} → {returnF.to.name}</p>
                           <p className="text-xs text-muted-foreground">{returnF.departureTime} · {returnF.operator}</p>
@@ -893,7 +903,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Selected car — × ile kaldır (valiz/transfer ile aynı desen) */}
                       {selectedCar && dayChosen && (
-                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.car}`}>
+                        <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.car} ${SUMMARY_TONE_BORDER.car}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('carRental')}</p>
@@ -919,7 +929,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Valiz emaneti — cart'taki item'dan; × ile komple kaldır */}
                       {luggageItem && (
-                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.luggage}`}>
+                        <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.luggage} ${SUMMARY_TONE_BORDER.luggage}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('luggage.summaryLabel')}</p>
@@ -940,7 +950,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                       {/* Bodrum transfer — cart'taki item'dan; × ile kaldır */}
                       {transferItem && (
-                        <div className={`p-3 bg-primary/5 border border-primary/20 rounded-xl border-l-2 ${SUMMARY_TONE_BORDER.transfer}`}>
+                        <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.transfer} ${SUMMARY_TONE_BORDER.transfer}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground mb-1">{t('transfer.summaryLabel')}</p>
@@ -1006,7 +1016,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 <div className="flex items-stretch">
                   {ferryBarSrc && (
                     <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-white/70">
-                      <Image src={ferryBarSrc} alt="Ferry" fill sizes="96px" className="object-cover" />
+                      <Image src={ferryBarSrc} alt="Ferry" fill sizes="192px" quality={90} className="object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-5 flex flex-wrap items-center justify-between gap-3">
