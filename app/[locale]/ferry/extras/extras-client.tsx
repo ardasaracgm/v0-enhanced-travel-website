@@ -792,18 +792,18 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
               <CardContent className="p-5 space-y-4">
                 {/* HEADER tam genişlik (görselin üstünde) — içerik aynen */}
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Bus className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h2 className="text-lg font-bold text-foreground leading-tight">{t('transfer.heading')}</h2>
                       <p className="text-xs text-muted-foreground">{t('transfer.subheading')}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                      {t('total')}: <span className="text-lg font-bold text-blue-950">€{fmtEur(transferTotalPrice)}</span>
+                      {t('total')}: <span className="inline-block min-w-[4.5rem] text-right text-lg font-bold text-blue-950">€{fmtEur(transferTotalPrice)}</span>
                     </span>
                     {transferItem && (
                       <button
