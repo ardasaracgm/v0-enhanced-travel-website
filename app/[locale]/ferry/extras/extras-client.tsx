@@ -353,6 +353,18 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     dispatch({ type: 'REMOVE_LUGGAGE' })
   }
 
+  // Kutu üst köşe × — tek boyutu 0'a sıfırla. handleCycleLuggageSize ile BİREBİR
+  // aynı zincir (yalnız next = [size]:0): setLuggageCounts + (Σ≥1 ? dispatchLuggage
+  // : REMOVE_LUGGAGE) → dispatchLuggage priceAmount/title'ı yeni counts'tan yeniden
+  // hesaplar, böylece toplam/özet/payload tutarlı kalır.
+  function handleResetLuggageSize(size: LuggageDisplaySize) {
+    const next = { ...luggageCounts, [size]: 0 }
+    setLuggageCounts(next)
+    const total = LUGGAGE_SIZES.reduce((sum, s) => sum + next[s], 0)
+    if (total >= 1) dispatchLuggage(next)
+    else dispatch({ type: 'REMOVE_LUGGAGE' })
+  }
+
   const selectedCar = cars.find(c => c.id === selectedModelKey) ?? null
 
   // Fiyat formatı — kart-içi tutarlı 2 ondalık, locale ayraçlı (TR €37,50 / €28,00).
@@ -726,44 +738,52 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </div>
                 </div>
 
-                {/* ALT: sol görsel + sağ DİKEY boyut listesi (yan yana) */}
-                <div className="flex gap-4">
-                  {luggageThumbSrc && (
-                    <div className="relative w-2/5 shrink-0 self-stretch min-h-[10rem] overflow-hidden rounded-lg bg-white/70">
-                      <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 40vw, 20vw" quality={90} className="object-contain" />
-                    </div>
-                  )}
-                  {/* Dikey liste — her satır tam genişlik; tıkla-döngü + counts AYNEN.
-                      ×N rozet satır içi sağda (absolute değil). */}
-                  <div className="flex-1 flex flex-col gap-2">
-                    {LUGGAGE_SIZES.map(size => {
-                      const count = luggageCounts[size]
-                      const selected = count >= 1
-                      return (
+                {/* Görsel TAM GENİŞLİK (header altı, grid üstü); object-contain → tam görünür */}
+                {luggageThumbSrc && (
+                  <div className="relative w-full h-40 overflow-hidden rounded-lg bg-white/70">
+                    <Image src={luggageThumbSrc} alt="Luggage storage" fill sizes="(max-width: 768px) 100vw, 50vw" quality={90} className="object-contain" />
+                  </div>
+                )}
+                {/* 3'lü grid (Küçük|Orta|Büyük) — tık=+1 döngü (handleCycleLuggageSize AYNEN);
+                    ×N rozet kutu İÇİNDE; üst köşe × = o boyutu 0'a sıfırla (handleResetLuggageSize). */}
+                <div className="grid grid-cols-3 gap-3">
+                  {LUGGAGE_SIZES.map(size => {
+                    const count = luggageCounts[size]
+                    const selected = count >= 1
+                    return (
+                      <div key={size} className="relative">
+                        {/* Üst köşe × — yalnız count≥1; cycle'ı TETİKLEMEZ (kardeş buton + stopPropagation) */}
+                        {count >= 1 && (
+                          <button
+                            type="button"
+                            aria-label={t('luggage.removeAria')}
+                            onClick={e => { e.stopPropagation(); handleResetLuggageSize(size) }}
+                            className="absolute -top-2 -right-2 z-10 w-5 h-5 rounded-full bg-background border border-border text-muted-foreground hover:text-destructive flex items-center justify-center shadow-sm transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
                         <button
-                          key={size}
                           type="button"
                           onClick={() => handleCycleLuggageSize(size)}
-                          className={`flex items-center justify-between gap-2 w-full rounded-xl border-2 px-3 py-2 text-left transition-all ${
+                          className={`flex flex-col items-center gap-1 w-full rounded-xl border-2 px-3 py-3 transition-all ${
                             selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
                           }`}
                         >
-                          <span className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground leading-tight">{t(`luggage.size.${size}`)}</span>
-                            <span className="text-xs font-semibold text-primary">
-                              €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
-                            </span>
+                          <span className="text-sm font-medium text-foreground leading-tight text-center">{t(`luggage.size.${size}`)}</span>
+                          <span className="text-xs font-semibold text-primary">
+                            €{LUGGAGE_RATES_EUR[size]}<span className="font-normal text-muted-foreground">{t('perDay')}</span>
                           </span>
-                          {/* ×N rozeti ilk parçadan itibaren (×1 dahil) */}
+                          {/* ×N rozeti kutu içinde (×1 dahil) */}
                           {count >= 1 && (
-                            <span className="min-w-[1.5rem] h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
+                            <span className="mt-1 min-w-[1.5rem] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                               ×{count}
                             </span>
                           )}
                         </button>
-                      )
-                    })}
-                  </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
