@@ -92,7 +92,7 @@ export function FerryCard({
         <div className={hero ? 'flex flex-col gap-5 md:flex-row md:items-stretch' : 'flex items-center gap-4 md:items-stretch'}>
           {photoBlock}
 
-          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+          <div className="flex flex-1 min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
             {/* Operator + vessel */}
             <div className="min-w-0">
               <p className={`font-semibold text-blue-950 ${d.operator}`}>{ferry.operator}</p>
@@ -100,13 +100,14 @@ export function FerryCard({
             </div>
 
             {/* Saatler: dep · süre/Direkt · arr */}
-            <div className="flex items-center justify-center gap-3 sm:gap-6">
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-6">
               <div className="text-center">
                 <p className={`font-bold text-blue-950 ${d.time}`}>{ferry.departureTime}</p>
                 <p className="text-xs text-muted-foreground">{ferry.from.name}</p>
               </div>
               <div className="flex flex-col items-center">
-                <p className="mb-1 text-xs text-muted-foreground">{longDate ? formatDateLong(ferry.date, locale) : formatDateShort(ferry.date, locale)}</p>
+                <p className="mb-1 hidden text-xs text-muted-foreground md:block">{longDate ? formatDateLong(ferry.date, locale) : formatDateShort(ferry.date, locale)}</p>
+                <p className="mb-1 text-xs text-muted-foreground md:hidden">{formatDateShort(ferry.date, locale)}</p>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <div className="hidden h-0.5 w-6 bg-blue-200 sm:block" />
                   <Clock className="h-4 w-4" />
