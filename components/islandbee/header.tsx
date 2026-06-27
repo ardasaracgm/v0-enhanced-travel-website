@@ -62,7 +62,7 @@ export function Header() {
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden xl:flex items-center gap-6">
             {liveItems.map((item) => (
               <Link
                 key={item.key}
@@ -122,7 +122,7 @@ export function Header() {
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button
-                  className="lg:hidden"
+                  className="xl:hidden"
                   size="icon"
                   variant="ghost"
                   aria-label={t("openMenu")}
