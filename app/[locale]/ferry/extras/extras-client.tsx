@@ -449,7 +449,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
       <main className="flex-1">
         {/* Header Bar */}
-        <section className="w-full py-6 bg-primary text-primary-foreground">
+        <section className="w-full py-4 bg-primary text-primary-foreground">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -470,6 +470,31 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </p>
                 </div>
               </div>
+
+              {/* Hizmet rozetleri — bar ortası; gate-açık. Alınmış: tone pastel dolu (koyu yazı,
+                  mavi üstünde okunur). Alınmamış: beyaz-translucent ghost (mavi bar bağlamı).
+                  scrollIntoView salt navigasyon — logic AYNEN. */}
+              {serviceBadges.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 md:flex-1">
+                  {serviceBadges.map(({ id, Icon, label, active, tone }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-sm font-medium transition-colors ${
+                        active
+                          ? `${SUMMARY_TONE_BG[tone]} ${SUMMARY_TONE_BORDER[tone]} text-foreground`
+                          : 'bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground/90 hover:bg-primary-foreground/20'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                      {active && <CheckCircle className="h-3.5 w-3.5" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="text-right">
                 <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
                 <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
@@ -477,33 +502,6 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
             </div>
           </div>
         </section>
-
-        {/* Hizmet rozet şeridi — gate-açık hizmetler; alınmışsa tone dolu, değilse soluk.
-            Tıklayınca ilgili kart id'sine smooth scroll (salt navigasyon, veri yazma YOK). */}
-        {serviceBadges.length > 0 && (
-          <section className="w-full pt-4">
-            <div className="container px-4 md:px-6">
-              <div className="flex flex-wrap gap-2">
-                {serviceBadges.map(({ id, Icon, label, active, tone }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                    className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-colors ${
-                      active
-                        ? `${SUMMARY_TONE_BG[tone]} ${SUMMARY_TONE_BORDER[tone]} text-foreground`
-                        : 'bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/50'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                    {active && <CheckCircle className="h-3.5 w-3.5" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Progress Bar — 4 steps */}
         <BookingStepper flow="ferry" current="extras" />
