@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
-import { Ship, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { Ship, Clock, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -94,20 +94,39 @@ export function FerryCard({
 
           <div className="flex flex-1 min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
             {/* Operator + vessel */}
-            <div className="min-w-0">
+            <div className="min-w-0 md:shrink-0">
               <p className={`font-semibold text-blue-950 ${d.operator}`}>{ferry.operator}</p>
               <p className="text-xs text-muted-foreground">{ferry.vessel}</p>
             </div>
 
-            {/* Saatler: dep · süre/Direkt · arr */}
-            <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-6">
+            {/* MOBİL kompakt (<sm): tek satır dep → arr + alt port → port + meta.
+                Üç-sütun mobilde sığmıyordu; iki saat + ok dramatik yer kazandırır. */}
+            <div className="flex flex-col items-center gap-0.5 sm:hidden">
+              <div className="flex items-center gap-2">
+                <span className={`font-bold text-blue-950 ${d.time}`}>{ferry.departureTime}</span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-blue-300" />
+                <span className={`font-bold text-blue-950 ${d.time}`}>{ferry.arrivalTime}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{ferry.from.name}</span>
+                <ArrowRight className="h-3 w-3 shrink-0" />
+                <span>{ferry.to.name}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {formatDateShort(ferry.date, locale)} · {formatDuration(ferry.durationMinutes)} · {t('direct')}
+              </p>
+            </div>
+
+            {/* sm+: klasik üç-sütun. flex-1 KALDIRILDI (şişme→iPad çakışması).
+                Uzun tarih artık yalnız lg+; md/iPad kısa tarih → orta sütun dar. */}
+            <div className="hidden min-w-0 items-center justify-center gap-2 sm:flex sm:gap-6">
               <div className="text-center">
                 <p className={`font-bold text-blue-950 ${d.time}`}>{ferry.departureTime}</p>
                 <p className="text-xs text-muted-foreground">{ferry.from.name}</p>
               </div>
               <div className="flex flex-col items-center">
-                <p className="mb-1 hidden text-xs text-muted-foreground md:block">{longDate ? formatDateLong(ferry.date, locale) : formatDateShort(ferry.date, locale)}</p>
-                <p className="mb-1 text-xs text-muted-foreground md:hidden">{formatDateShort(ferry.date, locale)}</p>
+                <p className="mb-1 hidden text-xs text-muted-foreground sm:block lg:hidden">{formatDateShort(ferry.date, locale)}</p>
+                <p className="mb-1 hidden text-xs text-muted-foreground lg:block">{longDate ? formatDateLong(ferry.date, locale) : formatDateShort(ferry.date, locale)}</p>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <div className="hidden h-0.5 w-6 bg-blue-200 sm:block" />
                   <Clock className="h-4 w-4" />
@@ -123,7 +142,7 @@ export function FerryCard({
             </div>
 
             {/* Fiyat + koltuk + Seç */}
-            <div className="flex items-center justify-between gap-3 md:flex-col md:items-end md:justify-center">
+            <div className="flex items-center justify-between gap-3 md:shrink-0 md:flex-col md:items-end md:justify-center">
               <div className="text-right">
                 <p className={`font-bold text-blue-950 ${hero ? 'text-3xl' : 'text-2xl'}`}>€{ferryUnitFare(ferry)}</p>
                 <p className="text-xs text-muted-foreground">{t('perPerson')}</p>
