@@ -203,6 +203,27 @@ export default function FerryResultsPage() {
     dispatch({ type: 'SELECT_RETURN_FERRY', payload: ferry })
   }
 
+  // ── Tarih şeridi (P3c) — tab tıklama → yeniden arama ────────────────────────
+  // Outbound günü değişince TÜM ferry seçimi geçersiz (gidiş değişti → dönüş MCT'si
+  // de bozulur) → CLEAR_FERRY_SELECTION (outbound+return) + outbound fazına dön.
+  // SET_SEARCH_PARAMS merge → yalnız date değişir; results effect re-search eder.
+  const handleSelectOutboundDate = (date: string) => {
+    if (date === state.searchParams.date.slice(0, 10)) return
+    dispatch({ type: 'CLEAR_FERRY_SELECTION' })
+    setIsSelectingReturn(false)
+    dispatch({ type: 'SET_SEARCH_PARAMS', payload: { date } })
+  }
+
+  // Return günü değişince YALNIZ dönüş bacağı geçersiz → CLEAR_RETURN_FERRY (outbound
+  // korunur, isSelectingReturn=true kalır). returnDate set edilir; return-effect
+  // (baseDate + 3h MCT + gerekirse +1 kayma) değişimi yakalar.
+  const handleSelectReturnDate = (date: string) => {
+    const cur = (returnF?.date ?? state.searchParams.returnDate ?? '').slice(0, 10)
+    if (date === cur) return
+    dispatch({ type: 'CLEAR_RETURN_FERRY' })
+    dispatch({ type: 'SET_SEARCH_PARAMS', payload: { returnDate: date } })
+  }
+
   const handleContinue = () => {
     if (outbound) {
       router.push('/ferry/extras')
@@ -317,6 +338,7 @@ export default function FerryResultsPage() {
                       selectedDate={state.searchParams.date.slice(0, 10)}
                       minDate={todayAthensISO()}
                       locale={locale}
+                      onSelectDate={handleSelectOutboundDate}
                     />
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-bold text-foreground">
@@ -360,6 +382,7 @@ export default function FerryResultsPage() {
                       selectedDate={(returnF?.date ?? state.searchParams.returnDate ?? outbound?.date ?? state.searchParams.date).slice(0, 10)}
                       minDate={(outbound?.date ?? state.searchParams.date).slice(0, 10)}
                       locale={locale}
+                      onSelectDate={handleSelectReturnDate}
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
