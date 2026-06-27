@@ -26,7 +26,7 @@ import { searchFerriesWithNearestAction, type FerrySearchResult } from '@/lib/ac
 import { addDaysISO } from '@/lib/trip-items/summary'
 import { qualifiesReturn } from '@/lib/ferry/min-connection'
 import type { FerryTrip } from '@/lib/ferry/provider'
-import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
+import { FerryCard, FerryResultEmpty, densityForCount } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateShort } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
@@ -334,6 +334,7 @@ export default function FerryResultsPage() {
                               ferry={ferry}
                               selected={outbound?.id === ferry.id}
                               onSelect={() => handleSelectFerry(ferry)}
+                              density={densityForCount(ferries.length)}
                             />
                           </motion.div>
                         ))}
@@ -384,6 +385,7 @@ export default function FerryResultsPage() {
                               ferry={ferry}
                               selected={returnF?.id === ferry.id}
                               onSelect={() => handleSelectReturnFerry(ferry)}
+                              density={densityForCount(returnTrips.length)}
                             />
                           </motion.div>
                         ))}
