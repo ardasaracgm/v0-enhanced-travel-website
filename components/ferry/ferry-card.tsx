@@ -44,9 +44,9 @@ function routePhotoSrc(ferry: FerryTrip): string | null {
 //          bleed değeri d.pad ile eşleşmeli (hero md'de p-6 → -6; diğerleri -5/-4/-3).
 const DENSITY: Record<FerryCardDensity, { pad: string; photo: string; photoMd: string; bleed: string; time: string; operator: string }> = {
   hero:        { pad: 'p-5 sm:p-6', photo: 'h-44 w-full', photoMd: 'md:h-auto md:w-[35%]', bleed: 'md:-my-6 md:-ml-6', time: 'text-3xl', operator: 'text-lg' },
-  comfortable: { pad: 'p-5',        photo: 'h-20 w-28',   photoMd: 'md:h-auto md:w-[35%]', bleed: 'md:-my-5 md:-ml-5', time: 'text-2xl', operator: 'text-base' },
-  cozy:        { pad: 'p-4',        photo: 'h-16 w-20',   photoMd: 'md:h-auto md:w-[35%]', bleed: 'md:-my-4 md:-ml-4', time: 'text-xl',  operator: 'text-sm' },
-  compact:     { pad: 'p-3',        photo: 'h-14 w-14',   photoMd: 'md:h-auto md:w-[35%]', bleed: 'md:-my-3 md:-ml-3', time: 'text-lg',  operator: 'text-sm' },
+  comfortable: { pad: 'p-5',        photo: 'h-20 w-28',   photoMd: 'md:h-auto md:w-[26%]', bleed: 'md:-my-5 md:-ml-5', time: 'text-2xl', operator: 'text-base' },
+  cozy:        { pad: 'p-4',        photo: 'h-16 w-20',   photoMd: 'md:h-auto md:w-[26%]', bleed: 'md:-my-4 md:-ml-4', time: 'text-xl',  operator: 'text-sm' },
+  compact:     { pad: 'p-3',        photo: 'h-14 w-14',   photoMd: 'md:h-auto md:w-[26%]', bleed: 'md:-my-3 md:-ml-3', time: 'text-lg',  operator: 'text-sm' },
 }
 
 /** One sailing card. Single source for the list rows AND the nearest-date card. */
