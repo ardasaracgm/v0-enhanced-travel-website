@@ -74,7 +74,7 @@ export function addDaysISO(iso: string, n: number): string {
 }
 
 // Locale-aware kısa tarih ("12 Haz" / "12 Jun"), UTC sabit.
-function fmtDate(iso: string, locale: string): string {
+export function formatDateShort(iso: string, locale: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale, {
     day: 'numeric', month: 'short', timeZone: 'UTC',
@@ -102,8 +102,8 @@ function carRow(item: CarRentalBookingItem, locale: string): ItemSummaryRow {
     label: pickLabel('car', locale),
     title: name,
     detail: isTr
-      ? `Alış: ${fmtDate(item.pickupAt, locale)} · Teslim: ${fmtDate(dropoff, locale)} · ${item.days} ${dayWord}`
-      : `Pickup: ${fmtDate(item.pickupAt, locale)} · Drop-off: ${fmtDate(dropoff, locale)} · ${item.days} ${dayWord}`,
+      ? `Alış: ${formatDateShort(item.pickupAt, locale)} · Teslim: ${formatDateShort(dropoff, locale)} · ${item.days} ${dayWord}`
+      : `Pickup: ${formatDateShort(item.pickupAt, locale)} · Drop-off: ${formatDateShort(dropoff, locale)} · ${item.days} ${dayWord}`,
     breakdownLabel: `Car (${item.days}d)`,
     amount: item.priceAmount,
   }

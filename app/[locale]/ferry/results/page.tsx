@@ -28,7 +28,7 @@ import { qualifiesReturn } from '@/lib/ferry/min-connection'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty } from '@/components/ferry/ferry-card'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
-import { formatDateLong } from '@/lib/trip-items/summary'
+import { formatDateShort } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
 import { isReversePair } from '@/lib/ferry/reverse-pair'
 import type { ServiceTone } from '@/lib/service-theme'
@@ -237,7 +237,7 @@ export default function FerryResultsPage() {
       
       <main className="flex-1">
         {/* Header Bar — foto banner (desktop) / mavi gradient (mobil), beyaz metin */}
-        <section className="relative w-full overflow-hidden bg-gradient-to-r from-blue-950 to-blue-800 py-8 text-white">
+        <section className="relative w-full overflow-hidden bg-gradient-to-r from-blue-950 to-blue-800 py-6 text-white">
           {/* Görsel yalnız desktop; mobilde alt gradient görünür. bg-right → odak sağda. */}
           <div
             className="absolute inset-0 hidden bg-cover bg-right md:block"
@@ -401,34 +401,24 @@ export default function FerryResultsPage() {
 
               {/* Summary Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24">
+                <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-bold text-foreground mb-6">{t('bookingSummary')}</h3>
                       
                       {outbound ? (
                         <div className="space-y-4">
-                          <div className="p-4 bg-secondary/50 rounded-xl">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                              <Ship className="h-4 w-4" />
-                              <span>{t('outbound')}</span>
-                            </div>
-                            <p className="font-semibold text-foreground">{outbound.from.name} → {outbound.to.name}</p>
-                            <p className="text-sm text-muted-foreground">{formatDateLong(outbound.date, locale)}</p>
-                            <p className="text-sm text-muted-foreground">{outbound.departureTime} - {outbound.arrivalTime}</p>
-                            <p className="text-sm text-muted-foreground">{outbound.operator}</p>
+                          <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
+                            <p className="text-xs text-muted-foreground mb-1">{t('outbound')}</p>
+                            <p className="font-medium text-foreground text-sm">{outbound.from.name} → {outbound.to.name}</p>
+                            <p className="text-xs text-muted-foreground">{formatDateShort(outbound.date, locale)} · {outbound.departureTime} · {outbound.operator}</p>
                           </div>
 
                           {returnF && (
-                            <div className="p-4 bg-secondary/50 rounded-xl">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                <Ship className="h-4 w-4" />
-                                <span>{t('return')}</span>
-                              </div>
-                              <p className="font-semibold text-foreground">{returnF.from.name} → {returnF.to.name}</p>
-                              <p className="text-sm text-muted-foreground">{formatDateLong(returnF.date, locale)}</p>
-                              <p className="text-sm text-muted-foreground">{returnF.departureTime} - {returnF.arrivalTime}</p>
-                              <p className="text-sm text-muted-foreground">{returnF.operator}</p>
+                            <div className={`p-3 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
+                              <p className="text-xs text-muted-foreground mb-1">{t('return')}</p>
+                              <p className="font-medium text-foreground text-sm">{returnF.from.name} → {returnF.to.name}</p>
+                              <p className="text-xs text-muted-foreground">{formatDateShort(returnF.date, locale)} · {returnF.departureTime} · {returnF.operator}</p>
                             </div>
                           )}
 
