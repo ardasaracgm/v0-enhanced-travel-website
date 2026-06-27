@@ -38,11 +38,15 @@ function routePhotoSrc(ferry: FerryTrip): string | null {
 }
 
 // density → boyut/font token'ları (ferry mavi tone, car2 değil).
-const DENSITY: Record<FerryCardDensity, { pad: string; photo: string; time: string; operator: string }> = {
-  hero:        { pad: 'p-5 sm:p-6', photo: 'h-44 w-full md:h-56 md:w-64', time: 'text-3xl', operator: 'text-lg' },
-  comfortable: { pad: 'p-5',        photo: 'h-20 w-28',                   time: 'text-2xl', operator: 'text-base' },
-  cozy:        { pad: 'p-4',        photo: 'h-16 w-20',                   time: 'text-xl',  operator: 'text-sm' },
-  compact:     { pad: 'p-3',        photo: 'h-14 w-14',                   time: 'text-lg',  operator: 'text-sm' },
+// photo  = MOBİL boyut (base, dokunulmaz). photoMd = desktop genişlik (flush).
+// bleed  = desktop negatif margin: CardContent padding'ini iptal edip fotoyu
+//          sol+üst+alt kart kenarına yapıştırır (md:items-stretch ile tam yükseklik).
+//          bleed değeri d.pad ile eşleşmeli (hero md'de p-6 → -6; diğerleri -5/-4/-3).
+const DENSITY: Record<FerryCardDensity, { pad: string; photo: string; photoMd: string; bleed: string; time: string; operator: string }> = {
+  hero:        { pad: 'p-5 sm:p-6', photo: 'h-44 w-full', photoMd: 'md:h-auto md:w-[35%]', bleed: 'md:-my-6 md:-ml-6', time: 'text-3xl', operator: 'text-lg' },
+  comfortable: { pad: 'p-5',        photo: 'h-20 w-28',   photoMd: 'md:h-auto md:w-44',    bleed: 'md:-my-5 md:-ml-5', time: 'text-2xl', operator: 'text-base' },
+  cozy:        { pad: 'p-4',        photo: 'h-16 w-20',   photoMd: 'md:h-auto md:w-32',    bleed: 'md:-my-4 md:-ml-4', time: 'text-xl',  operator: 'text-sm' },
+  compact:     { pad: 'p-3',        photo: 'h-14 w-14',   photoMd: 'md:h-auto md:w-24',    bleed: 'md:-my-3 md:-ml-3', time: 'text-lg',  operator: 'text-sm' },
 }
 
 /** One sailing card. Single source for the list rows AND the nearest-date card. */
@@ -61,7 +65,7 @@ export function FerryCard({
 
   // Foto bloğu — görsel ya da Ship-ferry-tone kutu (fallback). onError → ikon.
   const photoBlock = (
-    <div className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-blue-50 ${d.photo}`}>
+    <div className={`relative flex shrink-0 items-center justify-center overflow-hidden bg-blue-50 rounded-2xl md:self-stretch md:rounded-none ${d.photo} ${d.photoMd} ${d.bleed}`}>
       {showPhoto ? (
         <Image
           src={photoSrc!}
@@ -79,13 +83,13 @@ export function FerryCard({
 
   return (
     <Card
-      className={`cursor-pointer rounded-3xl border-2 bg-card transition-all hover:shadow-lg ${
+      className={`cursor-pointer overflow-hidden rounded-3xl border-2 bg-card transition-all hover:shadow-lg ${
         selected ? 'border-blue-500 shadow-lg ring-2 ring-blue-500/20' : 'border-blue-100 hover:border-blue-300'
       }`}
       onClick={onSelect}
     >
       <CardContent className={d.pad}>
-        <div className={hero ? 'flex flex-col gap-5 md:flex-row md:items-center' : 'flex items-center gap-4'}>
+        <div className={hero ? 'flex flex-col gap-5 md:flex-row md:items-stretch' : 'flex items-center gap-4 md:items-stretch'}>
           {photoBlock}
 
           <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
