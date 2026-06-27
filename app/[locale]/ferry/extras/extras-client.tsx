@@ -547,7 +547,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                         />
                       </div>
                       {validRange && (
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                        <span className="text-lg font-bold text-blue-950 whitespace-nowrap">
                           {t('dayCount', { count: days })}
                         </span>
                       )}
