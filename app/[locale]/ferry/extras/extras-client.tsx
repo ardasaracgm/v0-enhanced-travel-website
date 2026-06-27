@@ -240,6 +240,20 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
     }
   }, [availability, selectedModelKey, dispatch])
 
+  // Liste sırası: müsaitler önce, içlerinde server fiyat sırası (ucuz→pahalı) korunur.
+  // availability null iken (tarih seçilmemiş/yüklenmemiş) cars'ı AYNEN bırak — zıplama yok.
+  // Karşılaştırıcı SADECE müsaitlik (eşitse 0) → JS Array.sort stable (ES2019+) → fiyat
+  // sırası ikincil korunur, fiyatı TEKRAR sıralama. qty undefined (fallback filo / aktif
+  // plaka yok) === 0 değildir → müsait grupta kalır (isUnavailable mantığıyla tutarlı).
+  const sortedCars = React.useMemo(() => {
+    if (availability == null) return cars
+    return [...cars].sort((a, b) => {
+      const aUnavail = availability[a.id] === 0 ? 1 : 0
+      const bUnavail = availability[b.id] === 0 ? 1 : 0
+      return aUnavail - bUnavail
+    })
+  }, [cars, availability])
+
   if (!outboundItem || !outbound) return null
 
   // Luggage türetilmiş: canlı toplam fiyat (1 gün; display-only). Başlıkta koşulsuz gösterilir.
@@ -608,7 +622,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     ref={carScrollRef}
                     className={`flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 scrollbar-hide ${availLoading ? 'opacity-60 transition-opacity' : ''}`}
                   >
-                  {cars.map((car, index) => {
+                  {sortedCars.map((car, index) => {
                     const isSelected = selectedModelKey === car.id
                     const lineTotal = car.price * days
                     const qty = availability?.[car.id]
