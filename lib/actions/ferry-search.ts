@@ -99,6 +99,14 @@ export interface RouteAvailability {
   /** Gün (YYYY-MM-DD) → o gün kalkan sefer sayısı. Şimdilik tüketilmiyor; ileride
    *  gün-başı sefer-sayısı badge'i (custom DayButton) için action'da hazır durur. */
   countByDate: Record<string, number>
+  /** Gün (YYYY-MM-DD) → o günün tüm seferlerindeki kalan yolcu koltuğu toplamı
+   *  (Σ passengerSeatsAvailable). Tarih şeridi satır2'sini besler (akıllı: eşik
+   *  altı koltuk, üstü sefer sayısı). Gerçek Dentur kotası. */
+  seatsByDate: Record<string, number>
+  /** Gün (YYYY-MM-DD) → o günün en ucuz yetişkin tek-yön fiyatı (min fares.oneWay,
+   *  EUR). Fiyatlı şerit altyapısı — UI'da showPrice flag'i ile gizlenir, şimdilik
+   *  render EDİLMEZ. Yetişkin tarifesi olmayan/0 sefer atlanır. */
+  minPriceByDate: Record<string, number>
 }
 
 /**
@@ -117,19 +125,26 @@ export async function getRouteScheduleAction(
   try {
     schedule = await provider.getRouteSchedule(slug(from), slug(to))
   } catch (e) {
-    if (isUnknownRouteError(e)) return { disabledDates: [], countByDate: {} }
+    if (isUnknownRouteError(e)) return { disabledDates: [], countByDate: {}, seatsByDate: {}, minPriceByDate: {} }
     throw e
   }
 
-  // Gün → sefer sayısı.
+  // Tek geçiş: gün → sefer sayısı + kalan koltuk toplamı + en ucuz yetişkin tek-yön fiyatı.
   const countByDate: Record<string, number> = {}
+  const seatsByDate: Record<string, number> = {}
+  const minPriceByDate: Record<string, number> = {}
   for (const t of schedule) {
     const d = t.date.slice(0, 10)
     countByDate[d] = (countByDate[d] ?? 0) + 1
+    seatsByDate[d] = (seatsByDate[d] ?? 0) + (t.passengerSeatsAvailable ?? 0)
+    const adult = t.fares.find((f) => f.passengerType === 'adult')
+    if (adult && adult.oneWay > 0) {
+      minPriceByDate[d] = d in minPriceByDate ? Math.min(minPriceByDate[d], adult.oneWay) : adult.oneWay
+    }
   }
 
   const sailing = Object.keys(countByDate).sort()
-  if (sailing.length === 0) return { disabledDates: [], countByDate }
+  if (sailing.length === 0) return { disabledDates: [], countByDate, seatsByDate, minPriceByDate }
 
   // Sezon ufku = min–max sefer-günü. Aralıktaki sefersiz günler = tümleyen → kapalı.
   // Ufuk dışı (max sonrası) günler set'te değil → takvimde açık kalır (round-trip MVP
@@ -138,5 +153,5 @@ export async function getRouteScheduleAction(
   for (let d = sailing[0]; d <= sailing[sailing.length - 1]; d = addDaysISO(d, 1)) {
     if (!(d in countByDate)) disabledDates.push(d)
   }
-  return { disabledDates, countByDate }
+  return { disabledDates, countByDate, seatsByDate, minPriceByDate }
 }
