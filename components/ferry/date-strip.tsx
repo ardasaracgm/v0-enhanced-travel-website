@@ -54,10 +54,18 @@ export function FerryDateStrip({
   // minDate'e kaydırılır → hep 7 seçilebilir tab, geçmişe taşma yok.
   const base = selectedDate.slice(0, 10)
   const days = React.useMemo(() => {
+    // Prerender (initial searchParams.date='') veya bozuk input → addDaysISO('')
+    // RangeError. useMemo factory render'da EAGER çalışır; aşağıdaki return null'a
+    // ULAŞILMADAN patlar → guard MEMO İÇİNDE de şart.
+    if (base.length < 10) return []
     const idealStart = addDaysISO(base, -HALF)
     const windowStart = idealStart < minDate ? minDate : idealStart
     return Array.from({ length: STRIP_DAYS }, (_, i) => addDaysISO(windowStart, i))
   }, [base, minDate])
+
+  // Tüm hook'lar (useTranslations/useState/useEffect/useMemo) yukarıda çağrıldı →
+  // koşullu-hook ihlali yok. Geçerli tarih yoksa şerit anlamsız → render etme.
+  if (days.length === 0) return null
 
   return (
     <div className="sticky top-24 z-30 -mx-2 bg-background/95 px-2 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80">
