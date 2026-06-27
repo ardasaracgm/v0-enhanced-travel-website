@@ -3,13 +3,13 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
-import { Ship, Clock, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
+import { Ship, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ferryUnitFare, formatDuration } from '@/lib/ferry/display'
-import { formatDateLong, formatDateShort } from '@/lib/trip-items/summary'
+import { formatDateShort } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import type { FerrySearchResult } from '@/lib/actions/ferry-search'
@@ -61,7 +61,6 @@ export function FerryCard({
   const photoSrc = routePhotoSrc(ferry)
   const showPhoto = !!photoSrc && imgOk
   const seatsHealthy = ferry.passengerSeatsAvailable > 20
-  const longDate = hero || density === 'comfortable'
 
   // Foto bloğu — görsel ya da Ship-ferry-tone kutu (fallback). onError → ikon.
   const photoBlock = (
@@ -99,9 +98,11 @@ export function FerryCard({
               <p className="text-xs text-muted-foreground">{ferry.vessel}</p>
             </div>
 
-            {/* MOBİL kompakt (<sm): tek satır dep → arr + alt port → port + meta.
-                Üç-sütun mobilde sığmıyordu; iki saat + ok dramatik yer kazandırır. */}
-            <div className="flex flex-col items-center gap-0.5 sm:hidden">
+            {/* Saatler — kompakt: tek satır dep → arr + alt port → port + meta.
+                Tek kod yolu (her genişlik). Üç-sütun matrisi kırılgandı (lg/xl
+                col-span-2 dar kartta foto %35 + uzun tarih taşırıyordu); kompakt
+                her yerde sığar. */}
+            <div className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-2">
                 <span className={`font-bold text-blue-950 ${d.time}`}>{ferry.departureTime}</span>
                 <ArrowRight className="h-4 w-4 shrink-0 text-blue-300" />
@@ -115,30 +116,6 @@ export function FerryCard({
               <p className="text-xs text-muted-foreground">
                 {formatDateShort(ferry.date, locale)} · {formatDuration(ferry.durationMinutes)} · {t('direct')}
               </p>
-            </div>
-
-            {/* sm+: klasik üç-sütun. flex-1 KALDIRILDI (şişme→iPad çakışması).
-                Uzun tarih artık yalnız lg+; md/iPad kısa tarih → orta sütun dar. */}
-            <div className="hidden min-w-0 items-center justify-center gap-2 sm:flex sm:gap-6">
-              <div className="text-center">
-                <p className={`font-bold text-blue-950 ${d.time}`}>{ferry.departureTime}</p>
-                <p className="text-xs text-muted-foreground">{ferry.from.name}</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <p className="mb-1 hidden text-xs text-muted-foreground sm:block lg:hidden">{formatDateShort(ferry.date, locale)}</p>
-                <p className="mb-1 hidden text-xs text-muted-foreground lg:block">{longDate ? formatDateLong(ferry.date, locale) : formatDateShort(ferry.date, locale)}</p>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <div className="hidden h-0.5 w-6 bg-blue-200 sm:block" />
-                  <Clock className="h-4 w-4" />
-                  <span className="text-xs">{formatDuration(ferry.durationMinutes)}</span>
-                  <div className="hidden h-0.5 w-6 bg-blue-200 sm:block" />
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{t('direct')}</p>
-              </div>
-              <div className="text-center">
-                <p className={`font-bold text-blue-950 ${d.time}`}>{ferry.arrivalTime}</p>
-                <p className="text-xs text-muted-foreground">{ferry.to.name}</p>
-              </div>
             </div>
 
             {/* Fiyat + koltuk + Seç */}
