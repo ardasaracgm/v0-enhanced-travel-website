@@ -1315,6 +1315,10 @@
       "body": "Seçtiğin tarihe yakın sefer bulunamadı. Lütfen farklı bir tarih dene."
     },
     "direct": "Direkt",
+    "dateStrip": {
+      "seats": "{count, plural, one {# koltuk} other {# koltuk}}",
+      "sailings": "{count, plural, one {# sefer} other {# sefer}}"
+    },
     "perPerson": "kişi başı",
     "seatsLeft": "{count, plural, one {# koltuk kaldı} other {# koltuk kaldı}}",
     "selected": "Seçildi",

@@ -1309,6 +1309,10 @@
       "body": "There are no sailings near your selected date. Please try a different date."
     },
     "direct": "Απευθείας",
+    "dateStrip": {
+      "seats": "{count, plural, one {# θέση} other {# θέσεις}}",
+      "sailings": "{count, plural, one {# δρομολόγιο} other {# δρομολόγια}}"
+    },
     "perPerson": "ανά άτομο",
     "seatsLeft": "{count, plural, one {# θέση διαθέσιμη} other {# θέσεις διαθέσιμες}}",
     "selected": "Επιλέχθηκε",

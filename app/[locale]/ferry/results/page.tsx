@@ -27,10 +27,12 @@ import { addDaysISO } from '@/lib/trip-items/summary'
 import { qualifiesReturn } from '@/lib/ferry/min-connection'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { FerryCard, FerryResultEmpty, densityForCount } from '@/components/ferry/ferry-card'
+import { FerryDateStrip } from '@/components/ferry/date-strip'
 import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateShort } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
 import { isReversePair } from '@/lib/ferry/reverse-pair'
+import { todayAthensISO } from '@/lib/validation/dates'
 import type { ServiceTone } from '@/lib/service-theme'
 
 // Servis chip tone→class — extras-client SUMMARY_TONE_* ile BİREBİR (app/ taranır,
@@ -308,6 +310,14 @@ export default function FerryResultsPage() {
               <div className="lg:col-span-2 space-y-6">
                 {!isSelectingReturn ? (
                   <>
+                    {/* Tarih şeridi (P3) — outbound. Tıklama P3c'de bağlanır. */}
+                    <FerryDateStrip
+                      from={state.searchParams.from}
+                      to={state.searchParams.to}
+                      selectedDate={state.searchParams.date.slice(0, 10)}
+                      minDate={todayAthensISO()}
+                      locale={locale}
+                    />
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-bold text-foreground">
                         {t('outboundHeading', { from: fromCity, to: toCity })}
@@ -343,10 +353,18 @@ export default function FerryResultsPage() {
                   </>
                 ) : (
                   <>
+                    {/* Tarih şeridi (P3) — return. minDate=outbound günü → öncesi disabled (MCT uyumlu). */}
+                    <FerryDateStrip
+                      from={state.searchParams.returnFrom ?? state.searchParams.to}
+                      to={state.searchParams.returnTo ?? state.searchParams.from}
+                      selectedDate={(returnF?.date ?? state.searchParams.returnDate ?? outbound?.date ?? state.searchParams.date).slice(0, 10)}
+                      minDate={(outbound?.date ?? state.searchParams.date).slice(0, 10)}
+                      locale={locale}
+                    />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => setIsSelectingReturn(false)}
                           className="text-muted-foreground"

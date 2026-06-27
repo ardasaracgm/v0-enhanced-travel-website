@@ -1315,6 +1315,10 @@
       "body": "There are no sailings near your selected date. Please try a different date."
     },
     "direct": "Direct",
+    "dateStrip": {
+      "seats": "{count, plural, one {# seat} other {# seats}}",
+      "sailings": "{count, plural, one {# sailing} other {# sailings}}"
+    },
     "perPerson": "per person",
     "seatsLeft": "{count, plural, one {# seat left} other {# seats left}}",
     "selected": "Selected",
