@@ -68,8 +68,8 @@ export function FerryDateStrip({
   if (days.length === 0) return null
 
   return (
-    <div className="sticky top-24 z-30 -mx-2 bg-background/95 px-2 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+    <div className="sticky top-24 z-30 -mx-2 min-w-0 bg-background/95 px-2 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-1">
         {days.map((day) => {
           const loading = avail === null
           const isPast = day < minDate

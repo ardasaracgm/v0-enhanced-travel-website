@@ -328,7 +328,7 @@ export default function FerryResultsPage() {
           <div className="container px-4 md:px-6">
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Ferry List */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="min-w-0 lg:col-span-2 space-y-6">
                 {!isSelectingReturn ? (
                   <>
                     {/* Tarih şeridi (P3) — outbound. Tıklama P3c'de bağlanır. */}
