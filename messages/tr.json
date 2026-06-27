@@ -1295,6 +1295,8 @@
     "passengers": "{count, plural, one {# yolcu} other {# yolcu}}",
     "returnPrefix": "Dönüş:",
     "totalPrice": "Toplam Fiyat",
+    "eyebrow": { "outbound": "Gidiş Seferi", "return": "Dönüş Seferi" },
+    "services": { "ferry": "Feribot", "car": "Araç", "luggage": "Valiz", "transfer": "Transfer" },
     "steps": { "selectFerry": "Feribot Seçimi", "extras": "Ekstralar", "passengers": "Yolcular", "payment": "Ödeme" },
     "outboundHeading": "Gidiş: {from} → {to}",
     "ferriesFound": "{count, plural, one {# sefer bulundu} other {# sefer bulundu}}",

@@ -1289,6 +1289,8 @@
     "passengers": "{count, plural, one {# επιβάτης} other {# επιβάτες}}",
     "returnPrefix": "Επιστροφή:",
     "totalPrice": "Συνολική Τιμή",
+    "eyebrow": { "outbound": "Δρομολόγιο μετάβασης", "return": "Δρομολόγιο επιστροφής" },
+    "services": { "ferry": "Πλοίο", "car": "Αυτοκίνητο", "luggage": "Αποσκευές", "transfer": "Μεταφορά" },
     "steps": { "selectFerry": "Επιλογή πλοίου", "extras": "Έξτρα", "passengers": "Επιβάτες", "payment": "Πληρωμή" },
     "outboundHeading": "Μετάβαση: {from} → {to}",
     "ferriesFound": "{count, plural, one {# δρομολόγιο βρέθηκε} other {# δρομολόγια βρέθηκαν}}",

@@ -1295,6 +1295,8 @@
     "passengers": "{count, plural, one {# passenger} other {# passengers}}",
     "returnPrefix": "Return:",
     "totalPrice": "Total Price",
+    "eyebrow": { "outbound": "Outbound Sailing", "return": "Return Sailing" },
+    "services": { "ferry": "Ferry", "car": "Car", "luggage": "Luggage", "transfer": "Transfer" },
     "steps": { "selectFerry": "Select Ferry", "extras": "Extras", "passengers": "Passengers", "payment": "Payment" },
     "outboundHeading": "Outbound: {from} to {to}",
     "ferriesFound": "{count, plural, one {# ferry found} other {# ferries found}}",

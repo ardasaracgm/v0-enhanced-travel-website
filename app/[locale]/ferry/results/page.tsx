@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
-import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock, AlertCircle, Loader2 } from 'lucide-react'
+import { Ship, Users, ArrowRight, ChevronLeft, Anchor, CalendarClock, AlertCircle, Loader2, Car, Luggage, Bus, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,26 @@ import { OrderSummaryItems } from '@/components/booking/order-summary-items'
 import { formatDateLong } from '@/lib/trip-items/summary'
 import { resolvePort } from '@/lib/ferry/ports'
 import { isReversePair } from '@/lib/ferry/reverse-pair'
+import type { ServiceTone } from '@/lib/service-theme'
+
+// Servis chip tone→class — extras-client SUMMARY_TONE_* ile BİREBİR (app/ taranır,
+// purge-safe; lib/'e class literal konmaz). Sepetteki servis kendi opak pastel
+// tonunu alır, sepette olmayan TONE_CHIP_INACTIVE (foto banner üstü beyaz-ghost).
+const SUMMARY_TONE_BG: Record<ServiceTone, string> = {
+  ferry: 'bg-blue-50',
+  transfer: 'bg-green-50',
+  car: 'bg-purple-50',
+  luggage: 'bg-amber-50',
+  none: 'bg-secondary',
+}
+const SUMMARY_TONE_BORDER: Record<ServiceTone, string> = {
+  ferry: 'border-blue-400',
+  transfer: 'border-green-400',
+  car: 'border-purple-400',
+  luggage: 'border-amber-400',
+  none: 'border-transparent',
+}
+const TONE_CHIP_INACTIVE = 'bg-white/10 border-white/25 text-white/70'
 
 export default function FerryResultsPage() {
   const router = useRouter()
@@ -202,44 +222,76 @@ export default function FerryResultsPage() {
   const returnFromCity = portName(state.searchParams.returnFrom ?? state.searchParams.to)
   const returnToCity = portName(state.searchParams.returnTo ?? state.searchParams.from)
 
+  // Servis chip'leri — extras dili: active = sepette item var. Aşamaya göre eyebrow.
+  const serviceChips: { key: string; tone: ServiceTone; Icon: typeof Ship; active: boolean }[] = [
+    { key: 'ferry', tone: 'ferry', Icon: Ship, active: !!outbound },
+    { key: 'car', tone: 'car', Icon: Car, active: state.items.some((i) => i.type === 'car_rental') },
+    { key: 'luggage', tone: 'luggage', Icon: Luggage, active: state.items.some((i) => i.type === 'luggage') },
+    { key: 'transfer', tone: 'transfer', Icon: Bus, active: state.items.some((i) => i.type === 'transfer') },
+  ]
+  const eyebrow = isSelectingReturn ? t('eyebrow.return') : t('eyebrow.outbound')
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        {/* Header Bar */}
-        <section className="w-full py-6 bg-primary text-primary-foreground">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4">
+        {/* Header Bar — foto banner (desktop) / mavi gradient (mobil), beyaz metin */}
+        <section className="relative w-full overflow-hidden bg-gradient-to-r from-blue-950 to-blue-800 py-8 text-white">
+          {/* Görsel yalnız desktop; mobilde alt gradient görünür. bg-right → odak sağda. */}
+          <div
+            className="absolute inset-0 hidden bg-cover bg-right md:block"
+            style={{ backgroundImage: "url('/services/ferry-results-banner.webp')" }}
+          />
+          {/* Okunabilirlik perdesi — soldan koyu, sağa şeffaf (görsel sağda kalır). */}
+          <div className="absolute inset-0 hidden bg-gradient-to-r from-blue-950/85 via-blue-950/50 to-transparent md:block" />
+          <div className="container relative px-4 md:px-6">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
                 <Link href="/ferry">
-                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
                 </Link>
-                <div>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{eyebrow}</p>
+                  <div className="flex flex-wrap items-center gap-2 text-2xl font-bold md:text-3xl">
                     <span>{fromCity}</span>
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5 text-amber-300" />
                     <span>{toCity}</span>
                     {state.searchParams.tripType === 'round-trip' && (
                       <>
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-5 w-5 text-amber-300" />
                         <span>{returnToCity}</span>
                       </>
                     )}
                   </div>
-                  <p className="text-sm text-primary-foreground/80">
+                  <p className="text-sm text-white/80">
                     {state.searchParams.date} · {t('passengers', { count: state.searchParams.passengers })}
                     {state.searchParams.tripType === 'round-trip' && ` · ${t('returnPrefix')} ${returnF?.date ?? state.searchParams.returnDate}`}
                   </p>
+                  {/* Servis chip'leri — extras dili: sepette = kendi tone'u, değilse gri ghost. */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {serviceChips.map(({ key, tone, Icon, active }) => (
+                      <span
+                        key={key}
+                        className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-medium ${
+                          active
+                            ? `${SUMMARY_TONE_BG[tone]} ${SUMMARY_TONE_BORDER[tone]} text-slate-900`
+                            : TONE_CHIP_INACTIVE
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {t(`services.${key}`)}
+                        {active && <CheckCircle className="h-3 w-3" />}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
-                  <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
-                </div>
+              <div className="rounded-3xl bg-white/15 px-6 py-4 backdrop-blur-md md:min-w-[180px]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">{t('totalPrice')}</p>
+                <p className="text-3xl font-bold">€{selectTotalPrice(state)}</p>
               </div>
             </div>
           </div>
