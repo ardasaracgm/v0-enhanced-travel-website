@@ -1226,7 +1226,8 @@
     "continueWithoutCar": "Araçsız devam et",
     "car": {
       "unavailable": "Müsait değil",
-      "allRented": "Tüm araçlarımız kiralanmıştır, lütfen indiğinizde bizden bilgi alın."
+      "allRented": "Tüm araçlarımız kiralanmıştır, lütfen indiğinizde bizden bilgi alın.",
+      "comingSoon": "Çok Yakında"
     },
     "perDay": "/gün",
     "added": "Eklendi",

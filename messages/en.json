@@ -1226,7 +1226,8 @@
     "continueWithoutCar": "Continue without car",
     "car": {
       "unavailable": "Not available",
-      "allRented": "All our cars are currently rented. Please contact us upon arrival."
+      "allRented": "All our cars are currently rented. Please contact us upon arrival.",
+      "comingSoon": "Coming Soon"
     },
     "perDay": "/day",
     "added": "Added",

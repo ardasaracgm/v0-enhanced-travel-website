@@ -246,8 +246,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   // sırası ikincil korunur, fiyatı TEKRAR sıralama. qty undefined (fallback filo / aktif
   // plaka yok) === 0 değildir → müsait grupta kalır (isUnavailable mantığıyla tutarlı).
   const sortedCars = React.useMemo(() => {
-    if (availability == null) return cars
     return [...cars].sort((a, b) => {
+      // coming-soon HER ZAMAN sona — DB flag'i, availability'den bağımsız (car2 paritesi).
+      const aCs = a.comingSoon ? 1 : 0
+      const bCs = b.comingSoon ? 1 : 0
+      if (aCs !== bCs) return aCs - bCs
+      // sonra müsaitlik (yalnız yüklendiğinde anlamlı); eşitse 0 → stable sort fiyatı korur.
+      if (availability == null) return 0
       const aUnavail = availability[a.id] === 0 ? 1 : 0
       const bUnavail = availability[b.id] === 0 ? 1 : 0
       return aUnavail - bUnavail
@@ -627,6 +632,9 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     const lineTotal = car.price * days
                     const qty = availability?.[car.id]
                     const isUnavailable = availability != null && qty === 0
+                    // coming-soon ve müsait-değil AYRI sebepler; ikisi de seçilemez.
+                    // comingSoon öncelikli (daha kalıcı durum).
+                    const blocked = car.comingSoon || isUnavailable
                     return (
                       <motion.div
                         key={car.id}
@@ -637,13 +645,13 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                       >
                         <Card
                           className={`group bg-card border-2 transition-all h-full ${
-                            isUnavailable
+                            blocked
                               ? 'opacity-50 cursor-not-allowed pointer-events-none border-border/50'
                               : isSelected
                                 ? 'border-purple-300 shadow-lg cursor-pointer hover:shadow-lg'
                                 : 'border-border/50 hover:border-primary/50 cursor-pointer hover:shadow-lg'
                           }`}
-                          onClick={() => { if (!isUnavailable) handleSelectCar(car) }}
+                          onClick={() => { if (!blocked) handleSelectCar(car) }}
                         >
                           <CardContent className="p-0">
                             <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-muted">
@@ -664,14 +672,20 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                                   <CheckCircle className="h-4 w-4 text-primary-foreground" />
                                 </div>
                               )}
-                              {isUnavailable && (
+                              {car.comingSoon ? (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+                                  <Badge variant="secondary" className="bg-amber-400 text-blue-950 gap-1">
+                                    {t('car.comingSoon')}
+                                  </Badge>
+                                </div>
+                              ) : isUnavailable ? (
                                 <div className="absolute inset-0 flex items-center justify-center bg-background/40">
                                   <Badge variant="secondary" className="bg-background/90 text-foreground gap-1">
                                     <AlertCircle className="h-3.5 w-3.5" />
                                     {t('car.unavailable')}
                                   </Badge>
                                 </div>
-                              )}
+                              ) : null}
                             </div>
 
                             <div className="p-4 space-y-3">
