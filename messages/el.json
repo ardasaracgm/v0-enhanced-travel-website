@@ -1042,6 +1042,7 @@
     "steps": { "selectCar": "Επιλογή αυτοκινήτου", "driver": "Οδηγός", "payment": "Πληρωμή" }
   },
   "passengerDetails": {
+    "eyebrow": "Στοιχεία επιβατών",
     "labels": {
       "firstName": "Όνομα (όπως στο διαβατήριο)",
       "lastName": "Επώνυμο (όπως στο διαβατήριο)",

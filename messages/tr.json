@@ -1048,6 +1048,7 @@
     "steps": { "selectCar": "Araç seç", "driver": "Sürücü", "payment": "Ödeme" }
   },
   "passengerDetails": {
+    "eyebrow": "Yolcu Bilgileri",
     "labels": {
       "firstName": "Ad (pasaportta yazdığı gibi)",
       "lastName": "Soyad (pasaportta yazdığı gibi)",

@@ -1048,6 +1048,7 @@
     "steps": { "selectCar": "Select car", "driver": "Driver", "payment": "Payment" }
   },
   "passengerDetails": {
+    "eyebrow": "Passenger Details",
     "labels": {
       "firstName": "First Name (as on passport)",
       "lastName": "Last Name (as on passport)",

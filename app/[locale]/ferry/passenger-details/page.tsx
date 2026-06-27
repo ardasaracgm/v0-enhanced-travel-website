@@ -32,6 +32,24 @@ import {
   type Passenger,
 } from '@/lib/booking-context'
 import { OrderSummaryItems, useRemoveBookingItem } from '@/components/booking/order-summary-items'
+import type { ServiceTone } from '@/lib/service-theme'
+
+// Servis tone→class — results/extras ile BİREBİR (app/ taranır, purge-safe;
+// lib/'e class literal konmaz). Ferry detay kartları bu map'ten ferry-mavi alır.
+const SUMMARY_TONE_BG: Record<ServiceTone, string> = {
+  ferry: 'bg-blue-50',
+  transfer: 'bg-green-50',
+  car: 'bg-purple-50',
+  luggage: 'bg-amber-50',
+  none: 'bg-secondary',
+}
+const SUMMARY_TONE_BORDER: Record<ServiceTone, string> = {
+  ferry: 'border-blue-400',
+  transfer: 'border-green-400',
+  car: 'border-purple-400',
+  luggage: 'border-amber-400',
+  none: 'border-transparent',
+}
 
 const nationalities = [
   'Turkey',
@@ -175,32 +193,45 @@ export default function PassengerDetailsPage() {
       <Header />
       
       <main className="flex-1">
-        {/* Header Bar */}
-        <section className="w-full py-6 bg-primary text-primary-foreground">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Header Bar — foto banner (desktop) / mavi gradient (mobil), beyaz metin.
+            results/page.tsx ile birebir görsel dil; içerik passenger-details'e özgü. */}
+        <section className="relative w-full overflow-hidden bg-gradient-to-r from-blue-950 to-blue-800 py-6 text-white">
+          {/* Görsel yalnız desktop; mobilde alt gradient görünür. bg-right → odak sağda. */}
+          <div
+            className="absolute inset-0 hidden bg-cover bg-right md:block"
+            style={{ backgroundImage: "url('/services/ferry-results-banner.webp')" }}
+          />
+          {/* Okunabilirlik perdesi — soldan koyu, sağa şeffaf (görsel sağda kalır). */}
+          <div className="absolute inset-0 hidden bg-gradient-to-r from-blue-950/85 via-blue-950/50 to-transparent md:block" />
+          <div className="container relative px-4 md:px-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <Link href="/ferry/extras">
-                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
                 </Link>
-                <div>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{t('eyebrow')}</p>
+                  <div className="flex flex-wrap items-center gap-2 text-2xl font-bold md:text-3xl">
                     <span>{outbound.from.name}</span>
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5 text-amber-300" />
                     <span>{outbound.to.name}</span>
+                    {returnF && (
+                      <>
+                        <ArrowRight className="h-5 w-5 text-amber-300" />
+                        <span>{returnF.to.name}</span>
+                      </>
+                    )}
                   </div>
-                  <p className="text-sm text-primary-foreground/80">
+                  <p className="text-sm text-white/80">
                     {state.searchParams.date} · {outbound.departureTime} - {outbound.arrivalTime}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm text-primary-foreground/80">{t('totalPrice')}</p>
-                  <p className="text-2xl font-bold">€{selectTotalPrice(state)}</p>
-                </div>
+              <div className="rounded-3xl bg-white/15 px-6 py-4 backdrop-blur-md md:min-w-[180px]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">{t('totalPrice')}</p>
+                <p className="text-3xl font-bold">€{selectTotalPrice(state)}</p>
               </div>
             </div>
           </div>
@@ -419,13 +450,13 @@ export default function PassengerDetailsPage() {
 
               {/* Summary Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24">
+                <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                   <Card className="bg-card border-border/50">
                     <CardContent className="p-6">
                       <h3 className="text-lg font-bold text-foreground mb-6">{t('summary.title')}</h3>
                       
                       <div className="space-y-4">
-                        <div className="p-4 bg-secondary/50 rounded-xl">
+                        <div className={`p-4 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <Ship className="h-4 w-4" />
                             <span>{t('summary.outbound')}</span>
@@ -437,7 +468,7 @@ export default function PassengerDetailsPage() {
                         </div>
                         
                         {returnF && (
-                          <div className="p-4 bg-secondary/50 rounded-xl">
+                          <div className={`p-4 rounded-xl border-l-2 ${SUMMARY_TONE_BG.ferry} ${SUMMARY_TONE_BORDER.ferry}`}>
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Ship className="h-4 w-4" />
