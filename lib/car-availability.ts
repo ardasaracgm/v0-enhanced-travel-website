@@ -199,6 +199,10 @@ export async function assignPlate(
     .select('id, priority')
     .eq('model_key', modelKey)
     .eq('status', 'active')
+    // Defense-in-depth: coming-soon plaka asla atanmaz. status='maintenance'
+    // konvansiyonundan bağımsız — coming_soon=true ama status='active' veri
+    // sapması olsa bile booking burada reddedilir (assignPlate→null→car_unavailable).
+    .eq('coming_soon', false)
     .order('priority', { ascending: true })
     .order('id', { ascending: true })
   if (platesErr) throw platesErr
