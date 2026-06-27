@@ -125,7 +125,7 @@ export default function PassengerDetailsPage() {
         birthDate: '',
         passportNumber: '',
         passportExpiryDate: '',
-        nationality: '',
+        nationality: 'Turkey',
       })
     )
     setPassengers(initialPassengers)
@@ -243,9 +243,9 @@ export default function PassengerDetailsPage() {
         {/* Passenger Forms */}
         <section className="w-full py-8 md:py-12">
           <div className="container px-4 md:px-6">
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-4 gap-8">
               {/* Forms */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-3 space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-2">{t('heading')}</h2>
                   <p className="text-muted-foreground">{t('subheading')}</p>
@@ -258,136 +258,125 @@ export default function PassengerDetailsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="bg-card border-border/50">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary" />
+                    <Card className="bg-card border-border/50 border-l-2 border-l-blue-400 rounded-2xl">
+                      <CardHeader className="p-4 pb-2">
+                        <CardTitle className="flex items-center gap-2.5 text-base">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
                           </div>
                           {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadPassenger')}` : ''}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Row 1 — First + Last name */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`firstName-${index}`}>{t('labels.firstName')} *</Label>
-                            <Input
-                              id={`firstName-${index}`}
-                              placeholder={t('placeholders.firstName')}
-                              value={passenger.firstName}
-                              onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
-                              className={errors[`passenger-${index}-firstName`] ? 'border-destructive' : ''}
-                            />
-                            {errors[`passenger-${index}-firstName`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-firstName`]}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`lastName-${index}`}>{t('labels.lastName')} *</Label>
-                            <Input
-                              id={`lastName-${index}`}
-                              placeholder={t('placeholders.lastName')}
-                              value={passenger.lastName}
-                              onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
-                              className={errors[`passenger-${index}-lastName`] ? 'border-destructive' : ''}
-                            />
-                            {errors[`passenger-${index}-lastName`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-lastName`]}</p>
-                            )}
-                          </div>
+                      {/* 7 alan tek grid: lg 4-kol (4+3), md 2-kol, mobil 1-kol. h-9 kompakt. */}
+                      <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 pt-0">
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`firstName-${index}`}>{t('labels.firstName')} *</Label>
+                          <Input
+                            id={`firstName-${index}`}
+                            placeholder={t('placeholders.firstName')}
+                            value={passenger.firstName}
+                            onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
+                            className={`h-9 ${errors[`passenger-${index}-firstName`] ? 'border-destructive' : ''}`}
+                          />
+                          {errors[`passenger-${index}-firstName`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-firstName`]}</p>
+                          )}
                         </div>
-                        {/* Row 2 — Date of Birth + Gender */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`birthDate-${index}`}>{t('labels.birthDate')} *</Label>
-                            <Input
-                              id={`birthDate-${index}`}
-                              type="date"
-                              min="1900-01-01"
-                              max={todayAthens}
-                              value={passenger.birthDate}
-                              onChange={(e) => updatePassenger(index, 'birthDate', e.target.value)}
-                              className={errors[`passenger-${index}-birthDate`] ? 'border-destructive' : ''}
-                            />
-                            {errors[`passenger-${index}-birthDate`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-birthDate`]}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`gender-${index}`}>{t('labels.gender')} *</Label>
-                            <Select
-                              value={passenger.gender}
-                              onValueChange={(value) => updatePassenger(index, 'gender', value)}
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`lastName-${index}`}>{t('labels.lastName')} *</Label>
+                          <Input
+                            id={`lastName-${index}`}
+                            placeholder={t('placeholders.lastName')}
+                            value={passenger.lastName}
+                            onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
+                            className={`h-9 ${errors[`passenger-${index}-lastName`] ? 'border-destructive' : ''}`}
+                          />
+                          {errors[`passenger-${index}-lastName`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-lastName`]}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`birthDate-${index}`}>{t('labels.birthDate')} *</Label>
+                          <Input
+                            id={`birthDate-${index}`}
+                            type="date"
+                            min="1900-01-01"
+                            max={todayAthens}
+                            value={passenger.birthDate}
+                            onChange={(e) => updatePassenger(index, 'birthDate', e.target.value)}
+                            className={`h-9 ${errors[`passenger-${index}-birthDate`] ? 'border-destructive' : ''}`}
+                          />
+                          {errors[`passenger-${index}-birthDate`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-birthDate`]}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`gender-${index}`}>{t('labels.gender')} *</Label>
+                          <Select
+                            value={passenger.gender}
+                            onValueChange={(value) => updatePassenger(index, 'gender', value)}
+                          >
+                            <SelectTrigger
+                              id={`gender-${index}`}
+                              className={`h-9 ${errors[`passenger-${index}-gender`] ? 'border-destructive' : ''}`}
                             >
-                              <SelectTrigger
-                                id={`gender-${index}`}
-                                className={errors[`passenger-${index}-gender`] ? 'border-destructive' : ''}
-                              >
-                                <SelectValue placeholder={t('labels.genderPlaceholder')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="male">{t('labels.genderMale')}</SelectItem>
-                                <SelectItem value="female">{t('labels.genderFemale')}</SelectItem>
-                                <SelectItem value="unspecified">{t('labels.genderUnspecified')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {errors[`passenger-${index}-gender`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-gender`]}</p>
-                            )}
-                          </div>
+                              <SelectValue placeholder={t('labels.genderPlaceholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">{t('labels.genderMale')}</SelectItem>
+                              <SelectItem value="female">{t('labels.genderFemale')}</SelectItem>
+                              <SelectItem value="unspecified">{t('labels.genderUnspecified')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors[`passenger-${index}-gender`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-gender`]}</p>
+                          )}
                         </div>
-                        {/* Row 3 — Passport Number + Passport Expiry (optional) */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`passport-${index}`}>{t('labels.passportNumber')} *</Label>
-                            <Input
-                              id={`passport-${index}`}
-                              placeholder={t('placeholders.passport')}
-                              value={passenger.passportNumber}
-                              onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
-                              className={errors[`passenger-${index}-passport`] ? 'border-destructive' : ''}
-                            />
-                            {errors[`passenger-${index}-passport`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-passport`]}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`passportExpiry-${index}`}>{t('labels.passportExpiry')}</Label>
-                            <Input
-                              id={`passportExpiry-${index}`}
-                              type="date"
-                              max="2099-12-31"
-                              value={passenger.passportExpiryDate ?? ''}
-                              onChange={(e) => updatePassenger(index, 'passportExpiryDate', e.target.value)}
-                              className={errors[`passenger-${index}-passportExpiry`] ? 'border-destructive' : ''}
-                            />
-                            {errors[`passenger-${index}-passportExpiry`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-passportExpiry`]}</p>
-                            )}
-                          </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`passport-${index}`}>{t('labels.passportNumber')} *</Label>
+                          <Input
+                            id={`passport-${index}`}
+                            placeholder={t('placeholders.passport')}
+                            value={passenger.passportNumber}
+                            onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
+                            className={`h-9 ${errors[`passenger-${index}-passport`] ? 'border-destructive' : ''}`}
+                          />
+                          {errors[`passenger-${index}-passport`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-passport`]}</p>
+                          )}
                         </div>
-                        {/* Row 4 — Nationality */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`nationality-${index}`}>{t('labels.nationality')} *</Label>
-                            <Select
-                              value={passenger.nationality}
-                              onValueChange={(value) => updatePassenger(index, 'nationality', value)}
-                            >
-                              <SelectTrigger className={errors[`passenger-${index}-nationality`] ? 'border-destructive' : ''}>
-                                <SelectValue placeholder={t('labels.nationalityPlaceholder')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {nationalities.map((nat) => (
-                                  <SelectItem key={nat} value={nat}>{t(`nationalities.${nat}`)}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {errors[`passenger-${index}-nationality`] && (
-                              <p className="text-sm text-destructive">{errors[`passenger-${index}-nationality`]}</p>
-                            )}
-                          </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`passportExpiry-${index}`}>{t('labels.passportExpiry')}</Label>
+                          <Input
+                            id={`passportExpiry-${index}`}
+                            type="date"
+                            max="2099-12-31"
+                            value={passenger.passportExpiryDate ?? ''}
+                            onChange={(e) => updatePassenger(index, 'passportExpiryDate', e.target.value)}
+                            className={`h-9 ${errors[`passenger-${index}-passportExpiry`] ? 'border-destructive' : ''}`}
+                          />
+                          {errors[`passenger-${index}-passportExpiry`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-passportExpiry`]}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`nationality-${index}`}>{t('labels.nationality')} *</Label>
+                          <Select
+                            value={passenger.nationality}
+                            onValueChange={(value) => updatePassenger(index, 'nationality', value)}
+                          >
+                            <SelectTrigger className={`h-9 ${errors[`passenger-${index}-nationality`] ? 'border-destructive' : ''}`}>
+                              <SelectValue placeholder={t('labels.nationalityPlaceholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {nationalities.map((nat) => (
+                                <SelectItem key={nat} value={nat}>{t(`nationalities.${nat}`)}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors[`passenger-${index}-nationality`] && (
+                            <p className="text-sm text-destructive">{errors[`passenger-${index}-nationality`]}</p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -400,16 +389,16 @@ export default function PassengerDetailsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: passengers.length * 0.1 }}
                 >
-                  <Card className="bg-card border-border/50">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3 text-lg">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Shield className="h-5 w-5 text-primary" />
+                  <Card className="bg-card border-border/50 rounded-2xl">
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="flex items-center gap-2.5 text-base">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Shield className="h-4 w-4 text-primary" />
                         </div>
                         {t('contact.title')}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3 p-4 pt-0">
                       <p className="text-sm text-muted-foreground">
                         {t('contact.subtitle')}
                       </p>
@@ -422,7 +411,7 @@ export default function PassengerDetailsPage() {
                             placeholder={t('placeholders.email')}
                             value={contactEmail}
                             onChange={(e) => setContactEmail(e.target.value)}
-                            className={errors['contactEmail'] ? 'border-destructive' : ''}
+                            className={`h-9 ${errors['contactEmail'] ? 'border-destructive' : ''}`}
                           />
                           {errors['contactEmail'] && (
                             <p className="text-sm text-destructive">{errors['contactEmail']}</p>
@@ -436,7 +425,7 @@ export default function PassengerDetailsPage() {
                             placeholder={t('placeholders.phone')}
                             value={contactPhone}
                             onChange={(e) => setContactPhone(e.target.value)}
-                            className={errors['contactPhone'] ? 'border-destructive' : ''}
+                            className={`h-9 ${errors['contactPhone'] ? 'border-destructive' : ''}`}
                           />
                           {errors['contactPhone'] && (
                             <p className="text-sm text-destructive">{errors['contactPhone']}</p>
