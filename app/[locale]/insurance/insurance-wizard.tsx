@@ -2,8 +2,11 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
-import { CheckCircle } from 'lucide-react'
+import {
+  CheckCircle, Sparkles, ShieldCheck, HeartPulse, CalendarClock, Headphones,
+} from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,6 +30,14 @@ import type { Locale } from '@/lib/notifications/whatsapp-link' // type-only
 // 3-adımlı wizard: 1) tarih+teminat (B2 ✓), 2) yolcular (B3 ✓), 3) özet+öde (B4 ✓).
 const TOTAL_STEPS = 3
 const STEP_KEYS = ['dates', 'travellers', 'review'] as const
+
+// 1a hero: 4 özellik ikonu (salt görünüm). i18n: insurance.heroFeatures.*
+const HERO_FEATURES = [
+  { key: 'f1', Icon: ShieldCheck },
+  { key: 'f2', Icon: HeartPulse },
+  { key: 'f3', Icon: CalendarClock },
+  { key: 'f4', Icon: Headphones },
+] as const
 
 interface PassengerForm {
   firstName: string
@@ -203,7 +214,8 @@ export function InsuranceWizard() {
   // ----- Başarı (WhatsApp fallback) kartı -----
   if (done) {
     return (
-      <Card className="mx-auto max-w-2xl border-primary/30">
+      <div className="container px-4 py-10 md:px-6">
+        <Card className="mx-auto max-w-2xl border-primary/30">
         <CardContent className="space-y-4 p-8 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle className="h-8 w-8 text-primary" />
@@ -216,34 +228,53 @@ export function InsuranceWizard() {
             </Button>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      {/* Full-width hero banner (rounded-3xl) — checkout kartıyla aynı görsel.
-          Collapse YOK (standalone'da "none" seçeneği yok). Salt görünüm. */}
-      <div className="relative h-40 overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 to-muted">
+    <section className="relative min-h-screen overflow-hidden">
+      <div className="absolute inset-0">
         {!heroError && (
           <Image
-            src="/services/insurance-hero.webp"
+            src="/services/insurance-hero_main.webp"
             alt={t('heroTitle')}
             fill
-            sizes="(max-width: 768px) 100vw, 672px"
+            sizes="100vw"
             className="object-cover"
             priority
             onError={() => setHeroError(true)}
           />
         )}
-      </div>
-      <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('heroTitle')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('heroSubtitle')}</p>
+        {/* filtre yok: sadece sol kenar hafif beyaz, orta/sağ tam canlı */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
       </div>
 
-      {/* Adım göstergesi */}
-      <ol className="flex items-center justify-center gap-1 sm:gap-2">
+      {/* min-h-screen + items-center: sığarsa ortalı, taşarsa uzar */}
+      <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
+        <div className="grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
+
+          {/* SOL: eyebrow + başlık + subtitle + form (sola yaslı, dar) */}
+          <div className="w-full max-w-xl space-y-3">
+            {/* Eyebrow — mobil: sol-üstte. Masaüstünde sağ kolonda gösterilir (burada lg:hidden). */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950 lg:hidden"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('heroEyebrow')}
+            </motion.div>
+            <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl">{t('heroTitle')}</h1>
+            <p className="max-w-md text-pretty text-lg text-blue-950/80">{t('heroSubtitle')}</p>
+
+            <Card className="border-0 shadow-2xl">
+              <CardContent className="space-y-5 px-6 pt-6 pb-4">
+                {/* Adım göstergesi — kart içi üst */}
+                <ol className="flex items-center justify-center gap-1 sm:gap-2">
         {STEP_KEYS.map((key, i) => (
           <li key={key} className="flex items-center gap-2">
             <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
@@ -255,11 +286,9 @@ export function InsuranceWizard() {
             {i < TOTAL_STEPS - 1 && <span className="mx-1 h-px w-4 bg-border sm:w-6" />}
           </li>
         ))}
-      </ol>
+                </ol>
 
-      <Card>
-        <CardContent className="space-y-5 p-6">
-          {step === 0 ? (
+                {step === 0 ? (
             <>
               {/* Tarih aralığı + yolcu sayısı — yan yana (range tek alan) */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -346,35 +375,34 @@ export function InsuranceWizard() {
             </>
           ) : step === 1 ? (
             <div className="space-y-6">
-              {/* İletişim — yolcu listesinin ÜSTÜnde (rezervasyon başına tek blok) */}
-              <div className="space-y-4 rounded-md border p-4">
+              {/* Yolcu + İletişim — tek kutu: başlık → e-posta/telefon → yolcu scroll */}
+              <div className="space-y-3 rounded-md border p-3">
                 <p className="text-sm font-medium text-foreground">{t('contactHeading')}</p>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
                     <Input id="ins-email" type="email" value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
-                      className={step2Errors['contact-email'] ? 'border-destructive' : ''} />
+                      className={`h-9 ${step2Errors['contact-email'] ? 'border-destructive' : ''}`} />
                     {step2Errors['contact-email'] && <p className="text-sm text-destructive">{step2Errors['contact-email']}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
                     <Input id="ins-phone" type="tel" value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
-                      className={step2Errors['contact-phone'] ? 'border-destructive' : ''} />
+                      className={`h-9 ${step2Errors['contact-phone'] ? 'border-destructive' : ''}`} />
                     {step2Errors['contact-phone'] && <p className="text-sm text-destructive">{step2Errors['contact-phone']}</p>}
                   </div>
                 </div>
-              </div>
 
-              <h2 className="text-lg font-semibold text-foreground">{t('travellersHeading')}</h2>
-
+                {/* Yolcu kartları — sabit yükseklik + scroll (aynı kutu içinde) */}
+                <div className="max-h-[22rem] space-y-4 overflow-y-auto pr-2">
               {passengers.map((p, index) => (
                 <div key={index} className="space-y-4 rounded-md border p-4">
                   <p className="text-sm font-medium text-foreground">
                     {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
                   </p>
-                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_9rem_8rem] lg:gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor={`ins-fn-${index}`}>{t('labels.firstName')} *</Label>
                       <Input id={`ins-fn-${index}`} value={p.firstName}
@@ -406,6 +434,8 @@ export function InsuranceWizard() {
                   </div>
                 </div>
               ))}
+                </div>
+              </div>
             </div>
           ) : (
             // Adım 3 — Özet + öde
@@ -441,18 +471,59 @@ export function InsuranceWizard() {
               {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
             </div>
           )}
-        </CardContent>
-      </Card>
+                {/* Butonlar — Card içinde, dışarı taşmaz */}
+                <div className="flex items-center gap-3 pt-1">
+                  {step > 0 && (
+                    <Button type="button" variant="outline"
+                      onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={submitting}>
+                      {t('nav.back')}
+                    </Button>
+                  )}
+                  <Button type="button" className="ml-auto"
+                    onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
+                    {submitting
+                      ? t('nav.processing')
+                      : isLast
+                        ? t('nav.pay')
+                        : step === 0 ? t('nav.goPassengers') : t('nav.goReview')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      <div className="flex items-center justify-between">
-        <Button type="button" variant="outline"
-          onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || submitting}>
-          {t('nav.back')}
-        </Button>
-        <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
-          {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
-        </Button>
+          {/* SAĞ: 4 ikon dikey — canlı opak pill, forma yakın (max-w-xs sola hug), stagger giriş */}
+          <div className="hidden max-w-xs flex-col justify-center gap-4 lg:flex">
+            {HERO_FEATURES.map(({ key, Icon }, index) => (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.12, duration: 0.4 }}
+                className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/40 to-transparent px-4 py-3 backdrop-blur-sm"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 shadow-sm">
+                  <Icon className="h-5 w-5 text-amber-500" />
+                </span>
+                <span className="text-sm font-semibold text-blue-950">{t(`heroFeatures.${key}`)}</span>
+              </motion.div>
+            ))}
+            {/* Eyebrow — masaüstü: ikonların altında son eleman (mobilde sol kolonda). */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: HERO_FEATURES.length * 0.12, duration: 0.4 }}
+              className="inline-flex items-center gap-2 self-start rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('heroEyebrow')}
+            </motion.div>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </section>
   )
 }

@@ -10,8 +10,15 @@
   "insurance": {
     "heroTitle": "Travel Insurance",
     "heroSubtitle": "Approved Schengen-compliant travel insurance for your trip — in a few minutes.",
+    "heroEyebrow": "Travel with Confidence",
+    "heroFeatures": {
+      "f1": "Valid for Schengen visa",
+      "f2": "Emergency medical care",
+      "f3": "Trip cancellation & delay",
+      "f4": "24/7 support line"
+    },
     "steps": { "dates": "Dates & Coverage", "travellers": "Travellers", "review": "Review & Pay" },
-    "nav": { "back": "Back", "next": "Next", "pay": "Pay", "processing": "Processing…" },
+    "nav": { "back": "Back", "next": "Next", "pay": "Pay", "processing": "Processing…", "goPassengers": "Travellers", "goReview": "Review" },
     "stepPlaceholder": "Form fields will be added in the next steps.",
     "reviewHeading": "Summary",
     "summaryCoverage": "Coverage",
@@ -26,7 +33,7 @@
     "travellersHeading": "Traveller details",
     "passengerNumber": "Traveller {number}",
     "leadBadge": "(Lead)",
-    "contactHeading": "Contact details",
+    "contactHeading": "Passenger & Contact Details",
     "coverageHeading": "Choose coverage",
     "coverageLabel": "{coverage}€ coverage · 100€ deductible",
     "estimatedPrice": "~{price}€ (estimate)",

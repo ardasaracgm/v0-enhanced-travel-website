@@ -10,8 +10,15 @@
   "insurance": {
     "heroTitle": "Seyahat Sigortası",
     "heroSubtitle": "Schengen vizesi ve seyahatiniz için onaylı seyahat sigortası — birkaç dakikada.",
+    "heroEyebrow": "Güvenle Keşfedin",
+    "heroFeatures": {
+      "f1": "Schengen vizesi için uygun",
+      "f2": "Acil sağlık hizmetleri",
+      "f3": "Seyahat iptali ve gecikme",
+      "f4": "7/24 destek hattı"
+    },
     "steps": { "dates": "Tarih ve Teminat", "travellers": "Yolcular", "review": "Özet ve Ödeme" },
-    "nav": { "back": "Geri", "next": "İleri", "pay": "Öde", "processing": "İşleniyor…" },
+    "nav": { "back": "Geri", "next": "İleri", "pay": "Öde", "processing": "İşleniyor…", "goPassengers": "Yolcular", "goReview": "Özet" },
     "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek.",
     "reviewHeading": "Özet",
     "summaryCoverage": "Teminat",
@@ -26,7 +33,7 @@
     "travellersHeading": "Yolcu bilgileri",
     "passengerNumber": "{number}. Yolcu",
     "leadBadge": "(Ana yolcu)",
-    "contactHeading": "İletişim bilgileri",
+    "contactHeading": "Yolcu ve İletişim Bilgileri",
     "coverageHeading": "Teminat seçin",
     "coverageLabel": "{coverage}€ teminat · 100€ muafiyet",
     "estimatedPrice": "~{price}€ (tahmini)",
