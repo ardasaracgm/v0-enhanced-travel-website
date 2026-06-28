@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Calendar,
   ChevronRight,
@@ -41,6 +41,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FerrySearchForm } from "@/components/ferry/ferry-search-form";
+import { getAvailableCars } from "@/lib/supabase";
+import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from "@/lib/normalize-car";
+import { useBooking } from "@/lib/booking-context";
+import { Car2FleetCard } from "@/components/car2/car2-fleet-card";
+import { CarCardSkeleton } from "@/components/ui/skeleton";
+
+const PICKUP_LOCATION = "Kos Port";
 
 export default function TravelBeez() {
   const t = useTranslations("hero");
@@ -60,6 +67,49 @@ export default function TravelBeez() {
   const tFooter = useTranslations("homeFooter");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
+  const locale = useLocale();
+  const router = useRouter();
+  const { dispatch } = useBooking();
+  const todayAthens = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Athens" });
+
+  // Gerçek filo (DB) — car-rental page'deki client-fetch paterniyle aynı kaynak.
+  // Tüm modeller (comingSoon dahil); Car2FleetCard kendi tarih/availability'sini yönetir.
+  const [fleetCars, setFleetCars] = React.useState<NormalizedCar[]>([]);
+  const [fleetLoading, setFleetLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, isEmpty } = await getAvailableCars();
+      if (cancelled) return;
+      setFleetCars(
+        isEmpty || !data || data.length === 0 ? [] : groupByModelKey(data.map(normalizeCar)),
+      );
+      setFleetLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // car-rental page.tsx'ten birebir: kartın kendi tarihleriyle booking'i başlat.
+  function handleSelect(car: NormalizedCar, pickup: string, dropoff: string) {
+    dispatch({
+      type: "SET_CAR_RENTAL",
+      payload: {
+        modelKey: car.id,
+        model: car.model,
+        pricePerDay: car.price,
+        days: dateDiffInDays(pickup, dropoff) + 1,
+        pickupLocation: PICKUP_LOCATION,
+        dropoffLocation: PICKUP_LOCATION,
+        pickupAt: pickup,
+        dropoffAt: dropoff,
+      },
+    });
+    router.push("/car-rental/driver");
+  }
+
   const islands = [
     { id: "kos", image: "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=800&q=80" },
     { id: "rhodes", image: "https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80" },
@@ -73,36 +123,6 @@ export default function TravelBeez() {
     description: tIslands(`items.${i.id}.description`),
     ferryTime: tIslands(`items.${i.id}.ferryTime`),
   }));
-
-  const carFleet = [
-    {
-      type: tFleet("typeMini"),
-      model: "Citroen Ami",
-      price: "€19",
-      image:
-        "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=80",
-      features: [tFleet("featElectric"), tFleet("seats", { count: 2 }), tFleet("featCityPerfect")],
-      badge: tFleet("badgeEco"),
-    },
-    {
-      type: tFleet("typeEconomy"),
-      model: "Fiat Panda",
-      price: "€25",
-      image:
-        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&q=80",
-      features: [tFleet("featAC"), tFleet("featManual"), tFleet("seats", { count: 4 })],
-      badge: tFleet("badgePopular"),
-    },
-    {
-      type: tFleet("typeCompact"),
-      model: "DFSK 500",
-      price: "€29",
-      image:
-        "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&q=80",
-      features: [tFleet("featAC"), tFleet("featManual"), tFleet("seats", { count: 5 })],
-      badge: tFleet("badgeValue"),
-    },
-  ];
 
   const tours = [
     { id: "threeIslands", price: "€89", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80" },
@@ -695,114 +715,71 @@ export default function TravelBeez() {
           </div>
         </section>
 
-        {/* Car Fleet Section - Updated */}
-        <section
-          id="cars"
-          className="w-full py-16 md:py-24 bg-gradient-to-b from-secondary/30 to-background"
-        >
+        {/* Car Fleet Section — car2 idiom, gerçek DB filosu (teaser) */}
+        <section id="cars" className="w-full bg-white py-16 md:py-24">
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                  <Car className="h-4 w-4" />
-                  {tFleet("heroBadge")}
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                  {tFleet("title")}
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-xl">
-                  {tFleet("subtitle")}
-                </p>
+            {/* car2 başlık — ortalı, amber eyebrow + blue-950 başlık */}
+            <div className="mx-auto mb-12 max-w-2xl text-center">
+              <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+                {tFleet("heroBadge")}
+              </p>
+              <h2 className="mb-4 text-3xl font-bold text-blue-950 md:text-4xl">
+                {tFleet("title")}
+              </h2>
+              <p className="text-lg text-muted-foreground">{tFleet("subtitle")}</p>
+            </div>
+
+            {fleetLoading ? (
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <CarCardSkeleton key={i} />
+                ))}
               </div>
+            ) : fleetCars.length > 0 ? (
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                {fleetCars.map((car, index) => (
+                  <Car2FleetCard
+                    key={car.id || car.model}
+                    car={car}
+                    index={index}
+                    locale={locale}
+                    seedPickup=""
+                    seedDropoff=""
+                    seedNonce={0}
+                    todayAthens={todayAthens}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {/* "Tüm Araçları Gör" — normal CTA + fleetCars boşsa fallback yolu */}
+            <div className="mt-10 text-center">
               <Link href="/car-rental">
-                <Button
-                  variant="outline"
-                  className="mt-4 md:mt-0 text-foreground border-border"
-                >
+                <Button variant="outline" className="border-blue-950/20 text-blue-950">
                   {tFleet("viewAll")}
-                  <ChevronRight className="h-4 w-4 ml-2" />
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {carFleet.map((car, index) => (
-                <motion.div
-                  key={car.model}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card border-border/50">
-                    <CardContent className="p-0">
-                      <div className="relative h-52 bg-gradient-to-br from-muted to-muted/50">
-                        <Image
-                          src={car.image}
-                          alt={car.model}
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute top-3 left-3 flex gap-2">
-                          <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                            {car.type}
-                          </span>
-                          {car.badge && (
-                            <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
-                              {car.badge}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-xl text-foreground mb-3">
-                          {car.model}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-5">
-                          {car.features.map((feature) => (
-                            <span
-                              key={feature}
-                              className="px-3 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg font-medium"
-                            >
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                          <div>
-                            <span className="text-3xl font-bold text-primary">
-                              {car.price}
-                            </span>
-                            <span className="text-muted-foreground text-sm">
-                              {tFleet("perDay")}
-                            </span>
-                          </div>
-                          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                            {tFleet("bookNow")}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-            {/* Car Fleet Trust Indicators */}
-            <div className="mt-10 p-6 bg-card rounded-2xl border border-border/50">
+
+            {/* Güven şeridi — car2 token'ları (blue-950 + amber, rounded-3xl) */}
+            <div className="mt-12 rounded-3xl border border-blue-950/10 bg-blue-50/50 px-6 py-8">
               <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-2 text-blue-950">
+                  <CheckCircle className="h-5 w-5 text-amber-500" />
                   <span>{tFleet("trust1")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-2 text-blue-950">
+                  <CheckCircle className="h-5 w-5 text-amber-500" />
                   <span>{tFleet("trust2")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-2 text-blue-950">
+                  <CheckCircle className="h-5 w-5 text-amber-500" />
                   <span>{tFleet("trust3")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-2 text-blue-950">
+                  <CheckCircle className="h-5 w-5 text-amber-500" />
                   <span>{tFleet("trust4")}</span>
                 </div>
               </div>
