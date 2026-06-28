@@ -140,6 +140,7 @@
   },
 
   "hero": {
+    "imageAlt": "Feribotuyla Yunan adaları kıyı şeridi, Ege Denizi",
     "kicker": "Yunan Adalarına Açılan Kapınız",
     "title": "<hl>Ege'nin</hl> Büyüsünü Keşfedin",
     "subtitle": "Kos, Rodos, Sisam, Leros ve Patmos'a feribot biletleri, araç kiralama, otel ve turlar. Binlerce Türk gezginin güvendiği seçim.",
@@ -219,6 +220,7 @@
   },
 
   "license": {
+    "imageAlt": "Santorini'nin mavi kubbeli kiliseleri, Yunan adaları",
     "badge": "Yunan Tescilli Şirket",
     "title": "Yunanistan'da Lisanslı ve Tescilli",
     "description": "TravelBeez, Yunan Turizm Bakanlığı'na (MH.T.E.) kayıtlı, tam lisanslı bir Yunan seyahat şirketidir. Kos Limanı'ndaki ofisimizden hizmet veriyor, size yerel uzmanlık ve tam yasal güvence sunuyoruz.",
@@ -235,6 +237,7 @@
   },
 
   "kosOffice": {
+    "imageAlt": "TravelBeez Kos Limanı ofisi ve araç kiralama",
     "officeName": "TravelBeez Kos Ofisi",
     "address": "G Averos 4, Kos (Achilleas Hotel altında)",
     "meetTitle": "Vardığınızda Bizimle Buluşun",

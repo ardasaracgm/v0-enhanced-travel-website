@@ -213,9 +213,10 @@ export default function TravelBeez() {
         <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?w=1920&q=80"
-              alt="Greek Islands aerial view"
+              src="/hero-greek-islands.webp"
+              alt={t("imageAlt")}
               fill
+              sizes="100vw"
               className="object-cover"
               priority
             />
@@ -427,9 +428,10 @@ export default function TravelBeez() {
               >
                 <div className="relative h-full w-full overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80"
-                    alt="Greek islands landscape"
+                    src="/destinations/greek-islands-santorini-blue-domes.webp"
+                    alt={tLic("imageAlt")}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
@@ -458,9 +460,10 @@ export default function TravelBeez() {
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="order-2 md:order-1 relative h-[450px] rounded-2xl overflow-hidden shadow-xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
-                  alt="Kos Port Office"
+                  src="/travelbeez-kos-office.webp"
+                  alt={tOffice("imageAlt")}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />

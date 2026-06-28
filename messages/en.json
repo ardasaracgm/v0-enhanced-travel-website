@@ -140,6 +140,7 @@
   },
 
   "hero": {
+    "imageAlt": "Greek islands coastline with ferry, Aegean Sea",
     "kicker": "Your Gateway to Greek Islands",
     "title": "Discover the Magic of the <hl>Aegean</hl>",
     "subtitle": "Ferry tickets, car rentals, hotels, and tours to Kos, Rhodes, Samos, Leros, and Patmos. Trusted by thousands of Turkish travelers.",
@@ -219,6 +220,7 @@
   },
 
   "license": {
+    "imageAlt": "Santorini blue-domed churches, Greek islands",
     "badge": "Greek Registered Company",
     "title": "Licensed & Registered in Greece",
     "description": "TravelBeez is a fully licensed Greek travel company registered with the Greek Ministry of Tourism (MH.T.E.). We operate from our office at Kos Port, ensuring you receive authentic local service with full legal protection.",
@@ -235,6 +237,7 @@
   },
 
   "kosOffice": {
+    "imageAlt": "TravelBeez Kos Port office and car rental",
     "officeName": "TravelBeez Kos Office",
     "address": "G Averos 4, Kos (under Achilleas Hotel)",
     "meetTitle": "Meet Us When You Arrive",
