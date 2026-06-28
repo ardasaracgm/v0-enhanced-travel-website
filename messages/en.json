@@ -17,6 +17,43 @@
       "f3": "Trip cancellation & delay",
       "f4": "24/7 support line"
     },
+    "why": {
+      "title": "Why TravelBeez Travel Insurance?",
+      "why1Title": "Schengen Compliant",
+      "why1Desc": "Meets all requirements for your visa application.",
+      "why2Title": "Instant Policy",
+      "why2Desc": "Your policy reaches your inbox within minutes of payment.",
+      "why3Title": "24/7 Assistance",
+      "why3Desc": "A Turkish-speaking support line with you throughout your trip.",
+      "why4Title": "Worldwide Valid",
+      "why4Desc": "Seamless protection across the Schengen zone and beyond.",
+      "why5Title": "The Unexpected",
+      "why5Desc": "Cover for emergency medical, lost baggage, cancellation and delays."
+    },
+    "packages": {
+      "heading": "Insurance Packages",
+      "intro": "Pick the coverage that fits your trip; selecting a card fills the form.",
+      "popular": "Most Preferred",
+      "ctaSelect": "Choose This Package",
+      "priceFrom": "≈ €{price} / day",
+      "priceNote": "Prices are estimates; the exact amount is calculated in the form from traveller age and dates.",
+      "essential": { "name": "Essential", "coverage": "€35,000", "desc": "Essential cover for short trips.", "f1": "Emergency medical costs", "f2": "24/7 assistance line", "f3": "Schengen visa compliant", "f4": "Medical repatriation" },
+      "plus": { "name": "Plus", "coverage": "€100,000", "desc": "The most balanced cover — ideal for most travellers.", "f1": "Everything in Essential", "f2": "Lost & delayed baggage", "f3": "Trip cancellation & delay", "f4": "Higher medical limit" },
+      "premium": { "name": "Premium", "coverage": "€500,000", "desc": "Full protection for long, comprehensive trips.", "f1": "Everything in Plus", "f2": "Highest medical cover", "f3": "Comprehensive cancellation cover", "f4": "Priority assistance" }
+    },
+    "comparison": {
+      "heading": "Package Comparison",
+      "feature": "Feature",
+      "rows": { "coverage": "Coverage amount", "medical": "Emergency medical costs", "baggage": "Lost / delayed baggage", "cancellation": "Trip cancellation & delay", "support": "24/7 Turkish assistance", "covid": "Comprehensive cover" }
+    },
+    "trust": {
+      "title": "Secure & Transparent",
+      "intro": "Your data and payment are protected to EU standards.",
+      "f1Title": "Secure Payment", "f1Desc": "Protected by 256-bit SSL encryption.",
+      "f2Title": "EU Standards", "f2Desc": "We work with approved insurance providers.",
+      "f3Title": "Your Data is Safe", "f3Desc": "Personal data stored in line with GDPR.",
+      "f4Title": "Licensed Insurer", "f4Desc": "Your policy is issued by a licensed insurer."
+    },
     "steps": { "dates": "Dates & Coverage", "travellers": "Travellers", "review": "Review & Pay" },
     "nav": { "back": "Back", "next": "Next", "pay": "Pay", "processing": "Processing…", "goPassengers": "Travellers", "goReview": "Review" },
     "stepPlaceholder": "Form fields will be added in the next steps.",

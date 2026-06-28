@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import {
   CheckCircle, Sparkles, ShieldCheck, HeartPulse, CalendarClock, Headphones,
+  Zap, Globe, Umbrella, Check, Minus, Lock, BadgeCheck, FileCheck,
 } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
@@ -37,6 +38,40 @@ const HERO_FEATURES = [
   { key: 'f2', Icon: HeartPulse },
   { key: 'f3', Icon: CalendarClock },
   { key: 'f4', Icon: Headphones },
+] as const
+
+// 1b — Neden TravelBeez 5'li şerit. i18n: insurance.why.*
+const WHY_ITEMS = [
+  { key: 'why1', Icon: ShieldCheck },
+  { key: 'why2', Icon: Zap },
+  { key: 'why3', Icon: Headphones },
+  { key: 'why4', Icon: Globe },
+  { key: 'why5', Icon: Umbrella },
+] as const
+
+// Faz 3 — paket kartları. coverageId canlı Auras (7=35k, 8=100k, 9=500k); tıklama → setCoverageId + scroll.
+const PACKAGES = [
+  { key: 'essential', coverageId: 7, popular: false },
+  { key: 'plus', coverageId: 8, popular: true },
+  { key: 'premium', coverageId: 9, popular: false },
+] as const
+const PACKAGE_FEATURES = ['f1', 'f2', 'f3', 'f4'] as const
+
+// Faz 3 — karşılaştırma satırları (teminat satırı katalogdan ayrı eklenir). i18n: insurance.comparison.rows.*
+const COMPARE_ROWS = [
+  { key: 'medical', cells: [true, true, true] },
+  { key: 'baggage', cells: [false, true, true] },
+  { key: 'cancellation', cells: [false, true, true] },
+  { key: 'support', cells: [true, true, true] },
+  { key: 'covid', cells: [false, false, true] },
+] as const
+
+// 1c — alt güven şeridi. i18n: insurance.trust.*
+const TRUST_ITEMS = [
+  { key: 'f1', Icon: Lock },
+  { key: 'f2', Icon: BadgeCheck },
+  { key: 'f3', Icon: ShieldCheck },
+  { key: 'f4', Icon: FileCheck },
 ] as const
 
 interface PassengerForm {
@@ -162,6 +197,13 @@ export function InsuranceWizard() {
     return false
   }
 
+  // Paket kartı → ilgili coverage'ı seç + forma kaydır. SADECE setCoverageId + scroll
+  // (ödeme/Auras/Zod yoluna dokunmaz; quote zaten coverageId değişince tetiklenir).
+  const selectPackage = (cid: number) => {
+    setCoverageId(cid)
+    document.getElementById('insurance-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   const goNext = () => {
     if (step === 0) {
       setStep1Attempted(true)
@@ -234,6 +276,7 @@ export function InsuranceWizard() {
   }
 
   return (
+    <>
     <section className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0">
         {!heroError && (
@@ -271,7 +314,7 @@ export function InsuranceWizard() {
             <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl">{t('heroTitle')}</h1>
             <p className="max-w-md text-pretty text-lg text-blue-950/80">{t('heroSubtitle')}</p>
 
-            <Card className="border-0 shadow-2xl">
+            <Card id="insurance-form" className="border-0 shadow-2xl">
               <CardContent className="space-y-5 px-6 pt-6 pb-4">
                 {/* Adım göstergesi — kart içi üst */}
                 <ol className="flex items-center justify-center gap-1 sm:gap-2">
@@ -525,5 +568,151 @@ export function InsuranceWizard() {
         </div>
       </div>
     </section>
+
+    {/* ===== 1b — Neden TravelBeez Seyahat Sigortası (5'li şerit) ===== */}
+    <section className="w-full bg-secondary/30 py-16 md:py-24">
+      <div className="container px-4 md:px-6">
+        <h2 className="mb-12 text-center text-2xl font-bold text-blue-950 md:text-3xl">{t('why.title')}</h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {WHY_ITEMS.map(({ key, Icon }, index) => (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+            >
+              <Card className="h-full rounded-3xl border-border/50 shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                    <Icon className="h-7 w-7 text-amber-600" />
+                  </div>
+                  <h3 className="mb-2 text-base font-semibold text-blue-950">{t(`why.${key}Title`)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(`why.${key}Desc`)}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+    {/* ===== Faz 3 — Paket kartları (tıklama → setCoverageId + forma scroll) ===== */}
+    <section className="w-full py-16 md:py-24">
+      <div className="container px-4 md:px-6">
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl font-bold text-blue-950 md:text-3xl">{t('packages.heading')}</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">{t('packages.intro')}</p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {PACKAGES.map((pkg) => {
+            const est = INSURANCE_COVERAGE_CATALOG.find((c) => c.coverageId === pkg.coverageId)
+            return (
+              <Card key={pkg.key}
+                className={`relative flex flex-col rounded-3xl ${pkg.popular ? 'border-amber-400 shadow-xl ring-2 ring-amber-400' : 'border-border/50 shadow-sm'}`}>
+                {pkg.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-4 py-1 text-xs font-semibold text-blue-950">
+                    {t('packages.popular')}
+                  </span>
+                )}
+                <CardContent className="flex flex-1 flex-col p-6">
+                  <h3 className="text-lg font-bold text-blue-950">{t(`packages.${pkg.key}.name`)}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t(`packages.${pkg.key}.desc`)}</p>
+                  <p className="mt-4 text-3xl font-bold text-blue-950">{t(`packages.${pkg.key}.coverage`)}</p>
+                  {est && (
+                    <p className="mt-1 text-sm font-medium text-amber-600">
+                      {t('packages.priceFrom', { price: est.estimateOneDay.toLocaleString(locale) })}
+                    </p>
+                  )}
+                  <ul className="mt-5 space-y-2">
+                    {PACKAGE_FEATURES.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-blue-950">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                        {t(`packages.${pkg.key}.${f}`)}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button type="button" onClick={() => selectPackage(pkg.coverageId)}
+                    className={`mt-6 w-full ${pkg.popular ? 'bg-amber-400 text-blue-950 hover:bg-amber-500' : ''}`}>
+                    {t('packages.ctaSelect')}
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+        <p className="mt-6 text-center text-xs text-muted-foreground">{t('packages.priceNote')}</p>
+      </div>
+    </section>
+    {/* ===== Faz 3 — Paket karşılaştırma tablosu ===== */}
+    <section className="w-full bg-secondary/30 py-16 md:py-24">
+      <div className="container px-4 md:px-6">
+        <h2 className="mb-12 text-center text-2xl font-bold text-blue-950 md:text-3xl">{t('comparison.heading')}</h2>
+        <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card">
+          <table className="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border/50">
+                <th className="px-4 py-4 text-left font-medium text-muted-foreground">{t('comparison.feature')}</th>
+                {PACKAGES.map((pkg) => (
+                  <th key={pkg.key} className="px-4 py-4 text-center font-bold text-blue-950">{t(`packages.${pkg.key}.name`)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border/50">
+                <td className="px-4 py-3 text-blue-950">{t('comparison.rows.coverage')}</td>
+                {PACKAGES.map((pkg) => {
+                  const c = INSURANCE_COVERAGE_CATALOG.find((x) => x.coverageId === pkg.coverageId)
+                  return (
+                    <td key={pkg.key} className="px-4 py-3 text-center font-semibold text-blue-950">
+                      {c ? `${c.coverageValue.toLocaleString(locale)} €` : '—'}
+                    </td>
+                  )
+                })}
+              </tr>
+              {COMPARE_ROWS.map((row) => (
+                <tr key={row.key} className="border-b border-border/50 last:border-0">
+                  <td className="px-4 py-3 text-blue-950">{t(`comparison.rows.${row.key}`)}</td>
+                  {row.cells.map((on, i) => (
+                    <td key={i} className="px-4 py-3 text-center">
+                      {on
+                        ? <Check className="mx-auto h-5 w-5 text-amber-500" />
+                        : <Minus className="mx-auto h-5 w-5 text-muted-foreground/40" />}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    {/* ===== 1c — Alt güven şeridi ===== */}
+    <section className="w-full py-16 md:py-24">
+      <div className="container px-4 md:px-6">
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl font-bold text-blue-950 md:text-3xl">{t('trust.title')}</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">{t('trust.intro')}</p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {TRUST_ITEMS.map(({ key, Icon }, index) => (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+              className="flex flex-col items-center rounded-2xl border border-border/50 bg-card p-6 text-center"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                <Icon className="h-6 w-6 text-amber-600" />
+              </div>
+              <h3 className="mb-1 font-semibold text-blue-950">{t(`trust.${key}Title`)}</h3>
+              <p className="text-sm text-muted-foreground">{t(`trust.${key}Desc`)}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+    </>
   )
 }

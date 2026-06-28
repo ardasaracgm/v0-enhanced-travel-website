@@ -17,6 +17,43 @@
       "f3": "Seyahat iptali ve gecikme",
       "f4": "7/24 destek hattı"
     },
+    "why": {
+      "title": "Neden TravelBeez Seyahat Sigortası?",
+      "why1Title": "Schengen Uyumlu",
+      "why1Desc": "Vize başvurusu için gereken tüm şartları karşılar.",
+      "why2Title": "Anında Poliçe",
+      "why2Desc": "Ödeme sonrası poliçeniz dakikalar içinde e-postanıza gelir.",
+      "why3Title": "7/24 Asistans",
+      "why3Desc": "Yolculuğunuz boyunca Türkçe destek hattı yanınızda.",
+      "why4Title": "Dünya Çapında Geçerli",
+      "why4Desc": "Schengen bölgesi ve ötesinde kesintisiz koruma.",
+      "why5Title": "Beklenmedik Durumlar",
+      "why5Desc": "Acil sağlık, bagaj kaybı, iptal ve gecikmelere karşı güvence."
+    },
+    "packages": {
+      "heading": "Sigorta Paketleri",
+      "intro": "Seyahatinize uygun teminatı seçin; kartı seçince form otomatik dolar.",
+      "popular": "En Çok Tercih Edilen",
+      "ctaSelect": "Bu Paketi Seç",
+      "priceFrom": "≈ €{price} / gün'den",
+      "priceNote": "Fiyatlar tahminidir; kesin tutar yolcu yaşı ve tarihlere göre formda hesaplanır.",
+      "essential": { "name": "Essential", "coverage": "35.000 €", "desc": "Kısa seyahatler için temel koruma.", "f1": "Acil sağlık masrafları", "f2": "7/24 asistans hattı", "f3": "Schengen vize uyumlu", "f4": "Tıbbi nakil" },
+      "plus": { "name": "Plus", "coverage": "100.000 €", "desc": "En dengeli teminat — çoğu yolcu için ideal.", "f1": "Essential'daki her şey", "f2": "Bagaj kaybı ve gecikmesi", "f3": "Seyahat iptali ve gecikme", "f4": "Daha yüksek sağlık limiti" },
+      "premium": { "name": "Premium", "coverage": "500.000 €", "desc": "Uzun ve kapsamlı seyahatler için tam koruma.", "f1": "Plus'taki her şey", "f2": "En yüksek sağlık teminatı", "f3": "Geniş kapsamlı iptal koruması", "f4": "Öncelikli asistans" }
+    },
+    "comparison": {
+      "heading": "Paket Karşılaştırması",
+      "feature": "Özellik",
+      "rows": { "coverage": "Teminat tutarı", "medical": "Acil sağlık masrafları", "baggage": "Bagaj kaybı / gecikmesi", "cancellation": "Seyahat iptali ve gecikme", "support": "7/24 Türkçe asistans", "covid": "Geniş kapsamlı koruma" }
+    },
+    "trust": {
+      "title": "Güvenli ve Şeffaf",
+      "intro": "Verileriniz ve ödemeniz AB standartlarında korunur.",
+      "f1Title": "Güvenli Ödeme", "f1Desc": "256-bit SSL şifreleme ile korumalı işlem.",
+      "f2Title": "AB Standartları", "f2Desc": "Onaylı sigorta şirketleriyle çalışıyoruz.",
+      "f3Title": "Verileriniz Güvende", "f3Desc": "Kişisel verileriniz KVKK/GDPR uyumlu saklanır.",
+      "f4Title": "Onaylı Sigortacı", "f4Desc": "Poliçeniz lisanslı sigortacı tarafından düzenlenir."
+    },
     "steps": { "dates": "Tarih ve Teminat", "travellers": "Yolcular", "review": "Özet ve Ödeme" },
     "nav": { "back": "Geri", "next": "İleri", "pay": "Öde", "processing": "İşleniyor…", "goPassengers": "Yolcular", "goReview": "Özet" },
     "stepPlaceholder": "Form alanları sıradaki adımlarda eklenecek.",
