@@ -220,10 +220,10 @@ export default function TravelBeez() {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/10 via-background/30 to-transparent" />
           </div>
           <div className="container relative px-4 md:px-6">
-            <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-6">
+            <div className="flex flex-col items-start text-left max-w-3xl space-y-6 md:ml-[10%] lg:ml-[15%]">
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -235,11 +235,11 @@ export default function TravelBeez() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground text-balance"
+                className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-foreground"
               >
                 {t.rich("title", {
                   hl: (chunks) => (
-                    <span className="text-primary">{chunks}</span>
+                    <span className="block text-primary">{chunks}</span>
                   ),
                 })}
               </motion.h1>
@@ -247,7 +247,7 @@ export default function TravelBeez() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-muted-foreground max-w-xl md:text-lg text-pretty"
+                className="text-muted-foreground max-w-xl md:text-lg text-pretty bg-gradient-to-r from-background/40 to-transparent backdrop-blur-sm rounded-2xl px-4 py-2"
               >
                 {t("subtitle")}
               </motion.p>
@@ -257,17 +257,17 @@ export default function TravelBeez() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="flex flex-wrap items-center justify-center gap-4 md:gap-6 pt-2"
+                className="flex flex-wrap items-center justify-start gap-4 md:gap-6 pt-2"
               >
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 text-sm text-foreground/80 bg-gradient-to-r from-card/70 to-transparent backdrop-blur rounded-full px-4 py-2 shadow-sm">
                   <Star className="h-4 w-4 text-accent fill-current" />
                   <span>{t("rating")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 text-sm text-foreground/80 bg-gradient-to-r from-card/70 to-transparent backdrop-blur rounded-full px-4 py-2 shadow-sm">
                   <MapPin className="h-4 w-4 text-primary" />
                   <span>{t("officeBadge")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 text-sm text-foreground/80 bg-gradient-to-r from-card/70 to-transparent backdrop-blur rounded-full px-4 py-2 shadow-sm">
                   <BadgeCheck className="h-4 w-4 text-primary" />
                   <span>{t("licensedBadge")}</span>
                 </div>
@@ -279,9 +279,9 @@ export default function TravelBeez() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-10 max-w-4xl mx-auto"
+              className="mt-10 max-w-4xl md:ml-[10%] lg:ml-[15%]"
             >
-              <Card className="border-0 shadow-xl bg-card/95 backdrop-blur">
+              <Card className="border-0 shadow-xl bg-card/90 backdrop-blur">
                 <CardContent className="p-0">
                   <Tabs defaultValue="ferry" className="w-full">
                     <TabsList className="w-full grid grid-cols-5 rounded-t-lg rounded-b-none h-14 bg-muted/50">
@@ -307,7 +307,7 @@ export default function TravelBeez() {
                       })}
                     </TabsList>
                     {/* Feribot: tam arama formu (bare → hero kartının içine düz gömülür) */}
-                    <TabsContent value="ferry" className="mt-0 sm:min-h-[172px]">
+                    <TabsContent value="ferry" className="mt-0 sm:min-h-[148px]">
                       <FerrySearchForm bare />
                     </TabsContent>
                     {/* Diğer 4 servis: kısa açıklama + servis sayfasına CTA (Link) */}
