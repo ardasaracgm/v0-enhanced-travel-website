@@ -531,7 +531,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
           <div className="container px-4 md:px-6">
             <div className="grid lg:grid-cols-4 gap-8">
               {/* SOL (3/4) — araç grid üstte, valiz+transfer altta (dikey akış) */}
-              <div className="lg:col-span-3 space-y-8">
+              <div className="min-w-0 lg:col-span-3 space-y-8">
 
                 {/* Araç grid — eski alt full-width section'dan taşındı (içerik aynen) */}
                 {carAvailable && (
@@ -625,7 +625,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                   </button>
                   <div
                     ref={carScrollRef}
-                    className={`flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 scrollbar-hide ${availLoading ? 'opacity-60 transition-opacity' : ''}`}
+                    className={`flex min-w-0 gap-4 overflow-x-auto snap-x snap-mandatory py-2 scrollbar-hide ${availLoading ? 'opacity-60 transition-opacity' : ''}`}
                   >
                   {sortedCars.map((car, index) => {
                     const isSelected = selectedModelKey === car.id
