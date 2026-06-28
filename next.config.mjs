@@ -27,6 +27,10 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   images: {
+    // quality={N} kullanan <Image>'lar bu allow-list'te olmalı (Next 15.3+;
+    // Next 16'da zorunlu). 75=default, 90=mevcut kullanım, 100=max — çoğu durumu
+    // kapsar, yeni görselde genelde buraya dönmek gerekmez.
+    qualities: [75, 90, 100],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },
