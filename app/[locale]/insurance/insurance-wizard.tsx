@@ -14,10 +14,12 @@ import {
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { todayAthensISO } from '@/lib/validation/dates'
+import { DateRangeField } from '@/components/ferry/date-range-field'
 import {
   INSURANCE_DATE_RE, MAX_TRAVELLERS, insuranceStep1Schema, insuranceStep2Schema,
 } from '@/lib/validation/insurance'
 import { submitInsuranceOrder } from '@/lib/actions/submit-insurance-order'
+import { INSURANCE_COVERAGE_CATALOG } from '@/lib/insurance/coverage-catalog'
 import { getOrCreateInsuranceOrderKey, clearInsuranceOrderKey } from '@/lib/insurance/order-key'
 import type { InsuranceTariff } from '@/lib/insurs'             // type-only (server-only guard tetiklenmez)
 import type { Locale } from '@/lib/notifications/whatsapp-link' // type-only
@@ -259,69 +261,80 @@ export function InsuranceWizard() {
         <CardContent className="space-y-5 p-6">
           {step === 0 ? (
             <>
-              {/* Tarihler */}
+              {/* Tarih aralığı + yolcu sayısı — yan yana (range tek alan) */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="ins-date-from">{t('labels.dateFrom')} *</Label>
-                  <Input id="ins-date-from" type="date" min={today} value={dateFrom}
-                    onChange={(e) => setDateFrom(clampYear(e.target.value))} />
+                  <Label>{t('labels.dates')} *</Label>
+                  <DateRangeField
+                    mode="range"
+                    date={dateFrom}
+                    returnDate={dateTo}
+                    onDateChange={setDateFrom}
+                    onReturnDateChange={setDateTo}
+                    minDate={today}
+                    locale={locale}
+                    placeholder={t('datesPlaceholder')}
+                    alignOffset={4}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ins-date-to">{t('labels.dateTo')} *</Label>
-                  <Input id="ins-date-to" type="date" min={dateFrom || today} value={dateTo}
-                    onChange={(e) => setDateTo(clampYear(e.target.value))} />
+                  <Label htmlFor="ins-travellers">{t('labels.travellers')} *</Label>
+                  <Select value={String(travellers)} onValueChange={(v) => setTravellers(Number(v))}>
+                    <SelectTrigger id="ins-travellers" className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: MAX_TRAVELLERS }, (_, i) => i + 1).map((n) => (
+                        <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* Yolcu sayısı (1-9) */}
-              <div className="space-y-2">
-                <Label htmlFor="ins-travellers">{t('labels.travellers')} *</Label>
-                <Select value={String(travellers)} onValueChange={(v) => setTravellers(Number(v))}>
-                  <SelectTrigger id="ins-travellers" className="w-full sm:w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: MAX_TRAVELLERS }, (_, i) => i + 1).map((n) => (
-                      <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Teminat + tahmini fiyat */}
+              {/* Teminat — açılışta katalogdan 3 gri "tahmini" satır; canlı quote gelince
+                  eşleşen satır aktifleşir + gerçek €. Seçilebilirlik live tariff'e bağlı. */}
               <div className="space-y-2">
                 <Label>{t('coverageHeading')} *</Label>
+                <RadioGroup
+                  value={coverageId != null ? String(coverageId) : ''}
+                  onValueChange={(v) => setCoverageId(Number(v))}
+                  className="space-y-2"
+                >
+                  {INSURANCE_COVERAGE_CATALOG.map((cat) => {
+                    const live = tariffs.find((tf) => tf.coverageId === cat.coverageId)
+                    const enabled = datesValid && !quoteLoading && live != null
+                    const selected = cat.coverageId === coverageId
+                    const price = live ? live.priceAmount : cat.estimateOneDay
+                    return (
+                      <Label key={cat.coverageId} htmlFor={`ins-cov-${cat.coverageId}`}
+                        className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+                          enabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                        } ${
+                          selected ? 'border-primary bg-primary/5'
+                            : enabled ? 'border-border/50 hover:border-primary/50' : 'border-border/50'
+                        }`}>
+                        <span className="flex items-center gap-2">
+                          <RadioGroupItem value={String(cat.coverageId)} id={`ins-cov-${cat.coverageId}`} disabled={!enabled} />
+                          <span className="text-sm text-foreground">
+                            {t('coverageLabel', { coverage: cat.coverageValue.toLocaleString(locale) })}
+                          </span>
+                        </span>
+                        <span className={`whitespace-nowrap text-sm font-semibold ${
+                          enabled ? 'text-primary' : 'text-muted-foreground'
+                        }`}>
+                          {t('estimatedPrice', { price: price.toLocaleString(locale) })}
+                        </span>
+                      </Label>
+                    )
+                  })}
+                </RadioGroup>
+                {/* Liste hep görünür; durum ipucu altta (bloğu değiştirmez). */}
                 {!datesValid ? (
-                  <p className="text-sm text-muted-foreground">{t('pickDates')}</p>
+                  <p className="text-xs text-muted-foreground">{t('pickDates')}</p>
                 ) : quoteLoading ? (
-                  <p className="text-sm text-muted-foreground">{t('quoteLoading')}</p>
+                  <p className="text-xs text-muted-foreground">{t('quoteLoading')}</p>
                 ) : quoteFailed ? (
-                  <p className="text-sm text-destructive">{t('quoteFailed')}</p>
-                ) : (
-                  <RadioGroup
-                    value={coverageId != null ? String(coverageId) : ''}
-                    onValueChange={(v) => setCoverageId(Number(v))}
-                    className="space-y-2"
-                  >
-                    {tariffs.map((tf) => {
-                      const selected = tf.coverageId === coverageId
-                      return (
-                        <Label key={tf.coverageId} htmlFor={`ins-cov-${tf.coverageId}`}
-                          className={`flex cursor-pointer items-center justify-between gap-3 rounded-md border p-3 ${
-                            selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
-                          }`}>
-                          <span className="flex items-center gap-2">
-                            <RadioGroupItem value={String(tf.coverageId)} id={`ins-cov-${tf.coverageId}`} />
-                            <span className="text-sm text-foreground">
-                              {t('coverageLabel', { coverage: tf.coverageValue.toLocaleString(locale) })}
-                            </span>
-                          </span>
-                          <span className="whitespace-nowrap text-sm font-semibold text-primary">
-                            {t('estimatedPrice', { price: tf.priceAmount.toLocaleString(locale) })}
-                          </span>
-                        </Label>
-                      )
-                    })}
-                  </RadioGroup>
-                )}
+                  <p className="text-xs text-destructive">{t('quoteFailed')}</p>
+                ) : null}
                 <p className="text-xs text-muted-foreground">{t('estimateNote')}</p>
               </div>
 
@@ -333,47 +346,7 @@ export function InsuranceWizard() {
             </>
           ) : step === 1 ? (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-foreground">{t('travellersHeading')}</h2>
-
-              {passengers.map((p, index) => (
-                <div key={index} className="space-y-4 rounded-md border p-4">
-                  <p className="text-sm font-medium text-foreground">
-                    {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
-                  </p>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor={`ins-fn-${index}`}>{t('labels.firstName')} *</Label>
-                      <Input id={`ins-fn-${index}`} value={p.firstName}
-                        onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
-                        className={passengerError(index, 'firstName') ? 'border-destructive' : ''} />
-                      {passengerError(index, 'firstName') && <p className="text-sm text-destructive">{passengerError(index, 'firstName')}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`ins-ln-${index}`}>{t('labels.lastName')} *</Label>
-                      <Input id={`ins-ln-${index}`} value={p.lastName}
-                        onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
-                        className={passengerError(index, 'lastName') ? 'border-destructive' : ''} />
-                      {passengerError(index, 'lastName') && <p className="text-sm text-destructive">{passengerError(index, 'lastName')}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`ins-dob-${index}`}>{t('labels.birthDate')} *</Label>
-                      <Input id={`ins-dob-${index}`} type="date" min="1900-01-01" max={today} value={p.birthDate}
-                        onChange={(e) => updatePassenger(index, 'birthDate', clampYear(e.target.value))}
-                        className={passengerError(index, 'birthDate') ? 'border-destructive' : ''} />
-                      {passengerError(index, 'birthDate') && <p className="text-sm text-destructive">{passengerError(index, 'birthDate')}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`ins-pp-${index}`}>{t('labels.passportNumber')} *</Label>
-                      <Input id={`ins-pp-${index}`} value={p.passportNumber}
-                        onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
-                        className={passengerError(index, 'passportNumber') ? 'border-destructive' : ''} />
-                      {passengerError(index, 'passportNumber') && <p className="text-sm text-destructive">{passengerError(index, 'passportNumber')}</p>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* İletişim */}
+              {/* İletişim — yolcu listesinin ÜSTÜnde (rezervasyon başına tek blok) */}
               <div className="space-y-4 rounded-md border p-4">
                 <p className="text-sm font-medium text-foreground">{t('contactHeading')}</p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -393,6 +366,46 @@ export function InsuranceWizard() {
                   </div>
                 </div>
               </div>
+
+              <h2 className="text-lg font-semibold text-foreground">{t('travellersHeading')}</h2>
+
+              {passengers.map((p, index) => (
+                <div key={index} className="space-y-4 rounded-md border p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_9rem_8rem] lg:gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-fn-${index}`}>{t('labels.firstName')} *</Label>
+                      <Input id={`ins-fn-${index}`} value={p.firstName}
+                        onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
+                        className={`min-w-0 ${passengerError(index, 'firstName') ? 'border-destructive' : ''}`} />
+                      {passengerError(index, 'firstName') && <p className="text-sm text-destructive">{passengerError(index, 'firstName')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-ln-${index}`}>{t('labels.lastName')} *</Label>
+                      <Input id={`ins-ln-${index}`} value={p.lastName}
+                        onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
+                        className={`min-w-0 ${passengerError(index, 'lastName') ? 'border-destructive' : ''}`} />
+                      {passengerError(index, 'lastName') && <p className="text-sm text-destructive">{passengerError(index, 'lastName')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-dob-${index}`}>{t('labels.birthDate')} *</Label>
+                      <Input id={`ins-dob-${index}`} type="date" min="1900-01-01" max={today} value={p.birthDate}
+                        onChange={(e) => updatePassenger(index, 'birthDate', clampYear(e.target.value))}
+                        className={`min-w-0 ${passengerError(index, 'birthDate') ? 'border-destructive' : ''}`} />
+                      {passengerError(index, 'birthDate') && <p className="text-sm text-destructive">{passengerError(index, 'birthDate')}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`ins-pp-${index}`}>{t('labels.passportNumber')} *</Label>
+                      <Input id={`ins-pp-${index}`} value={p.passportNumber}
+                        onChange={(e) => updatePassenger(index, 'passportNumber', e.target.value)}
+                        className={`min-w-0 ${passengerError(index, 'passportNumber') ? 'border-destructive' : ''}`} />
+                      {passengerError(index, 'passportNumber') && <p className="text-sm text-destructive">{passengerError(index, 'passportNumber')}</p>}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             // Adım 3 — Özet + öde
