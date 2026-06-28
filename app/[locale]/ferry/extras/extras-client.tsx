@@ -606,12 +606,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
 
                 {/* Car slider — tek satır yatay scroll (native snap) + desktop ok'ları */}
                 <div className="relative">
-                  {/* sol/sağ ok — yalnız desktop (lg); scrollBy bir kart (304px = w-72 + gap) */}
+                  {/* sol/sağ ok — tablet+ (md, iPad/820 dahil); scrollBy bir kart (304px = w-72 + gap) */}
                   <button
                     type="button"
                     aria-label="Scroll cars left"
                     onClick={() => carScrollRef.current?.scrollBy({ left: -304, behavior: 'smooth' })}
-                    className="hidden lg:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
+                    className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -619,7 +619,7 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                     type="button"
                     aria-label="Scroll cars right"
                     onClick={() => carScrollRef.current?.scrollBy({ left: 304, behavior: 'smooth' })}
-                    className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
+                    className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border border-border shadow-md items-center justify-center hover:bg-secondary transition-colors"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
