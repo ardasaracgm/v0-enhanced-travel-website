@@ -5,7 +5,15 @@ import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { BookingProvider } from '@/lib/booking-context'
 import { Suspense } from 'react'
+import { Dancing_Script } from 'next/font/google'
 import '../globals.css'
+
+const script = Dancing_Script({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['600', '700'],
+  variable: '--font-script',
+  display: 'swap',
+})
 
 /**
  * Per-locale root layout.
@@ -65,7 +73,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="antialiased">
+      <body className={`${script.variable} antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Suspense fallback={null}>
             <BookingProvider>{children}</BookingProvider>

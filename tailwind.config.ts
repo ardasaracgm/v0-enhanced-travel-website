@@ -15,6 +15,9 @@ const config: Config = {
       center: true,
     },
     extend: {
+      fontFamily: {
+        script: ['var(--font-script)', 'cursive'],
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

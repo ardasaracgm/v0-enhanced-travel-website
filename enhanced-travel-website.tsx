@@ -227,7 +227,7 @@ export default function TravelBeez() {
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-sm md:text-base text-primary font-semibold tracking-wider uppercase"
+                className="text-xl md:text-2xl text-primary font-script"
               >
                 {t("kicker")}
               </motion.span>
