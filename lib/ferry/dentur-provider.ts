@@ -89,6 +89,17 @@ function normalizeTime(t: string): string {
   return m ? `${m[1].padStart(2, '0')}:${m[2]}` : t
 }
 
+/**
+ * Operatör adı görüntü-normalizasyonu. Dentur tüzel adı "DENTUR AVRASYA" döndürür;
+ * UI kısa markayı "DENTUR" gösterir. YALNIZ bu operatör kısaltılır — IDO ve diğer
+ * her companyName olduğu gibi geçer (başka firmayı yeniden adlandırma). Boşluk/
+ * casing duyarsız. Provider sınırında uygulandığı için round-trip'in HER İKİ bacağı
+ * da aynı normalize olur → isReversePair'in operator-eşitlik anahtarı tutarlı kalır.
+ */
+function normalizeOperatorName(name: string): string {
+  return /dentur\s*avrasya/i.test(name.trim()) ? 'DENTUR' : name
+}
+
 /** "2026-06-25T00:00:00" → "2026-06-25". Robust to a plain date or a datetime. */
 function normalizeDate(d: string): string {
   const m = /^(\d{4}-\d{2}-\d{2})/.exec(d.trim())
@@ -130,7 +141,7 @@ function mapExpedition(e: WireExpedition): FerryTrip {
     departureTime: normalizeTime(e.departureTime),  // "09:15:00" → "09:15" (mock parity)
     arrivalTime: normalizeTime(e.arrivalTime),
     durationMinutes: e.duration,      // verified minutes (45 = 09:15→10:00)
-    operator: e.companyName,
+    operator: normalizeOperatorName(e.companyName),
     vessel: e.ferryName,
     passengerSeatsAvailable: e.passengerRemainingQuota,
     vehicleSeatsAvailable: e.vehicleRemainingQuota,
