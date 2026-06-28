@@ -1315,6 +1315,10 @@
       "title": "Bu tarih civarında sefer yok",
       "body": "Seçtiğin tarihe yakın sefer bulunamadı. Lütfen farklı bir tarih dene."
     },
+    "providerError": {
+      "title": "Geçici bir sorun oluştu",
+      "body": "Sefer bilgileri şu an alınamadı. Lütfen birkaç dakika sonra tekrar deneyin."
+    },
     "direct": "Direkt",
     "dateStrip": {
       "seats": "{count, plural, one {# koltuk} other {# koltuk}}",

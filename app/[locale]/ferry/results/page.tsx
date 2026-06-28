@@ -173,6 +173,7 @@ export default function FerryResultsPage() {
   React.useEffect(() => {
     let cancelled = false
     const sp = state.searchParams
+    if (!sp.date) return   // henüz/halen tarih yok → gereksiz action çağrısı yapma (boş-tarih 400'ünü kaynakta önle)
     ;(async () => {
       const out = await searchFerriesWithNearestAction({ from: sp.from, to: sp.to, date: sp.date })
       if (cancelled) return

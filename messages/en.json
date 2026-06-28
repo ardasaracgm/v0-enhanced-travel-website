@@ -1315,6 +1315,10 @@
       "title": "No ferries around this date",
       "body": "There are no sailings near your selected date. Please try a different date."
     },
+    "providerError": {
+      "title": "Something went wrong",
+      "body": "We couldn't load sailings right now. Please try again in a few minutes."
+    },
     "direct": "Direct",
     "dateStrip": {
       "seats": "{count, plural, one {# seat} other {# seats}}",

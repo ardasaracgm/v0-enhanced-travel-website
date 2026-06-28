@@ -1309,6 +1309,10 @@
       "title": "No ferries around this date",
       "body": "There are no sailings near your selected date. Please try a different date."
     },
+    "providerError": {
+      "title": "Προέκυψε προσωρινό πρόβλημα",
+      "body": "Δεν ήταν δυνατή η φόρτωση των δρομολογίων αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγα λεπτά."
+    },
     "direct": "Απευθείας",
     "dateStrip": {
       "seats": "{count, plural, one {# θέση} other {# θέσεις}}",

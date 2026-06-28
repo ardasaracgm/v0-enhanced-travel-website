@@ -166,6 +166,10 @@ export function FerryResultEmpty({
     return <EmptyCard title={t('routeNotOffered.title')} body={t('routeNotOffered.body')} />
   }
 
+  if (result?.reason === 'provider_error') {
+    return <EmptyCard title={t('providerError.title')} body={t('providerError.body')} />
+  }
+
   if (result?.reason === 'no_trips_on_date' && result.nearest) {
     const nearest = result.nearest
     return (

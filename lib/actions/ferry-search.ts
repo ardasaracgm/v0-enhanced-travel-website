@@ -6,6 +6,7 @@ import { nearestCandidateDates, MAX_NEAREST_PROBES } from '@/lib/ferry/nearest'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { addDaysISO } from '@/lib/trip-items/summary'
 import type { FerryTrip } from '@/lib/ferry/provider'
+import { DenturError } from '@/lib/ferry/dentur-error'
 
 export interface FerrySearchActionInput {
   from: string
@@ -31,7 +32,7 @@ export async function searchFerriesAction(input: FerrySearchActionInput): Promis
 
 export interface FerrySearchResult {
   trips: FerryTrip[]
-  reason?: 'route_not_offered' | 'no_trips_on_date' | 'no_trips_in_window'
+  reason?: 'route_not_offered' | 'no_trips_on_date' | 'no_trips_in_window' | 'provider_error'
   nearest?: FerryTrip
 }
 
@@ -45,51 +46,58 @@ function isUnknownRouteError(e: unknown): boolean {
  *   route_not_offered      → route not in Dentur (UI: "not available")
  *   no_trips_on_date + nearest → none on this date; nearest AVAILABLE sailing (fresh-verified)
  *   no_trips_in_window     → no fresh-available day within ±NEAREST_WINDOW_DAYS
+ *   provider_error         → provider threw (http/timeout/network) — degrade, never 500
  * The "nearest" business logic lives here; the provider returns raw data only.
  */
 export async function searchFerriesWithNearestAction(
   input: FerrySearchActionInput,
 ): Promise<FerrySearchResult> {
-  const provider = await getFerryProvider()
-  const from = slug(input.from), to = slug(input.to)
+  // A — kök guard: boş/parse-edilemez tarih Dentur'a GİTMESİN. TripSearch YYYY-MM-DD
+  // bekliyor; "" / "2026-7-2" / "2026/07/02" → HTTP 400 (probe ile kanıtlı). Boş =
+  // henüz arama yok → SESSİZ boş sonuç. UI no_trips_in_window'u graceful gösterir.
   const date = input.date.slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { trips: [], reason: 'no_trips_in_window' }
 
-  // 1) Main path — exact date, fresh quota.
-  let trips: FerryTrip[]
+  const from = slug(input.from), to = slug(input.to)
+
+  // B — TEK savunma katmanı: main-search, schedule VE nearest-probe döngüsünün
+  // fırlattığı her provider hatası buraya düşer → ham 500 yerine graceful reason.
+  // Sıra kritik: unknown-route DA bir DenturError'dır → önce o yakalanmalı.
   try {
-    trips = await provider.search({ from, to, date: input.date, pax: input.pax })
+    const provider = await getFerryProvider()
+
+    // 1) Main path — exact date, fresh quota.
+    const trips = await provider.search({ from, to, date: input.date, pax: input.pax })
+    if (trips.length > 0) return { trips }
+
+    // 2) Empty day, route exists → season schedule for the fallback.
+    const schedule = await provider.getRouteSchedule(from, to)
+    const candidates = nearestCandidateDates(schedule, date, todayAthensISO())
+      .slice(0, MAX_NEAREST_PROBES)
+
+    // 3) Re-verify each candidate with a FRESH search (stale-cache guard); first available wins.
+    for (const candidateDate of candidates) {
+      const fresh = await provider.search({ from, to, date: `${candidateDate}T00:00:00`, pax: input.pax })
+      const available = fresh.find((t) => t.passengerSeatsAvailable > 0)
+      // Stamp the candidate date — mock search returns date-less trips; Dentur's is
+      // already this date, so stamping is consistent across providers.
+      if (available) return { trips: [], reason: 'no_trips_on_date', nearest: { ...available, date: candidateDate } }
+    }
+
+    // 4) No fresh-available candidate within the window (or all probes came back empty).
+    console.warn(
+      `[ferry] nearest fallback empty: ${from}→${to} @ ${date} — ` +
+      `${candidates.length} candidate(s) probed, no fresh availability`,
+    )
+    return { trips: [], reason: 'no_trips_in_window' }
   } catch (e) {
     if (isUnknownRouteError(e)) return { trips: [], reason: 'route_not_offered' }
+    if (e instanceof DenturError) {
+      console.error(`[ferry] provider error: ${(e as Error).message}`)
+      return { trips: [], reason: 'provider_error' }
+    }
     throw e
   }
-  if (trips.length > 0) return { trips }
-
-  // 2) Empty day, route exists → season schedule for the fallback.
-  let schedule: FerryTrip[]
-  try {
-    schedule = await provider.getRouteSchedule(from, to)
-  } catch (e) {
-    if (isUnknownRouteError(e)) return { trips: [], reason: 'route_not_offered' }
-    throw e
-  }
-  const candidates = nearestCandidateDates(schedule, date, todayAthensISO())
-    .slice(0, MAX_NEAREST_PROBES)
-
-  // 3) Re-verify each candidate with a FRESH search (stale-cache guard); first available wins.
-  for (const candidateDate of candidates) {
-    const fresh = await provider.search({ from, to, date: `${candidateDate}T00:00:00`, pax: input.pax })
-    const available = fresh.find((t) => t.passengerSeatsAvailable > 0)
-    // Stamp the candidate date — mock search returns date-less trips; Dentur's is
-    // already this date, so stamping is consistent across providers.
-    if (available) return { trips: [], reason: 'no_trips_on_date', nearest: { ...available, date: candidateDate } }
-  }
-
-  // 4) No fresh-available candidate within the window (or all probes came back empty).
-  console.warn(
-    `[ferry] nearest fallback empty: ${from}→${to} @ ${date} — ` +
-    `${candidates.length} candidate(s) probed, no fresh availability`,
-  )
-  return { trips: [], reason: 'no_trips_in_window' }
 }
 
 export interface RouteAvailability {
