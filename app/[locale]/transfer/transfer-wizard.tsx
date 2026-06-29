@@ -208,6 +208,7 @@ export function TransferWizard() {
                     </li>
                   ))}
                 </ol>
+                <div className="min-h-[34rem] space-y-5">
                 {step === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -236,33 +237,33 @@ export function TransferWizard() {
               {/* Araç — yatay kompakt kartlar; seçili açık kapı (-open), değil kapalı (-close) */}
               <div className="space-y-2">
                 <Label>{t('vehicle')} *</Label>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {region.vehicles.map((v) => {
                     const selected = vehicleId === v.id
                     const priceEur = route ? ((route.prices as Record<string, number>)[v.id] ?? 0) / 100 : null
                     const vSrc = transferVehicleVisual(v.id, selected)
                     return (
                       <button key={v.id} type="button" onClick={() => setVehicleId(v.id)}
-                        className={`flex flex-col overflow-hidden rounded-xl border-2 text-left transition-all ${
-                          selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
+                        className={`flex flex-col overflow-hidden rounded-xl border-2 text-left shadow-sm transition-shadow hover:shadow-md ${
+                          selected ? 'border-primary shadow-md ring-2 ring-primary' : 'border-border/50'
                         }`}>
-                        {/* Üst satır: görsel sol + isim sağ (tek kez) */}
-                        <div className="flex items-center gap-3 p-2">
-                          <div className="relative aspect-[3/2] w-24 shrink-0 overflow-hidden rounded-md bg-white">
-                            {vSrc && (
-                              <Image src={vSrc} alt={v.label} fill sizes="6rem" className="object-contain" />
+                        {/* Görsel üstte tam genişlik (5:3 = kaynak oranı, kırpılmaz) */}
+                        <div className="relative aspect-[5/3] w-full bg-white">
+                          {vSrc && (
+                            <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-cover" />
+                          )}
+                        </div>
+                        {/* Alt şerit: isim + kapasite + fiyat */}
+                        <div className="space-y-1 px-3 py-2">
+                          <span className="block text-sm font-medium text-foreground">{v.label}</span>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                              <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                            </span>
+                            {priceEur != null && (
+                              <span className="font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
                             )}
                           </div>
-                          <span className="text-sm font-medium text-foreground">{v.label}</span>
-                        </div>
-                        {/* Alt ince şerit: kapasite + fiyat */}
-                        <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-1.5 text-xs">
-                          <span className="inline-flex items-center gap-1 text-muted-foreground">
-                            <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                          </span>
-                          {priceEur != null && (
-                            <span className="font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
-                          )}
                         </div>
                       </button>
                     )
@@ -352,7 +353,7 @@ export function TransferWizard() {
           ) : (
             // Adım 3 — özet + öde
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">{t('reviewHeading')}</h2>
+              <h2 className="text-lg font-semibold text-blue-950">{t('reviewHeading')}</h2>
               <div className="divide-y rounded-md border">
                 <div className="flex items-center justify-between gap-4 p-3 text-sm">
                   <span className="text-muted-foreground">{t('summaryRoute')}</span>
@@ -395,6 +396,7 @@ export function TransferWizard() {
               {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
             </div>
           )}
+                </div>
         </CardContent>
 
         {/* Step 1 Devam araç bloğunda; Step 2/3 burada Geri+Devam (sabit yükseklik) */}
