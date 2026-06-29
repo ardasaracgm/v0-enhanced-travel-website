@@ -41,6 +41,9 @@ interface FerrySearchFormProps {
    *  et. Hero gibi kendi kartı olan bir kabın içine çift-kart/çift-padding olmadan
    *  gömmek için (Parça 2b tüketir). Verilmezse bugünkü <Card> çıktısı birebir. */
   bare?: boolean
+  /** Form alan düzeni. 'horizontal' (default) = ESKİ tek-satır grid (homepage hero).
+   *  'vertical' = dikey stack (/ferry sol rail). Salt layout — alanlar/akış aynı. */
+  orientation?: 'horizontal' | 'vertical'
 }
 
 /**
@@ -48,7 +51,8 @@ interface FerrySearchFormProps {
  * Tek kaynak: hem ferry sayfası hem ana sayfa hero kullanır. Davranış birebir;
  * RESET_CART → SET_SEARCH_PARAMS → push('/ferry/results') zinciri değişmez.
  */
-export function FerrySearchForm({ className, initial, bare }: FerrySearchFormProps) {
+export function FerrySearchForm({ className, initial, bare, orientation = 'horizontal' }: FerrySearchFormProps) {
+  const vertical = orientation === 'vertical'
   const t = useTranslations('ferryPage')
   const locale = useLocale()
   const router = useRouter()
@@ -199,10 +203,13 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
             </div>
           </RadioGroup>
         </div>
-        <div className={bare
-          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3'
-          : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4'}>
-          <div className="space-y-2">
+        <div className={cn(
+          'grid',
+          vertical
+            ? 'grid-cols-2 gap-x-8 gap-y-3'
+            : cn(bare ? 'gap-3' : 'gap-4', 'grid-cols-1 md:grid-cols-2 lg:grid-cols-6'),
+        )}>
+          <div className={cn('space-y-2', vertical && 'order-1')}>
             <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
             <PortCombobox
               ports={departures}
@@ -214,15 +221,20 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
               countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
             />
           </div>
-          <div className="space-y-2 relative">
+          <div className={cn('space-y-2 relative', vertical && 'order-2')}>
             <label className="text-sm font-medium text-foreground">{t('toPort')}</label>
-            {/* from↔to swap — md+ (yan yana) görünür. Mobil dikey stack'te
-                swap, merged route box ile (Commit B) gelecek. Salt UI state. */}
+            {/* from↔to swap — yatay ok her modda. vertical: 2-kolon Kalkış|Varış
+                sınırına ortalı (left-0); horizontal: md+ kolon arası (-left-6). Salt UI. */}
             <button
               type="button"
               onClick={swapPorts}
               aria-label={t('swapPorts')}
-              className="hidden md:flex absolute -left-6 top-8 z-10 h-8 w-8 items-center justify-center rounded-full border border-input bg-background shadow-sm hover:bg-accent"
+              className={cn(
+                'absolute z-10 items-center justify-center rounded-full border border-input bg-background shadow-sm hover:bg-accent',
+                vertical
+                  ? 'flex h-7 w-7 -left-4 top-8 -translate-x-1/2'
+                  : 'hidden md:flex h-8 w-8 -left-6 top-8',
+              )}
             >
               <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -236,7 +248,7 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
               countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
             />
           </div>
-          <div className="space-y-2">
+          <div className={cn('space-y-2', vertical && 'order-3')}>
             <label className="text-sm font-medium text-foreground">
               {tripType === 'round-trip'
                 ? t('roundTripDates')
@@ -259,8 +271,8 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
               Varış/Tarih/Yolcu/Ara) aynı pikselde sabit kalır. İçerik sadece
               round-trip'te; dönüş kalkışı (=to) etikette satır-içi. İleride
               multi-leg için doğal slot. Money-path değişmez. */}
-          <div className="space-y-2 min-w-0">
-            {tripType === 'round-trip' && (
+          <div className={cn('space-y-2 min-w-0', vertical && 'order-5')}>
+            {tripType === 'round-trip' ? (
               <>
                 <label className="block text-sm font-medium text-foreground truncate">
                   <span className="font-normal text-muted-foreground">{toName} → </span>
@@ -276,9 +288,19 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
                   countryLabels={{ TR: t('countryTurkey'), GR: t('countryGreece') }}
                 />
               </>
-            )}
+            ) : vertical ? (
+              // Dikey: tek-yönde slotu GÖRÜNMEZ placeholder ile doldur (display:none
+              // DEĞİL) → round-trip↔one-way geçişinde form boyu sabit, zıplama yok.
+              // PortCombobox tetikleyicisi h-10 → kutu birebir aynı yükseklik.
+              <>
+                <label aria-hidden className="block text-sm font-medium text-foreground truncate invisible">
+                  {t('returnToPort')}
+                </label>
+                <div aria-hidden className="h-10 rounded-md border border-input bg-background opacity-0" />
+              </>
+            ) : null}
           </div>
-          <div className="space-y-2">
+          <div className={cn('space-y-2', vertical && 'order-4')}>
             <label className="text-sm font-medium text-foreground">{t('passengersLabel')}</label>
             {/* Stepper: elle yazılabilir + -/+ . min 1, max FERRY_MAX_PAX.
                 setPassengers string besler (mevcut sözleşme; handleSearch
@@ -316,7 +338,7 @@ export function FerrySearchForm({ className, initial, bare }: FerrySearchFormPro
               </button>
             </div>
           </div>
-          <div className="space-y-2">
+          <div className={cn('space-y-2', vertical && 'order-6')}>
             <label className="text-sm font-medium text-foreground">&nbsp;</label>
             <Button
               className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground"

@@ -355,7 +355,8 @@
   },
 
   "ferryPage": {
-    "title": "Yunan Adalarına Feribot Bileti",
+    "titleLine1": "Yunan Adalarına",
+    "titleLine2": "Feribot Bileti",
     "subtitle": "Bodrum, Turgutreis veya Marmaris'ten Kos, Rodos, Sisam ve ötesine feribot biletinizi ayırtın.",
     "searchTitle": "Feribot Ara",
     "fromPort": "Kalkış limanı",

@@ -314,7 +314,7 @@ export function InsuranceWizard() {
             <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl">{t('heroTitle')}</h1>
             <p className="max-w-md text-pretty text-lg text-blue-950/80">{t('heroSubtitle')}</p>
 
-            <Card id="insurance-form" className="border-0 shadow-2xl">
+            <Card id="insurance-form" className="border-0 shadow-2xl bg-card/90 backdrop-blur">
               <CardContent className="space-y-5 px-6 pt-6 pb-4">
                 {/* Adım göstergesi — kart içi üst */}
                 <ol className="flex items-center justify-center gap-1 sm:gap-2">

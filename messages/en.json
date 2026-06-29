@@ -355,7 +355,8 @@
   },
 
   "ferryPage": {
-    "title": "Ferry Tickets to Greek Islands",
+    "titleLine1": "Ferry Tickets to",
+    "titleLine2": "the Greek Islands",
     "subtitle": "Book your ferry crossing from Bodrum, Turgutreis or Marmaris to Kos, Rhodes, Samos and beyond.",
     "searchTitle": "Search Ferries",
     "fromPort": "From port",

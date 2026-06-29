@@ -99,7 +99,7 @@ export function Car2Hero({
 
             {/* Search card — content unchanged, relocated to the left column */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <Card className="border-0 shadow-2xl">
+              <Card className="border-0 shadow-2xl bg-card/90 backdrop-blur">
                 <CardContent className="grid gap-4 p-6 md:p-8">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('searchPickupLabel')}</label>

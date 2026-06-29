@@ -45,71 +45,87 @@ export default function FerryTicketsPage() {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative w-full py-20 md:py-32 overflow-hidden">
+        {/* Hero — full-bleed ferry-hero + sol dikey form rail (car2/insurance idiom) */}
+        <section className="relative min-h-screen overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1500514966906-fe245eea9344?w=1920&q=80"
+              src="/ferry-hero.webp"
               alt={t('heroImageAlt')}
               fill
+              sizes="100vw"
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-foreground/40" />
+            {/* soldan beyaz → sağda canlı görsel (insurance hero ile birebir gradient) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
           </div>
-          <div className="container relative px-4 md:px-6">
-            <div className="max-w-2xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6"
-              >
-                <Ship className="h-4 w-4" />
-                {t('heroBadge')}
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance"
-              >
-                {t('title')}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
-              >
-                {t('subtitle')}
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-wrap gap-4 text-sm text-white/80"
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>{t('bullet1')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>{t('bullet2')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>{t('bullet3')}</span>
-                </div>
-              </motion.div>
+          {/* min-h-screen + items-start: görsel viewport'u doldurur, alt boşluk yok */}
+          <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
+            <div className="grid w-full items-center gap-6 lg:grid-cols-[30rem_minmax(0,1fr)]">
+              {/* SOL: eyebrow + başlık (iki-tonlu) + subtitle + bullet'lar → ALTINA 2-kolon form */}
+              <div className="space-y-5">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950"
+                >
+                  <Ship className="h-4 w-4" />
+                  {t('heroBadge')}
+                </motion.div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-balance text-4xl font-bold md:text-5xl lg:text-6xl"
+                >
+                  <span className="block text-blue-950">{t('titleLine1')}</span>
+                  <span className="block text-blue-700">{t('titleLine2')}</span>
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-pretty text-lg text-blue-950/80 md:text-xl"
+                >
+                  {t('subtitle')}
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-wrap gap-4 text-sm text-blue-950/80"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <span>{t('bullet1')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <span>{t('bullet2')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <span>{t('bullet3')}</span>
+                  </div>
+                </motion.div>
+                {/* 2-kolon kompakt form — başlığın ALTINDA, sol kolon içinde */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="pt-2"
+                >
+                  <FerrySearchForm
+                    key={routeKey}
+                    initial={searchInitial}
+                    bare
+                    orientation="vertical"
+                    className="rounded-3xl bg-card/90 backdrop-blur shadow-2xl"
+                  />
+                </motion.div>
+              </div>
+              {/* SAĞ: yalnız görsel (boş track — image arkada görünür) */}
             </div>
-          </div>
-        </section>
-
-        {/* Search Section */}
-        <section className="w-full py-12 md:py-16 -mt-8 relative z-10">
-          <div className="container px-4 md:px-6">
-            <FerrySearchForm key={routeKey} initial={searchInitial} />
           </div>
         </section>
 
