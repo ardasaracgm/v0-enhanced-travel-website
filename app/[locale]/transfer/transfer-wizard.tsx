@@ -2,8 +2,9 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
-import { CheckCircle, Users, AlertCircle } from 'lucide-react'
+import { CheckCircle, Users, AlertCircle, Sparkles, UserRound, Headphones, PlaneTakeoff, CalendarX } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,13 @@ import type { Locale } from '@/lib/notifications/whatsapp-link'
 // 3-adımlı wizard: 1) güzergah+araç+yön+tarih, 2) iletişim, 3) özet+öde.
 const TOTAL_STEPS = 3
 const STEP_KEYS = ['trip', 'contact', 'review'] as const
+// Hero sağ kolon — 4 özellik ikonu (salt görünüm). i18n: transferPage.heroFeature*
+const HERO_FEATURES = [
+  { key: 'heroFeatureDrivers', Icon: UserRound },
+  { key: 'heroFeatureSupport', Icon: Headphones },
+  { key: 'heroFeatureTracking', Icon: PlaneTakeoff },
+  { key: 'heroFeatureCancel', Icon: CalendarX },
+] as const
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const EMAIL_RE = /.+@.+\..+/
 
@@ -67,6 +75,7 @@ export function TransferWizard() {
   const [submitError, setSubmitError] = React.useState(false)
   const [done, setDone] = React.useState(false)
   const [paymentLink, setPaymentLink] = React.useState<string | null>(null)
+  const [heroError, setHeroError] = React.useState(false) // hero görsel fallback (salt görünüm)
 
   // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
   React.useEffect(() => { getOrCreateTransferOrderKey() }, [])
@@ -139,8 +148,10 @@ export function TransferWizard() {
   // ----- Başarı (WhatsApp fallback) kartı -----
   if (done) {
     return (
-      <Card className="mx-auto max-w-2xl border-primary/30">
-        <CardContent className="space-y-4 p-8 text-center">
+      <section className="w-full py-16 md:py-24">
+        <div className="container px-4 md:px-6">
+          <Card className="mx-auto max-w-2xl border-primary/30">
+            <CardContent className="space-y-4 p-8 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle className="h-8 w-8 text-primary" />
           </div>
@@ -151,36 +162,53 @@ export function TransferWizard() {
               <a href={paymentLink} target="_blank" rel="noopener noreferrer">{t('success.whatsappCta')}</a>
             </Button>
           )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     )
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('heroTitle')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('heroSubtitle')}</p>
+    <section className="relative min-h-screen overflow-hidden">
+      <div className="absolute inset-0">
+        {!heroError && (
+          <Image src="/transfer-hero.webp" alt={t('heroTitle')} fill sizes="100vw"
+            className="object-cover" priority onError={() => setHeroError(true)} />
+        )}
+        {/* sol kenar hafif beyaz, orta/sağ tam canlı (sigorta/feribot ile birebir) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
       </div>
 
-      {/* Adım göstergesi */}
-      <ol className="flex items-center justify-center gap-1 sm:gap-2">
-        {STEP_KEYS.map((key, i) => (
-          <li key={key} className="flex items-center gap-2">
-            <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
-              i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            }`}>{i + 1}</span>
-            <span className={`hidden text-sm sm:inline ${
-              i === step ? 'font-medium text-foreground' : 'text-muted-foreground'
-            }`}>{t(`steps.${key}`)}</span>
-            {i < TOTAL_STEPS - 1 && <span className="mx-1 h-px w-4 bg-border sm:w-6" />}
-          </li>
-        ))}
-      </ol>
+      <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
+        <div className="grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
 
-      <Card>
-        <CardContent className="space-y-5 p-6">
-          {step === 0 ? (
+          {/* SOL: eyebrow + başlık + subtitle + form kartı */}
+          <div className="w-full max-w-xl space-y-3">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950 lg:hidden">
+              <Sparkles className="h-4 w-4" />{t('heroBadge')}
+            </motion.div>
+            <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl">{t('heroTitle')}</h1>
+            <p className="max-w-md text-pretty text-lg text-blue-950/80">{t('heroSubtitle')}</p>
+
+            <Card className="border-0 shadow-2xl bg-card/90 backdrop-blur">
+              <CardContent className="space-y-5 p-6">
+                {/* Adım göstergesi — kart içi üst */}
+                <ol className="flex items-center justify-center gap-1 sm:gap-2">
+                  {STEP_KEYS.map((key, i) => (
+                    <li key={key} className="flex items-center gap-2">
+                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
+                        i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                      }`}>{i + 1}</span>
+                      <span className={`hidden text-sm sm:inline ${
+                        i === step ? 'font-medium text-foreground' : 'text-muted-foreground'
+                      }`}>{t(`steps.${key}`)}</span>
+                      {i < TOTAL_STEPS - 1 && <span className="mx-1 h-px w-4 bg-border sm:w-6" />}
+                    </li>
+                  ))}
+                </ol>
+                {step === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
                 {t('operatorLabel')}: <span className="text-foreground">{region.operator}</span> ·{' '}
@@ -372,7 +400,30 @@ export function TransferWizard() {
             </Button>
           </CardContent>
         )}
-      </Card>
-    </div>
+            </Card>
+          </div>
+
+          {/* SAĞ: 4 dikey ikon + CTA hap (sigorta hero ile birebir) */}
+          <div className="hidden max-w-xs flex-col justify-center gap-4 lg:flex">
+            {HERO_FEATURES.map(({ key, Icon }, index) => (
+              <motion.div key={key} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: index * 0.12, duration: 0.4 }}
+                className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/40 to-transparent px-4 py-3 backdrop-blur-sm">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 shadow-sm">
+                  <Icon className="h-5 w-5 text-amber-500" />
+                </span>
+                <span className="text-sm font-semibold text-blue-950">{t(key)}</span>
+              </motion.div>
+            ))}
+            <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ delay: HERO_FEATURES.length * 0.12, duration: 0.4 }}
+              className="inline-flex items-center gap-2 self-start rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950">
+              <Sparkles className="h-4 w-4" />{t('heroBadge')}
+            </motion.div>
+          </div>
+
+        </div>
+      </div>
+    </section>
   )
 }

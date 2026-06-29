@@ -9,11 +9,7 @@ export default function TransferPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <section className="w-full py-10">
-          <div className="container px-4 md:px-6">
-            <TransferWizard />
-          </div>
-        </section>
+        <TransferWizard />
       </main>
       <Footer />
     </div>
