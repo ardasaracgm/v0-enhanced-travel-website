@@ -24,10 +24,10 @@ import { FerrySearchForm } from '@/components/ferry/ferry-search-form'
 import { slug } from '@/lib/ferry/util'
 
 const routes = [
-  { from: 'Bodrum', to: 'Kos', duration: '1 hour', price: '€35', frequency: 'Daily', operator: 'Bodrum Express Lines' },
-  { from: 'Turgutreis', to: 'Kos', duration: '40 min', price: '€30', frequency: 'Daily', operator: 'Turgutreis Lines' },
-  { from: 'Marmaris', to: 'Rhodes', duration: '50 min', price: '€45', frequency: 'Daily', operator: 'Marmaris Ferries' },
-  { from: 'Kusadasi', to: 'Samos', duration: '1.5 hours', price: '€40', frequency: 'Daily', operator: 'Meander Travel' },
+  { from: 'Bodrum',     to: 'Kos',   duration: '30 min',  price: '€25' },
+  { from: 'Turgutreis', to: 'Kos',   duration: '30 min',  price: '€25' },
+  { from: 'Fethiye',    to: 'Rodos', duration: '100 min', price: '€55' },
+  { from: 'Kusadasi',   to: 'Samos', duration: '30 min',  price: '€45' },
 ]
 
 // FAQ content lives in i18n (ferryPage.faq{n}Q / faq{n}A).
@@ -146,6 +146,15 @@ export default function FerryTicketsPage() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card border-border/50">
+                    <div className="relative aspect-[16/9]">
+                      <Image
+                        src={`/routes/${slug(route.from)}-${slug(route.to)}.webp`}
+                        alt={`${route.from} → ${route.to}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover"
+                      />
+                    </div>
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -170,7 +179,7 @@ export default function FerryTicketsPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>{route.frequency}</span>
+                          <span>{t('frequencyTypical')}</span>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">

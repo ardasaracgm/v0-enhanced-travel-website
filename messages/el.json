@@ -390,6 +390,7 @@
     "passengersIncrease": "Αύξηση επιβατών",
     "passengerOption": "{count, plural, one {# Επιβάτης} other {# Επιβάτες}}",
     "popularRoutesSubtitle": "Απευθείας συνδέσεις από τις τουρκικές ακτές στα ελληνικά νησιά",
+    "frequencyTypical": "1-2 δρομολόγια/ημέρα",
     "countryTurkey": "Τουρκία",
     "countryGreece": "Ελλάδα",
     "fromPrice": "Από",

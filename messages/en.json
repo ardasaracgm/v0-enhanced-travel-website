@@ -390,6 +390,7 @@
     "passengersIncrease": "Increase passengers",
     "passengerOption": "{count, plural, one {# Passenger} other {# Passengers}}",
     "popularRoutesSubtitle": "Direct connections from Turkish coast to Greek islands",
+    "frequencyTypical": "1-2 sailings/day",
     "countryTurkey": "Turkey",
     "countryGreece": "Greece",
     "fromPrice": "From",

@@ -390,6 +390,7 @@
     "passengersIncrease": "Yolcu artır",
     "passengerOption": "{count, plural, other {# Yolcu}}",
     "popularRoutesSubtitle": "Türkiye kıyılarından Yunan adalarına doğrudan bağlantılar",
+    "frequencyTypical": "günde 1-2 sefer",
     "countryTurkey": "Türkiye",
     "countryGreece": "Yunanistan",
     "fromPrice": "Başlangıç fiyatı",
