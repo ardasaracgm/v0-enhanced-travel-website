@@ -390,6 +390,8 @@
     "passengersIncrease": "Increase passengers",
     "passengerOption": "{count, plural, one {# Passenger} other {# Passengers}}",
     "popularRoutesSubtitle": "Direct connections from Turkish coast to Greek islands",
+    "selectIsland": "Choose Your Island",
+    "selectIslandSubtitle": "Pick an island from the map or a card and we'll find the best sailing",
     "frequencyTypical": "1-2 sailings/day",
     "countryTurkey": "Turkey",
     "countryGreece": "Greece",
@@ -1441,7 +1443,10 @@
         "location": "Dodecanese",
         "description": "Sacred island with the Cave of the Apocalypse.",
         "ferryTime": "4 hours from Bodrum"
-      }
+      },
+      "kalymnos": { "name": "Kalymnos" },
+      "chios": { "name": "Chios" },
+      "midilli": { "name": "Mytilene" }
     }
   },
   "homeTours": {

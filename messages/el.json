@@ -390,6 +390,8 @@
     "passengersIncrease": "Αύξηση επιβατών",
     "passengerOption": "{count, plural, one {# Επιβάτης} other {# Επιβάτες}}",
     "popularRoutesSubtitle": "Απευθείας συνδέσεις από τις τουρκικές ακτές στα ελληνικά νησιά",
+    "selectIsland": "Διάλεξε το νησί σου",
+    "selectIslandSubtitle": "Διάλεξε νησί από τον χάρτη ή μια κάρτα και βρίσκουμε το καλύτερο δρομολόγιο",
     "frequencyTypical": "1-2 δρομολόγια/ημέρα",
     "countryTurkey": "Τουρκία",
     "countryGreece": "Ελλάδα",
@@ -1435,7 +1437,10 @@
         "location": "Dodecanese",
         "description": "Sacred island with the Cave of the Apocalypse.",
         "ferryTime": "4 hours from Bodrum"
-      }
+      },
+      "kalymnos": { "name": "Κάλυμνος" },
+      "chios": { "name": "Χίος" },
+      "midilli": { "name": "Μυτιλήνη" }
     }
   },
   "homeTours": {

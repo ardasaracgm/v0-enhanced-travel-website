@@ -30,11 +30,26 @@ const routes = [
   { from: 'Kusadasi',   to: 'Samos', duration: '30 min',  price: '€45' },
 ]
 
+// "Adanı Seç" grid — id = popularIslands i18n key (name için), to/from = ports.ts
+// slug (prefill; Chios literal 'chios-(sakiz)'), img = /island/<Cap>.webp (büyük harf
+// dosya adları), price = canlı Dentur tek-yön taban fiyatı (probe 2026-06-29).
+const islands = [
+  { id: 'kos',      to: 'kos',           from: 'bodrum',     img: 'Kos',      price: '€25' },
+  { id: 'rhodes',   to: 'rodos',         from: 'fethiye',    img: 'Rodos',    price: '€55' },
+  { id: 'samos',    to: 'samos',         from: 'kusadasi',   img: 'Samos',    price: '€45' },
+  { id: 'leros',    to: 'leros',         from: 'turgutreis', img: 'Leros',    price: '€55' },
+  { id: 'kalymnos', to: 'kalymnos',      from: 'turgutreis', img: 'Kalymnos', price: '€30' },
+  { id: 'patmos',   to: 'patmos',        from: 'kusadasi',   img: 'Patmos',   price: '€50' },
+  { id: 'chios',    to: 'chios-(sakiz)', from: 'cesme',      img: 'Chios',    price: '€30' },
+  { id: 'midilli',  to: 'midilli',       from: 'ayvalik',    img: 'Midilli',  price: '€35' },
+]
+
 // FAQ content lives in i18n (ferryPage.faq{n}Q / faq{n}A).
 const FAQ_COUNT = 6
 
 export default function FerryTicketsPage() {
   const t = useTranslations('ferryPage')
+  const tIslands = useTranslations('popularIslands')
   // Routes kartı "Book" → arama formunu from/to ile ön-doldur. Form state'i kendi
   // içinde (extract sonrası); key-remount + initial ile mount anında beslenir.
   const [routeKey, setRouteKey] = React.useState(0)
@@ -207,6 +222,61 @@ export default function FerryTicketsPage() {
                   </Card>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Adanı Seç — sol harita + sağ 8 ada kart grid. Kart tıkla → arama formunu
+            from/to ile ön-doldur (Popüler Hatlar "Book" ile AYNI mekanizma: slug
+            zaten kanonik, slug() ÇAĞIRMA — Chios parantezli, bozulur). */}
+        <section className="w-full py-16 md:py-24 bg-secondary/30">
+          <div className="container px-4 md:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('selectIsland')}</h2>
+              <p className="text-muted-foreground text-lg">{t('selectIslandSubtitle')}</p>
+            </div>
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-8 items-center">
+              {/* SOL: harita */}
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                <Image
+                  src="/ferry-map.webp"
+                  alt={t('selectIsland')}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-contain"
+                />
+              </div>
+              {/* SAĞ: 8 ada kartı (sade) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {islands.map((island) => (
+                  <button
+                    key={island.id}
+                    type="button"
+                    onClick={() => {
+                      setSearchInitial({ from: island.from, to: island.to })
+                      setRouteKey((k) => k + 1)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    className="group text-left rounded-2xl overflow-hidden border border-border/50 bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    <div className="relative aspect-[3/2] overflow-hidden">
+                      <Image
+                        src={`/island/${island.img}.webp`}
+                        alt={tIslands(`items.${island.id}.name`)}
+                        fill
+                        sizes="(max-width: 640px) 50vw, 200px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <p className="font-bold text-foreground">{tIslands(`items.${island.id}.name`)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('fromPrice')} <span className="font-semibold text-primary">{island.price}</span>
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </section>

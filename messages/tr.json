@@ -390,6 +390,8 @@
     "passengersIncrease": "Yolcu artır",
     "passengerOption": "{count, plural, other {# Yolcu}}",
     "popularRoutesSubtitle": "Türkiye kıyılarından Yunan adalarına doğrudan bağlantılar",
+    "selectIsland": "Adanı Seç",
+    "selectIslandSubtitle": "Haritadan ya da karttan adanı seç, en uygun seferi bulalım",
     "frequencyTypical": "günde 1-2 sefer",
     "countryTurkey": "Türkiye",
     "countryGreece": "Yunanistan",
@@ -1441,7 +1443,10 @@
         "location": "Onikiada",
         "description": "Kıyamet Mağarası'nın bulunduğu kutsal ada.",
         "ferryTime": "Bodrum'dan 4 saat"
-      }
+      },
+      "kalymnos": { "name": "Kalimnos" },
+      "chios": { "name": "Sakız" },
+      "midilli": { "name": "Midilli" }
     }
   },
   "homeTours": {
