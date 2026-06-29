@@ -7,13 +7,6 @@ import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Car2HeroCarousel } from '@/components/car2/car2-hero-carousel'
 import { DateRangeField } from '@/components/ferry/date-range-field'
 import type { NormalizedCar } from '@/lib/normalize-car'
@@ -60,7 +53,7 @@ export function Car2Hero({
       <div className="container relative px-4 md:px-6">
         <div className="grid items-stretch gap-10 lg:grid-cols-2">
           {/* Left: copy + search card */}
-          <div className="max-w-xl space-y-8">
+          <div className="max-w-[30rem] space-y-8">
             <div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -100,15 +93,24 @@ export function Car2Hero({
             {/* Search card — content unchanged, relocated to the left column */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <Card className="border-0 shadow-2xl bg-card/90 backdrop-blur">
-                <CardContent className="grid gap-4 p-6 md:p-8">
+                <CardContent className="grid grid-cols-2 gap-4 p-6">
+                  {/* Row 1 — pickup location | driver age (both fixed single-option) */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('searchPickupLabel')}</label>
-                    <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-sm text-foreground">
-                      <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                    <div className="flex h-10 cursor-default items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4 shrink-0" />
                       <span>{t('searchPickupValue')}</span>
                     </div>
                   </div>
 
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{t('searchAgeLabel')}</label>
+                    <div className="flex h-10 cursor-default items-center rounded-md border border-input bg-muted/50 px-3 text-sm text-muted-foreground">
+                      <span>21+</span>
+                    </div>
+                  </div>
+
+                  {/* Row 2 — date range | search button */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t('searchDatesLabel')}</label>
                     <DateRangeField
@@ -124,23 +126,13 @@ export function Car2Hero({
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">{t('searchAgeLabel')}</label>
-                    <Select value={driverAge} onValueChange={onDriverAgeChange}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="21-24">{t('searchAge2124')}</SelectItem>
-                        <SelectItem value="25+">{t('searchAge25plus')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-col justify-end">
+                    <Button onClick={onSearch} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                      {t('searchButton')}
+                    </Button>
                   </div>
 
-                  <Button onClick={onSearch} className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                    {t('searchButton')}
-                  </Button>
-                  {searchError && <p className="text-sm text-destructive">{searchError}</p>}
+                  {searchError && <p className="col-span-2 text-sm text-destructive">{searchError}</p>}
                 </CardContent>
               </Card>
             </motion.div>
