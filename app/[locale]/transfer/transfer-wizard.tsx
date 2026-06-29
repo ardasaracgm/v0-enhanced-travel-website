@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { CheckCircle, Users, AlertCircle } from 'lucide-react'
 
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
+import { transferVehicleVisual } from '@/lib/service-theme'
 import { submitTransferOrder } from '@/lib/actions/submit-transfer-order'
 import { getOrCreateTransferOrderKey, clearTransferOrderKey } from '@/lib/transfer/order-key'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
@@ -83,10 +85,9 @@ export function TransferWizard() {
 
   const outboundDateOk = !outbound || DATE_RE.test(outboundDate)
   const returnDateOk = !ret || DATE_RE.test(returnDate)
-  const datesOrdered = !(outbound && ret) ||
-    (DATE_RE.test(outboundDate) && DATE_RE.test(returnDate) && returnDate >= outboundDate)
+  // Dönüş bağımsız seçilebilir — tarih sıralama kısıtı kaldırıldı.
   const step1Valid = !!routeId && !!vehicleId && legCount >= 1 &&
-    outboundDateOk && returnDateOk && datesOrdered
+    outboundDateOk && returnDateOk
 
   const pcNum = passengerCount.trim() === '' ? null : Number(passengerCount)
   const capacityWarning = vehicle != null && pcNum != null &&
@@ -199,47 +200,52 @@ export function TransferWizard() {
                 </Select>
               </div>
 
-              {/* Araç */}
+              {/* Araç — görselli kartlar; seçili açık kapı (-open), değil kapalı (-close) */}
               <div className="space-y-2">
                 <Label>{t('vehicle')} *</Label>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {region.vehicles.map((v) => {
                     const selected = vehicleId === v.id
                     const priceEur = route ? ((route.prices as Record<string, number>)[v.id] ?? 0) / 100 : null
+                    const vSrc = transferVehicleVisual(v.id, selected)
                     return (
                       <button key={v.id} type="button" onClick={() => setVehicleId(v.id)}
-                        className={`flex flex-col items-start rounded-xl border-2 px-3 py-1.5 transition-all ${
+                        className={`flex flex-col overflow-hidden rounded-xl border-2 text-left transition-all ${
                           selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
                         }`}>
-                        <span className="whitespace-nowrap text-sm font-medium text-foreground">{v.label}</span>
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                          {priceEur != null && (
-                            <span className="ml-1 font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
+                        <div className="relative aspect-[3/2] w-full bg-white">
+                          {vSrc && (
+                            <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-contain" />
                           )}
-                        </span>
+                        </div>
+                        <div className="space-y-0.5 px-3 py-2">
+                          <span className="block text-sm font-medium text-foreground">{v.label}</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
+                            {priceEur != null && (
+                              <span className="ml-1 font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
+                            )}
+                          </span>
+                        </div>
                       </button>
                     )
                   })}
                 </div>
               </div>
 
-              {/* Yönler + bacak başına tarih */}
-              <div className="space-y-3">
+              {/* Yönler — yan yana; switch yanında yön metni, tarih label'sız */}
+              <div className="space-y-2">
                 <Label>{t('legsHeading')} *</Label>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-md border p-3">
                     <label className="flex cursor-pointer items-center gap-2">
                       <Switch checked={outbound} onCheckedChange={setOutbound} />
                       <span className="text-sm text-foreground">{t('outbound')}</span>
                     </label>
                     {outbound && (
-                      <div className="mt-3 space-y-2">
-                        <Label htmlFor="tr-out-date">{t('outboundDate')} *</Label>
-                        <Input id="tr-out-date" type="date" min={today} value={outboundDate}
-                          className="sm:w-48"
-                          onChange={(e) => setOutboundDate(clampYear(e.target.value))} />
-                      </div>
+                      <Input id="tr-out-date" type="date" min={today} value={outboundDate}
+                        className="mt-3 w-full"
+                        onChange={(e) => setOutboundDate(clampYear(e.target.value))} />
                     )}
                   </div>
                   <div className="rounded-md border p-3">
@@ -248,12 +254,9 @@ export function TransferWizard() {
                       <span className="text-sm text-foreground">{t('return')}</span>
                     </label>
                     {ret && (
-                      <div className="mt-3 space-y-2">
-                        <Label htmlFor="tr-ret-date">{t('returnDate')} *</Label>
-                        <Input id="tr-ret-date" type="date" min={outboundDate || today} value={returnDate}
-                          className="sm:w-48"
-                          onChange={(e) => setReturnDate(clampYear(e.target.value))} />
-                      </div>
+                      <Input id="tr-ret-date" type="date" min={today} value={returnDate}
+                        className="mt-3 w-full"
+                        onChange={(e) => setReturnDate(clampYear(e.target.value))} />
                     )}
                   </div>
                 </div>
@@ -273,6 +276,11 @@ export function TransferWizard() {
                   {!routeId || !vehicleId || legCount < 1 ? t('errors.tripRequired') : t('errors.datesRequired')}
                 </p>
               )}
+
+              {/* Devam — tek başına sağa hizalı (Step 1 Geri yok) */}
+              <div className="flex justify-end">
+                <Button type="button" onClick={goNext}>{t('nav.next')}</Button>
+              </div>
             </>
           ) : step === 1 ? (
             <div className="space-y-5">
@@ -351,17 +359,20 @@ export function TransferWizard() {
             </div>
           )}
         </CardContent>
-      </Card>
 
-      <div className="flex items-center justify-between">
-        <Button type="button" variant="outline"
-          onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || submitting}>
-          {t('nav.back')}
-        </Button>
-        <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
-          {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
-        </Button>
-      </div>
+        {/* Step 1 Devam araç bloğunda; Step 2/3 burada Geri+Devam (sabit yükseklik) */}
+        {step > 0 && (
+          <CardContent className="flex min-h-[3rem] items-center justify-between border-t p-6 pt-4">
+            <Button type="button" variant="outline"
+              onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={submitting}>
+              {t('nav.back')}
+            </Button>
+            <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
+              {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
+            </Button>
+          </CardContent>
+        )}
+      </Card>
     </div>
   )
 }
