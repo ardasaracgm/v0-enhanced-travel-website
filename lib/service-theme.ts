@@ -64,9 +64,13 @@ export function serviceVisual(item: BookingItem): ServiceVisual {
 // Transfer thumbnail path'i — seçili araç tipinden (vito/sprinter) türer.
 // Hem checkout serviceVisual transfer dalı (item bacağından) hem extras kartı
 // (local seçim state'inden) tek kaynaktan tüketir. Salt path mantığı.
-export function transferVehicleVisual(vehicleId: string | null | undefined): string | null {
+// isOpen=false → kapalı kapı görseli (default); true → açık kapı (hero hover vb.).
+export function transferVehicleVisual(
+  vehicleId: string | null | undefined,
+  isOpen = false,
+): string | null {
   return vehicleId === 'vito' || vehicleId === 'sprinter'
-    ? `/services/transfer-${vehicleId}.webp`
+    ? `/services/transfer-${vehicleId}-${isOpen ? 'open' : 'close'}.webp`
     : null
 }
 
