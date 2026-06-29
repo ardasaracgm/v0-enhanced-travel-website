@@ -331,6 +331,7 @@ export function InsuranceWizard() {
         ))}
                 </ol>
 
+                <div className="space-y-5 lg:min-h-[31rem]">
                 {step === 0 ? (
             <>
               {/* Tarih aralığı + yolcu sayısı — yan yana (range tek alan) */}
@@ -514,6 +515,7 @@ export function InsuranceWizard() {
               {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
             </div>
           )}
+                </div>
                 {/* Butonlar — Card içinde, dışarı taşmaz */}
                 <div className="flex items-center gap-3 pt-1">
                   {step > 0 && (
