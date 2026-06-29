@@ -157,7 +157,7 @@ function validate(i: SubmitTransferOrderInput): string | null {
     if (!DATE_RE.test(leg.date ?? '')) return 'Transfer date is invalid'
     if (leg.date < today) return 'Transfer date cannot be in the past' // ISO → leksikal sıralanır
   }
-  if (i.outbound && i.return && i.return.date < i.outbound.date) return 'Return date must be on or after outbound date'
+  // İki leg tamamen bağımsız — gidiş/dönüş tarih sırası dayatılmaz (UI Switch'siz).
   if (!i.contact || !i.contact.firstName?.trim() || !i.contact.lastName?.trim()) return 'Contact name is required'
   if (!EMAIL_RE.test(i.contact.email ?? '')) return 'Invalid contact email'
   if (!i.contact.phone || i.contact.phone.length < 6) return 'Invalid contact phone'

@@ -10,7 +10,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
@@ -56,10 +55,11 @@ export function TransferWizard() {
   // Adım 1
   const [routeId, setRouteId] = React.useState<string>('')
   const [vehicleId, setVehicleId] = React.useState<string>('')
-  const [outbound, setOutbound] = React.useState(true)   // gidiş varsayılan açık
-  const [ret, setRet] = React.useState(false)
   const [outboundDate, setOutboundDate] = React.useState('')
   const [returnDate, setReturnDate] = React.useState('')
+  // Leg aktifliği tarih doluluğundan türetilir (Switch kaldırıldı, tam bağımsız).
+  const outbound = outboundDate !== ''
+  const ret = returnDate !== ''
   const [step1Attempted, setStep1Attempted] = React.useState(false)
 
   // Adım 2
@@ -215,23 +215,28 @@ export function TransferWizard() {
                 {t('pickupLabel')}: <span className="text-foreground">{region.pickupLabel}</span>
               </p>
 
-              {/* Rota */}
-              <div className="space-y-2">
-                <Label htmlFor="tr-route">{t('route')} *</Label>
-                <Select value={routeId || undefined} onValueChange={setRouteId}>
-                  <SelectTrigger id="tr-route"><SelectValue placeholder={t('selectRoute')} /></SelectTrigger>
-                  <SelectContent>
-                    {region.routes.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Varış Select (3/4) + Devam (1/4) yan yana — üstte */}
+              <div className="grid grid-cols-4 gap-3">
+                <div className="col-span-3 space-y-2">
+                  <Label htmlFor="tr-route">{t('route')} *</Label>
+                  <Select value={routeId || undefined} onValueChange={setRouteId}>
+                    <SelectTrigger id="tr-route"><SelectValue placeholder={t('selectRoute')} /></SelectTrigger>
+                    <SelectContent>
+                      {region.routes.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-1 flex items-end">
+                  <Button type="button" onClick={goNext} className="w-full">{t('nav.next')}</Button>
+                </div>
               </div>
 
-              {/* Araç — görselli kartlar; seçili açık kapı (-open), değil kapalı (-close) */}
+              {/* Araç — yatay kompakt kartlar; seçili açık kapı (-open), değil kapalı (-close) */}
               <div className="space-y-2">
                 <Label>{t('vehicle')} *</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   {region.vehicles.map((v) => {
                     const selected = vehicleId === v.id
                     const priceEur = route ? ((route.prices as Record<string, number>)[v.id] ?? 0) / 100 : null
@@ -241,19 +246,23 @@ export function TransferWizard() {
                         className={`flex flex-col overflow-hidden rounded-xl border-2 text-left transition-all ${
                           selected ? 'border-primary bg-primary/5' : 'border-border/50 hover:border-primary/50'
                         }`}>
-                        <div className="relative aspect-[3/2] w-full bg-white">
-                          {vSrc && (
-                            <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-contain" />
-                          )}
-                        </div>
-                        <div className="space-y-0.5 px-3 py-2">
-                          <span className="block text-sm font-medium text-foreground">{v.label}</span>
-                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                            <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
-                            {priceEur != null && (
-                              <span className="ml-1 font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
+                        {/* Üst satır: görsel sol + isim sağ (tek kez) */}
+                        <div className="flex items-center gap-3 p-2">
+                          <div className="relative aspect-[3/2] w-24 shrink-0 overflow-hidden rounded-md bg-white">
+                            {vSrc && (
+                              <Image src={vSrc} alt={v.label} fill sizes="6rem" className="object-contain" />
                             )}
+                          </div>
+                          <span className="text-sm font-medium text-foreground">{v.label}</span>
+                        </div>
+                        {/* Alt ince şerit: kapasite + fiyat */}
+                        <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-1.5 text-xs">
+                          <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <Users className="h-3 w-3" />{t('seatCount', { count: v.capacity })}
                           </span>
+                          {priceEur != null && (
+                            <span className="font-semibold text-primary">€{fmtEur(priceEur)}{t('perLeg')}</span>
+                          )}
                         </div>
                       </button>
                     )
@@ -261,31 +270,21 @@ export function TransferWizard() {
                 </div>
               </div>
 
-              {/* Yönler — yan yana; switch yanında yön metni, tarih label'sız */}
+              {/* Yönler — tarih hep açık (Switch yok); leg ⟺ tarih dolu. Sabit yükseklik. */}
               <div className="space-y-2">
                 <Label>{t('legsHeading')} *</Label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="rounded-md border p-3">
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <Switch checked={outbound} onCheckedChange={setOutbound} />
-                      <span className="text-sm text-foreground">{t('outbound')}</span>
-                    </label>
-                    {outbound && (
-                      <Input id="tr-out-date" type="date" min={today} value={outboundDate}
-                        className="mt-3 w-full"
-                        onChange={(e) => setOutboundDate(clampYear(e.target.value))} />
-                    )}
+                  <div className="flex min-h-[5.25rem] flex-col gap-2 rounded-md border p-3">
+                    <Label htmlFor="tr-out-date" className="text-sm text-foreground">{t('outbound')}</Label>
+                    <Input id="tr-out-date" type="date" min={today} value={outboundDate}
+                      className="w-full"
+                      onChange={(e) => setOutboundDate(clampYear(e.target.value))} />
                   </div>
-                  <div className="rounded-md border p-3">
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <Switch checked={ret} onCheckedChange={setRet} />
-                      <span className="text-sm text-foreground">{t('return')}</span>
-                    </label>
-                    {ret && (
-                      <Input id="tr-ret-date" type="date" min={today} value={returnDate}
-                        className="mt-3 w-full"
-                        onChange={(e) => setReturnDate(clampYear(e.target.value))} />
-                    )}
+                  <div className="flex min-h-[5.25rem] flex-col gap-2 rounded-md border p-3">
+                    <Label htmlFor="tr-ret-date" className="text-sm text-foreground">{t('return')}</Label>
+                    <Input id="tr-ret-date" type="date" min={today} value={returnDate}
+                      className="w-full"
+                      onChange={(e) => setReturnDate(clampYear(e.target.value))} />
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">{t('timeNote')}</p>
@@ -304,11 +303,6 @@ export function TransferWizard() {
                   {!routeId || !vehicleId || legCount < 1 ? t('errors.tripRequired') : t('errors.datesRequired')}
                 </p>
               )}
-
-              {/* Devam — tek başına sağa hizalı (Step 1 Geri yok) */}
-              <div className="flex justify-end">
-                <Button type="button" onClick={goNext}>{t('nav.next')}</Button>
-              </div>
             </>
           ) : step === 1 ? (
             <div className="space-y-5">
@@ -346,11 +340,14 @@ export function TransferWizard() {
                   <p className="text-xs text-muted-foreground">{t('passengerCountNote')}</p>
                 </div>
               </div>
-              {capacityWarning && vehicle && (
-                <p className="inline-flex items-center gap-2 text-sm text-amber-600">
-                  <AlertCircle className="h-4 w-4" />{t('capacityWarning', { capacity: vehicle.capacity })}
-                </p>
-              )}
+              {/* Sabit yer — uyarı görününce form uzamaz */}
+              <div className="min-h-[1.75rem]">
+                {capacityWarning && vehicle && (
+                  <p className="inline-flex items-center gap-2 text-sm text-amber-600">
+                    <AlertCircle className="h-4 w-4" />{t('capacityWarning', { capacity: vehicle.capacity })}
+                  </p>
+                )}
+              </div>
             </div>
           ) : (
             // Adım 3 — özet + öde
@@ -382,6 +379,18 @@ export function TransferWizard() {
                   <span className="text-base font-semibold text-primary">€{fmtEur(totalEur)}</span>
                 </div>
               </div>
+              {/* Araç görseli — suffix'siz geniş manzara (helper'dan DEĞİL, doğrudan path) */}
+              {(vehicleId === 'vito' || vehicleId === 'sprinter') && (
+                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-white">
+                  <Image src={`/services/transfer-${vehicleId}.webp`} alt={vehicle?.label ?? 'Transfer'}
+                    fill sizes="(max-width: 640px) 100vw, 36rem" className="object-cover" />
+                  {vehicle && (
+                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-blue-950/80 px-2.5 py-1 text-xs font-semibold text-white">
+                      <Users className="h-3 w-3" />{t('seatCount', { count: vehicle.capacity })}
+                    </span>
+                  )}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">{t('payNote')}</p>
               {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
             </div>
