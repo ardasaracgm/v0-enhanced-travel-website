@@ -4,9 +4,19 @@ import * as React from 'react'
 import Image from 'next/image'
 import { FileText, CheckCircle, Clock, Calendar, AlertCircle, Shield, Users, Star, Phone, Mail, Building2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +31,8 @@ import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { VisaWizard } from './visa-wizard'
+import { ENTRY_POINTS, VESSEL_TYPES } from '@/lib/validation/visa'
+import { setHeroPrefill, type HeroPrefill } from '@/lib/visa/hero-prefill'
 
 const services = [
   {
@@ -123,10 +135,26 @@ const stats = [
 ]
 
 export default function VisaSupportPage() {
+  const tForm = useTranslations('visaPage.form')
+
+  // Hero mini-form — wizard'a tek-seferlik köprü. Value'lar slug (kutsal);
+  // label/option metinleri visaPage.form anahtarlarından (locale-aware, reuse).
+  const [hero, setHero] = React.useState<HeroPrefill>({
+    firstName: '', lastName: '', entryPoint: '', vesselType: '', birthDate: '',
+  })
+  const updateHero = (k: keyof HeroPrefill, v: string) =>
+    setHero((h) => ({ ...h, [k]: v }))
+
   const scrollToForm = () => {
     document
       .getElementById('visa-application-form')
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // Stash → scroll. Wizard mount'ta readHeroPrefill ile hydrate eder (Parça 3).
+  const handleHeroStart = () => {
+    setHeroPrefill(hero)
+    scrollToForm()
   }
 
   return (
@@ -134,63 +162,122 @@ export default function VisaSupportPage() {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative w-full py-20 md:py-32 overflow-hidden">
+        {/* Hero Section — car2/insurance idiomu: açık sol-fade + blue-950 + amber */}
+        <section className="relative w-full overflow-hidden py-16 md:py-24">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80"
-              alt="Travel documents and passport"
+              src="/visa-hero.webp"
+              alt="Schengen vize"
               fill
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-foreground/40" />
+            {/* sol kenar hafif beyaz, orta/sağ canlı (insurance :294 deseni) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/30 to-transparent" />
           </div>
           <div className="container relative px-4 md:px-6">
-            <div className="max-w-2xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6"
-              >
-                <FileText className="h-4 w-4" />
-                Schengen Visa Assistance
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance"
-              >
-                Visa Support for Turkish Travelers
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-white/90 text-lg md:text-xl mb-8 text-pretty"
-              >
-                Expert assistance for your Schengen visa application. Document preparation, travel itineraries, and personalized support in Turkish.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-wrap gap-4 text-sm text-white/80"
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>95% Approval Rate</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>Turkish Speaking Team</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span>6+ Years Experience</span>
-                </div>
-              </motion.div>
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              {/* SOL: eyebrow + başlık + alt metin + mini-form */}
+              <div className="max-w-xl space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
+                >
+                  <FileText className="h-4 w-4" />
+                  Schengen Vize Desteği
+                </motion.div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
+                >
+                  Türk Yolcular için Vize Desteği
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-pretty text-lg text-blue-950/80 md:text-xl"
+                >
+                  Schengen vize başvurunuz için uzman destek. Belge hazırlığı, seyahat planlaması ve Türkçe kişisel destek.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Card className="border-0 shadow-2xl bg-card/90 backdrop-blur">
+                    <CardContent className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="hero-firstName" className="text-blue-950">{tForm('labels.firstName')}</Label>
+                        <Input
+                          id="hero-firstName"
+                          value={hero.firstName}
+                          onChange={(e) => updateHero('firstName', e.target.value)}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hero-lastName" className="text-blue-950">{tForm('labels.lastName')}</Label>
+                        <Input
+                          id="hero-lastName"
+                          value={hero.lastName}
+                          onChange={(e) => updateHero('lastName', e.target.value)}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hero-entryPoint" className="text-blue-950">{tForm('labels.entryPoint')}</Label>
+                        <Select value={hero.entryPoint} onValueChange={(v) => updateHero('entryPoint', v)}>
+                          <SelectTrigger id="hero-entryPoint" className="h-11 rounded-xl">
+                            <SelectValue placeholder={tForm('selectPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ENTRY_POINTS.map((val) => (
+                              <SelectItem key={val} value={val}>{tForm(`options.entryPoint.${val}`)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hero-vesselType" className="text-blue-950">{tForm('labels.vesselType')}</Label>
+                        <Select value={hero.vesselType} onValueChange={(v) => updateHero('vesselType', v)}>
+                          <SelectTrigger id="hero-vesselType" className="h-11 rounded-xl">
+                            <SelectValue placeholder={tForm('selectPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VESSEL_TYPES.map((val) => (
+                              <SelectItem key={val} value={val}>{tForm(`options.vesselType.${val}`)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="hero-birthDate" className="text-blue-950">{tForm('labels.birthDate')}</Label>
+                        <Input
+                          id="hero-birthDate"
+                          type="date"
+                          value={hero.birthDate}
+                          onChange={(e) => updateHero('birthDate', e.target.value)}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleHeroStart}
+                        className="h-11 w-full bg-amber-400 text-blue-950 hover:bg-amber-500 sm:col-span-2"
+                      >
+                        Başlat
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+
+              {/* SAĞ: görsel zaten arka planda; bu kolon foto'nun sağını açar (fade) */}
+              <div className="hidden lg:block" aria-hidden />
             </div>
           </div>
         </section>
