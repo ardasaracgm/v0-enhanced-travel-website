@@ -249,7 +249,7 @@ export function TransferWizard() {
                     {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
                   </Button>
                 </div>
-                <div className="min-h-[34rem] space-y-5">
+                <div className="min-h-[29rem] space-y-5">
                 {step === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -412,7 +412,7 @@ export function TransferWizard() {
               </div>
               {/* Araç görseli — suffix'siz geniş manzara (helper'dan DEĞİL, doğrudan path) */}
               {(vehicleId === 'vito' || vehicleId === 'sprinter') && (
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-white">
+                <div className="relative aspect-[16/9] max-h-[12rem] w-full overflow-hidden rounded-xl bg-white">
                   <Image src={`/services/transfer-${vehicleId}.webp`} alt={vehicle?.label ?? 'Transfer'}
                     fill sizes="(max-width: 640px) 100vw, 36rem" className="object-cover" />
                   {vehicle && (
