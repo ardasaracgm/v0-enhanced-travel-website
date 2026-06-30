@@ -82,7 +82,7 @@
   },
   "transferPage": {
     "heroTitle": "Bodrum VIP Transfer",
-    "heroSubtitle": "Bodrum'daki adresiniz ile feribot limanı arasında özel VIP transfer — birkaç dakikada.",
+    "heroSubtitle": "Adresiniz ile feribot limanı arasında VIP transfer",
     "heroBadge": "Özel VIP Transfer",
     "heroFeatureDrivers": "Profesyonel şoförler",
     "heroFeatureSupport": "Türkçe destek",
@@ -101,7 +101,7 @@
     "vehicle": "Araç",
     "seatCount": "{count, plural, one {# kişilik} other {# kişilik}}",
     "perLeg": "/yön",
-    "legsHeading": "Yönler",
+    "legsHeading": "Yönler: Alış saati için size ulaşacağız.",
     "outbound": "Bodrum → Liman",
     "return": "Liman → Bodrum",
     "outboundDate": "Gidiş tarihi",

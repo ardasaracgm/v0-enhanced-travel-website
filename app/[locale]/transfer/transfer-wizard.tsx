@@ -60,6 +60,7 @@ export function TransferWizard() {
   const region = TRANSFER_REGIONS[regionId]
 
   const [step, setStep] = React.useState(0)
+  const [maxStepReached, setMaxStepReached] = React.useState(0)
 
   // Adım 1
   const [routeId, setRouteId] = React.useState<string>('')
@@ -120,8 +121,15 @@ export function TransferWizard() {
   const goNext = () => {
     if (step === 0) { setStep1Attempted(true); if (!step1Valid) return }
     if (step === 1) { setStep2Attempted(true); if (!step2Valid) return }
-    setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))
+    const next = Math.min(TOTAL_STEPS - 1, step + 1)
+    setStep(next)
+    setMaxStepReached((m) => Math.max(m, next))
   }
+
+  // Tıklanabilir step: geri her zaman; ileri yalnız ulaşılmış + ön koşullar geçerli (validasyonsuz atlama yok).
+  const stepPrereqOk = [true, step1Valid, step1Valid && step2Valid]
+  const canGoToStep = (target: number) =>
+    target < step ? true : target === step ? false : target <= maxStepReached && stepPrereqOk[target]
 
   // Adım 3 — Öde. Defansif: adım hâlâ geçerli mi (yoksa ilgili adıma dön).
   const handleSubmit = async () => {
@@ -205,17 +213,26 @@ export function TransferWizard() {
               <CardContent className="space-y-5 p-6">
                 {/* Adım göstergesi — kart içi üst */}
                 <ol className="flex items-center justify-center gap-1 sm:gap-2">
-                  {STEP_KEYS.map((key, i) => (
+                  {STEP_KEYS.map((key, i) => {
+                    const clickable = canGoToStep(i)
+                    const reached = i <= maxStepReached
+                    return (
                     <li key={key} className="flex items-center gap-2">
-                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
-                        i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                      }`}>{i + 1}</span>
-                      <span className={`hidden text-sm sm:inline ${
-                        i === step ? 'font-medium text-foreground' : 'text-muted-foreground'
-                      }`}>{t(`steps.${key}`)}</span>
+                      <button type="button" disabled={!clickable} onClick={() => { if (clickable) setStep(i) }}
+                        aria-current={i === step ? 'step' : undefined}
+                        className={`flex items-center gap-2 ${clickable ? 'cursor-pointer' : 'cursor-default'}`}>
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                          i <= step ? 'bg-primary text-primary-foreground'
+                          : reached ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+                        } ${clickable ? 'hover:ring-2 hover:ring-primary/40' : ''}`}>{i + 1}</span>
+                        <span className={`hidden text-sm sm:inline ${
+                          i === step ? 'font-medium text-foreground'
+                          : clickable ? 'text-foreground/70 hover:text-foreground' : 'text-muted-foreground'
+                        }`}>{t(`steps.${key}`)}</span>
+                      </button>
                       {i < TOTAL_STEPS - 1 && <span className="mx-1 h-px w-4 bg-border sm:w-6" />}
                     </li>
-                  ))}
+                  )})}
                 </ol>
                 {/* Üç bölmeli üst nav şeridi — sol Geri / orta toplam / sağ Devam-Öde. Sabit min-h, zıplama yok. */}
                 <div className="flex min-h-[3.25rem] items-center justify-between gap-3 border-b pb-4">
@@ -307,7 +324,6 @@ export function TransferWizard() {
                       onChange={(e) => setReturnDate(clampYear(e.target.value))} />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">{t('timeNote')}</p>
               </div>
 
               {step1Attempted && !step1Valid && (
@@ -406,7 +422,6 @@ export function TransferWizard() {
                   )}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground">{t('payNote')}</p>
               {submitError && <p className="text-sm text-destructive">{t('submitError')}</p>}
             </div>
           )}

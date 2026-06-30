@@ -82,7 +82,7 @@
   },
   "transferPage": {
     "heroTitle": "Bodrum VIP Transfer",
-    "heroSubtitle": "Private VIP transfer between your address in Bodrum and the ferry port — in a few minutes.",
+    "heroSubtitle": "VIP transfer between your address and the ferry port",
     "heroBadge": "Private VIP Transfer",
     "heroFeatureDrivers": "Professional drivers",
     "heroFeatureSupport": "Turkish-speaking support",
@@ -101,7 +101,7 @@
     "vehicle": "Vehicle",
     "seatCount": "{count, plural, one {# seat} other {# seats}}",
     "perLeg": "/leg",
-    "legsHeading": "Legs",
+    "legsHeading": "Directions: We'll contact you for the pickup time.",
     "outbound": "Bodrum → Port",
     "return": "Port → Bodrum",
     "outboundDate": "Outbound date",
