@@ -12,7 +12,7 @@
  */
 
 import * as React from 'react'
-import { CheckCircle, ChevronLeft, ChevronRight, FileText, Loader2 } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronRight, Circle, FileText, Loader2, MessageCircle, Phone } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
@@ -56,7 +56,7 @@ import {
 } from '@/lib/validation/visa'
 import { submitVisaApplication } from '@/lib/actions/submit-visa-application'
 import { checkPromoCode } from '@/lib/actions/check-promo-code-action'
-import { buildSupportWhatsAppLink, type Locale } from '@/lib/notifications/whatsapp-link'
+import { buildSupportWhatsAppLink, getSalesPhoneLink, type Locale } from '@/lib/notifications/whatsapp-link'
 
 // ============================================================
 // Form state — every field is a string in state (select/date/text).
@@ -516,6 +516,14 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     scrollToTop()
   }
 
+  // Sidebar'dan adıma atlama — serbest gezinme (validation yok, handleBack gibi sessiz).
+  const jumpToStep = (i: number) => {
+    setErrors({})
+    setSubmitAttempted(false)
+    setStep(i)
+    scrollToTop()
+  }
+
   const handleSubmit = async (payload: ReturnType<typeof buildPayload>) => {
     // Full re-parse client-side (cross-field refines). Should pass since every
     // step already validated, but jump back if something slipped through.
@@ -694,7 +702,8 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   const isLastStep = step === TOTAL_STEPS - 1
 
   return (
-    <Card className="max-w-2xl mx-auto rounded-3xl border-0 bg-card shadow-xl">
+    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_22rem]">
+      <Card className="rounded-3xl border-0 bg-card shadow-xl">
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
@@ -1051,7 +1060,14 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
           <p className="pt-2 text-right text-xs text-muted-foreground">{t('uploading')}</p>
         )}
       </CardContent>
-    </Card>
+      </Card>
+      <VisaSidebar
+        className="hidden lg:block"
+        step={step}
+        stepComplete={stepComplete}
+        onJumpToStep={jumpToStep}
+      />
+    </div>
   )
 }
 
@@ -1079,5 +1095,111 @@ function DocsSection({ title, children }: { title: string; children: React.React
       </h3>
       <div className="space-y-3">{children}</div>
     </div>
+  )
+}
+
+/** Sağ sidebar — adım-durum (canlı) + belge placeholder (Parça C) + destek.
+ *  Salt-okunur: wizard türevlerini prop alır, upload akışına dokunmaz. */
+function VisaSidebar({
+  step,
+  stepComplete,
+  onJumpToStep,
+  className,
+}: {
+  step: number
+  stepComplete: boolean[]
+  onJumpToStep: (i: number) => void
+  className?: string
+}) {
+  const t = useTranslations('visaPage.form')
+  const locale = useLocale()
+  const anyComplete = stepComplete.some(Boolean)
+  const sales = getSalesPhoneLink()
+  return (
+    <aside className={`space-y-6 ${className ?? ''}`}>
+      {/* Başvuru Özeti — canlı adım durumu */}
+      <Card className="rounded-3xl border-0 bg-card shadow-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
+              <FileText className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <CardTitle className="text-base text-blue-950">Başvuru Özeti</CardTitle>
+              {!anyComplete && <p className="text-sm text-slate-500">Henüz bilgi girilmedi</p>}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <ol className="space-y-1">
+            {stepComplete.map((done, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => onJumpToStep(i)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+                    step === i ? 'bg-blue-50 font-medium text-blue-950' : 'text-slate-600 hover:bg-muted/50'
+                  }`}
+                >
+                  {done ? (
+                    <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <Circle className="h-5 w-5 shrink-0 text-slate-300" />
+                  )}
+                  <span>{t(`sections.step${i + 1}`)}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+      </Card>
+
+      {/* Gerekli Belgeler — PLACEHOLDER (canlı içerik Parça C) */}
+      <Card className="rounded-3xl border-0 bg-card shadow-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
+              <FileText className="h-5 w-5 text-amber-600" />
+            </div>
+            <CardTitle className="text-base text-blue-950">Gerekli Belgeler</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {/* Parça C: resolvedDocs'tan canlı belge listesi + scroll-to-step */}
+          <p className="text-sm text-slate-500">Belge listesi yakında.</p>
+        </CardContent>
+      </Card>
+
+      {/* Destek — locale-aware WhatsApp (proje kanonu 5008/5009) */}
+      <Card className="rounded-3xl border-0 bg-card shadow-md">
+        <CardContent className="space-y-3 p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
+              <MessageCircle className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-blue-950">Yardıma mı ihtiyacınız var?</p>
+              <p className="text-sm text-slate-500">7/24 destek hattımızla bize ulaşın.</p>
+            </div>
+          </div>
+          <a
+            href={buildSupportWhatsAppLink({ locale: locale as Locale })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950 hover:bg-amber-500"
+          >
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
+          </a>
+          <a
+            href={sales.href}
+            className="flex items-center justify-center gap-2 text-sm font-medium text-blue-950 hover:text-blue-700"
+          >
+            <Phone className="h-4 w-4" />
+            {sales.display}
+          </a>
+        </CardContent>
+      </Card>
+    </aside>
   )
 }
