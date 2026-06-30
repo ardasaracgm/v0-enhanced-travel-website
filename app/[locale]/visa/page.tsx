@@ -270,7 +270,7 @@ export default function VisaSupportPage() {
         </section>
 
         {/* Visa Application Form */}
-        <section id="visa-application-form" className="w-full py-16 md:py-24 scroll-mt-20">
+        <section id="visa-application-form" className="w-full py-16 md:py-24 scroll-mt-20 bg-gradient-to-b from-sky-50 via-blue-50/60 to-white">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Start Your Visa Application</h2>

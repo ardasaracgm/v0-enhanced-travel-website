@@ -626,15 +626,15 @@ export function VisaWizard() {
   const isLastStep = step === TOTAL_STEPS - 1
 
   return (
-    <Card className="max-w-2xl mx-auto border-border/50">
+    <Card className="max-w-2xl mx-auto rounded-3xl border-0 bg-card shadow-xl">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <FileText className="h-5 w-5 text-primary" />
+          <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
+            <FileText className="h-5 w-5 text-amber-600" />
           </div>
           <div>
-            <CardTitle className="text-lg">{t(`sections.step${step + 1}`)}</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <CardTitle className="text-lg text-blue-950">{t(`sections.step${step + 1}`)}</CardTitle>
+            <p className="text-sm text-slate-500">
               {t('nav.step', { current: step + 1, total: TOTAL_STEPS })}
             </p>
           </div>
