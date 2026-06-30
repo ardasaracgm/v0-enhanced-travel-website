@@ -538,13 +538,16 @@ export function VisaWizard() {
     labelKey: string = name,
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{t(`labels.${labelKey}`)}{optional ? '' : ' *'}</Label>
+      <Label htmlFor={name} className="text-blue-950">
+        {t(`labels.${labelKey}`)}
+        {optional ? '' : <span className="text-red-500"> *</span>}
+      </Label>
       <Input
         id={name}
         type={type}
         value={form[name]}
         onChange={(e) => update(name, e.target.value)}
-        className={errors[name] ? 'border-destructive' : ''}
+        className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
       />
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
@@ -555,7 +558,9 @@ export function VisaWizard() {
     opts: { min?: string; max?: string; onChange?: (value: string) => void } = {},
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{t(`labels.${name}`)} *</Label>
+      <Label htmlFor={name} className="text-blue-950">
+        {t(`labels.${name}`)} <span className="text-red-500">*</span>
+      </Label>
       <Input
         id={name}
         type="date"
@@ -567,7 +572,7 @@ export function VisaWizard() {
           if (opts.onChange) opts.onChange(val)
           else update(name, val)
         }}
-        className={errors[name] ? 'border-destructive' : ''}
+        className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
       />
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
@@ -579,9 +584,11 @@ export function VisaWizard() {
     optionPrefix: string,
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{t(`labels.${name}`)} *</Label>
+      <Label htmlFor={name} className="text-blue-950">
+        {t(`labels.${name}`)} <span className="text-red-500">*</span>
+      </Label>
       <Select value={form[name]} onValueChange={(v) => update(name, v)}>
-        <SelectTrigger id={name} className={errors[name] ? 'border-destructive' : ''}>
+        <SelectTrigger id={name} className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}>
           <SelectValue placeholder={t('selectPlaceholder')} />
         </SelectTrigger>
         <SelectContent>
@@ -642,7 +649,7 @@ export function VisaWizard() {
         {/* Progress bar */}
         <div className="mt-4 h-1.5 w-full rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-amber-400 transition-all"
             style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
           />
         </div>
@@ -962,7 +969,7 @@ export function VisaWizard() {
           <Button
             onClick={handleNext}
             disabled={submitting || isUploading || checkingPromo}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="bg-amber-400 text-blue-950 hover:bg-amber-500"
           >
             {submitting ? (
               <>
@@ -996,7 +1003,7 @@ export function VisaWizard() {
 function FieldGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4 rounded-lg border border-border/50 bg-muted/20 p-4 mt-2">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className="text-sm font-semibold text-blue-950">{title}</h3>
       {children}
     </div>
   )
@@ -1006,7 +1013,7 @@ function FieldGroup({ title, children }: { title: string; children: React.ReactN
 function DocsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-4 mt-2">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-blue-950/70">
         {title}
       </h3>
       <div className="space-y-3">{children}</div>
