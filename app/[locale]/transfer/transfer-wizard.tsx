@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { todayAthensISO } from '@/lib/validation/dates'
+import { parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { transferVehicleVisual } from '@/lib/service-theme'
 import { submitTransferOrder } from '@/lib/actions/submit-transfer-order'
@@ -37,6 +37,15 @@ const EMAIL_RE = /.+@.+\..+/
 function clampYear(v: string): string {
   const m = /^(\d+)-(\d{2})-(\d{2})$/.exec(v)
   return m && m[1].length > 4 ? `${m[1].slice(0, 4)}-${m[2]}-${m[3]}` : v
+}
+
+// Tarih + locale-aware kısa gün (örn TR "01.07.2026 Çar" / EN "07/01/2026 Wed" / EL "01/07/2026 Τετ").
+function formatDateWithDay(iso: string, locale: string): string {
+  const d = parseISODate(iso)
+  if (!d) return iso || '—'
+  const date = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(d)
+  const day = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(d)
+  return `${date} ${day}`
 }
 
 // Tek region (bodrum) otomatik seçili; UI region-aware (ileride seçici eklenir).
@@ -208,6 +217,21 @@ export function TransferWizard() {
                     </li>
                   ))}
                 </ol>
+                {/* Üç bölmeli üst nav şeridi — sol Geri / orta toplam / sağ Devam-Öde. Sabit min-h, zıplama yok. */}
+                <div className="flex min-h-[3.25rem] items-center justify-between gap-3 border-b pb-4">
+                  {step > 0 ? (
+                    <Button type="button" variant="outline"
+                      onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={submitting}>
+                      {t('nav.back')}
+                    </Button>
+                  ) : <span aria-hidden />}
+                  <span className="text-lg font-bold text-blue-950">
+                    {legCount >= 1 && vehicleId && route ? `€${fmtEur(totalEur)}` : ''}
+                  </span>
+                  <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
+                    {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
+                  </Button>
+                </div>
                 <div className="min-h-[34rem] space-y-5">
                 {step === 0 ? (
             <>
@@ -216,22 +240,17 @@ export function TransferWizard() {
                 {t('pickupLabel')}: <span className="text-foreground">{region.pickupLabel}</span>
               </p>
 
-              {/* Varış Select (3/4) + Devam (1/4) yan yana — üstte */}
-              <div className="grid grid-cols-4 gap-3">
-                <div className="col-span-3 space-y-2">
-                  <Label htmlFor="tr-route">{t('route')} *</Label>
-                  <Select value={routeId || undefined} onValueChange={setRouteId}>
-                    <SelectTrigger id="tr-route"><SelectValue placeholder={t('selectRoute')} /></SelectTrigger>
-                    <SelectContent>
-                      {region.routes.map((r) => (
-                        <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="col-span-1 flex items-end">
-                  <Button type="button" onClick={goNext} className="w-full">{t('nav.next')}</Button>
-                </div>
+              {/* Varış noktası — tam genişlik (Devam üst şeride taşındı) */}
+              <div className="space-y-2">
+                <Label htmlFor="tr-route">{t('route')} *</Label>
+                <Select value={routeId || undefined} onValueChange={setRouteId}>
+                  <SelectTrigger id="tr-route"><SelectValue placeholder={t('selectRoute')} /></SelectTrigger>
+                  <SelectContent>
+                    {region.routes.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Araç — yatay kompakt kartlar; seçili açık kapı (-open), değil kapalı (-close) */}
@@ -247,10 +266,10 @@ export function TransferWizard() {
                         className={`flex flex-col overflow-hidden rounded-xl border-2 text-left shadow-sm transition-shadow hover:shadow-md ${
                           selected ? 'border-primary shadow-md ring-2 ring-primary' : 'border-border/50'
                         }`}>
-                        {/* Görsel üstte tam genişlik (5:3 = kaynak oranı, kırpılmaz) */}
-                        <div className="relative aspect-[5/3] w-full bg-white">
+                        {/* Görsel — 5:3 oran korunur, max-h ile %75'e kısılır (üst şerit için), object-contain → kırpma yok */}
+                        <div className="relative aspect-[5/3] max-h-[7.25rem] w-full bg-white">
                           {vSrc && (
-                            <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-cover" />
+                            <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-contain" />
                           )}
                         </div>
                         {/* Alt şerit: isim + kapasite + fiyat */}
@@ -290,14 +309,6 @@ export function TransferWizard() {
                 </div>
                 <p className="text-xs text-muted-foreground">{t('timeNote')}</p>
               </div>
-
-              {/* Canlı toplam (display-only; sunucu re-price) */}
-              {legCount >= 1 && vehicleId && route && (
-                <div className="flex items-center justify-between rounded-md bg-muted/40 p-3 text-sm">
-                  <span className="text-muted-foreground">{t('total')}</span>
-                  <span className="font-semibold text-primary">€{fmtEur(totalEur)}</span>
-                </div>
-              )}
 
               {step1Attempted && !step1Valid && (
                 <p className="text-sm text-destructive">
@@ -354,25 +365,28 @@ export function TransferWizard() {
             // Adım 3 — özet + öde
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-blue-950">{t('reviewHeading')}</h2>
-              <div className="divide-y rounded-md border">
-                <div className="flex items-center justify-between gap-4 p-3 text-sm">
+              <div className="overflow-hidden rounded-md border">
+                {/* Güzergah — tam satır */}
+                <div className="flex items-center justify-between gap-4 border-b p-3 text-sm">
                   <span className="text-muted-foreground">{t('summaryRoute')}</span>
                   <span className="text-right text-foreground">{region.pickupLabel} ↔ {route?.label ?? '—'}</span>
                 </div>
-                <div className="flex items-center justify-between gap-4 p-3 text-sm">
-                  <span className="text-muted-foreground">{t('summaryVehicle')}</span>
-                  <span className="text-foreground">{vehicle?.label ?? '—'}</span>
-                </div>
-                {outbound && (
-                  <div className="flex items-center justify-between gap-4 p-3 text-sm">
-                    <span className="text-muted-foreground">{t('summaryOutbound')}</span>
-                    <span className="text-foreground">{outboundDate || '—'}</span>
+                {/* Araç + Gidiş — tek satır, tam ikiye bölünür */}
+                <div className="grid grid-cols-2 divide-x border-b">
+                  <div className="space-y-0.5 p-3 text-sm">
+                    <span className="block text-muted-foreground">{t('summaryVehicle')}</span>
+                    <span className="block text-foreground">{vehicle?.label ?? '—'}</span>
                   </div>
-                )}
+                  <div className="space-y-0.5 p-3 text-sm">
+                    <span className="block text-muted-foreground">{t('summaryOutbound')}</span>
+                    <span className="block text-foreground">{outbound ? formatDateWithDay(outboundDate, locale) : '—'}</span>
+                  </div>
+                </div>
+                {/* Dönüş — varsa tam satır */}
                 {ret && (
-                  <div className="flex items-center justify-between gap-4 p-3 text-sm">
+                  <div className="flex items-center justify-between gap-4 border-b p-3 text-sm">
                     <span className="text-muted-foreground">{t('summaryReturn')}</span>
-                    <span className="text-foreground">{returnDate || '—'}</span>
+                    <span className="text-foreground">{formatDateWithDay(returnDate, locale)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-4 p-3">
@@ -398,19 +412,6 @@ export function TransferWizard() {
           )}
                 </div>
         </CardContent>
-
-        {/* Step 1 Devam araç bloğunda; Step 2/3 burada Geri+Devam (sabit yükseklik) */}
-        {step > 0 && (
-          <CardContent className="flex min-h-[3rem] items-center justify-between border-t p-6 pt-4">
-            <Button type="button" variant="outline"
-              onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={submitting}>
-              {t('nav.back')}
-            </Button>
-            <Button type="button" onClick={isLast ? handleSubmit : goNext} disabled={submitting}>
-              {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
-            </Button>
-          </CardContent>
-        )}
             </Card>
           </div>
 
