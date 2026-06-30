@@ -40,7 +40,6 @@ import {
 } from '@/app/[locale]/visa/document-upload-slot'
 import { SignaturePad } from '@/components/visa/signature-pad'
 import { ensureDraft, getDraftId, clearDraft } from '@/lib/visa/use-draft-application'
-import { readHeroPrefill, clearHeroPrefill } from '@/lib/visa/hero-prefill'
 import {
   VISA_STEP_SCHEMAS,
   visaApplicationSchema,
@@ -89,6 +88,15 @@ type FormState = Record<FieldName, string>
 // Validation surfaces issues for non-text fields too (e.g. the financingMeans
 // checkbox group) — those ride alongside the text FieldNames in error maps.
 type ErrorKey = FieldName | 'financingMeans'
+
+/** Hero mini-form → wizard köprüsü için lifted prefill (yalnız 5 alan, hepsi opsiyonel). */
+export type WizardPrefill = {
+  firstName?: string
+  lastName?: string
+  entryPoint?: string
+  vesselType?: string
+  birthDate?: string
+}
 
 const EMPTY_FORM: FormState = {
   entryPoint: '', vesselType: '',
@@ -140,7 +148,7 @@ function addDaysISO(iso: string, n: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function VisaWizard() {
+export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   const t = useTranslations('visaPage.form')
   const locale = useLocale()
   const today = todayAthensISO()
@@ -148,25 +156,24 @@ export function VisaWizard() {
   const [step, setStep] = React.useState(0)
   // nationality is pre-filled with the locale's word for Turkey (editable, still
   // required) — the overwhelming majority of applicants are Turkish citizens.
-  const [form, setForm] = React.useState<FormState>(() => {
-    const base: FormState = { ...EMPTY_FORM, nationality: t('defaults.nationality') }
-    // Hero mini-form köprüsü (Parça 2 → setHeroPrefill). Tek-seferlik hydrate:
-    // initializer YALNIZ okur (saf); temizlik mount-once useEffect'te — clear bir
-    // yan-etki ve initializer strict-mode'da iki kez koşabilir, oraya konmaz.
-    const prefill = readHeroPrefill()
-    if (!prefill) return base
-    // Boş alanlar EMPTY_FORM/default'u ezmesin — yalnız dolu alanları bas.
-    // (prefill nationality içermez → 'Turkey' default'u korunur.)
-    for (const [k, v] of Object.entries(prefill)) {
-      if (v) (base as Record<string, string>)[k] = v
-    }
-    return base
-  })
-  // Köprü tek-seferlik: prefill initializer'da okundu; refresh/remount yeniden
-  // hydrate etmesin diye mount'ta temizle. removeItem idempotent → strict-safe.
+  const [form, setForm] = React.useState<FormState>(() => ({
+    ...EMPTY_FORM,
+    nationality: t('defaults.nationality'),
+  }))
+  // Hero mini-form köprüsü (state-lift). Wizard, hero ile AYNI sayfada eşzamanlı
+  // mount olur; initializer Başlat'tan ÖNCE koştuğu için prefill'i initializer'da
+  // yakalayamayız. prefill prop Başlat'a basınca değişir → burada merge ederiz.
+  // Boş alanlar mevcut değeri (nationality default dahil) ezmez.
   React.useEffect(() => {
-    clearHeroPrefill()
-  }, [])
+    if (!prefill) return
+    setForm((prev) => {
+      const next = { ...prev }
+      for (const [k, v] of Object.entries(prefill)) {
+        if (v) (next as Record<string, string>)[k] = v
+      }
+      return next
+    })
+  }, [prefill])
   const [errors, setErrors] = React.useState<Partial<Record<ErrorKey, string>>>({})
   const [submitting, setSubmitting] = React.useState(false)
   const [submitError, setSubmitError] = React.useState(false)

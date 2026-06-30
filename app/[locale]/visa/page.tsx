@@ -30,9 +30,8 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { TrustBar } from '@/components/islandbee/trust-bar'
 import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
-import { VisaWizard } from './visa-wizard'
+import { VisaWizard, type WizardPrefill } from './visa-wizard'
 import { ENTRY_POINTS, VESSEL_TYPES } from '@/lib/validation/visa'
-import { setHeroPrefill, type HeroPrefill } from '@/lib/visa/hero-prefill'
 
 const services = [
   {
@@ -137,13 +136,17 @@ const stats = [
 export default function VisaSupportPage() {
   const tForm = useTranslations('visaPage.form')
 
-  // Hero mini-form — wizard'a tek-seferlik köprü. Value'lar slug (kutsal);
+  // Hero mini-form — wizard'a köprü (state-lift). Value'lar slug (kutsal);
   // label/option metinleri visaPage.form anahtarlarından (locale-aware, reuse).
-  const [hero, setHero] = React.useState<HeroPrefill>({
+  const [hero, setHero] = React.useState({
     firstName: '', lastName: '', entryPoint: '', vesselType: '', birthDate: '',
   })
-  const updateHero = (k: keyof HeroPrefill, v: string) =>
+  const updateHero = (k: keyof typeof hero, v: string) =>
     setHero((h) => ({ ...h, [k]: v }))
+
+  // Wizard'a geçen lifted prefill. Başlat'a basınca set edilir; wizard
+  // useEffect([prefill]) ile mevcut form'a merge eder (boş ezmez).
+  const [prefill, setPrefill] = React.useState<WizardPrefill | null>(null)
 
   const scrollToForm = () => {
     document
@@ -151,9 +154,9 @@ export default function VisaSupportPage() {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // Stash → scroll. Wizard mount'ta readHeroPrefill ile hydrate eder (Parça 3).
+  // Lift → scroll. sessionStorage YOK: hero+wizard aynı sayfada eşzamanlı mount.
   const handleHeroStart = () => {
-    setHeroPrefill(hero)
+    setPrefill(hero)
     scrollToForm()
   }
 
@@ -363,7 +366,7 @@ export default function VisaSupportPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Start Your Visa Application</h2>
               <p className="text-muted-foreground text-lg">Complete the form below — it takes about 5 minutes.</p>
             </div>
-            <VisaWizard />
+            <VisaWizard prefill={prefill} />
           </div>
         </section>
 
