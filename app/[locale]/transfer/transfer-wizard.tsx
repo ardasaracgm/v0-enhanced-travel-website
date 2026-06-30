@@ -249,7 +249,7 @@ export function TransferWizard() {
                     {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
                   </Button>
                 </div>
-                <div className="min-h-[29rem] space-y-5">
+                <div className="min-h-[31rem] space-y-5">
                 {step === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
