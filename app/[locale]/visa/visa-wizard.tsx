@@ -130,6 +130,18 @@ const STEP_FIELDS: ErrorKey[][] = [
 ]
 const TOTAL_STEPS = STEP_FIELDS.length
 
+// Hangi belge hangi adımda render ediliyor — renderDocSlot (:729/764/895…) +
+// SignaturePad (:935, isLastStep=3) yerleşimlerinden DOĞRULANDI. step2'de belge
+// yok. Sidebar adım-tamamlanma + (ileride) scroll-to-step bunu kullanacak.
+const DOC_STEP_MAP: Record<string, number> = {
+  biometric_photo: 0, consent_form: 0,
+  id_card_front: 1, id_card_back: 1, passport_main: 1,
+  bank_statement_first: 3, bank_statement_last: 3,
+  sponsor_id: 3, sponsor_bank: 3, ticket: 3, insurance: 3, hotel: 3,
+  credit_card_front: 3, credit_card_back: 3, previous_schengen_visa: 3,
+  applicant_signature: 3,
+}
+
 const YES_NO = ['true', 'false'] as const
 
 /** Door-visa max stay: 6 nights (7 days, entry inclusive). Exit auto-fills to entry + this many nights. */
@@ -397,6 +409,32 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     }
     return out
   }, [fullParse])
+
+  // ----- Sidebar türevleri (Parça A — yalnız hesaplama; tüketim Parça B'de) -----
+  // Her adımın FORM alanları geçerli mi (belge hariç). fullParse deseninin 4'e
+  // çoğaltımı; deps aynı.
+  const stepDone = React.useMemo(
+    () => VISA_STEP_SCHEMAS.map((s) => s.safeParse(buildPayload()).success),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [form, locale, financingMeans],
+  )
+  // Her adımın O ADIMDA render edilen ZORUNLU belgeleri yüklü mü. resolvedDocs
+  // reaktif; DOC_STEP_MAP ile adıma ayır, isDocSatisfied ile kontrol.
+  const stepDocsDone = React.useMemo(
+    () =>
+      VISA_STEP_SCHEMAS.map((_s, i) =>
+        resolvedDocs
+          .filter((d) => d.isRequired && DOC_STEP_MAP[d.key] === i)
+          .every((d) => isDocSatisfied(d.key)),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resolvedDocs, uploadedDocs, docStatuses],
+  )
+  // Sidebar yeşil-tık: form-OK VE belge-OK.
+  const stepComplete = React.useMemo(
+    () => stepDone.map((ok, i) => ok && stepDocsDone[i]),
+    [stepDone, stepDocsDone],
+  )
 
   // Map a Zod result's issues → { field: localized message }. First issue per
   // field wins; issue.message is a fragment like 'gender.required'.
