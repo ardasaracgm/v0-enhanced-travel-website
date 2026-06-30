@@ -327,14 +327,15 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     const doc = docByKey[key]
     if (!doc) return null
     return (
-      <DocumentUploadSlot
-        key={key}
-        doc={doc}
-        ensureApplicationId={ensureApplicationId}
-        initialFilename={uploadedDocs[key]}
-        onStatusChange={(status) => handleDocStatus(key, status)}
-        onUploaded={(filename) => handleDocUploaded(key, filename)}
-      />
+      <div id={`doc-${key}`} key={key}>
+        <DocumentUploadSlot
+          doc={doc}
+          ensureApplicationId={ensureApplicationId}
+          initialFilename={uploadedDocs[key]}
+          onStatusChange={(status) => handleDocStatus(key, status)}
+          onUploaded={(filename) => handleDocUploaded(key, filename)}
+        />
+      </div>
     )
   }
 
@@ -517,12 +518,36 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   }
 
   // Sidebar'dan adıma atlama — serbest gezinme (validation yok, handleBack gibi sessiz).
-  const jumpToStep = (i: number) => {
+  const goToStep = (i: number) => {
     setErrors({})
     setSubmitAttempted(false)
     setStep(i)
+  }
+  const jumpToStep = (i: number) => {
+    goToStep(i)
     scrollToTop()
   }
+  // Sidebar belge satırından o belgenin slot'una atlama. Belge başka adımdaysa
+  // önce o adıma geç; slot DOM'a O commit'te gelir → scroll'u useEffect[step]'e
+  // ERTELE (setStep sonrası, timing-safe — setTimeout/raf yarışı yok). Aynı
+  // adımdaysa slot zaten DOM'da → anında scroll.
+  const pendingDocScroll = React.useRef<string | null>(null)
+  const scrollToDoc = (key: string) => {
+    document.getElementById(`doc-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+  const jumpToDoc = (key: string) => {
+    const target = DOC_STEP_MAP[key]
+    if (target === undefined) return
+    if (target === step) { scrollToDoc(key); return }
+    pendingDocScroll.current = key
+    goToStep(target)
+  }
+  React.useEffect(() => {
+    if (pendingDocScroll.current) {
+      scrollToDoc(pendingDocScroll.current)
+      pendingDocScroll.current = null
+    }
+  }, [step])
 
   const handleSubmit = async (payload: ReturnType<typeof buildPayload>) => {
     // Full re-parse client-side (cross-field refines). Should pass since every
@@ -980,7 +1005,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         )}
 
         {isLastStep && (
-          <div className="mt-6">
+          <div id="doc-applicant_signature" className="mt-6">
             <SignaturePad
               label={docByKey['applicant_signature']?.label ?? ''}
               isRequired={docByKey['applicant_signature']?.isRequired ?? true}
@@ -1066,6 +1091,9 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         step={step}
         stepComplete={stepComplete}
         onJumpToStep={jumpToStep}
+        resolvedDocs={resolvedDocs}
+        isDocSatisfied={isDocSatisfied}
+        onJumpToDoc={jumpToDoc}
       />
     </div>
   )
@@ -1104,17 +1132,25 @@ function VisaSidebar({
   step,
   stepComplete,
   onJumpToStep,
+  resolvedDocs,
+  isDocSatisfied,
+  onJumpToDoc,
   className,
 }: {
   step: number
   stepComplete: boolean[]
   onJumpToStep: (i: number) => void
+  resolvedDocs: ResolvedVisaDoc[]
+  isDocSatisfied: (key: string) => boolean
+  onJumpToDoc: (key: string) => void
   className?: string
 }) {
   const t = useTranslations('visaPage.form')
   const locale = useLocale()
   const anyComplete = stepComplete.some(Boolean)
   const sales = getSalesPhoneLink()
+  const requiredDocs = resolvedDocs.filter((d) => d.isRequired)
+  const satisfiedCount = requiredDocs.filter((d) => isDocSatisfied(d.key)).length
   return (
     <aside className={`space-y-6 ${className ?? ''}`}>
       {/* Başvuru Özeti — canlı adım durumu */}
@@ -1165,8 +1201,33 @@ function VisaSidebar({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          {/* Parça C: resolvedDocs'tan canlı belge listesi + scroll-to-step */}
-          <p className="text-sm text-slate-500">Belge listesi yakında.</p>
+          {requiredDocs.length === 0 ? (
+            <p className="text-sm text-slate-500">Şu an zorunlu belge yok.</p>
+          ) : (
+            <>
+              <p className="mb-2 text-xs font-medium text-slate-500">
+                {satisfiedCount} / {requiredDocs.length} yüklendi
+              </p>
+              <ul className="space-y-1">
+                {requiredDocs.map((d) => (
+                  <li key={d.key}>
+                    <button
+                      type="button"
+                      onClick={() => onJumpToDoc(d.key)}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-slate-600 transition-colors hover:bg-muted/50"
+                    >
+                      {isDocSatisfied(d.key) ? (
+                        <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                      ) : (
+                        <Circle className="h-5 w-5 shrink-0 text-slate-300" />
+                      )}
+                      <span>{d.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </CardContent>
       </Card>
 
