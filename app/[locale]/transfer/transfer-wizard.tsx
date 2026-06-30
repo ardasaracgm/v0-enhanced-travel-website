@@ -387,27 +387,27 @@ export function TransferWizard() {
                   <span className="text-muted-foreground">{t('summaryRoute')}</span>
                   <span className="text-right text-foreground">{region.pickupLabel} ↔ {route?.label ?? '—'}</span>
                 </div>
-                {/* Araç + Gidiş — tek satır, tam ikiye bölünür */}
+                {/* Gidiş + Dönüş — yan yana; dönüş daima render (tek yönde "—", yer kaymaz) */}
                 <div className="grid grid-cols-2 divide-x border-b">
+                  <div className="space-y-0.5 p-3 text-sm">
+                    <span className="block text-muted-foreground">{t('summaryOutbound')}</span>
+                    <span className="block text-foreground">{outbound ? formatDateWithDay(outboundDate, locale) : '—'}</span>
+                  </div>
+                  <div className="space-y-0.5 p-3 text-sm">
+                    <span className="block text-muted-foreground">{t('summaryReturn')}</span>
+                    <span className="block text-foreground">{ret ? formatDateWithDay(returnDate, locale) : '—'}</span>
+                  </div>
+                </div>
+                {/* Araç + Toplam — yan yana; toplam vurgulu */}
+                <div className="grid grid-cols-2 divide-x">
                   <div className="space-y-0.5 p-3 text-sm">
                     <span className="block text-muted-foreground">{t('summaryVehicle')}</span>
                     <span className="block text-foreground">{vehicle?.label ?? '—'}</span>
                   </div>
                   <div className="space-y-0.5 p-3 text-sm">
-                    <span className="block text-muted-foreground">{t('summaryOutbound')}</span>
-                    <span className="block text-foreground">{outbound ? formatDateWithDay(outboundDate, locale) : '—'}</span>
+                    <span className="block text-muted-foreground">{t('summaryTotal')}</span>
+                    <span className="block text-base font-semibold text-primary">€{fmtEur(totalEur)}</span>
                   </div>
-                </div>
-                {/* Dönüş — varsa tam satır */}
-                {ret && (
-                  <div className="flex items-center justify-between gap-4 border-b p-3 text-sm">
-                    <span className="text-muted-foreground">{t('summaryReturn')}</span>
-                    <span className="text-foreground">{formatDateWithDay(returnDate, locale)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between gap-4 p-3">
-                  <span className="text-sm font-medium text-foreground">{t('summaryTotal')}</span>
-                  <span className="text-base font-semibold text-primary">€{fmtEur(totalEur)}</span>
                 </div>
               </div>
               {/* Araç görseli — suffix'siz geniş manzara (helper'dan DEĞİL, doğrudan path) */}
