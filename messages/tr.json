@@ -962,6 +962,82 @@
         "documentsCta": "Belgelerinizi Yükleyin",
         "whatsapp": "WhatsApp'tan bize yazın",
         "payButton": "WhatsApp'tan €90 öde"
+      },
+      "summary": {
+        "title": "Başvuru Özeti",
+        "empty": "Henüz bilgi girilmedi",
+        "priceLabel": "Kapıda vize",
+        "docsTitle": "Gerekli Belgeler",
+        "noDocs": "Şu an zorunlu belge yok.",
+        "uploaded": "{done} / {total} yüklendi",
+        "helpTitle": "Yardıma mı ihtiyacınız var?",
+        "helpBody": "7/24 destek hattımızla bize ulaşın."
+      }
+    },
+    "marketing": {
+      "hero": {
+        "badge": "Schengen Vize Desteği",
+        "title": "Türk Yolcular için Vize Desteği",
+        "subtitle": "Schengen vize başvurunuz için uzman destek. Belge hazırlığı, seyahat planlaması ve Türkçe kişisel destek.",
+        "start": "Başlat",
+        "priceBadge": "Kapıda vize başvurusu:"
+      },
+      "stats": {
+        "travelers": "Yardım Edilen Yolcu",
+        "approval": "Onay Oranı",
+        "experience": "Yıllık Deneyim",
+        "support": "Türkçe Destek"
+      },
+      "formSection": {
+        "title": "Vize Başvurunuzu Başlatın",
+        "subtitle": "Aşağıdaki formu doldurun — yaklaşık 5 dakika sürer."
+      },
+      "how": {
+        "title": "Nasıl Çalışır",
+        "subtitle": "Yunan adalarındaki maceranıza giden basit 4 adımlı süreç",
+        "steps": [
+          { "title": "Bize Ulaşın", "description": "Seyahat planlarınız ve pasaport bilgilerinizle WhatsApp veya e-posta üzerinden bize ulaşın." },
+          { "title": "Belge İncelemesi", "description": "Durumunuzu inceler ve gerekli belgelerin size özel bir kontrol listesini sunarız." },
+          { "title": "Hazırlık", "description": "Seyahat programınızı, otel onaylarınızı ve destekleyici mektupları hazırlamanıza yardımcı oluruz." },
+          { "title": "Başvuru", "description": "Başvurunuzu güvenle yapın. Mülakat ipuçları ve sürekli destek sağlıyoruz." }
+        ]
+      },
+      "notice": {
+        "title": "Önemli Bilgi",
+        "body": "TravelBeez vize başvurusu desteği ve belge hazırlığı hizmetleri sunar. Bir resmi kurum değiliz ve vize onayını garanti edemeyiz. Vize başvuruları hakkındaki nihai karar yalnızca ilgili konsolosluk veya büyükelçiliğe aittir. Hizmetlerimiz, onay şansınızı en üst düzeye çıkarmak için eksiksiz ve profesyonel bir başvuru sunmanıza yardımcı olmak üzere tasarlanmıştır."
+      },
+      "why": {
+        "title": "Vize Desteği için Neden TravelBeez?",
+        "items": [
+          { "title": "%95 Onay Oranı", "body": "Titiz hazırlık ve detaylara verdiğimiz önem sayesinde müşterilerimiz olağanüstü yüksek bir onay oranına sahip." },
+          { "title": "Türkçe Konuşan Ekip", "body": "Tüm ekibimiz akıcı Türkçe konuşur. Dil engeli yok, yanlış anlaşılma yok." },
+          { "title": "Yunan Lisanslı Şirket", "body": "Kos Limanı'nda ofisi bulunan, tescilli bir Yunan turizm şirketiyiz (MHTE lisanslı). Meşru ve güvenilir." },
+          { "title": "Eksiksiz Seyahat Planlaması", "body": "Vize desteğinin ötesinde, tüm seyahatinizi biz üstleniriz: feribot biletleri, araç kiralama, oteller ve turlar." }
+        ]
+      },
+      "contact": {
+        "title": "Vize Ekibimizle İletişime Geçin",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "responseTime": "Yanıt Süresi",
+        "responseValue": "2 saat içinde (09:00–21:00)",
+        "cta": "Vize Başvurusunu Başlat"
+      },
+      "faq": {
+        "title": "Sıkça Sorulan Sorular",
+        "subtitle": "Yunan adaları için Schengen vizesi hakkında sık sorulan sorular",
+        "items": [
+          { "question": "Türk vatandaşları Yunanistan için vizeye ihtiyaç duyar mı?", "answer": "Evet, Türk vatandaşları Yunanistan'ı ziyaret etmek için Schengen vizesine ihtiyaç duyar. Vize, 180 günlük bir dönemde 90 güne kadar kalış hakkı verir. Yunanistan vizeleri Türkiye'deki konsolosluklar (İstanbul, Ankara, İzmir) aracılığıyla işler." },
+          { "question": "Schengen vizesi için hangi belgelere ihtiyacım var?", "answer": "Gerekli belgeler genellikle şunları içerir: geçerli pasaport (6+ ay geçerlilik), doldurulmuş başvuru formu, biyometrik fotoğraflar, seyahat sigortası (min. €30.000 teminat), konaklama kanıtı, uçak/feribot biletleri, banka hesap özetleri (son 3–6 ay), çalışma belgesi veya ticaret sicili ve Türkiye'ye bağlılık kanıtı." },
+          { "question": "Vize süreci ne kadar sürer?", "answer": "Standart işlem süresi başvurudan itibaren 15 takvim günüdür. Yoğun sezonda (Mayıs–Ağustos) 30 güne kadar çıkabilir. Planlanan seyahat tarihinizden en az 4–6 hafta önce başvurmanızı öneririz." },
+          { "question": "Vize onayını garanti edebilir misiniz?", "answer": "Nihai karar konsolosluğa ait olduğundan hiçbir hizmet vize onayını garanti edemez. Ancak uzmanlığımız; başvurunuzun eksiksiz, profesyonel olmasını ve yaygın ret nedenlerini ele almasını sağlayarak onay şansını önemli ölçüde artırır." },
+          { "question": "Vizem reddedilirse ne olur?", "answer": "Vizeniz reddedilirse karara itiraz edebilir veya yeniden başvurabilirsiniz. Yeniden başvuru desteği için indirimli bir ücret sunuyor ve neyin yanlış gittiğini belirlemenize yardımcı oluyoruz. Dürüst ve eksiksiz başvuruların başarı oranının daha yüksek olduğunu unutmayın." },
+          { "question": "Randevu planlamasında yardımcı oluyor musunuz?", "answer": "Evet, konsolosluk randevusu almanıza yardımcı oluyoruz. Uygunluğu takip eder ve tercih ettiğiniz konsoloslukta randevu ayarlamanızda destek oluruz. Randevu uygunluğunun değişkenlik gösterdiğini ve erken planlamanın önemli olduğunu unutmayın." }
+        ]
+      },
+      "cta": {
+        "title": "Vize Başvurunuz Hakkında Sorularınız mı Var?",
+        "description": "Türkçe konuşan vize uzmanlarımız yardıma hazır. Durumunuza özel kişisel tavsiye alın."
       }
     }
   },

@@ -962,6 +962,82 @@
         "documentsCta": "Upload Your Documents",
         "whatsapp": "Message us on WhatsApp",
         "payButton": "Pay €90 on WhatsApp"
+      },
+      "summary": {
+        "title": "Application Summary",
+        "empty": "No information entered yet",
+        "priceLabel": "Visa on arrival",
+        "docsTitle": "Required Documents",
+        "noDocs": "No required documents yet.",
+        "uploaded": "{done} / {total} uploaded",
+        "helpTitle": "Need help?",
+        "helpBody": "Reach us on our 24/7 support line."
+      }
+    },
+    "marketing": {
+      "hero": {
+        "badge": "Schengen Visa Support",
+        "title": "Visa Support for Turkish Travelers",
+        "subtitle": "Expert support for your Schengen visa application. Document preparation, travel planning, and personalized support in Turkish.",
+        "start": "Start",
+        "priceBadge": "Visa-on-arrival application:"
+      },
+      "stats": {
+        "travelers": "Travelers Assisted",
+        "approval": "Approval Rate",
+        "experience": "Years of Experience",
+        "support": "Turkish-Speaking Support"
+      },
+      "formSection": {
+        "title": "Start Your Visa Application",
+        "subtitle": "Fill out the form below — it takes about 5 minutes."
+      },
+      "how": {
+        "title": "How It Works",
+        "subtitle": "Simple 4-step process to your Greek island adventure",
+        "steps": [
+          { "title": "Contact Us", "description": "Reach out via WhatsApp or email with your travel plans and passport details." },
+          { "title": "Document Review", "description": "We review your situation and provide a personalized checklist of required documents." },
+          { "title": "Preparation", "description": "We help prepare your travel itinerary, hotel confirmations, and supporting letters." },
+          { "title": "Application", "description": "Submit your application with confidence. We provide interview tips and ongoing support." }
+        ]
+      },
+      "notice": {
+        "title": "Important Information",
+        "body": "TravelBeez provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval."
+      },
+      "why": {
+        "title": "Why Choose TravelBeez for Visa Support?",
+        "items": [
+          { "title": "95% Success Rate", "body": "Our clients have an exceptionally high approval rate thanks to thorough preparation and attention to detail." },
+          { "title": "Turkish Speaking Team", "body": "Our entire team speaks Turkish fluently. No language barriers, no misunderstandings." },
+          { "title": "Greek Licensed Company", "body": "We are a registered Greek tourism company (ΜΗ.Τ.Ε.) with an office at Kos Port. Legitimate and trustworthy." },
+          { "title": "Complete Travel Planning", "body": "Beyond visa support, we handle your entire trip: ferry tickets, car rental, hotels, and tours." }
+        ]
+      },
+      "contact": {
+        "title": "Contact Our Visa Team",
+        "phone": "Phone",
+        "email": "Email",
+        "responseTime": "Response Time",
+        "responseValue": "Within 2 hours (9AM–9PM)",
+        "cta": "Start Visa Application"
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Common questions about Schengen visa for Greek islands",
+        "items": [
+          { "question": "Do Turkish citizens need a visa for Greece?", "answer": "Yes, Turkish citizens need a Schengen visa to visit Greece. The visa allows stays of up to 90 days within a 180-day period. Greece processes visas through its consulates in Turkey (Istanbul, Ankara, Izmir)." },
+          { "question": "What documents do I need for a Schengen visa?", "answer": "Required documents typically include: valid passport (6+ months validity), completed application form, passport photos, travel insurance (min. €30,000 coverage), proof of accommodation, flight/ferry tickets, bank statements (last 3–6 months), employment letter or business registration, and proof of ties to Turkey." },
+          { "question": "How long does the visa process take?", "answer": "The standard processing time is 15 calendar days from submission. During peak season (May–August), it may take up to 30 days. We recommend applying at least 4–6 weeks before your planned travel date." },
+          { "question": "Can you guarantee visa approval?", "answer": "No service can guarantee visa approval as the final decision rests with the consulate. However, our expertise significantly increases approval chances by ensuring your application is complete, professional, and addresses common rejection reasons." },
+          { "question": "What if my visa is rejected?", "answer": "If your visa is rejected, you can appeal the decision or reapply. We offer a discounted rate for reapplication assistance and can help identify what went wrong. Keep in mind that honest, complete applications have higher success rates." },
+          { "question": "Do you help with appointment scheduling?", "answer": "Yes, we assist with consulate appointment scheduling. We monitor availability and help you secure an appointment at your preferred consulate. Note that appointment availability varies and early planning is essential." }
+        ]
+      },
+      "cta": {
+        "title": "Questions About Your Visa Application?",
+        "description": "Our Turkish-speaking visa experts are ready to help. Get personalized advice for your situation."
       }
     }
   },
