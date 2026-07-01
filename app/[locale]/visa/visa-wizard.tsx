@@ -641,7 +641,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         type={type}
         value={form[name]}
         onChange={(e) => update(name, e.target.value)}
-        className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
+        className={`h-9 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
       />
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
@@ -666,7 +666,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
           if (opts.onChange) opts.onChange(val)
           else update(name, val)
         }}
-        className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
+        className={`h-9 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}
       />
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
@@ -682,7 +682,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         {t(`labels.${name}`)} <span className="text-red-500">*</span>
       </Label>
       <Select value={form[name]} onValueChange={(v) => update(name, v)}>
-        <SelectTrigger id={name} className={`h-11 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}>
+        <SelectTrigger id={name} className={`h-9 rounded-xl ${errors[name] ? 'border-destructive' : ''}`}>
           <SelectValue placeholder={t('selectPlaceholder')} />
         </SelectTrigger>
         <SelectContent>
@@ -750,7 +750,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {step === 0 && (
           <>
             <div className="grid md:grid-cols-2 gap-4">
@@ -832,7 +832,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
             </div>
             <DocsSection title={t('docs.stepHeading')}>
               <p className="text-xs text-muted-foreground">{t('docs.idCardNote')}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderDocSlot('id_card_front')}
                 {renderDocSlot('id_card_back')}
                 {renderDocSlot('passport_main')}
@@ -963,7 +963,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               </div>
             </div>
             <DocsSection title={t('docs.stepHeading')}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderDocSlot('bank_statement_first')}
                 {renderDocSlot('bank_statement_last')}
                 {isSponsor && renderDocSlot('sponsor_id')}
@@ -1107,7 +1107,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
  *  (guardian, residence permit, employer, sponsor). */
 function FieldGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-4 rounded-lg border border-border/50 bg-muted/20 p-4 mt-2">
+    <div className="space-y-3 rounded-lg border border-border/50 bg-muted/20 p-3 mt-2">
       <h3 className="text-sm font-semibold text-blue-950">{title}</h3>
       {children}
     </div>
@@ -1117,7 +1117,7 @@ function FieldGroup({ title, children }: { title: string; children: React.ReactN
 /** Wraps the inline document slots within a step under a labelled, set-off block. */
 function DocsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-4 mt-2">
+    <div className="space-y-3 rounded-lg border border-border/50 bg-muted/30 p-3 mt-2">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-blue-950/70">
         {title}
       </h3>

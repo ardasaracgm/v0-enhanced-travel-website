@@ -231,7 +231,7 @@ export function SignaturePad({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
-            className="h-40 w-full touch-none rounded-md"
+            className="h-32 w-full touch-none rounded-md"
             style={{ touchAction: 'none' }}
           />
         </div>
