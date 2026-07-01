@@ -172,7 +172,7 @@ export function Footer() {
         {/* Google Maps Embed */}
         <div className="mb-8 rounded-xl overflow-hidden border border-background/10">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3178.8!2d27.0917!3d36.8933!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDUzJzM1LjkiTiAyN8KwMDUnMzAuMSJF!5e0!3m2!1sen!2sgr!4v1699999999999!5m2!1sen!2sgr"
+            src="https://www.google.com/maps?q=36.897895,27.287188&z=17&output=embed"
             width="100%"
             height="200"
             style={{ border: 0 }}
