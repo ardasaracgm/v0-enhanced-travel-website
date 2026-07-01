@@ -34,67 +34,18 @@ import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/tru
 import { VisaWizard, type WizardPrefill } from './visa-wizard'
 import { ENTRY_POINTS, VESSEL_TYPES } from '@/lib/validation/visa'
 
-const steps = [
-  {
-    number: '01',
-    title: 'Contact Us',
-    description: 'Reach out via WhatsApp or email with your travel plans and passport details.',
-  },
-  {
-    number: '02',
-    title: 'Document Review',
-    description: 'We review your situation and provide a personalized checklist of required documents.',
-  },
-  {
-    number: '03',
-    title: 'Preparation',
-    description: 'We help prepare your travel itinerary, hotel confirmations, and supporting letters.',
-  },
-  {
-    number: '04',
-    title: 'Application',
-    description: 'Submit your application with confidence. We provide interview tips and ongoing support.',
-  },
-]
-
-const faqs = [
-  {
-    question: 'Do Turkish citizens need a visa for Greece?',
-    answer: 'Yes, Turkish citizens need a Schengen visa to visit Greece. The visa allows stays of up to 90 days within a 180-day period. Greece processes visas through its consulates in Turkey (Istanbul, Ankara, Izmir).',
-  },
-  {
-    question: 'What documents do I need for a Schengen visa?',
-    answer: 'Required documents typically include: valid passport (6+ months validity), completed application form, passport photos, travel insurance (min. 30,000 coverage), proof of accommodation, flight/ferry tickets, bank statements (last 3-6 months), employment letter or business registration, and proof of ties to Turkey.',
-  },
-  {
-    question: 'How long does the visa process take?',
-    answer: 'The standard processing time is 15 calendar days from submission. During peak season (May-August), it may take up to 30 days. We recommend applying at least 4-6 weeks before your planned travel date.',
-  },
-  {
-    question: 'Can you guarantee visa approval?',
-    answer: 'No service can guarantee visa approval as the final decision rests with the consulate. However, our expertise significantly increases approval chances by ensuring your application is complete, professional, and addresses common rejection reasons.',
-  },
-  {
-    question: 'What if my visa is rejected?',
-    answer: 'If your visa is rejected, you can appeal the decision or reapply. We offer a discounted rate for reapplication assistance and can help identify what went wrong. Keep in mind that honest, complete applications have higher success rates.',
-  },
-  {
-    question: 'Do you help with appointment scheduling?',
-    answer: 'Yes, our VIP Concierge package includes appointment scheduling assistance. We monitor availability and help you secure an appointment at your preferred consulate. Note that appointment availability varies and early planning is essential.',
-  },
-]
-
-type Stat = { label: string; number?: string; icon?: React.ComponentType<{ className?: string }> }
+type Stat = { key: string; number?: string; icon?: React.ComponentType<{ className?: string }> }
 
 const stats: Stat[] = [
-  { number: '2,400+', label: 'Yardım Edilen Yolcu' },
-  { number: '95%', label: 'Onay Oranı' },
-  { number: '6+', label: 'Yıllık Deneyim' },
-  { icon: MessageCircle, label: 'Türkçe Destek' },
+  { number: '2,400+', key: 'travelers' },
+  { number: '95%', key: 'approval' },
+  { number: '6+', key: 'experience' },
+  { icon: MessageCircle, key: 'support' },
 ]
 
 export default function VisaSupportPage() {
   const tForm = useTranslations('visaPage.form')
+  const tm = useTranslations('visaPage.marketing')
   const locale = useLocale()
   const landline = getLandline()
 
@@ -150,7 +101,7 @@ export default function VisaSupportPage() {
                   className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
                 >
                   <FileText className="h-4 w-4" />
-                  Schengen Vize Desteği
+                  {tm('hero.badge')}
                 </motion.div>
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
@@ -158,7 +109,7 @@ export default function VisaSupportPage() {
                   transition={{ delay: 0.1 }}
                   className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
                 >
-                  Türk Yolcular için Vize Desteği
+                  {tm('hero.title')}
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -166,7 +117,7 @@ export default function VisaSupportPage() {
                   transition={{ delay: 0.2 }}
                   className="text-pretty text-lg text-blue-950/80 md:text-xl"
                 >
-                  Schengen vize başvurunuz için uzman destek. Belge hazırlığı, seyahat planlaması ve Türkçe kişisel destek.
+                  {tm('hero.subtitle')}
                 </motion.p>
 
                 <motion.div
@@ -234,7 +185,7 @@ export default function VisaSupportPage() {
                         onClick={handleHeroStart}
                         className="h-11 w-full bg-amber-400 text-blue-950 hover:bg-amber-500 sm:col-span-2"
                       >
-                        Başlat
+                        {tm('hero.start')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -245,7 +196,7 @@ export default function VisaSupportPage() {
                   transition={{ delay: 0.4 }}
                   className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-medium text-white"
                 >
-                  Kapıda vize başvurusu:
+                  {tm('hero.priceBadge')}
                   <span className="font-bold text-amber-400">90€</span>
                 </motion.div>
               </div>
@@ -263,13 +214,13 @@ export default function VisaSupportPage() {
               <CardContent className="p-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   {stats.map((stat) => (
-                    <div key={stat.label} className="text-center">
+                    <div key={stat.key} className="text-center">
                       {stat.icon ? (
                         <stat.icon className="mx-auto mb-1 h-9 w-9 text-primary" />
                       ) : (
                         <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.number}</p>
                       )}
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="text-sm text-muted-foreground">{tm(`stats.${stat.key}`)}</p>
                     </div>
                   ))}
                 </div>
@@ -282,8 +233,8 @@ export default function VisaSupportPage() {
         <section id="visa-application-form" className="w-full py-16 md:py-24 scroll-mt-20 bg-gradient-to-b from-sky-50 via-blue-50/60 to-white">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Vize Başvurunuzu Başlatın</h2>
-              <p className="text-muted-foreground text-lg">Aşağıdaki formu doldurun — yaklaşık 5 dakika sürer.</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{tm('formSection.title')}</h2>
+              <p className="text-muted-foreground text-lg">{tm('formSection.subtitle')}</p>
             </div>
             <VisaWizard prefill={prefill} />
           </div>
@@ -293,27 +244,27 @@ export default function VisaSupportPage() {
         <section className="w-full py-16 md:py-24 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How It Works</h2>
-              <p className="text-muted-foreground text-lg">Simple 4-step process to your Greek island adventure</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{tm('how.title')}</h2>
+              <p className="text-muted-foreground text-lg">{tm('how.subtitle')}</p>
             </div>
             <div className="grid md:grid-cols-4 gap-8">
-              {steps.map((step, index) => (
+              {[0, 1, 2, 3].map((i) => (
                 <motion.div
-                  key={step.number}
+                  key={i}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: i * 0.1 }}
                   className="relative"
                 >
                   <div className="text-center">
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-primary">{step.number}</span>
+                      <span className="text-2xl font-bold text-primary">{String(i + 1).padStart(2, '0')}</span>
                     </div>
-                    <h3 className="font-semibold text-lg text-foreground mb-2">{step.title}</h3>
-                    <p className="text-sm text-muted-foreground">{step.description}</p>
+                    <h3 className="font-semibold text-lg text-foreground mb-2">{tm(`how.steps.${i}.title`)}</h3>
+                    <p className="text-sm text-muted-foreground">{tm(`how.steps.${i}.description`)}</p>
                   </div>
-                  {index < steps.length - 1 && (
+                  {i < 3 && (
                     <div className="hidden md:block absolute top-8 left-[60%] w-[40%] h-px bg-border" />
                   )}
                 </motion.div>
@@ -332,9 +283,9 @@ export default function VisaSupportPage() {
                 <div className="flex gap-4">
                   <AlertCircle className="h-6 w-6 text-accent shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">Important Information</h3>
+                    <h3 className="font-semibold text-foreground mb-2">{tm('notice.title')}</h3>
                     <p className="text-muted-foreground text-sm">
-                      TravelBeez provides visa application assistance and document preparation services. We are not a government agency and cannot guarantee visa approval. The final decision on visa applications rests solely with the relevant consulate or embassy. Our services are designed to help you submit a complete and professional application to maximize your chances of approval.
+                      {tm('notice.body')}
                     </p>
                   </div>
                 </div>
@@ -348,15 +299,15 @@ export default function VisaSupportPage() {
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Why Choose TravelBeez for Visa Support?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{tm('why.title')}</h2>
                 <div className="space-y-6">
                   <div className="flex gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl h-fit">
                       <Star className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">95% Success Rate</h3>
-                      <p className="text-muted-foreground">Our clients have an exceptionally high approval rate thanks to thorough preparation and attention to detail.</p>
+                      <h3 className="font-semibold text-foreground mb-1">{tm('why.items.0.title')}</h3>
+                      <p className="text-muted-foreground">{tm('why.items.0.body')}</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
@@ -364,8 +315,8 @@ export default function VisaSupportPage() {
                       <Users className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Turkish Speaking Team</h3>
-                      <p className="text-muted-foreground">Our entire team speaks Turkish fluently. No language barriers, no misunderstandings.</p>
+                      <h3 className="font-semibold text-foreground mb-1">{tm('why.items.1.title')}</h3>
+                      <p className="text-muted-foreground">{tm('why.items.1.body')}</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
@@ -373,8 +324,8 @@ export default function VisaSupportPage() {
                       <Building2 className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Greek Licensed Company</h3>
-                      <p className="text-muted-foreground">We are a registered Greek tourism company (ΜΗ.Τ.Ε.) with an office at Kos Port. Legitimate and trustworthy.</p>
+                      <h3 className="font-semibold text-foreground mb-1">{tm('why.items.2.title')}</h3>
+                      <p className="text-muted-foreground">{tm('why.items.2.body')}</p>
                     </div>
                   </div>
                   <div className="flex gap-4">
@@ -382,15 +333,15 @@ export default function VisaSupportPage() {
                       <Shield className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Complete Travel Planning</h3>
-                      <p className="text-muted-foreground">Beyond visa support, we handle your entire trip: ferry tickets, car rental, hotels, and tours.</p>
+                      <h3 className="font-semibold text-foreground mb-1">{tm('why.items.3.title')}</h3>
+                      <p className="text-muted-foreground">{tm('why.items.3.body')}</p>
                     </div>
                   </div>
                 </div>
               </div>
               <Card className="bg-card border-border/50">
                 <CardContent className="p-8">
-                  <h3 className="font-bold text-xl text-foreground mb-6">Contact Our Visa Team</h3>
+                  <h3 className="font-bold text-xl text-foreground mb-6">{tm('contact.title')}</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <MessageCircle className="h-5 w-5 text-primary" />
@@ -402,22 +353,22 @@ export default function VisaSupportPage() {
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Phone className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="text-sm text-muted-foreground">{tm('contact.phone')}</p>
                         <p className="font-medium text-foreground">{landline.display}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Mail className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
+                        <p className="text-sm text-muted-foreground">{tm('contact.email')}</p>
                         <p className="font-medium text-foreground">visa@travelbeez.gr</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Clock className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Response Time</p>
-                        <p className="font-medium text-foreground">Within 2 hours (9AM-9PM)</p>
+                        <p className="text-sm text-muted-foreground">{tm('contact.responseTime')}</p>
+                        <p className="font-medium text-foreground">{tm('contact.responseValue')}</p>
                       </div>
                     </div>
                   </div>
@@ -425,7 +376,7 @@ export default function VisaSupportPage() {
                     className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={scrollToForm}
                   >
-                    Start Visa Application
+                    {tm('contact.cta')}
                   </Button>
                 </CardContent>
               </Card>
@@ -438,17 +389,17 @@ export default function VisaSupportPage() {
           <div className="container px-4 md:px-6">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-                <p className="text-muted-foreground text-lg">Common questions about Schengen visa for Greek islands</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{tm('faq.title')}</h2>
+                <p className="text-muted-foreground text-lg">{tm('faq.subtitle')}</p>
               </div>
               <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <AccordionItem key={i} value={`item-${i}`} className="border-border/50">
                     <AccordionTrigger className="text-left text-foreground hover:text-primary">
-                      {faq.question}
+                      {tm(`faq.items.${i}.question`)}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
+                      {tm(`faq.items.${i}.answer`)}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
@@ -460,8 +411,8 @@ export default function VisaSupportPage() {
         <SecurePaymentBanner />
         
         <WhatsAppCTA 
-          title="Questions About Your Visa Application?"
-          description="Our Turkish-speaking visa experts are ready to help. Get personalized advice for your situation."
+          title={tm('cta.title')}
+          description={tm('cta.description')}
         />
       </main>
 
