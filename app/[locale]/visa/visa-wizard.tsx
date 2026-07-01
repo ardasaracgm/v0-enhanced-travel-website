@@ -1173,8 +1173,8 @@ function VisaSidebar({
               <FileText className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-sm text-blue-950">Başvuru Özeti</CardTitle>
-              {!anyComplete && <p className="text-sm text-slate-500">Henüz bilgi girilmedi</p>}
+              <CardTitle className="text-sm text-blue-950">{t('summary.title')}</CardTitle>
+              {!anyComplete && <p className="text-sm text-slate-500">{t('summary.empty')}</p>}
             </div>
           </div>
         </CardHeader>
@@ -1200,7 +1200,7 @@ function VisaSidebar({
             ))}
           </ol>
           <div className="mt-2 flex items-center justify-between border-t pt-2 text-sm">
-            <span className="text-slate-600">Kapıda vize</span>
+            <span className="text-slate-600">{t('summary.priceLabel')}</span>
             <span className="font-semibold text-amber-600">90€</span>
           </div>
         </CardContent>
@@ -1213,16 +1213,16 @@ function VisaSidebar({
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
               <FileText className="h-5 w-5 text-amber-600" />
             </div>
-            <CardTitle className="text-sm text-blue-950">Gerekli Belgeler</CardTitle>
+            <CardTitle className="text-sm text-blue-950">{t('summary.docsTitle')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
           {requiredDocs.length === 0 ? (
-            <p className="text-sm text-slate-500">Şu an zorunlu belge yok.</p>
+            <p className="text-sm text-slate-500">{t('summary.noDocs')}</p>
           ) : (
             <>
               <p className="mb-2 text-xs font-medium text-slate-500">
-                {satisfiedCount} / {requiredDocs.length} yüklendi
+                {t('summary.uploaded', { done: satisfiedCount, total: requiredDocs.length })}
               </p>
               <ul className="space-y-0.5">
                 {requiredDocs.map((d) => (
@@ -1255,8 +1255,8 @@ function VisaSidebar({
               <MessageCircle className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="font-semibold text-blue-950">Yardıma mı ihtiyacınız var?</p>
-              <p className="text-sm text-slate-500">7/24 destek hattımızla bize ulaşın.</p>
+              <p className="font-semibold text-blue-950">{t('summary.helpTitle')}</p>
+              <p className="text-sm text-slate-500">{t('summary.helpBody')}</p>
             </div>
           </div>
           <a
