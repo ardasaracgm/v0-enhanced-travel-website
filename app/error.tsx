@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
+import { buildWhatsAppLink } from '@/lib/contact'
 
 export default function Error({
   error,
@@ -51,7 +52,7 @@ export default function Error({
         <p className="mt-8 text-sm text-muted-foreground">
           Need help? Contact us on{' '}
           <a 
-            href="https://wa.me/302242050008" 
+            href={buildWhatsAppLink('en')}
             target="_blank" 
             rel="noopener noreferrer"
             className="text-primary hover:underline"

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { buildWhatsAppLink } from '@/lib/contact'
 
 export default function GlobalError({
   error,
@@ -40,7 +41,7 @@ export default function GlobalError({
           <p className="mt-8 text-sm text-slate-500">
             If the problem persists, please contact us on{' '}
             <a 
-              href="https://wa.me/302242050008" 
+              href={buildWhatsAppLink('en')} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline"
