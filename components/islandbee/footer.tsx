@@ -12,12 +12,15 @@ import {
   Clock,
   MessageCircle,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { buildWhatsAppLink, getWhatsAppDisplay, getLandline } from '@/lib/contact'
 
 export function Footer() {
   const t = useTranslations('footer')
   const tHeader = useTranslations('header')
   const tCommon = useTranslations('common')
+  const locale = useLocale()
+  const landline = getLandline()
   const year = new Date().getFullYear()
 
   // Servis kolonu — header/grid ile aynı tek kaynak. Etiketler header
@@ -65,21 +68,21 @@ export function Footer() {
               </div>
 
               <a
-                href="tel:+302242050009"
+                href={landline.href}
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+30 22420 5009</span>
+                <span>{landline.display}</span>
               </a>
 
               <a
-                href="https://wa.me/302242050008"
+                href={buildWhatsAppLink(locale)}
                 target="_blank"
                 rel="noopener"
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
                 <MessageCircle className="h-4 w-4 text-[#25D366]" />
-                <span>WhatsApp: +30 22420 5008</span>
+                <span>WhatsApp: {getWhatsAppDisplay(locale)}</span>
               </a>
 
               <a
