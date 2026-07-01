@@ -1152,35 +1152,35 @@ function VisaSidebar({
   const requiredDocs = resolvedDocs.filter((d) => d.isRequired)
   const satisfiedCount = requiredDocs.filter((d) => isDocSatisfied(d.key)).length
   return (
-    <aside className={`space-y-6 ${className ?? ''}`}>
+    <aside className={`space-y-4 ${className ?? ''}`}>
       {/* Başvuru Özeti — canlı adım durumu */}
       <Card className="rounded-3xl border-0 bg-card shadow-md">
-        <CardHeader className="pb-3">
+        <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
               <FileText className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-base text-blue-950">Başvuru Özeti</CardTitle>
+              <CardTitle className="text-sm text-blue-950">Başvuru Özeti</CardTitle>
               {!anyComplete && <p className="text-sm text-slate-500">Henüz bilgi girilmedi</p>}
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <ol className="space-y-1">
+          <ol className="space-y-0.5">
             {stepComplete.map((done, i) => (
               <li key={i}>
                 <button
                   type="button"
                   onClick={() => onJumpToStep(i)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left text-sm transition-colors ${
                     step === i ? 'bg-blue-50 font-medium text-blue-950' : 'text-slate-600 hover:bg-muted/50'
                   }`}
                 >
                   {done ? (
-                    <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                    <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
                   ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-slate-300" />
+                    <Circle className="h-4 w-4 shrink-0 text-slate-300" />
                   )}
                   <span>{t(`sections.step${i + 1}`)}</span>
                 </button>
@@ -1192,12 +1192,12 @@ function VisaSidebar({
 
       {/* Gerekli Belgeler — PLACEHOLDER (canlı içerik Parça C) */}
       <Card className="rounded-3xl border-0 bg-card shadow-md">
-        <CardHeader className="pb-3">
+        <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
               <FileText className="h-5 w-5 text-amber-600" />
             </div>
-            <CardTitle className="text-base text-blue-950">Gerekli Belgeler</CardTitle>
+            <CardTitle className="text-sm text-blue-950">Gerekli Belgeler</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
@@ -1208,18 +1208,18 @@ function VisaSidebar({
               <p className="mb-2 text-xs font-medium text-slate-500">
                 {satisfiedCount} / {requiredDocs.length} yüklendi
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {requiredDocs.map((d) => (
                   <li key={d.key}>
                     <button
                       type="button"
                       onClick={() => onJumpToDoc(d.key)}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-slate-600 transition-colors hover:bg-muted/50"
+                      className="flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left text-sm text-slate-600 transition-colors hover:bg-muted/50"
                     >
                       {isDocSatisfied(d.key) ? (
-                        <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                        <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
                       ) : (
-                        <Circle className="h-5 w-5 shrink-0 text-slate-300" />
+                        <Circle className="h-4 w-4 shrink-0 text-slate-300" />
                       )}
                       <span>{d.label}</span>
                     </button>
@@ -1233,7 +1233,7 @@ function VisaSidebar({
 
       {/* Destek — locale-aware WhatsApp (proje kanonu 5008/5009) */}
       <Card className="rounded-3xl border-0 bg-card shadow-md">
-        <CardContent className="space-y-3 p-6">
+        <CardContent className="space-y-2 p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100">
               <MessageCircle className="h-5 w-5 text-amber-600" />
