@@ -990,43 +990,56 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               </div>
             </div>
             <DocsSection title={t('docs.stepHeading')}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Satır A — mali kanıt: başvuran banka hesap hareketleri (2-kolon) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderDocSlot('bank_statement_first')}
                 {renderDocSlot('bank_statement_last')}
-                {isSponsor && renderDocSlot('sponsor_id')}
-                {isSponsor && renderDocSlot('sponsor_bank')}
+              </div>
+              {/* Satır A2 — sponsor mali belgeleri; yalnız sponsor finanse ediyorsa.
+                  Kendi satırında → isSponsor toggle'ı 3-kolon satırları bozmaz. */}
+              {isSponsor && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {renderDocSlot('sponsor_id')}
+                  {renderDocSlot('sponsor_bank')}
+                </div>
+              )}
+              {/* Satır B — seyahat belgeleri (3-kolon) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {renderDocSlot('ticket')}
                 {renderDocSlot('insurance')}
                 {renderDocSlot('hotel')}
+              </div>
+              {/* Satır C — kredi kartı + (varsa) önceki Schengen vizesi (3-kolon).
+                  previous_schengen: schengenLast3Years==='true' ise 3. hücrede;
+                  slot + yüklendiğinde altında veriliş-tarihi inputu dikey stack.
+                  Aksi halde 3. hücre boş (2 kart + boşluk). */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {renderDocSlot('credit_card_front')}
                 {renderDocSlot('credit_card_back')}
+                {form.schengenLast3Years === 'true' && (
+                  <div className="space-y-2">
+                    {renderDocSlot('previous_schengen_visa')}
+                    {uploadedDocs['previous_schengen_visa'] && (
+                      <div className="space-y-2">
+                        <Label htmlFor="previousSchengenVisaDate">
+                          {t('labels.previousSchengenVisaDate')}
+                        </Label>
+                        <Input
+                          id="previousSchengenVisaDate"
+                          type="date"
+                          min="1900-01-01"
+                          max={today}
+                          value={previousSchengenVisaDate}
+                          onChange={(e) => setPreviousSchengenVisaDate(clampYear(e.target.value))}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t('docs.previousSchengenVisaDateHint')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {/* Only when the applicant answered "yes" to holding a Schengen visa
-                  in the last 3 years. Optional slot; the validity-date picker below
-                  appears only once the image is uploaded. */}
-              {form.schengenLast3Years === 'true' && (
-                <div className="space-y-3">
-                  {renderDocSlot('previous_schengen_visa')}
-                  {uploadedDocs['previous_schengen_visa'] && (
-                    <div className="space-y-2">
-                      <Label htmlFor="previousSchengenVisaDate">
-                        {t('labels.previousSchengenVisaDate')}
-                      </Label>
-                      <Input
-                        id="previousSchengenVisaDate"
-                        type="date"
-                        min="1900-01-01"
-                        max={today}
-                        value={previousSchengenVisaDate}
-                        onChange={(e) => setPreviousSchengenVisaDate(clampYear(e.target.value))}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {t('docs.previousSchengenVisaDateHint')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
             </DocsSection>
           </>
         )}
