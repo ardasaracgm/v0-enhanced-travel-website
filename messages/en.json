@@ -753,12 +753,13 @@
         "travelPurpose": "Purpose of Travel",
         "fundingSource": "Who is covering the travel expenses?",
         "stayDuration": "Length of Stay (days)",
-        "schengenLast3Years": "Have you held a Schengen visa in the last 3 years?",
+        "schengenLast3Years": "Schengen visa in the last 3 years?",
         "previousSchengenVisaDate": "Previous Schengen Visa — Validity Date",
         "fingerprintsTaken": "Have your fingerprints been taken previously?",
         "schengenEntryDate": "Intended Entry Date",
         "schengenExitDate": "Intended Exit Date",
         "plannedDates": "Intended Travel Dates",
+        "plannedDatesHint": "Gate visa allows a maximum of 6 nights / 7 days",
         "guardianName": "Guardian Full Name",
         "guardianAddress": "Guardian Address",
         "guardianCity": "Guardian City",
@@ -908,7 +909,7 @@
         "schengenExitDate": {
           "invalid": "Enter a valid exit date.",
           "beforeEntry": "Exit date must be after the entry date.",
-          "maxStay": "You can stay at most 7 days."
+          "maxStay": "Gate visa allows at most 6 nights / 7 days."
         },
         "guardianName": { "required": "Guardian full name is required." },
         "guardianAddress": { "required": "Guardian address is required." },

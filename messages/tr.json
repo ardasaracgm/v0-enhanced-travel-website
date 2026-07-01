@@ -753,12 +753,13 @@
         "travelPurpose": "Seyahat Amacı",
         "fundingSource": "Seyahat masraflarını kim karşılıyor?",
         "stayDuration": "Kalış Süresi (gün)",
-        "schengenLast3Years": "Son 3 yılda Schengen vizeniz oldu mu?",
+        "schengenLast3Years": "Son 3 yılda Schengen aldınız mı?",
         "previousSchengenVisaDate": "Önceki Schengen Vizesi — Geçerlilik Tarihi",
         "fingerprintsTaken": "Daha önce parmak iziniz alındı mı?",
         "schengenEntryDate": "Planlanan Giriş Tarihi",
         "schengenExitDate": "Planlanan Çıkış Tarihi",
         "plannedDates": "Planlanan Tarihler",
+        "plannedDatesHint": "Kapı vizesi en fazla 6 gece / 7 gündür",
         "guardianName": "Vasi Ad Soyad",
         "guardianAddress": "Vasi Adresi",
         "guardianCity": "Vasi Şehir",
@@ -908,7 +909,7 @@
         "schengenExitDate": {
           "invalid": "Geçerli bir çıkış tarihi girin.",
           "beforeEntry": "Çıkış tarihi, giriş tarihinden sonra olmalıdır.",
-          "maxStay": "En fazla 7 gün kalabilirsiniz."
+          "maxStay": "Kapı vizesi en fazla 6 gece / 7 gün olabilir."
         },
         "guardianName": { "required": "Vasi ad soyad zorunludur." },
         "guardianAddress": { "required": "Vasi adresi zorunludur." },

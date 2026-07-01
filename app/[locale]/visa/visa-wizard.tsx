@@ -974,6 +974,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                   placeholder={t('selectPlaceholder')}
                   triggerClassName="h-9 rounded-xl"
                 />
+                <p className="text-xs text-slate-500">{t('labels.plannedDatesHint')}</p>
               </div>
             </div>
             {/* Destination + first-entry country are FIXED to Greece (door visa).
