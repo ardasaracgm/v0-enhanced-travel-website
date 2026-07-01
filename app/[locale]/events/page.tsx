@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { buildWhatsAppLink, getWhatsAppDisplay } from '@/lib/contact'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
@@ -82,6 +83,7 @@ const islands = [
 export default function EventsPage() {
   const t = useTranslations('eventsPage')
   const tWa = useTranslations('whatsappCta')
+  const locale = useLocale()
   const [formData, setFormData] = React.useState({
     fullName: '',
     phone: '',
@@ -177,7 +179,7 @@ export default function EventsPage() {
                   </a>
                 </Button>
                 <Button size="lg" variant="outline" className="border-primary/30 hover:border-primary hover:bg-primary/5" asChild>
-                  <a href="https://wa.me/302242050008" target="_blank" rel="noopener noreferrer">
+                  <a href={buildWhatsAppLink(locale)} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="mr-2 h-5 w-5" />
                     {tWa('buttonLong')}
                   </a>
@@ -403,9 +405,9 @@ export default function EventsPage() {
                   <p className="font-medium text-foreground mb-2">{t('form.talkTitle')}</p>
                   <p className="text-sm text-muted-foreground mb-4">{t('form.talkDesc')}</p>
                   <Button variant="outline" className="w-full border-primary/30 hover:border-primary hover:bg-primary/5" asChild>
-                    <a href="https://wa.me/302242050008" target="_blank" rel="noopener noreferrer">
+                    <a href={buildWhatsAppLink(locale)} target="_blank" rel="noopener noreferrer">
                       <Phone className="mr-2 h-4 w-4" />
-                      +30 22420 5008
+                      {getWhatsAppDisplay(locale)}
                     </a>
                   </Button>
                 </div>

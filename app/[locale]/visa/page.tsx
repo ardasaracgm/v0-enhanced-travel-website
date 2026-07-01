@@ -4,7 +4,8 @@ import * as React from 'react'
 import Image from 'next/image'
 import { FileText, MessageCircle, Clock, Calendar, AlertCircle, Shield, Users, Star, Phone, Mail, Building2 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { getWhatsAppDisplay, getLandline } from '@/lib/contact'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -94,6 +95,8 @@ const stats: Stat[] = [
 
 export default function VisaSupportPage() {
   const tForm = useTranslations('visaPage.form')
+  const locale = useLocale()
+  const landline = getLandline()
 
   // Hero mini-form — wizard'a köprü (state-lift). Value'lar slug (kutsal);
   // label/option metinleri visaPage.form anahtarlarından (locale-aware, reuse).
@@ -390,10 +393,17 @@ export default function VisaSupportPage() {
                   <h3 className="font-bold text-xl text-foreground mb-6">Contact Our Visa Team</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">WhatsApp</p>
+                        <p className="font-medium text-foreground">{getWhatsAppDisplay(locale)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                       <Phone className="h-5 w-5 text-primary" />
                       <div>
-                        <p className="text-sm text-muted-foreground">WhatsApp / Phone</p>
-                        <p className="font-medium text-foreground">+30 22420 5009</p>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium text-foreground">{landline.display}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">

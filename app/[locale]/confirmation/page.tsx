@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useSearchParams } from 'next/navigation'
 import { useLocale } from 'next-intl'
+import { buildWhatsAppLink } from '@/lib/contact'
 import {
   Ship,
   Car,
@@ -554,7 +555,7 @@ export default function ConfirmationPage() {
                         to complete your payment.
                       </p>
                       <a
-                        href={storedRecord.whatsappUrl || 'https://wa.me/302242050008'}
+                        href={storedRecord.whatsappUrl || buildWhatsAppLink(locale)}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -683,7 +684,7 @@ export default function ConfirmationPage() {
                       </a>
                     ) : (
                       <a
-                        href="https://wa.me/302242050008"
+                        href={buildWhatsAppLink(locale)}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

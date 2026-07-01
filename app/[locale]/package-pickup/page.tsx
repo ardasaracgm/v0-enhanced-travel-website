@@ -3,7 +3,8 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { Link } from '@/i18n/routing'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { buildWhatsAppLink } from '@/lib/contact'
 import { motion } from 'framer-motion'
 import {
   Package,
@@ -55,6 +56,7 @@ const trustFeatures = [
 export default function PackagePickupPage() {
   const t = useTranslations('packagePickupPage')
   const tWa = useTranslations('whatsappCta')
+  const locale = useLocale()
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -104,7 +106,7 @@ export default function PackagePickupPage() {
                 transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row gap-4"
               >
-                <Link href="https://wa.me/302242050008?text=Merhaba,%20paket%20teslim%20hizmeti%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum" target="_blank">
+                <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
                     <MessageCircle className="h-5 w-5" />
                     {t('hero.ctaReserve')}
@@ -254,7 +256,7 @@ export default function PackagePickupPage() {
               <p className="text-primary-foreground/80 mb-8">
                 {t('cta.subtitle')}
               </p>
-              <Link href="https://wa.me/302242050008?text=Merhaba,%20paket%20teslim%20hizmeti%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum" target="_blank">
+              <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
                 <Button size="lg" variant="secondary" className="gap-2">
                   <MessageCircle className="h-5 w-5" />
                   {tWa('buttonLong')}

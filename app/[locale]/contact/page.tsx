@@ -3,7 +3,8 @@
 import * as React from 'react'
 import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { buildWhatsAppLink, getWhatsAppDisplay, getLandline } from '@/lib/contact'
 
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -15,6 +16,8 @@ import { ContactForm } from '@/components/islandbee/contact-form'
 
 export default function ContactPage() {
   const t = useTranslations('contactPage')
+  const locale = useLocale()
+  const landline = getLandline()
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -59,12 +62,12 @@ export default function ContactPage() {
                         <h3 className="font-semibold text-foreground mb-1">{t('whatsappTitle')}</h3>
                         <p className="text-muted-foreground text-sm mb-2">{t('whatsappDesc')}</p>
                         <a 
-                          href="https://wa.me/302242050009" 
-                          target="_blank" 
+                          href={buildWhatsAppLink(locale)}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary font-medium hover:underline"
                         >
-                          +30 22420 5009
+                          {getWhatsAppDisplay(locale)}
                         </a>
                       </div>
                     </div>
@@ -81,10 +84,10 @@ export default function ContactPage() {
                         <h3 className="font-semibold text-foreground mb-1">{t('phoneCardTitle')}</h3>
                         <p className="text-muted-foreground text-sm mb-2">{t('phoneDesc')}</p>
                         <a 
-                          href="tel:+302242050008" 
+                          href={landline.href}
                           className="text-primary font-medium hover:underline"
                         >
-                          +30 22420 5008
+                          {landline.display}
                         </a>
                       </div>
                     </div>
