@@ -47,7 +47,7 @@ import { LUGGAGE_RATES_EUR, type LuggageCounts } from '@/lib/luggage-rates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { isServiceAvailable } from '@/lib/service-availability'
 import { checkModelAvailability } from '@/lib/actions/car-availability-action'
-import { serviceVisual, transferVehicleVisual, luggageVisual, type ServiceTone } from '@/lib/service-theme'
+import { serviceVisual, luggageVisual, type ServiceTone } from '@/lib/service-theme'
 
 const DEFAULT_PICKUP_LOCATION = 'Kos Port'
 
@@ -401,8 +401,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
   const transferLegCount = (transferOutbound ? 1 : 0) + (transferReturn ? 1 : 0)
   const transferTotalPrice = transferPerLegEur * transferLegCount
 
-  // Seçili araca göre sol flush thumbnail; araç seçilene dek null → görsel gizli.
-  const transferVehicleSrc = transferVehicleVisual(transferVehicleId)
+  // Seçili araca göre büyük showcase foto (transfer :416 deseni, object-cover ile
+  // full-bleed); araç seçilene dek null → hero fallback (:934). -close/-open küçük
+  // thumbnail'i transfer grid'inde (:280) kalır; extras büyük fotoyu tüketir.
+  const transferVehicleSrc = transferVehicleId ? `/services/transfer-${transferVehicleId}.webp` : null
   // Aktif boyutlardan (adet>0) sol flush thumbnail; boyut seçilene dek null → gizli.
   const luggageThumbSrc = luggageVisual(LUGGAGE_SIZES.filter(s => luggageCounts[s] > 0))
   // Alt feribot barı thumbnail — gidiş rotasından (serviceVisual ferry → ülke çifti).
