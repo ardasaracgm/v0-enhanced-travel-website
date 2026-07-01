@@ -1045,6 +1045,7 @@
   "contactPage": {
     "title": "Bize Ulaşın",
     "subtitle": "Sorularınız, özel istekleriniz ya da başka her şey — bize yazın.",
+    "eyebrow": "İletişim",
     "formTitle": "Mesaj Gönder",
     "subjectLabel": "Konu",
     "messageLabel": "Mesajınız",

@@ -1045,6 +1045,7 @@
   "contactPage": {
     "title": "Contact Us",
     "subtitle": "Questions, custom requests, or anything else — we'd love to hear from you.",
+    "eyebrow": "Get in Touch",
     "formTitle": "Send a Message",
     "subjectLabel": "Subject",
     "messageLabel": "Your message",
