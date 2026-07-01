@@ -797,22 +797,24 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 </div>
               </FieldGroup>
             )}
-            <DocsSection title={t('docs.stepHeading')}>
-              {renderDocSlot('biometric_photo')}
-              {applicantIsMinor && renderDocSlot('consent_form')}
-            </DocsSection>
-            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
-            <div className="space-y-2">
-              <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
-              <Input
-                id="promoCode"
-                type="text"
-                value={promoCode}
-                onChange={(e) => { setPromoCode(e.target.value); setInvalidPromo(false) }}
-                className={invalidPromo ? 'border-destructive' : ''}
-              />
-              {invalidPromo && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
+            <div className="grid md:grid-cols-2 gap-3 items-start">
+              <DocsSection title={t('docs.stepHeading')}>
+                {renderDocSlot('biometric_photo')}
+                {applicantIsMinor && renderDocSlot('consent_form')}
+              </DocsSection>
+              <div className="space-y-2">
+                <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
+                <Input
+                  id="promoCode"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value); setInvalidPromo(false) }}
+                  className={invalidPromo ? 'border-destructive' : ''}
+                />
+                {invalidPromo && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
+              </div>
             </div>
+            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
           </>
         )}
 
