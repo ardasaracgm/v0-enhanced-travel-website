@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { FileText, CheckCircle, Clock, Calendar, AlertCircle, Shield, Users, Star, Phone, Mail, Building2 } from 'lucide-react'
+import { FileText, MessageCircle, Clock, Calendar, AlertCircle, Shield, Users, Star, Phone, Mail, Building2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
@@ -32,49 +32,6 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { VisaWizard, type WizardPrefill } from './visa-wizard'
 import { ENTRY_POINTS, VESSEL_TYPES } from '@/lib/validation/visa'
-
-const services = [
-  {
-    title: 'Document Preparation',
-    price: '€49',
-    description: 'Complete checklist and review of all required documents for your Schengen visa application.',
-    includes: [
-      'Document checklist tailored to your situation',
-      'Review and feedback on all documents',
-      'Application form assistance',
-      'Cover letter template',
-    ],
-    popular: false,
-  },
-  {
-    title: 'Full Visa Package',
-    price: '€99',
-    description: 'Comprehensive support including travel itinerary, hotel reservations, and all documentation.',
-    includes: [
-      'Everything in Document Preparation',
-      'Confirmed hotel reservation letter',
-      'Detailed travel itinerary',
-      'Ferry ticket confirmation',
-      'Travel insurance assistance',
-      'Interview preparation tips',
-    ],
-    popular: true,
-  },
-  {
-    title: 'VIP Concierge',
-    price: '€199',
-    description: 'Premium end-to-end support with personal assistance throughout the entire process.',
-    includes: [
-      'Everything in Full Package',
-      'Appointment scheduling assistance',
-      'Personal visa consultant',
-      'Priority WhatsApp support',
-      'Embassy interview coaching',
-      'Status tracking and updates',
-    ],
-    popular: false,
-  },
-]
 
 const steps = [
   {
@@ -126,11 +83,13 @@ const faqs = [
   },
 ]
 
-const stats = [
-  { number: '2,400+', label: 'Travelers Assisted' },
-  { number: '95%', label: 'Approval Rate' },
-  { number: '6+', label: 'Years Experience' },
-  { number: '24/7', label: 'Turkish Support' },
+type Stat = { label: string; number?: string; icon?: React.ComponentType<{ className?: string }> }
+
+const stats: Stat[] = [
+  { number: '2,400+', label: 'Yardım Edilen Yolcu' },
+  { number: '95%', label: 'Onay Oranı' },
+  { number: '6+', label: 'Yıllık Deneyim' },
+  { icon: MessageCircle, label: 'Türkçe Destek' },
 ]
 
 export default function VisaSupportPage() {
@@ -293,69 +252,17 @@ export default function VisaSupportPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   {stats.map((stat) => (
                     <div key={stat.label} className="text-center">
-                      <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.number}</p>
+                      {stat.icon ? (
+                        <stat.icon className="mx-auto mb-1 h-9 w-9 text-primary" />
+                      ) : (
+                        <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.number}</p>
+                      )}
                       <p className="text-sm text-muted-foreground">{stat.label}</p>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </section>
-
-        {/* Services */}
-        <section className="w-full py-16 md:py-24">
-          <div className="container px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Visa Support Packages</h2>
-              <p className="text-muted-foreground text-lg">Choose the level of assistance that fits your needs</p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {services.map((service, index) => (
-                <motion.div
-                  key={service.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className={`overflow-hidden h-full ${service.popular ? 'border-primary border-2 shadow-xl' : 'border-border/50'}`}>
-                    <CardContent className="p-0 flex flex-col h-full">
-                      {service.popular && (
-                        <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium">
-                          Most Popular
-                        </div>
-                      )}
-                      <div className="p-6 flex flex-col flex-1">
-                        <h3 className="font-bold text-xl text-foreground mb-2">{service.title}</h3>
-                        <div className="mb-4">
-                          <span className="text-4xl font-bold text-primary">{service.price}</span>
-                          <span className="text-muted-foreground">/application</span>
-                        </div>
-                        <p className="text-muted-foreground text-sm mb-6">{service.description}</p>
-                        
-                        <div className="space-y-3 mb-6 flex-1">
-                          {service.includes.map((item) => (
-                            <div key={item} className="flex items-start gap-2">
-                              <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                              <span className="text-sm text-foreground">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <Button
-                          className={`w-full mt-auto ${service.popular ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''}`}
-                          variant={service.popular ? 'default' : 'outline'}
-                          onClick={scrollToForm}
-                        >
-                          Get Started
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </section>
 
