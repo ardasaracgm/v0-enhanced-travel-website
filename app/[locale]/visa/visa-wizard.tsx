@@ -958,7 +958,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
             {/* Jotform 33A — means of subsistence. Always shown; at least one
                 must be selected (refineFinancing). */}
             <FieldGroup title={t('sections.financingMeans')}>
-              <div className="space-y-2">
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {FINANCING_MEANS.map((val) => (
                   <label
                     key={val}
@@ -1000,7 +1000,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               </div>
             </div>
             <DocsSection title={t('docs.stepHeading')}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {renderDocSlot('bank_statement_first')}
                 {renderDocSlot('bank_statement_last')}
                 {isSponsor && renderDocSlot('sponsor_id')}
