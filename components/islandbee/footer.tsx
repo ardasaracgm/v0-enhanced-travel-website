@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing'
+import Image from 'next/image'
 import { SERVICE_ROUTES, type ServiceKey } from '@/lib/services'
 import {
   Ship,
@@ -39,12 +40,14 @@ export function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-5">
-              <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">B</span>
-              </div>
-              <span className="text-xl font-bold">
-                Travel<span className="text-primary">Beez</span>
-              </span>
+              <Image
+                src="/travelbeez-icon.webp"
+                alt=""
+                width={512}
+                height={512}
+                className="h-9 w-auto"
+              />
+              <span className="text-xl font-bold text-background">TravelBeez</span>
             </div>
 
             <p className="text-background/70 text-sm mb-4 leading-relaxed">

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Link } from "@/i18n/routing";
+import { Logo } from "@/components/islandbee/logo";
 import { ChevronDown, Menu, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -50,16 +51,7 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link className="flex items-center gap-2" href="/">
-            <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">
-                  B
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                Travel<span className="text-primary">Beez</span>
-              </span>
-            </div>
+            <Logo priority className="h-8 md:h-9 w-auto" />
           </Link>
 
           <nav className="hidden xl:flex items-center gap-6">
