@@ -236,6 +236,15 @@ export default function VisaSupportPage() {
                     </CardContent>
                   </Card>
                 </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-medium text-white"
+                >
+                  Kapıda vize başvurusu:
+                  <span className="font-bold text-amber-400">90€</span>
+                </motion.div>
               </div>
 
               {/* SAĞ: görsel zaten arka planda; bu kolon foto'nun sağını açar (fade) */}

@@ -1199,6 +1199,10 @@ function VisaSidebar({
               </li>
             ))}
           </ol>
+          <div className="mt-2 flex items-center justify-between border-t pt-2 text-sm">
+            <span className="text-slate-600">Kapıda vize</span>
+            <span className="font-semibold text-amber-600">90€</span>
+          </div>
         </CardContent>
       </Card>
 
