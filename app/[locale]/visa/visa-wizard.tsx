@@ -730,15 +730,50 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_22rem]">
       <Card className="rounded-3xl border-0 bg-card shadow-xl">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
-            <FileText className="h-5 w-5 text-amber-600" />
+        {/* Başlık solda, nav sağ üstte. Mobilde çakışmayı önlemek için dikey
+            yığılır (flex-col), sm+ yatay hizalanır (buton 40px, başlık ~48px →
+            items-start). Buton MANTIĞI eski alt bloktan birebir taşındı. */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <CardTitle className="text-lg text-blue-950">{t(`sections.step${step + 1}`)}</CardTitle>
+              <p className="text-sm text-slate-500">
+                {t('nav.step', { current: step + 1, total: TOTAL_STEPS })}
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg text-blue-950">{t(`sections.step${step + 1}`)}</CardTitle>
-            <p className="text-sm text-slate-500">
-              {t('nav.step', { current: step + 1, total: TOTAL_STEPS })}
-            </p>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={step === 0 || submitting}
+              className={step === 0 ? 'invisible' : ''}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              {t('nav.back')}
+            </Button>
+            <Button
+              onClick={handleNext}
+              disabled={submitting || isUploading || checkingPromo}
+              className="bg-amber-400 text-blue-950 hover:bg-amber-500"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('submit.submitting')}
+                </>
+              ) : isLastStep ? (
+                t('submit.cta')
+              ) : (
+                <>
+                  {t('nav.next')}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </>
+              )}
+            </Button>
           </div>
         </div>
         {/* Progress bar */}
@@ -1051,38 +1086,9 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
           <p className="text-sm text-destructive">{t('submit.error')}</p>
         )}
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-4">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            disabled={step === 0 || submitting}
-            className={step === 0 ? 'invisible' : ''}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {t('nav.back')}
-          </Button>
-
-          <Button
-            onClick={handleNext}
-            disabled={submitting || isUploading || checkingPromo}
-            className="bg-amber-400 text-blue-950 hover:bg-amber-500"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t('submit.submitting')}
-              </>
-            ) : isLastStep ? (
-              t('submit.cta')
-            ) : (
-              <>
-                {t('nav.next')}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Nav butonları CardHeader'a taşındı (sağ üst). Durum satırları burada
+            kalır — üstteki submitError + aşağıdaki isUploading (progress bar
+            header'a girmesin diye header'a taşınmadı). */}
         {isUploading && (
           <p className="pt-2 text-right text-xs text-muted-foreground">{t('uploading')}</p>
         )}
