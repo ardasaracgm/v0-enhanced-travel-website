@@ -758,6 +758,7 @@
         "fingerprintsTaken": "Have your fingerprints been taken previously?",
         "schengenEntryDate": "Intended Entry Date",
         "schengenExitDate": "Intended Exit Date",
+        "plannedDates": "Intended Travel Dates",
         "guardianName": "Guardian Full Name",
         "guardianAddress": "Guardian Address",
         "guardianCity": "Guardian City",

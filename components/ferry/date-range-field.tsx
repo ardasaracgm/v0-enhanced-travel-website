@@ -34,6 +34,12 @@ interface DateRangeFieldProps {
    * +4 geçilir. Radix Content.alignOffset'e iletilir.
    */
   alignOffset?: number
+  /**
+   * Trigger butonuna eklenecek ekstra sınıflar (cn ile MERGE edilir, taban
+   * sınıfları ezmez). Default undefined → ferry/car/insurance çağrıları
+   * byte-identical kalır. Vize Adım 4 h-9/rounded-xl idiomuna yaklaşmak için geçer.
+   */
+  triggerClassName?: string
 
   // ─── Adım 2 hazırlığı: opsiyonel passthrough. Adım 1'de GEÇİLMEZ → davranış değişmez. ───
   /** Verilirse bu günler disabled (sefer yok). undefined → tüm günler açık (Adım 1). */
@@ -54,7 +60,7 @@ const LOCALES = { tr, en: enUS, el } as const
  */
 export function DateRangeField({
   mode, date, returnDate, onDateChange, onReturnDateChange,
-  minDate, locale, placeholder, alignOffset = 0,
+  minDate, locale, placeholder, alignOffset = 0, triggerClassName,
   disabledDates, dayModifiers, dayModifiersClassNames,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false)
@@ -94,6 +100,7 @@ export function DateRangeField({
           className={cn(
             'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             !date && 'text-muted-foreground',
+            triggerClassName,
           )}
         >
           <span className="line-clamp-1">{label}</span>

@@ -39,6 +39,7 @@ import {
   type DocumentUploadSlotStatus,
 } from '@/app/[locale]/visa/document-upload-slot'
 import { SignaturePad } from '@/components/visa/signature-pad'
+import { DateRangeField } from '@/components/ferry/date-range-field'
 import { ensureDraft, getDraftId, clearDraft } from '@/lib/visa/use-draft-application'
 import {
   VISA_STEP_SCHEMAS,
@@ -144,20 +145,9 @@ const DOC_STEP_MAP: Record<string, number> = {
 
 const YES_NO = ['true', 'false'] as const
 
-/** Door-visa max stay: 6 nights (7 days, entry inclusive). Exit auto-fills to entry + this many nights. */
-const MAX_STAY_NIGHTS = 6
-
 /** '' → undefined (triggers required), else 'true' → true / 'false' → false. */
 function toBool(v: string): boolean | undefined {
   return v === '' ? undefined : v === 'true'
-}
-
-/** Add n days to a YYYY-MM-DD date (UTC, DST-safe). '' if it won't parse. */
-function addDaysISO(iso: string, n: number): string {
-  const d = parseISODate(iso)
-  if (!d) return ''
-  d.setUTCDate(d.getUTCDate() + n)
-  return d.toISOString().slice(0, 10)
 }
 
 export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
@@ -363,23 +353,11 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     })
   }
 
-  // Exit auto-tracks entry + 7 nights (door-visa max) until the user edits exit
-  // themselves. We RE-SYNC on every entry change (not just when exit is empty):
-  // a date input fires onChange per keystroke while the year is typed, so entry
-  // transiently passes through values like "0202-01-01" before "2026-01-01".
-  // A one-shot "fill only if empty" guard would lock exit onto that bad partial
-  // year; re-syncing every change lets the final keystroke correct it.
-  const exitManuallyEdited = React.useRef(false)
-  const handleEntryDateChange = (value: string) => {
-    update('schengenEntryDate', value)
-    if (!exitManuallyEdited.current) {
-      update('schengenExitDate', addDaysISO(value, MAX_STAY_NIGHTS))
-    }
-  }
-  const handleExitDateChange = (value: string) => {
-    exitManuallyEdited.current = true
-    update('schengenExitDate', value)
-  }
+  // Entry/exit are picked together from the range calendar; each maps straight
+  // to its own field. The 6-night cap is enforced by refineSchengenDates on
+  // submit (schengenExitDate.maxStay) — no client-side auto-fill needed.
+  const handleEntryDateChange = (value: string) => update('schengenEntryDate', value)
+  const handleExitDateChange = (value: string) => update('schengenExitDate', value)
 
   // Build the payload Zod expects: Yes/No selects → booleans, enums/dates as-is.
   // stayDuration is no longer a form field (derived server-side from the dates).
@@ -978,13 +956,25 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 <p className="text-sm text-destructive">{errors.financingMeans}</p>
               )}
             </FieldGroup>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               {selectField('schengenLast3Years', YES_NO, 'yesNo')}
               {selectField('fingerprintsTaken', YES_NO, 'yesNo')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {dateField('schengenEntryDate', { min: today, onChange: handleEntryDateChange })}
-              {dateField('schengenExitDate', { min: form.schengenEntryDate || today, onChange: handleExitDateChange })}
+              <div className="space-y-2">
+                <Label className="text-blue-950">
+                  {t('labels.plannedDates')} <span className="text-red-500">*</span>
+                </Label>
+                <DateRangeField
+                  mode="range"
+                  date={form.schengenEntryDate}
+                  returnDate={form.schengenExitDate}
+                  onDateChange={handleEntryDateChange}
+                  onReturnDateChange={handleExitDateChange}
+                  minDate={today}
+                  locale={locale}
+                  placeholder={t('selectPlaceholder')}
+                  triggerClassName="h-9 rounded-xl"
+                />
+              </div>
             </div>
             {/* Destination + first-entry country are FIXED to Greece (door visa).
                 Read-only, never user-editable, not submitted — shown only for
