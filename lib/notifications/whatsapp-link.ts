@@ -1,22 +1,22 @@
 /**
- * WhatsApp deep link generator.
+ * Booking-flow WhatsApp / sales-phone builders.
  *
- * Builds wa.me URLs with pre-filled messages, for the booking
- * confirmation page's "Confirm Payment via WhatsApp" CTA and
- * for support links elsewhere in the app.
- *
- * The TravelBeez WhatsApp number is +30 22420 5008.
+ * Numbers and the payment/support message templates now live in lib/contact.ts
+ * (single source). These thin wrappers keep the original signatures so existing
+ * callers (create-trip, visa-wizard) and the widely-imported `Locale` type are
+ * untouched. NOTE: the WhatsApp number is now locale-aware (TR vs EL/EN) and the
+ * sales line is the Greek landline — both sourced from lib/contact.
  */
+import {
+  buildWhatsAppLink,
+  buildPaymentMessage,
+  buildSupportMessage,
+  getLandline,
+  type Locale,
+} from '@/lib/contact'
 
-const WA_NUMBER = '302242050008' // No spaces, no '+', wa.me format
-const SALES_PHONE = '+30 22420 5009'
+export type { Locale }
 
-export type Locale = 'tr' | 'el' | 'en'
-
-/**
- * Build a WhatsApp link for a booking payment confirmation.
- * Pre-fills a localized message that includes the booking reference.
- */
 export function buildPaymentWhatsAppLink({
   reference,
   locale = 'en',
@@ -28,18 +28,9 @@ export function buildPaymentWhatsAppLink({
   totalAmount: number
   currency?: string
 }): string {
-  const message = paymentMessage[locale]
-    .replace('{ref}', reference)
-    .replace('{amount}', String(totalAmount.toFixed(2)))
-    .replace('{currency}', currency)
-
-  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`
+  return buildWhatsAppLink(locale, buildPaymentMessage(locale, { reference, totalAmount, currency }))
 }
 
-/**
- * Build a WhatsApp link for general support.
- * Used in error states and "contact support" CTAs.
- */
 export function buildSupportWhatsAppLink({
   locale = 'en',
   context,
@@ -47,34 +38,9 @@ export function buildSupportWhatsAppLink({
   locale?: Locale
   context?: string
 } = {}): string {
-  const base = supportMessage[locale]
-  const message = context ? `${base}\n\n${context}` : base
-  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`
+  return buildWhatsAppLink(locale, buildSupportMessage(locale, context))
 }
 
-/**
- * Build a tel: link for the sales line.
- * Format consistent across the site.
- */
 export function getSalesPhoneLink() {
-  return {
-    display: SALES_PHONE,
-    href: `tel:${SALES_PHONE.replace(/\s/g, '')}`,
-  }
-}
-
-// ============================================================
-// Localized message templates
-// ============================================================
-
-const paymentMessage: Record<Locale, string> = {
-  en: `Hello TravelBeez, I'd like to confirm payment for my booking.\n\nReference: {ref}\nAmount: {amount} {currency}\n\n⏳ Your reservation will be cancelled if payment is not made within 1 hour.\n\nThank you!`,
-  tr: `Merhaba TravelBeez, rezervasyonum için ödeme onayı almak istiyorum.\n\nReferans: {ref}\nTutar: {amount} {currency}\n\n⏳ Rezervasyonunuz 1 saat içinde ödeme yapılmazsa iptal edilir.\n\nTeşekkürler!`,
-  el: `Γεια σας TravelBeez, θα ήθελα να επιβεβαιώσω την πληρωμή για την κράτησή μου.\n\nΑναφορά: {ref}\nΠοσό: {amount} {currency}\n\n⏳ Your reservation will be cancelled if payment is not made within 1 hour.\n\nΕυχαριστώ!`,
-}
-
-const supportMessage: Record<Locale, string> = {
-  en: `Hello TravelBeez, I have a question about my booking.`,
-  tr: `Merhaba TravelBeez, rezervasyonumla ilgili bir sorum var.`,
-  el: `Γεια σας TravelBeez, έχω μια ερώτηση σχετικά με την κράτησή μου.`,
+  return getLandline()
 }
