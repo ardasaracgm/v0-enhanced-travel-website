@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
+import { buildWhatsAppLink, getWhatsAppDisplay, getLandline } from "@/lib/contact";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Calendar,
@@ -507,7 +508,7 @@ export default function TravelBeez() {
                           </span>
                           <span className="flex items-center gap-1 text-muted-foreground">
                             <Phone className="h-4 w-4" />
-                            +30 22420 5008
+                            {getLandline().display}
                           </span>
                         </div>
                       </div>
@@ -1163,11 +1164,11 @@ export default function TravelBeez() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Phone className="h-4 w-4" />
-                  <span>+30 22420 5008</span>
+                  <span>{getLandline().display}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MessageCircle className="h-4 w-4 text-[#25D366]" />
-                  <span>WhatsApp: +30 22420 5009</span>
+                  <span>WhatsApp: {getWhatsAppDisplay(locale)}</span>
                 </div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -1288,7 +1289,7 @@ export default function TravelBeez() {
 
       {/* Floating WhatsApp Button */}
       <motion.a
-        href="https://wa.me/302242050009?text=Merhaba,%20Yunan%20adalar%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+        href={buildWhatsAppLink(locale, "Merhaba, Yunan adaları hakkında bilgi almak istiyorum")}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
