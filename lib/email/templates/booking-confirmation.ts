@@ -15,6 +15,7 @@
  */
 
 import type { Locale } from '@/lib/notifications/whatsapp-link'
+import { getWhatsAppDisplay, getLandline } from '@/lib/contact'
 
 export interface BookingEmailData {
   reference: string
@@ -64,7 +65,7 @@ const T: Record<Locale, Record<string, string>> = {
     hubCta: 'Go to my Hub',
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Port, Greece · Licensed by the Greek Ministry of Tourism (MH.T.E.)',
-    contactLine: 'Questions? WhatsApp +30 22420 5008 or call +30 22420 5009',
+    contactLine: `Questions? WhatsApp ${getWhatsAppDisplay('en')} or call ${getLandline().display}`,
   },
   tr: {
     subject: 'TravelBeez rezervasyon onayınız',
@@ -90,7 +91,7 @@ const T: Record<Locale, Record<string, string>> = {
     hubCta: "Hub'a Git",
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Limanı, Yunanistan · Yunan Turizm Bakanlığı (MH.T.E.) lisanslı',
-    contactLine: 'Sorularınız? WhatsApp +30 22420 5008 veya telefon +30 22420 5009',
+    contactLine: `Sorularınız? WhatsApp ${getWhatsAppDisplay('tr')} veya telefon ${getLandline().display}`,
   },
   el: {
     subject: 'Επιβεβαίωση κράτησης TravelBeez',
@@ -116,7 +117,7 @@ const T: Record<Locale, Record<string, string>> = {
     hubCta: 'Μετάβαση στο Hub',
     footer:
       'TravelBeez · FerryBee Travel ΙΚΕ · Λιμένας Κω, Ελλάδα · Αδειοδοτημένο από το Υπουργείο Τουρισμού (Μ.Η.Τ.Ε.)',
-    contactLine: 'Ερωτήσεις; WhatsApp +30 22420 5008 ή τηλ. +30 22420 5009',
+    contactLine: `Ερωτήσεις; WhatsApp ${getWhatsAppDisplay('el')} ή τηλ. ${getLandline().display}`,
   },
 }
 
