@@ -235,7 +235,7 @@ export default function TravelBeez() {
     <div className="flex min-h-screen flex-col bg-background scroll-smooth">
       <main className="flex-1">
         {/* Hero Section with Search */}
-        <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden">
+        <section className="relative w-full py-16 md:py-24 lg:pt-20 lg:pb-24 overflow-hidden">
           <div className="absolute inset-0">
             <Image
               src="/hero-greek-islands.webp"
@@ -304,7 +304,7 @@ export default function TravelBeez() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-10 max-w-4xl md:ml-[10%] xl:ml-[15%]"
+              className="mt-8 max-w-4xl md:ml-[10%] xl:ml-[15%]"
             >
               <Card className="border-0 shadow-xl bg-card/90 backdrop-blur">
                 <CardContent className="p-0">
