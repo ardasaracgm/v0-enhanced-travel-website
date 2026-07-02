@@ -21,12 +21,11 @@ interface PageHeroProps {
 }
 
 /**
- * PageHero — single source of truth for full-height hero sections.
+ * PageHero — single source of truth for full-bleed hero sections.
  *
- * Guarantees the hero fits the viewport at every resolution (uses svh to
- * avoid mobile browser-chrome overflow) while still growing if content is
- * tall. All hero pages (home, car-rental, transfer, insurance, visa) should
- * use this instead of hand-rolling min-h-screen / py-* stacks.
+ * Background image always fills the section (min 100svh). Content centers
+ * vertically when short and flows naturally (page scrolls) when tall, so it
+ * never gets clipped. Use align='start' for content that should hug the top.
  */
 export function PageHero({
   bgImage,
@@ -37,7 +36,7 @@ export function PageHero({
   children,
 }: PageHeroProps) {
   return (
-    <section className="relative w-full min-h-[100svh] overflow-hidden">
+    <section className="relative w-full min-h-[100svh] overflow-hidden flex flex-col">
       {/* Background layer */}
       <div className="absolute inset-0">
         <Image
@@ -60,10 +59,10 @@ export function PageHero({
         )}
       </div>
 
-      {/* Content container — full-height flex, vertically aligned */}
+      {/* Content container — grows with content; centers when short, scrolls when tall */}
       <div
         className={cn(
-          'container relative z-10 mx-auto flex min-h-[100svh] flex-col px-4 py-16 md:px-6 md:py-20',
+          'container relative z-10 mx-auto flex w-full flex-1 flex-col px-4 py-8 md:px-6 md:py-12',
           align === 'center' ? 'justify-center' : 'justify-start',
           className,
         )}
