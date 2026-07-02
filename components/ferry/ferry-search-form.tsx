@@ -207,7 +207,7 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
           'grid',
           vertical
             ? 'grid-cols-2 gap-x-8 gap-y-3'
-            : cn(bare ? 'gap-3' : 'gap-4', 'grid-cols-1 md:grid-cols-2 lg:grid-cols-6'),
+            : cn(bare ? 'gap-3' : 'gap-4', 'grid-cols-1 md:grid-cols-2 xl:grid-cols-6'),
         )}>
           <div className={cn('space-y-2', vertical && 'order-1')}>
             <label className="text-sm font-medium text-foreground">{t('fromPort')}</label>
