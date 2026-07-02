@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import { PageHero } from '@/components/layout/page-hero'
 import { parseISODate, todayAthensISO } from '@/lib/validation/dates'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { transferVehicleVisual } from '@/lib/service-theme'
@@ -92,7 +93,6 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
   const [submitError, setSubmitError] = React.useState(false)
   const [done, setDone] = React.useState(false)
   const [paymentLink, setPaymentLink] = React.useState<string | null>(null)
-  const [heroError, setHeroError] = React.useState(false) // hero görsel fallback (salt görünüm)
 
   // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
   React.useEffect(() => { getOrCreateTransferOrderKey() }, [])
@@ -213,17 +213,12 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0">
-        {!heroError && (
-          <Image src="/transfer-hero.webp" alt={t('heroTitle')} fill sizes="100vw"
-            className="object-cover" priority onError={() => setHeroError(true)} />
-        )}
-        {/* sol kenar hafif beyaz, orta/sağ tam canlı (sigorta/feribot ile birebir) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
-      </div>
-
-      <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
+    <PageHero
+      bgImage="/transfer-hero.webp"
+      bgAlt={t('heroTitle')}
+      overlay="light"
+      align="start"
+    >
         <div className="grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
 
           {/* SOL: eyebrow + başlık + subtitle + form kartı */}
@@ -275,7 +270,7 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
                     {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
                   </Button>
                 </div>
-                <div className="min-h-[31rem] space-y-5">
+                <div className="lg:min-h-[31rem] space-y-5">
                 {step === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -476,7 +471,6 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
           </div>
 
         </div>
-      </div>
-    </section>
+    </PageHero>
   )
 }
