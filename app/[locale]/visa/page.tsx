@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import { FileText, MessageCircle, Clock, Calendar, AlertCircle, Shield, Users, Star, Phone, Mail, Building2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
@@ -43,23 +44,40 @@ const stats: Stat[] = [
   { icon: MessageCircle, key: 'support' },
 ]
 
-export default function VisaSupportPage() {
+function VisaSupportPageInner() {
   const tForm = useTranslations('visaPage.form')
   const tm = useTranslations('visaPage.marketing')
   const locale = useLocale()
   const landline = getLandline()
 
+  // Ana sayfa hero'sunun "Vize" sekmesi /visa?firstName=…&entryPoint=slug…
+  // ile buraya gelir. URL query'sini oku → hem sayfa-içi hero mini-form'u
+  // hem wizard prefill'ini besle. Slug'lar kutsal; boş/eksik alan okunmaz.
+  const searchParams = useSearchParams()
+  const heroFromUrl = React.useMemo(
+    () => ({
+      firstName: searchParams.get('firstName') ?? '',
+      lastName: searchParams.get('lastName') ?? '',
+      entryPoint: searchParams.get('entryPoint') ?? '',
+      vesselType: searchParams.get('vesselType') ?? '',
+      birthDate: searchParams.get('birthDate') ?? '',
+    }),
+    [searchParams],
+  )
+
   // Hero mini-form — wizard'a köprü (state-lift). Value'lar slug (kutsal);
   // label/option metinleri visaPage.form anahtarlarından (locale-aware, reuse).
-  const [hero, setHero] = React.useState({
-    firstName: '', lastName: '', entryPoint: '', vesselType: '', birthDate: '',
-  })
+  // Başlangıç değeri URL'den (ana sayfa hero'su → prefill).
+  const [hero, setHero] = React.useState(heroFromUrl)
   const updateHero = (k: keyof typeof hero, v: string) =>
     setHero((h) => ({ ...h, [k]: v }))
 
-  // Wizard'a geçen lifted prefill. Başlat'a basınca set edilir; wizard
-  // useEffect([prefill]) ile mevcut form'a merge eder (boş ezmez).
-  const [prefill, setPrefill] = React.useState<WizardPrefill | null>(null)
+  // Wizard'a geçen lifted prefill. URL'de ön-seçim varsa mount'ta set edilir,
+  // yoksa Başlat'a basınca. Wizard useEffect([prefill]) mevcut form'a merge
+  // eder (boş ezmez; nationality default TR korunur).
+  const [prefill, setPrefill] = React.useState<WizardPrefill | null>(
+    Object.values(heroFromUrl).some(Boolean) ? heroFromUrl : null,
+  )
 
   const scrollToForm = () => {
     document
@@ -419,5 +437,15 @@ export default function VisaSupportPage() {
       <Footer />
       <FloatingWhatsApp />
     </div>
+  )
+}
+
+// useSearchParams App Router'da Suspense sınırı ister (yoksa build kırılır —
+// login/page.tsx aynı desen). Sayfa gövdesini sarmalıyoruz.
+export default function VisaSupportPage() {
+  return (
+    <React.Suspense fallback={null}>
+      <VisaSupportPageInner />
+    </React.Suspense>
   )
 }

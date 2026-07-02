@@ -42,6 +42,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FerrySearchForm } from "@/components/ferry/ferry-search-form";
+import { VisaHeroSearch } from "@/components/visa/visa-hero-search";
 import { getAvailableCars } from "@/lib/supabase";
 import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from "@/lib/normalize-car";
 import { useBooking } from "@/lib/booking-context";
@@ -331,7 +332,8 @@ export default function TravelBeez() {
                     <TabsContent value="ferry" className="mt-0 sm:min-h-[148px]">
                       <FerrySearchForm bare />
                     </TabsContent>
-                    {/* Diğer 4 servis: kısa açıklama + servis sayfasına CTA (Link) */}
+                    {/* Vize = inline ön-seçim formu (VisaHeroSearch → /visa?…);
+                        kalan 3 servis generic CTA (sonraki turlarda aynı desen). */}
                     {heroServiceTabs.map((tab) => {
                       const Icon = tab.icon;
                       const { href } = SERVICE_ROUTES[tab.svc];
@@ -341,17 +343,21 @@ export default function TravelBeez() {
                           value={tab.value}
                           className="mt-0 p-4 sm:min-h-[172px] data-[state=active]:flex flex-col justify-center"
                         >
-                          <div className="flex flex-col items-center gap-4 text-center">
-                            <Icon className="h-10 w-10 text-primary" />
-                            <p className="text-muted-foreground max-w-md">{t(tab.descKey)}</p>
-                            <Button
-                              asChild
-                              size="lg"
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                            >
-                              <Link href={href}>{t(tab.buttonKey)}</Link>
-                            </Button>
-                          </div>
+                          {tab.value === "visa" ? (
+                            <VisaHeroSearch />
+                          ) : (
+                            <div className="flex flex-col items-center gap-4 text-center">
+                              <Icon className="h-10 w-10 text-primary" />
+                              <p className="text-muted-foreground max-w-md">{t(tab.descKey)}</p>
+                              <Button
+                                asChild
+                                size="lg"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                              >
+                                <Link href={href}>{t(tab.buttonKey)}</Link>
+                              </Button>
+                            </div>
+                          )}
                         </TabsContent>
                       );
                     })}
