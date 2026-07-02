@@ -85,6 +85,18 @@ function VisaSupportPageInner() {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // URL'de ön-seçim (en az 1 dolu param) varsa mount'ta forma kaydır — ana
+  // sayfa hero'sundan /visa?…&entryPoint=… ile gelince. Param YOKSA scroll YOK
+  // → normal sayfa davranışı (üst hero yerinde kalır). Hedef statik
+  // #visa-application-form; prefill mount'ta zaten set (:78-80). rAF ile ilk
+  // paint sonrası ateşle ki scrollIntoView hedefi ıskalamasın.
+  React.useEffect(() => {
+    if (!Object.values(heroFromUrl).some(Boolean)) return
+    const raf = requestAnimationFrame(() => scrollToForm())
+    return () => cancelAnimationFrame(raf)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Lift → scroll. sessionStorage YOK: hero+wizard aynı sayfada eşzamanlı mount.
   const handleHeroStart = () => {
     setPrefill(hero)

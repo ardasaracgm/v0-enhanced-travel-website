@@ -341,7 +341,7 @@ export default function TravelBeez() {
                         <TabsContent
                           key={tab.value}
                           value={tab.value}
-                          className="mt-0 p-4 sm:min-h-[172px] data-[state=active]:flex flex-col justify-center"
+                          className="mt-0 p-4 sm:min-h-[148px] data-[state=active]:flex flex-col justify-center"
                         >
                           {tab.value === "visa" ? (
                             <VisaHeroSearch />

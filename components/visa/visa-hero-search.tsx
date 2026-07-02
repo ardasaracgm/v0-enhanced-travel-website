@@ -47,14 +47,14 @@ export function VisaHeroSearch() {
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
       <div className="space-y-1.5">
         <Label htmlFor="visa-hero-firstName" className="text-xs">{tForm('labels.firstName')}</Label>
         <Input
           id="visa-hero-firstName"
           value={form.firstName}
           onChange={(e) => update('firstName', e.target.value)}
-          className="h-11 rounded-xl"
+          className="h-10 rounded-xl"
         />
       </div>
       <div className="space-y-1.5">
@@ -63,7 +63,7 @@ export function VisaHeroSearch() {
           id="visa-hero-lastName"
           value={form.lastName}
           onChange={(e) => update('lastName', e.target.value)}
-          className="h-11 rounded-xl"
+          className="h-10 rounded-xl"
         />
       </div>
       <div className="space-y-1.5">
@@ -73,7 +73,7 @@ export function VisaHeroSearch() {
           type="date"
           value={form.birthDate}
           onChange={(e) => update('birthDate', e.target.value)}
-          className="h-11 rounded-xl"
+          className="h-10 rounded-xl"
         />
       </div>
       <div className="space-y-1.5">
@@ -106,7 +106,7 @@ export function VisaHeroSearch() {
         <Button
           onClick={handleStart}
           size="lg"
-          className="h-11 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          className="h-10 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {tHero('serviceCta.visaButton')}
         </Button>
