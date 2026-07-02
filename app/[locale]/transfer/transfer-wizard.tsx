@@ -227,7 +227,7 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
               className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950 lg:hidden">
               <Sparkles className="h-4 w-4" />{t('heroBadge')}
             </motion.div>
-            <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl">{t('heroTitle')}</h1>
+            <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl [@media(max-height:820px)]:text-3xl [@media(max-height:820px)]:md:text-3xl">{t('heroTitle')}</h1>
             <p className="max-w-md text-pretty text-lg text-blue-950/80">{t('heroSubtitle')}</p>
 
             <Card className="border-0 shadow-2xl bg-card/90 backdrop-blur">
@@ -270,10 +270,10 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
                     {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
                   </Button>
                 </div>
-                <div className="lg:min-h-[31rem] space-y-5">
+                <div className="lg:min-h-[min(28rem,60svh)] space-y-5">
                 {step === 0 ? (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground [@media(max-height:820px)]:hidden">
                 {t('operatorLabel')}: <span className="text-foreground">{region.operator}</span> ·{' '}
                 {t('pickupLabel')}: <span className="text-foreground">{region.pickupLabel}</span>
               </p>
@@ -305,7 +305,7 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
                           selected ? 'border-primary shadow-md ring-2 ring-primary' : 'border-border/50'
                         }`}>
                         {/* Görsel — 5:3 oran korunur, max-h ile %75'e kısılır (üst şerit için), object-contain → kırpma yok */}
-                        <div className="relative aspect-[5/3] max-h-[7.25rem] w-full bg-white">
+                        <div className="relative aspect-[5/3] max-h-[7.25rem] w-full bg-white [@media(max-height:820px)]:max-h-[5.5rem]">
                           {vSrc && (
                             <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-contain" />
                           )}
