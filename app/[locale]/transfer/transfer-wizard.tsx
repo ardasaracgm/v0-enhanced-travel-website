@@ -51,7 +51,14 @@ function formatDateWithDay(iso: string, locale: string): string {
 // Tek region (bodrum) otomatik seçili; UI region-aware (ileride seçici eklenir).
 const REGION_IDS = Object.keys(TRANSFER_REGIONS) as (keyof typeof TRANSFER_REGIONS)[]
 
-export function TransferWizard() {
+export interface TransferPrefill {
+  routeId?: string
+  vehicleId?: string
+  outboundDate?: string
+  returnDate?: string
+}
+
+export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }) {
   const t = useTranslations('transferPage')
   const locale = useLocale()
   const today = todayAthensISO()
@@ -89,6 +96,25 @@ export function TransferWizard() {
 
   // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
   React.useEffect(() => { getOrCreateTransferOrderKey() }, [])
+
+  // Hero prefill (Vize/Sigorta deseni, boş-ezmez). Fiyat türetilmiş (route/
+  // vehicle/tarih state'inden, :95-99) → prefill set edilince otomatik doğru,
+  // ayrı taşıma yok. route+vehicle+en az 1 tarih varsa iletişim adımına (step 1)
+  // atla (render kapısı yok; step1Valid sağlandığından handleSubmit step-0'a
+  // düşürmez). prefill yoksa: no-op → step 0 boş, normal davranış.
+  React.useEffect(() => {
+    if (!prefill) return
+    if (prefill.routeId) setRouteId(prefill.routeId)
+    if (prefill.vehicleId) setVehicleId(prefill.vehicleId)
+    if (prefill.outboundDate) setOutboundDate(prefill.outboundDate)
+    if (prefill.returnDate) setReturnDate(prefill.returnDate)
+    const hasLeg = !!(prefill.outboundDate || prefill.returnDate)
+    if (prefill.routeId && prefill.vehicleId && hasLeg) {
+      setStep(1)
+      setMaxStepReached((m) => Math.max(m, 1))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill])
 
   const route = region.routes.find((r) => r.id === routeId) ?? null
   const vehicle = region.vehicles.find((v) => v.id === vehicleId) ?? null
