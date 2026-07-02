@@ -96,7 +96,14 @@ function step2ErrorKey(path: ReadonlyArray<string | number>): string | null {
   return null
 }
 
-export function InsuranceWizard() {
+export interface InsurancePrefill {
+  dateFrom?: string
+  dateTo?: string
+  travellers?: number
+  coverageId?: number
+}
+
+export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null }) {
   const t = useTranslations('insurance')
   const locale = useLocale()
   const today = todayAthensISO()
@@ -130,6 +137,34 @@ export function InsuranceWizard() {
 
   // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
   React.useEffect(() => { getOrCreateInsuranceOrderKey() }, [])
+
+  // Hero prefill (Vize WizardPrefill deseni, boş-ezmez). KRİTİK QUOTE TİMİNG:
+  //  • dateFrom/dateTo/travellers HEMEN set → quote effect (aşağıda) tarihle tetiklenir.
+  //  • coverageId'yi HEMEN SETLEME → ref'te beklet; canlı tariff gelince uygula
+  //    (aşağıdaki effect). Aksi halde selectedTariff boş kalır, handleSubmit
+  //    step-0'a düşürür. Böylece coverageId set edildiği an selectedTariff DOLU olur.
+  //  • dateFrom+dateTo varsa yolcular adımına (step 1) atla (render kapısı yok).
+  // prefill yoksa/boşsa: hiçbir şey yapma → step 0 boş, normal davranış.
+  const pendingCoverageRef = React.useRef<number | null>(null)
+  React.useEffect(() => {
+    if (!prefill) return
+    if (prefill.dateFrom) setDateFrom(prefill.dateFrom)
+    if (prefill.dateTo) setDateTo(prefill.dateTo)
+    if (prefill.travellers) setTravellers(prefill.travellers)
+    if (prefill.coverageId) pendingCoverageRef.current = prefill.coverageId
+    if (prefill.dateFrom && prefill.dateTo) setStep(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill])
+
+  // Bekleyen coverageId'yi CANLI tariff hazır olunca uygula → selectedTariff hiç
+  // boş kalmaz (handleSubmit step-0 düşme riski kapanır). Tariff bir kez gelir.
+  React.useEffect(() => {
+    const want = pendingCoverageRef.current
+    if (want != null && tariffs.some((tf) => tf.coverageId === want)) {
+      setCoverageId(want)
+      pendingCoverageRef.current = null
+    }
+  }, [tariffs])
 
   // Yolcu sayısı değişince diziyi yeniden boyutlandır (girilen veriyi KORU).
   React.useEffect(() => {

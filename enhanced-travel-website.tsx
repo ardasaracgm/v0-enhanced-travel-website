@@ -44,6 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FerrySearchForm } from "@/components/ferry/ferry-search-form";
 import { VisaHeroSearch } from "@/components/visa/visa-hero-search";
 import { CarHeroSearch } from "@/components/car2/car-hero-search";
+import { InsuranceHeroSearch } from "@/components/insurance/insurance-hero-search";
 import { getAvailableCars } from "@/lib/supabase";
 import { normalizeCar, groupByModelKey, dateDiffInDays, type NormalizedCar } from "@/lib/normalize-car";
 import { useBooking } from "@/lib/booking-context";
@@ -348,6 +349,8 @@ export default function TravelBeez() {
                             <VisaHeroSearch />
                           ) : tab.value === "cars" ? (
                             <CarHeroSearch />
+                          ) : tab.value === "insurance" ? (
+                            <InsuranceHeroSearch />
                           ) : (
                             <div className="flex flex-col items-center gap-4 text-center">
                               <Icon className="h-10 w-10 text-primary" />
