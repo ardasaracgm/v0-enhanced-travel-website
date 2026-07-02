@@ -35,6 +35,13 @@ interface DateRangeFieldProps {
    */
   alignOffset?: number
   /**
+   * Radix PopoverContent.align. Default 'start' → mevcut davranış (sol kenar
+   * trigger'a hizalı) AYNEN korunur; tüm tüketiciler byte-identical. Geniş 2-ay
+   * takvimi dar bir trigger'da sağa taşıyorsa 'end' ile sağ kenardan hizala
+   * (takvim sola açılır).
+   */
+  align?: 'start' | 'center' | 'end'
+  /**
    * Trigger butonuna eklenecek ekstra sınıflar (cn ile MERGE edilir, taban
    * sınıfları ezmez). Default undefined → ferry/car/insurance çağrıları
    * byte-identical kalır. Vize Adım 4 h-9/rounded-xl idiomuna yaklaşmak için geçer.
@@ -60,7 +67,7 @@ const LOCALES = { tr, en: enUS, el } as const
  */
 export function DateRangeField({
   mode, date, returnDate, onDateChange, onReturnDateChange,
-  minDate, locale, placeholder, alignOffset = 0, triggerClassName,
+  minDate, locale, placeholder, alignOffset = 0, align = 'start', triggerClassName,
   disabledDates, dayModifiers, dayModifiersClassNames,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false)
@@ -107,7 +114,7 @@ export function DateRangeField({
           <CalendarIcon className="h-4 w-4 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" alignOffset={alignOffset} collisionPadding={8} className="w-auto p-0">
+      <PopoverContent align={align} alignOffset={alignOffset} collisionPadding={8} className="w-auto p-0">
         {mode === 'range' ? (
           <Calendar
             mode="range"
