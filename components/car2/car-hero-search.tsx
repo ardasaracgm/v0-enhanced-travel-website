@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/routing'
-import { MapPin } from 'lucide-react'
+import { MapPin, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { DateRangeField } from '@/components/ferry/date-range-field'
@@ -36,7 +36,15 @@ export function CarHeroSearch() {
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+    <div className="w-full space-y-3">
+      {/* "2026 model" rozeti — car2-hero:82-90 ile aynı markup/ikon/renk/key
+          (framer-motion animasyon sarmalayıcısı hariç: bu bileşende motion yok).
+          Mevcut dikey slack'e oturur → TabsContent sm:min-h-[148px] değişmez. */}
+      <div className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white">
+        <Sparkles className="h-4 w-4 text-amber-400" />
+        {t('heroFleetYear')}
+      </div>
+      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
       {/* Teslim noktası — salt-görüntü (sabit "Kos Limanı") */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-foreground">{t('searchPickupLabel')}</label>
@@ -66,7 +74,8 @@ export function CarHeroSearch() {
           minDate={todayAthens}
           locale={locale}
           placeholder={t('searchDatesPlaceholder')}
-          alignOffset={4}
+          align="end"
+          alignOffset={0}
           triggerClassName="rounded-xl"
         />
       </div>
@@ -78,6 +87,7 @@ export function CarHeroSearch() {
         >
           {t('searchButton')}
         </Button>
+      </div>
       </div>
     </div>
   )
