@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import { useRouter } from '@/i18n/routing'
 
 import { Header } from '@/components/islandbee/header'
@@ -25,10 +26,11 @@ const PICKUP_LOCATION = 'Kos Port'
 // search is a "seed": pressing it pushes its dates to every fleet card (via
 // seedNonce) and scrolls to the fleet. Each card then owns its dates +
 // availability on its own.
-export default function CarRentalPage() {
+function CarRentalPageInner() {
   const t = useTranslations('car2')
   const locale = useLocale()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { dispatch } = useBooking()
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
@@ -42,6 +44,25 @@ export default function CarRentalPage() {
   const [loading, setLoading] = React.useState(true)
 
   const seedValid = !!seedPickup && !!seedDropoff && dateDiffInDays(seedPickup, seedDropoff) >= 0
+
+  // Ana sayfa hero "Araç" sekmesi /car-rental?pickup=…&dropoff=… ile buraya
+  // gelir. Mount'ta URL tarihlerini seed'e yaz + NONCE BUMP (üçü birden) —
+  // nonce olmadan fleet kartları yeni tarihi benimsemez (car2-fleet-card:45-49
+  // yalnız seedNonce'a keyed). İki tarih de dolu değilse hiçbir şey yapma →
+  // normal sayfa davranışı. rAF ile paint-sonrası fleet'e kaydır.
+  React.useEffect(() => {
+    const p = searchParams.get('pickup') ?? ''
+    const d = searchParams.get('dropoff') ?? ''
+    if (!p || !d) return
+    setSeedPickup(p)
+    setSeedDropoff(d)
+    setSeedNonce((n) => n + 1)
+    const raf = requestAnimationFrame(() =>
+      document.getElementById('car2-fleet')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    )
+    return () => cancelAnimationFrame(raf)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Hero carousel card → scroll to that model's grid card (fallback: the grid
   // section). Pure DOM navigation, no selection/booking.
@@ -131,5 +152,15 @@ export default function CarRentalPage() {
       <Footer />
       <Car2FloatingWhatsApp />
     </div>
+  )
+}
+
+// useSearchParams App Router'da Suspense sınırı ister (Vize page.tsx:445-451
+// deseni). Sayfa gövdesini sarmalıyoruz.
+export default function CarRentalPage() {
+  return (
+    <React.Suspense fallback={null}>
+      <CarRentalPageInner />
+    </React.Suspense>
   )
 }
