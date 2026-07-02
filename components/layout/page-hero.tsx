@@ -6,8 +6,13 @@ interface PageHeroProps {
   bgImage: string
   /** Alt text for the background image */
   bgAlt?: string
-  /** Render a left-to-right gradient overlay over the image */
-  overlay?: boolean
+  /**
+   * Gradient overlay variant over the background image:
+   * - 'light' = white left-fade (wizard/visa surfaces, e.g. transfer/insurance)
+   * - 'dark'  = background-token left-fade (homepage)
+   * - 'none'  = no overlay (car2 / bare image)
+   */
+  overlay?: 'none' | 'light' | 'dark'
   /** Vertical alignment of content within the hero */
   align?: 'start' | 'center'
   /** Extra classes for the inner container (rare escape hatch) */
@@ -26,7 +31,7 @@ interface PageHeroProps {
 export function PageHero({
   bgImage,
   bgAlt = '',
-  overlay = false,
+  overlay = 'none',
   align = 'center',
   className,
   children,
@@ -43,8 +48,15 @@ export function PageHero({
           priority
           className="object-cover"
         />
-        {overlay && (
-          <div className="absolute inset-0 bg-gradient-to-r from-background/10 via-background/30 to-transparent" />
+        {overlay !== 'none' && (
+          <div
+            className={cn(
+              'absolute inset-0',
+              overlay === 'light'
+                ? 'bg-gradient-to-r from-white/60 via-white/20 to-transparent'
+                : 'bg-gradient-to-r from-background/10 via-background/30 to-transparent',
+            )}
+          />
         )}
       </div>
 
