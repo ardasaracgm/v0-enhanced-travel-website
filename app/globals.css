@@ -168,6 +168,12 @@
   .hero-compact .mt-6 { margin-top: 1rem; }            /* car2 2026 badge */
   .hero-compact .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }  /* car2 sol kolon */
   .hero-compact .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }    /* visa sol kolon */
+
+  /* Form yükü (özellikle vize 5-alanlı) — kısa ekranda kart padding/gap/label kıs.
+     Input yükseklikleri DOKUNULMAZ (tap-target). car2 formunu da kısar (zararsız, pay var). */
+  .hero-compact .p-6 { padding: 1rem; }                 /* form Card: 24→16px */
+  .hero-compact .gap-4 { gap: 0.75rem; }                /* form satır arası: 16→12px */
+  .hero-compact .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }  /* label→input: 8→4px */
 }
 
 /* hero h1 — yalnız md+ (lg:text-6xl→text-5xl). min-width guard'ı olmadan mobil
