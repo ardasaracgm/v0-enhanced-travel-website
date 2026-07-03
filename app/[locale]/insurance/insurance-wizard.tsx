@@ -400,7 +400,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                     const price = live ? live.priceAmount : cat.estimateOneDay
                     return (
                       <Label key={cat.coverageId} htmlFor={`ins-cov-${cat.coverageId}`}
-                        className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+                        className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
                           enabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                         } ${
                           selected ? 'border-primary bg-primary/5'
