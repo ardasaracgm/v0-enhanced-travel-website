@@ -109,7 +109,7 @@ function VisaSupportPageInner() {
       
       <main className="flex-1">
         {/* Hero Section — car2/insurance idiomu: açık sol-fade + blue-950 + amber */}
-        <section className="relative w-full overflow-hidden py-16 md:py-24">
+        <section className="relative w-full overflow-hidden py-16 md:pt-12 md:pb-24">
           <div className="absolute inset-0">
             <Image
               src="/visa-hero.webp"
@@ -124,20 +124,32 @@ function VisaSupportPageInner() {
           <div className="container relative px-4 md:px-6">
             <div className="grid items-center gap-10 lg:grid-cols-2">
               {/* SOL: eyebrow + başlık + alt metin + mini-form */}
-              <div className="max-w-xl space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
-                >
-                  <FileText className="h-4 w-4" />
-                  {tm('hero.badge')}
-                </motion.div>
+              <div className="max-w-xl space-y-4">
+                {/* Eyebrow + fiyat rozeti yan yana (flex-wrap: mobilde dikey yığılır) */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {tm('hero.badge')}
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-medium text-white"
+                  >
+                    {tm('hero.priceBadge')}
+                    <span className="font-bold text-amber-400">90€</span>
+                  </motion.div>
+                </div>
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
+                  className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-5xl"
                 >
                   {tm('hero.title')}
                 </motion.h1>
@@ -219,15 +231,6 @@ function VisaSupportPageInner() {
                       </Button>
                     </CardContent>
                   </Card>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-medium text-white"
-                >
-                  {tm('hero.priceBadge')}
-                  <span className="font-bold text-amber-400">90€</span>
                 </motion.div>
               </div>
 
