@@ -109,7 +109,7 @@ function VisaSupportPageInner() {
       
       <main className="flex-1">
         {/* Hero Section — car2/insurance idiomu: açık sol-fade + blue-950 + amber */}
-        <section className="relative w-full overflow-hidden py-16 md:py-24">
+        <section className="relative w-full overflow-hidden py-16 md:pt-12 md:pb-24">
           <div className="absolute inset-0">
             <Image
               src="/visa-hero.webp"
@@ -124,7 +124,7 @@ function VisaSupportPageInner() {
           <div className="container relative px-4 md:px-6">
             <div className="grid items-center gap-10 lg:grid-cols-2">
               {/* SOL: eyebrow + başlık + alt metin + mini-form */}
-              <div className="max-w-xl space-y-6">
+              <div className="max-w-xl space-y-4">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -137,7 +137,7 @@ function VisaSupportPageInner() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
+                  className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-5xl"
                 >
                   {tm('hero.title')}
                 </motion.h1>
