@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import {
@@ -17,6 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { PageHero } from '@/components/layout/page-hero'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { DateRangeField } from '@/components/ferry/date-range-field'
 import {
@@ -109,7 +109,6 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   const today = todayAthensISO()
 
   const [step, setStep] = React.useState(0)
-  const [heroError, setHeroError] = React.useState(false) // banner fallback; salt görünüm
 
   // Adım 1
   const [dateFrom, setDateFrom] = React.useState('')
@@ -312,26 +311,13 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   return (
     <>
-    <section className="relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0">
-        {!heroError && (
-          <Image
-            src="/services/insurance-hero_main.webp"
-            alt={t('heroTitle')}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority
-            onError={() => setHeroError(true)}
-          />
-        )}
-        {/* filtre yok: sadece sol kenar hafif beyaz, orta/sağ tam canlı */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
-      </div>
-
-      {/* min-h-screen + items-center: sığarsa ortalı, taşarsa uzar */}
-      <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
-        <div className="grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
+    <PageHero
+      bgImage="/services/insurance-hero_main.webp"
+      bgAlt={t('heroTitle')}
+      overlay="light"
+      align="start"
+    >
+        <div className="wizard-compact grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
 
           {/* SOL: eyebrow + başlık + subtitle + form (sola yaslı, dar) */}
           <div className="w-full max-w-xl space-y-3">
@@ -366,7 +352,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
         ))}
                 </ol>
 
-                <div className="space-y-5 lg:min-h-[31rem]">
+                <div className="wc-panel lg:min-h-[min(28rem,60svh)] space-y-5">
                 {step === 0 ? (
             <>
               {/* Tarih aralığı + yolcu sayısı — yan yana (range tek alan) */}
@@ -603,8 +589,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
           </div>
 
         </div>
-      </div>
-    </section>
+    </PageHero>
 
     {/* ===== 1b — Neden TravelBeez Seyahat Sigortası (5'li şerit) ===== */}
     <section className="w-full bg-secondary/30 py-16 md:py-24">
