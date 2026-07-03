@@ -91,6 +91,11 @@ function clampYear(v: string): string {
 // Zod path → düz error key (ferry passenger-details pathToErrorKey deseni).
 function step2ErrorKey(path: ReadonlyArray<string | number>): string | null {
   if (path[0] === 'passengers' && typeof path[1] === 'number') return `passenger-${path[1]}-${String(path[2])}`
+  return null
+}
+
+// Step 1 iletişim path → error key (contact step 1'e taşındı; passenger'lar step 2'de).
+function step1ErrorKey(path: ReadonlyArray<string | number>): string | null {
   if (path[0] === 'contactEmail') return 'contact-email'
   if (path[0] === 'contactPhone') return 'contact-phone'
   return null
@@ -115,11 +120,11 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   const [dateTo, setDateTo] = React.useState('')
   const [travellers, setTravellers] = React.useState(1)
   const [coverageId, setCoverageId] = React.useState<number | null>(null)
+  const [contactEmail, setContactEmail] = React.useState('')
+  const [contactPhone, setContactPhone] = React.useState('')
 
   // Adım 2
   const [passengers, setPassengers] = React.useState<PassengerForm[]>([emptyPassenger()])
-  const [contactEmail, setContactEmail] = React.useState('')
-  const [contactPhone, setContactPhone] = React.useState('')
   const [step2Errors, setStep2Errors] = React.useState<Record<string, string>>({})
 
   // Quote
@@ -206,9 +211,19 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   const step1Parsed = insuranceStep1Schema.safeParse({
     dateFrom, dateTo, travellers, coverageId: coverageId ?? undefined,
+    contactEmail, contactPhone,
   })
   const selectedTariff = tariffs.find((tf) => tf.coverageId === coverageId) ?? null
   const step1Valid = step1Parsed.success && selectedTariff != null
+  // Contact alan-hataları (reaktif; step1Attempted olunca gösterilir). Yalnız
+  // contact path'leri map'lenir (step1ErrorKey diğerlerine null döner).
+  const step1FieldErrors: Record<string, string> = {}
+  if (!step1Parsed.success) {
+    for (const issue of step1Parsed.error.issues) {
+      const key = step1ErrorKey(issue.path)
+      if (key && !step1FieldErrors[key]) step1FieldErrors[key] = t(`errors.${issue.message}`)
+    }
+  }
   const isLast = step === TOTAL_STEPS - 1
 
   const updatePassenger = (index: number, field: keyof PassengerForm, value: string) => {
@@ -220,7 +235,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   }
 
   const validateStep2 = (): boolean => {
-    const result = insuranceStep2Schema.safeParse({ passengers, contactEmail, contactPhone })
+    const result = insuranceStep2Schema.safeParse({ passengers })
     if (result.success) { setStep2Errors({}); return true }
     const next: Record<string, string> = {}
     for (const issue of result.error.issues) {
@@ -250,7 +265,8 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   // Adım 3 — Öde. Defansif: coverage/step2 hâlâ geçerli mi (yoksa ilgili adıma dön).
   const handleSubmit = async () => {
-    if (!coverageId || !selectedTariff) { setStep(0); return }
+    // step1Valid = tarih+teminat+contact; coverageId/selectedTariff ayrıca (tip daralması).
+    if (!step1Valid || !coverageId || !selectedTariff) { setStep(0); return }
     if (!validateStep2()) { setStep(1); return }
     setSubmitting(true)
     setSubmitError(false)
@@ -432,7 +448,26 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                 <p className="text-xs text-muted-foreground">{t('estimateNote')}</p>
               </div>
 
-              {step1Attempted && !step1Valid && (
+              {/* İletişim — teminat sonrası (voucher/ödeme bildirimi için). Başlıksız:
+                  label'lar zaten alanı tanımlıyor (yer kazancı, fold için kritik). */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
+                  <Input id="ins-email" type="email" value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className={`h-9 ${step1Attempted && step1FieldErrors['contact-email'] ? 'border-destructive' : ''}`} />
+                  {step1Attempted && step1FieldErrors['contact-email'] && <p className="text-sm text-destructive">{step1FieldErrors['contact-email']}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
+                  <Input id="ins-phone" type="tel" value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    className={`h-9 ${step1Attempted && step1FieldErrors['contact-phone'] ? 'border-destructive' : ''}`} />
+                  {step1Attempted && step1FieldErrors['contact-phone'] && <p className="text-sm text-destructive">{step1FieldErrors['contact-phone']}</p>}
+                </div>
+              </div>
+
+              {step1Attempted && (!datesValid || !selectedTariff) && (
                 <p className="text-sm text-destructive">
                   {!datesValid ? t('errors.datesRequired') : t('errors.coverageRequired')}
                 </p>
@@ -440,28 +475,8 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
             </>
           ) : step === 1 ? (
             <div className="space-y-6">
-              {/* Yolcu + İletişim — tek kutu: başlık → e-posta/telefon → yolcu scroll */}
-              <div className="space-y-3 rounded-md border p-3">
-                <p className="text-sm font-medium text-foreground">{t('contactHeading')}</p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
-                    <Input id="ins-email" type="email" value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      className={`h-9 ${step2Errors['contact-email'] ? 'border-destructive' : ''}`} />
-                    {step2Errors['contact-email'] && <p className="text-sm text-destructive">{step2Errors['contact-email']}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
-                    <Input id="ins-phone" type="tel" value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      className={`h-9 ${step2Errors['contact-phone'] ? 'border-destructive' : ''}`} />
-                    {step2Errors['contact-phone'] && <p className="text-sm text-destructive">{step2Errors['contact-phone']}</p>}
-                  </div>
-                </div>
-
-                {/* Yolcu kartları — sabit yükseklik + scroll (aynı kutu içinde) */}
-                <div className="max-h-[22rem] space-y-4 overflow-y-auto pr-2">
+              {/* Yolcu kartları — sabit yükseklik + scroll (iletişim step 1'e taşındı) */}
+              <div className="max-h-[22rem] space-y-4 overflow-y-auto pr-2">
               {passengers.map((p, index) => (
                 <div key={index} className="space-y-4 rounded-md border p-4">
                   <p className="text-sm font-medium text-foreground">
@@ -500,7 +515,6 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                 </div>
               ))}
                 </div>
-              </div>
             </div>
           ) : (
             // Adım 3 — Özet + öde
