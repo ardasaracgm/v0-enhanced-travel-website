@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import {
@@ -17,6 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { PageHero } from '@/components/layout/page-hero'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { DateRangeField } from '@/components/ferry/date-range-field'
 import {
@@ -91,6 +91,11 @@ function clampYear(v: string): string {
 // Zod path → düz error key (ferry passenger-details pathToErrorKey deseni).
 function step2ErrorKey(path: ReadonlyArray<string | number>): string | null {
   if (path[0] === 'passengers' && typeof path[1] === 'number') return `passenger-${path[1]}-${String(path[2])}`
+  return null
+}
+
+// Step 1 iletişim path → error key (contact step 1'e taşındı; passenger'lar step 2'de).
+function step1ErrorKey(path: ReadonlyArray<string | number>): string | null {
   if (path[0] === 'contactEmail') return 'contact-email'
   if (path[0] === 'contactPhone') return 'contact-phone'
   return null
@@ -109,18 +114,17 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   const today = todayAthensISO()
 
   const [step, setStep] = React.useState(0)
-  const [heroError, setHeroError] = React.useState(false) // banner fallback; salt görünüm
 
   // Adım 1
   const [dateFrom, setDateFrom] = React.useState('')
   const [dateTo, setDateTo] = React.useState('')
   const [travellers, setTravellers] = React.useState(1)
   const [coverageId, setCoverageId] = React.useState<number | null>(null)
+  const [contactEmail, setContactEmail] = React.useState('')
+  const [contactPhone, setContactPhone] = React.useState('')
 
   // Adım 2
   const [passengers, setPassengers] = React.useState<PassengerForm[]>([emptyPassenger()])
-  const [contactEmail, setContactEmail] = React.useState('')
-  const [contactPhone, setContactPhone] = React.useState('')
   const [step2Errors, setStep2Errors] = React.useState<Record<string, string>>({})
 
   // Quote
@@ -207,9 +211,19 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   const step1Parsed = insuranceStep1Schema.safeParse({
     dateFrom, dateTo, travellers, coverageId: coverageId ?? undefined,
+    contactEmail, contactPhone,
   })
   const selectedTariff = tariffs.find((tf) => tf.coverageId === coverageId) ?? null
   const step1Valid = step1Parsed.success && selectedTariff != null
+  // Contact alan-hataları (reaktif; step1Attempted olunca gösterilir). Yalnız
+  // contact path'leri map'lenir (step1ErrorKey diğerlerine null döner).
+  const step1FieldErrors: Record<string, string> = {}
+  if (!step1Parsed.success) {
+    for (const issue of step1Parsed.error.issues) {
+      const key = step1ErrorKey(issue.path)
+      if (key && !step1FieldErrors[key]) step1FieldErrors[key] = t(`errors.${issue.message}`)
+    }
+  }
   const isLast = step === TOTAL_STEPS - 1
 
   const updatePassenger = (index: number, field: keyof PassengerForm, value: string) => {
@@ -221,7 +235,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   }
 
   const validateStep2 = (): boolean => {
-    const result = insuranceStep2Schema.safeParse({ passengers, contactEmail, contactPhone })
+    const result = insuranceStep2Schema.safeParse({ passengers })
     if (result.success) { setStep2Errors({}); return true }
     const next: Record<string, string> = {}
     for (const issue of result.error.issues) {
@@ -251,7 +265,8 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   // Adım 3 — Öde. Defansif: coverage/step2 hâlâ geçerli mi (yoksa ilgili adıma dön).
   const handleSubmit = async () => {
-    if (!coverageId || !selectedTariff) { setStep(0); return }
+    // step1Valid = tarih+teminat+contact; coverageId/selectedTariff ayrıca (tip daralması).
+    if (!step1Valid || !coverageId || !selectedTariff) { setStep(0); return }
     if (!validateStep2()) { setStep(1); return }
     setSubmitting(true)
     setSubmitError(false)
@@ -312,26 +327,13 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   return (
     <>
-    <section className="relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0">
-        {!heroError && (
-          <Image
-            src="/services/insurance-hero_main.webp"
-            alt={t('heroTitle')}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority
-            onError={() => setHeroError(true)}
-          />
-        )}
-        {/* filtre yok: sadece sol kenar hafif beyaz, orta/sağ tam canlı */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
-      </div>
-
-      {/* min-h-screen + items-center: sığarsa ortalı, taşarsa uzar */}
-      <div className="container relative flex min-h-screen items-start px-4 pt-6 pb-12 md:px-6">
-        <div className="grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
+    <PageHero
+      bgImage="/services/insurance-hero_main.webp"
+      bgAlt={t('heroTitle')}
+      overlay="light"
+      align="start"
+    >
+        <div className="wizard-compact grid w-full items-center gap-6 lg:grid-cols-[36rem_minmax(0,1fr)]">
 
           {/* SOL: eyebrow + başlık + subtitle + form (sola yaslı, dar) */}
           <div className="w-full max-w-xl space-y-3">
@@ -366,7 +368,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
         ))}
                 </ol>
 
-                <div className="space-y-5 lg:min-h-[31rem]">
+                <div className="wc-panel lg:min-h-[min(28rem,60svh)] space-y-5">
                 {step === 0 ? (
             <>
               {/* Tarih aralığı + yolcu sayısı — yan yana (range tek alan) */}
@@ -414,7 +416,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                     const price = live ? live.priceAmount : cat.estimateOneDay
                     return (
                       <Label key={cat.coverageId} htmlFor={`ins-cov-${cat.coverageId}`}
-                        className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+                        className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
                           enabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                         } ${
                           selected ? 'border-primary bg-primary/5'
@@ -446,7 +448,26 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                 <p className="text-xs text-muted-foreground">{t('estimateNote')}</p>
               </div>
 
-              {step1Attempted && !step1Valid && (
+              {/* İletişim — teminat sonrası (voucher/ödeme bildirimi için). Başlıksız:
+                  label'lar zaten alanı tanımlıyor (yer kazancı, fold için kritik). */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
+                  <Input id="ins-email" type="email" value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className={`h-9 ${step1Attempted && step1FieldErrors['contact-email'] ? 'border-destructive' : ''}`} />
+                  {step1Attempted && step1FieldErrors['contact-email'] && <p className="text-sm text-destructive">{step1FieldErrors['contact-email']}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
+                  <Input id="ins-phone" type="tel" value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    className={`h-9 ${step1Attempted && step1FieldErrors['contact-phone'] ? 'border-destructive' : ''}`} />
+                  {step1Attempted && step1FieldErrors['contact-phone'] && <p className="text-sm text-destructive">{step1FieldErrors['contact-phone']}</p>}
+                </div>
+              </div>
+
+              {step1Attempted && (!datesValid || !selectedTariff) && (
                 <p className="text-sm text-destructive">
                   {!datesValid ? t('errors.datesRequired') : t('errors.coverageRequired')}
                 </p>
@@ -454,28 +475,8 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
             </>
           ) : step === 1 ? (
             <div className="space-y-6">
-              {/* Yolcu + İletişim — tek kutu: başlık → e-posta/telefon → yolcu scroll */}
-              <div className="space-y-3 rounded-md border p-3">
-                <p className="text-sm font-medium text-foreground">{t('contactHeading')}</p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="ins-email">{t('labels.contactEmail')} *</Label>
-                    <Input id="ins-email" type="email" value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      className={`h-9 ${step2Errors['contact-email'] ? 'border-destructive' : ''}`} />
-                    {step2Errors['contact-email'] && <p className="text-sm text-destructive">{step2Errors['contact-email']}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ins-phone">{t('labels.contactPhone')} *</Label>
-                    <Input id="ins-phone" type="tel" value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      className={`h-9 ${step2Errors['contact-phone'] ? 'border-destructive' : ''}`} />
-                    {step2Errors['contact-phone'] && <p className="text-sm text-destructive">{step2Errors['contact-phone']}</p>}
-                  </div>
-                </div>
-
-                {/* Yolcu kartları — sabit yükseklik + scroll (aynı kutu içinde) */}
-                <div className="max-h-[22rem] space-y-4 overflow-y-auto pr-2">
+              {/* Yolcu kartları — sabit yükseklik + scroll (iletişim step 1'e taşındı) */}
+              <div className="max-h-[22rem] space-y-4 overflow-y-auto pr-2">
               {passengers.map((p, index) => (
                 <div key={index} className="space-y-4 rounded-md border p-4">
                   <p className="text-sm font-medium text-foreground">
@@ -514,7 +515,6 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                 </div>
               ))}
                 </div>
-              </div>
             </div>
           ) : (
             // Adım 3 — Özet + öde
@@ -603,8 +603,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
           </div>
 
         </div>
-      </div>
-    </section>
+    </PageHero>
 
     {/* ===== 1b — Neden TravelBeez Seyahat Sigortası (5'li şerit) ===== */}
     <section className="w-full bg-secondary/30 py-16 md:py-24">
