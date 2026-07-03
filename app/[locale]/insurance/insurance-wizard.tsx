@@ -114,6 +114,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   const today = todayAthensISO()
 
   const [step, setStep] = React.useState(0)
+  const [maxStepReached, setMaxStepReached] = React.useState(0)
 
   // Adım 1
   const [dateFrom, setDateFrom] = React.useState('')
@@ -156,7 +157,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
     if (prefill.dateTo) setDateTo(prefill.dateTo)
     if (prefill.travellers) setTravellers(prefill.travellers)
     if (prefill.coverageId) pendingCoverageRef.current = prefill.coverageId
-    if (prefill.dateFrom && prefill.dateTo) setStep(1)
+    if (prefill.dateFrom && prefill.dateTo) { setStep(1); setMaxStepReached((m) => Math.max(m, 1)) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefill])
 
@@ -215,6 +216,17 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   })
   const selectedTariff = tariffs.find((tf) => tf.coverageId === coverageId) ?? null
   const step1Valid = step1Parsed.success && selectedTariff != null
+  // Step 2 (yolcular) saf geçerlilik — SADECE kapı/tıklama için (yan etkisiz;
+  // validateStep2 hata-SET eden yol ayrı kalır). Contact step 1'e taşındı → step2Schema passengers-only.
+  const step2Valid = insuranceStep2Schema.safeParse({ passengers }).success
+  // Tıklanabilir gösterge (transfer paritesi): geri serbest, aynı no-op, ileri
+  // yalnız ulaşılmış + ön-koşul + re-quote kilidi yok. quoteLoading guard yalnız
+  // ileri dalında (target<step erken 'true' → step 0'a dönüş HER ZAMAN serbest).
+  const stepPrereqOk = [true, step1Valid, step1Valid && step2Valid]
+  const canGoToStep = (target: number) =>
+    target < step ? true
+      : target === step ? false
+      : target <= maxStepReached && stepPrereqOk[target] && !quoteLoading
   // Contact alan-hataları (reaktif; step1Attempted olunca gösterilir). Yalnız
   // contact path'leri map'lenir (step1ErrorKey diğerlerine null döner).
   const step1FieldErrors: Record<string, string> = {}
@@ -260,7 +272,9 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
       if (!step1Valid) return
     }
     if (step === 1) { if (!validateStep2()) return }
-    setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))
+    const next = Math.min(TOTAL_STEPS - 1, step + 1)
+    setStep(next)
+    setMaxStepReached((m) => Math.max(m, next))
   }
 
   // Adım 3 — Öde. Defansif: coverage/step2 hâlâ geçerli mi (yoksa ilgili adıma dön).
@@ -355,17 +369,27 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
               <CardContent className="space-y-5 px-6 pt-6 pb-4">
                 {/* Adım göstergesi — kart içi üst */}
                 <ol className="flex items-center justify-center gap-1 sm:gap-2">
-        {STEP_KEYS.map((key, i) => (
+        {STEP_KEYS.map((key, i) => {
+          const clickable = canGoToStep(i)
+          const reached = i <= maxStepReached
+          return (
           <li key={key} className="flex items-center gap-2">
-            <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
-              i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            }`}>{i + 1}</span>
-            <span className={`hidden text-sm sm:inline ${
-              i === step ? 'font-medium text-foreground' : 'text-muted-foreground'
-            }`}>{t(`steps.${key}`)}</span>
+            <button type="button" disabled={!clickable} onClick={() => { if (clickable) setStep(i) }}
+              aria-current={i === step ? 'step' : undefined}
+              className={`flex items-center gap-2 ${clickable ? 'cursor-pointer' : 'cursor-default'}`}>
+              <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                i <= step ? 'bg-primary text-primary-foreground'
+                : reached ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+              } ${clickable ? 'hover:ring-2 hover:ring-primary/40' : ''}`}>{i + 1}</span>
+              <span className={`hidden text-sm sm:inline ${
+                i === step ? 'font-medium text-foreground'
+                : clickable ? 'text-foreground/70 hover:text-foreground' : 'text-muted-foreground'
+              }`}>{t(`steps.${key}`)}</span>
+            </button>
             {i < TOTAL_STEPS - 1 && <span className="mx-1 h-px w-4 bg-border sm:w-6" />}
           </li>
-        ))}
+          )
+        })}
                 </ol>
 
                 <div className="wc-panel lg:min-h-[min(28rem,60svh)] space-y-5">
