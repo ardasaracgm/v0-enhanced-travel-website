@@ -157,6 +157,23 @@
   .wizard-compact .wc-optional { display: none; }   /* dekoratif/opsiyonel satır */
   .wizard-compact .wc-panel { min-height: 0; }       /* panel min-h floor'unu kaldır */
   .wizard-compact .wc-media { max-height: 5.5rem; }  /* görseli kıs */
+
+  /* Marketing hero (car-rental/visa) — kısa ekranda üst-nefes trim. Kök
+     .hero-compact <section>'da; generic Tailwind-class hedefleme (wizard-compact
+     emsali, layer'sız > layer'lı). Geniş+uzun ekran (>820px) HİÇ etkilenmez.
+     Alt padding (pb) korunur → hero-altı float (-mt-8/-mt-12) bozulmaz.
+     h1 AYRI blokta (min-width guard'lı) — mobilde base text-4xl'i büyütmemek için. */
+  .hero-compact { padding-top: 3rem; }                 /* pt-24→pt-12; alt korunur */
+  .hero-compact .mb-6 { margin-bottom: 1rem; }         /* car2 eyebrow + h1 */
+  .hero-compact .mt-6 { margin-top: 1rem; }            /* car2 2026 badge */
+  .hero-compact .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }  /* car2 sol kolon */
+  .hero-compact .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }    /* visa sol kolon */
+}
+
+/* hero h1 — yalnız md+ (lg:text-6xl→text-5xl). min-width guard'ı olmadan mobil
+   base text-4xl (2.25rem) 3rem'e BÜYÜRDÜ; md'de zaten text-5xl (no-op), lg'de trim. */
+@media (max-height: 820px) and (min-width: 768px) {
+  .hero-compact h1 { font-size: 3rem; line-height: 1.1; }
 }
 
 /* ── Katman 2: yalnız ≤784px (1366×768 sınıfı). 800px'i BOZMAZ (800>784).

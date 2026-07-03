@@ -45,7 +45,7 @@ export function Car2Hero({
   const locale = useLocale()
 
   return (
-    <section className="relative w-full overflow-hidden py-16 md:pt-12 md:pb-24">
+    <section className="hero-compact relative w-full overflow-hidden py-16 md:py-24">
       <div className="absolute inset-0">
         <Image src={HERO_IMAGE} alt={t('heroTitle')} fill priority className="object-cover" />
       </div>
@@ -53,12 +53,12 @@ export function Car2Hero({
       <div className="container relative px-4 md:px-6">
         <div className="grid items-stretch gap-10 lg:grid-cols-2">
           {/* Left: copy + search card */}
-          <div className="max-w-[30rem] space-y-6">
+          <div className="max-w-[30rem] space-y-8">
             <div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
+                className="mb-6 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-blue-950"
               >
                 <Car className="h-4 w-4" />
                 {t('heroBadge')}
@@ -67,7 +67,7 @@ export function Car2Hero({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="mb-4 text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-5xl"
+                className="mb-6 text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl"
               >
                 {t('heroTitle')}
               </motion.h1>
@@ -83,7 +83,7 @@ export function Car2Hero({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white"
               >
                 <Sparkles className="h-4 w-4 text-amber-400" />
                 {t('heroFleetYear')}
