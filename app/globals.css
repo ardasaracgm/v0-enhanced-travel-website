@@ -158,3 +158,18 @@
   .wizard-compact .wc-panel { min-height: 0; }       /* panel min-h floor'unu kaldır */
   .wizard-compact .wc-media { max-height: 5.5rem; }  /* görseli kıs */
 }
+
+/* ── Katman 2: yalnız ≤784px (1366×768 sınıfı). 800px'i BOZMAZ (800>784).
+   820 katmanı 800'ü mükemmel yapar; bu katman 768'deki ~32-40px açığı
+   AYNI kaldıraçları bir tık daha kısarak kapatır. Transfer JSX'e sıfır
+   dokunuş — hepsi generic. Buton yüksekliğine DOKUNULMAZ (tap-target).
+   Bu blok 820 bloğundan SONRA gelmeli: 768'de ikisi de eşleşir, eşit
+   özgüllük → kaynak-sırası → sonraki (bu blok) kazanır. ── */
+@media (max-height: 784px) {
+  .wizard-compact .p-6 { padding: 0.75rem; }
+  .wizard-compact .pb-4 { padding-bottom: 0.5rem; }   /* Devam bölgesi */
+  .wizard-compact .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+  .wizard-compact .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+  .wizard-compact .h-7 { height: 1.5rem; }   /* step dairesi */
+  .wizard-compact .w-7 { width: 1.5rem; }
+}
