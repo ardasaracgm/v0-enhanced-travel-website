@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
-import { buildWhatsAppLink, getWhatsAppDisplay, getLandline } from "@/lib/contact";
+import { buildWhatsAppLink, getLandline } from "@/lib/contact";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Calendar,
@@ -38,6 +38,7 @@ import {
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/islandbee/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,7 +70,6 @@ export default function TravelBeez() {
   const tVI = useTranslations("visaInsurance");
   const tTesti = useTranslations("testimonials");
   const tWa = useTranslations("whatsappCta");
-  const tFooter = useTranslations("homeFooter");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const locale = useLocale();
@@ -173,16 +173,6 @@ export default function TravelBeez() {
     { value: "transfer", svc: "transfer", icon: CarTaxiFront, descKey: "serviceCta.transferDesc", buttonKey: "serviceCta.transferButton" },
     { value: "insurance", svc: "insurance", icon: Shield, descKey: "serviceCta.insuranceDesc", buttonKey: "serviceCta.insuranceButton" },
     { value: "visa", svc: "visa", icon: FileText, descKey: "serviceCta.visaDesc", buttonKey: "serviceCta.visaButton" },
-  ];
-
-  // Inline footer "Hizmetler" kolonu — grid'le aynı tek kaynak (SERVICE_ROUTES).
-  // Etiketler homeFooter namespace'inden (tFooter). Vize/sigorta "Destek"
-  // kolonunda yaşıyor; burada ferry/araç/transfer + (yakında) tur.
-  const footerServices: { key: ServiceKey; labelKey: string }[] = [
-    { key: "ferry", labelKey: "ferryTickets" },
-    { key: "carRental", labelKey: "carRental" },
-    { key: "transfer", labelKey: "transfer" },
-    { key: "tours", labelKey: "tours" },
   ];
 
   const testimonials = [
@@ -1158,149 +1148,7 @@ export default function TravelBeez() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-border bg-card">
-        <div className="container px-4 md:px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-            <div className="col-span-2">
-              <Link className="flex items-center gap-2 mb-4" href="#">
-                <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">
-                    B
-                  </span>
-                </div>
-                <span className="text-xl font-bold text-foreground">
-                  Travel<span className="text-primary">Beez</span>
-                </span>
-              </Link>
-              <p className="text-sm text-muted-foreground mb-4">
-                {tFooter("tagline")}
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4" />
-                  <span>{getLandline().display}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MessageCircle className="h-4 w-4 text-[#25D366]" />
-                  <span>WhatsApp: {getWhatsAppDisplay(locale)}</span>
-                </div>
-                <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="text-foreground font-medium">
-                      {tFooter("addressLine")}
-                    </span>
-                    <p className="text-xs">
-                      {tFooter("addressSub")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{tFooter("servicesTitle")}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {footerServices.map((item) => {
-                  const { href, disabled } = SERVICE_ROUTES[item.key];
-                  if (disabled) {
-                    return (
-                      <li key={item.key}>
-                        <span
-                          aria-disabled="true"
-                          className="flex items-center gap-1.5 text-muted-foreground/50 cursor-not-allowed"
-                        >
-                          {tFooter(item.labelKey)}
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            {tCommon("comingSoon")}
-                          </span>
-                        </span>
-                      </li>
-                    );
-                  }
-                  return (
-                    <li key={item.key}>
-                      <Link href={href} className="hover:text-primary transition-colors">
-                        {tFooter(item.labelKey)}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{tFooter("islandsTitle")}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {islands.map((island) => (
-                  <li key={island.id}>
-                    <Link
-                      href="#"
-                      className="hover:text-primary transition-colors"
-                    >
-                      {island.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{tFooter("supportTitle")}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    href={SERVICE_ROUTES.visa.href}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("visaSupport")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={SERVICE_ROUTES.insurance.href}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("travelInsurance")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("faq")}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={SERVICE_ROUTES.contact.href}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {tFooter("contactUs")}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-border mt-8 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                <span>
-                  {tFooter("operatingAs", { year: new Date().getFullYear() })}
-                </span>
-                <span>ΜΗ.Τ.Ε.: 1471Ε60000074600</span>
-              </div>
-              <div className="flex gap-6 text-sm text-muted-foreground">
-                <Link href="#" className="hover:text-primary transition-colors">
-                  {tFooter("privacy")}
-                </Link>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  {tFooter("terms")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Floating WhatsApp Button */}
       <motion.a
