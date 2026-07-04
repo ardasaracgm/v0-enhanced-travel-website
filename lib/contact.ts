@@ -49,6 +49,18 @@ export function getLandline() {
   return { display: LANDLINE_DISPLAY, href: LANDLINE_HREF }
 }
 
+// ── Call link (locale-aware) ──
+// Arama butonu: TR → Türk hattı (WhatsApp ile AYNI fiziksel hat, tek kaynak
+// WHATSAPP.tr'den türetilir → 'tel:+905421450457'). el/en → Yunan sabit hat
+// (landline). WhatsApp'ın Yunan MOBİL no'sunu aynalamaz — arama için ayrı
+// politika. { display, href } şekli getLandline() ile bire bir uyumlu.
+export function getPhoneCall(locale: string): { display: string; href: string } {
+  if (normalize(locale) === 'tr') {
+    return { display: WHATSAPP_DISPLAY.tr, href: `tel:+${WHATSAPP.tr}` }
+  }
+  return { display: LANDLINE_DISPLAY, href: LANDLINE_HREF }
+}
+
 // ============================================================
 // Localized message templates — moved VERBATIM from
 // notifications/whatsapp-link.ts (payment/support copy word-for-word).

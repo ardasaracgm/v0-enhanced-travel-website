@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Link, useRouter } from "@/i18n/routing";
 import { Logo } from "@/components/islandbee/logo";
-import { ChevronDown, LogOut, Menu, Phone } from "lucide-react";
+import { ChevronDown, LogOut, MessageCircle, Menu, Phone } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -16,7 +16,7 @@ import {
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TrustBar } from "@/components/islandbee/trust-bar";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
-import { buildWhatsAppLink, getLandline } from "@/lib/contact";
+import { buildWhatsAppLink, getPhoneCall } from "@/lib/contact";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 export function Header() {
@@ -24,7 +24,7 @@ export function Header() {
   const t = useTranslations("header");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const landline = getLandline();
+  const phone = getPhoneCall(locale); // TR → Türk hattı, el/en → Yunan sabit hat
   const router = useRouter();
 
   // Auth-aware header (client-side): Header 31 yerde doğrudan render edildiği ve
@@ -159,18 +159,19 @@ export function Header() {
               className="hidden xl:flex gap-2 text-foreground border-primary/30 hover:border-primary hover:bg-primary/5"
               asChild
             >
-              <a href={landline.href}>
+              <a href={phone.href}>
                 <Phone className="h-4 w-4 text-primary" />
-                {landline.display}
+                {phone.display}
               </a>
             </Button>
 
             <a href={buildWhatsAppLink(locale)} target="_blank" rel="noopener">
               <Button
-                size="sm"
+                size="icon"
+                aria-label={t("bookNow")}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {t("bookNow")}
+                <MessageCircle className="h-4 w-4" />
               </Button>
             </a>
 
