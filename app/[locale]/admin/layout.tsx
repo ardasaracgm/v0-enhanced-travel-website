@@ -30,9 +30,11 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Misafir → hub'a. (return → TS user'ı non-null daraltır)
+  // Misafir → login'e, ?next ile geri dönüş. next LOCALE-PREFIXLİ olmalı:
+  // callback SAFE_NEXT (/^\/(en|tr|el)\//) yalnız prefixli iç path kabul eder;
+  // '/admin' (prefixsiz) reddedilip /hub'a düşerdi. (return → TS daraltma)
   if (!user) {
-    redirect({ href: '/hub', locale })
+    redirect({ href: `/login?next=${encodeURIComponent(`/${locale}/admin`)}`, locale })
     return null
   }
 
