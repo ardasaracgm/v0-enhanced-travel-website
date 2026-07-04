@@ -63,7 +63,7 @@ export function Footer() {
                 <div>
                   <span className="text-background font-medium">{t('addressLine1')}</span>
                   <p className="text-xs text-background/60">4, G. Averof str, under Achilleas Hotel & Apartments</p>
-                  <p className="text-xs text-primary">First shop at Kos Port exit</p>
+                  <p className="text-xs text-primary">{t('portLandmark')}</p>
                 </div>
               </div>
 
@@ -144,7 +144,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Compass className="h-4 w-4 text-primary" />
-              Islands
+              {t('islandsTitle')}
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
               <li>Kos</li>
