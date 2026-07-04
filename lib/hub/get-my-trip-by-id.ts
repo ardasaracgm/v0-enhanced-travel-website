@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { ferryVoucherSections, type VoucherSection } from '@/lib/ferry/voucher-split'
-import type { FerryItemMetadata, TripItemType, TripState } from '@/lib/supabase'
+import type { FerryItemMetadata, TransferItemMetadata, TripItemType, TripState } from '@/lib/supabase'
 
 export interface HubTripDetailItem {
   type: TripItemType
@@ -82,14 +82,27 @@ export async function getMyTripById(id: string, email: string): Promise<HubTripD
     .eq('trip_id', id)
     .order('is_lead', { ascending: false })
 
-  const items: HubTripDetailItem[] = (itemRows ?? []).map((it) => ({
-    type: it.item_type as TripItemType,
-    title: it.title,
-    scheduledAt: it.scheduled_at as string | null,
-    endsAt: it.ends_at as string | null,
-    priceAmount: Number(it.price_amount ?? 0),
-    priceCurrency: (it.price_currency as string | null) ?? trip.currency ?? 'EUR',
-  }))
+  const items: HubTripDetailItem[] = (itemRows ?? []).map((it) => {
+    let scheduledAt = it.scheduled_at as string | null
+    let endsAt = it.ends_at as string | null
+    // Transfer keeps its per-leg dates in metadata (RAW YYYY-MM-DD); the
+    // scheduled_at instant can be absent for a transfer row → read the SAME
+    // source as the list (get-my-transfer-reservations) so the two views never
+    // disagree. one-way → single date (endsAt null); round-trip → out → return.
+    if (it.item_type === 'transfer') {
+      const m = (it.metadata ?? {}) as TransferItemMetadata
+      scheduledAt = m.outbound?.date ?? m.return?.date ?? scheduledAt ?? null
+      endsAt = m.outbound?.date && m.return?.date ? m.return.date : null
+    }
+    return {
+      type: it.item_type as TripItemType,
+      title: it.title,
+      scheduledAt,
+      endsAt,
+      priceAmount: Number(it.price_amount ?? 0),
+      priceCurrency: (it.price_currency as string | null) ?? trip.currency ?? 'EUR',
+    }
+  })
 
   const passengers: HubTripPassenger[] = (paxRows ?? []).map((p) => ({
     name: [p.first_name, p.last_name].filter(Boolean).join(' ').trim(),
