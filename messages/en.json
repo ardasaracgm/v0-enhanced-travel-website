@@ -263,6 +263,21 @@
       "large": "large",
       "dropOff": "Drop-off",
       "pickup": "Pick-up"
+    },
+    "tripDetail": {
+      "back": "← Hub",
+      "bookedOn": "Booked on",
+      "total": "Total",
+      "paid": "Paid",
+      "payViaWhatsApp": "Pay via WhatsApp",
+      "servicesHeading": "Services in this booking",
+      "ferryTicketsHeading": "Ferry Tickets",
+      "voucherNo": "Voucher No",
+      "passengersHeading": "Passengers",
+      "lead": "Lead",
+      "dob": "Date of Birth",
+      "passport": "Passport",
+      "nationality": "Nationality"
     }
   },
 

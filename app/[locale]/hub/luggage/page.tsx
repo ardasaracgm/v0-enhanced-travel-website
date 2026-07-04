@@ -74,7 +74,7 @@ export default async function HubLuggagePage({
                     { n: r.counts.large, label: t('luggagePage.large') },
                   ].filter((s) => s.n > 0)
                   return (
-                    <div key={r.tripId} className="rounded-lg border bg-background p-4 md:p-5">
+                    <Link key={r.tripId} href={`/hub/trip/${r.tripId}`} className="block rounded-lg border bg-background p-4 md:p-5 transition-shadow hover:shadow-md">
                       <div className="flex items-center justify-between gap-4">
                         <span className="flex items-center gap-2 font-medium text-foreground">
                           <Luggage className="h-4 w-4 text-primary" />
@@ -103,7 +103,7 @@ export default async function HubLuggagePage({
                       <p className="mt-3 text-sm text-foreground">
                         {r.priceAmount.toFixed(2)} {r.priceCurrency}
                       </p>
-                    </div>
+                    </Link>
                   )
                 })}
               </div>

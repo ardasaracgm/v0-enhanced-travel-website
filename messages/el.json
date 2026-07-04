@@ -263,6 +263,21 @@
       "large": "μεγάλη",
       "dropOff": "Παράδοση",
       "pickup": "Παραλαβή"
+    },
+    "tripDetail": {
+      "back": "← Hub",
+      "bookedOn": "Ημ. κράτησης",
+      "total": "Σύνολο",
+      "paid": "Πληρώθηκε",
+      "payViaWhatsApp": "Πληρωμή μέσω WhatsApp",
+      "servicesHeading": "Υπηρεσίες σε αυτή την κράτηση",
+      "ferryTicketsHeading": "Εισιτήρια Πλοίων",
+      "voucherNo": "Voucher No",
+      "passengersHeading": "Επιβάτες",
+      "lead": "Επικεφαλής",
+      "dob": "Ημ. Γέννησης",
+      "passport": "Διαβατήριο",
+      "nationality": "Υπηκοότητα"
     }
   },
 

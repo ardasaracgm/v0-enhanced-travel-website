@@ -1,10 +1,9 @@
 import { Link, redirect } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
-import { Ship, Ticket, AlertCircle } from 'lucide-react'
+import { Ship } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyFerryReservations } from '@/lib/hub/get-my-ferry-reservations'
-import { buildWhatsAppLink } from '@/lib/contact'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { Badge } from '@/components/ui/badge'
@@ -64,11 +63,12 @@ export default async function HubFerryPage({
             ) : (
               <div className="space-y-4">
                 {reservations.map((r, idx) => (
-                  <div
+                  <Link
                     key={`${r.tripId}-${idx}`}
-                    className="rounded-lg border bg-background p-4 md:p-5"
+                    href={`/hub/trip/${r.tripId}`}
+                    className="block rounded-lg border bg-background p-4 md:p-5 transition-shadow hover:shadow-md"
                   >
-                    {/* Reference + trip state */}
+                    {/* Reference + trip state (PNR/Voucher moved to the detail page) */}
                     <div className="flex items-center justify-between gap-4">
                       <span className="flex items-center gap-2 font-medium text-foreground">
                         <Ship className="h-4 w-4 text-primary" />
@@ -91,50 +91,10 @@ export default async function HubFerryPage({
                             {leg.departureTime ? ` · ${leg.departureTime}` : ''}
                             {leg.arrivalTime ? ` – ${leg.arrivalTime}` : ''}
                           </p>
-
-                          {/* PNRs — ONLY when reserved (pending has none) */}
-                          {r.reserveState === 'reserved' && leg.pnrs.length > 0 && (
-                            <ul className="mt-1.5 space-y-0.5">
-                              {leg.pnrs.map((p, j) => (
-                                <li key={j} className="text-xs text-foreground">
-                                  PNR <span className="font-mono font-medium">{p.pnr}</span>
-                                  {p.passengerName ? ` · ${p.passengerName}` : ''}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
                         </li>
                       ))}
                     </ul>
-
-                    {/* Voucher No (reserved) / support (failed) / processing (pending) */}
-                    {r.reserveState === 'reserved' && r.voucherNo ? (
-                      <div className="mt-3 flex items-center gap-2 text-sm text-foreground">
-                        <Ticket className="h-4 w-4 text-primary" />
-                        {t('ferryPage.voucherNo')}:{' '}
-                        <span className="font-mono font-semibold">{r.voucherNo}</span>
-                      </div>
-                    ) : r.reserveState === 'failed' ? (
-                      <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                        <p className="flex items-center gap-1.5">
-                          <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                          {t('ferryPage.reserveFailed')}
-                        </p>
-                        <a
-                          href={buildWhatsAppLink(locale)}
-                          target="_blank"
-                          rel="noopener"
-                          className="mt-1 inline-block font-medium underline"
-                        >
-                          {t('ferryPage.contactSupport')}
-                        </a>
-                      </div>
-                    ) : r.reserveState === 'pending' ? (
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        {t('ferryPage.reservationPending')}
-                      </p>
-                    ) : null}
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

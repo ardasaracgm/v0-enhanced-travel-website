@@ -61,7 +61,7 @@ export default async function HubCarRentalPage({
             ) : (
               <div className="space-y-4">
                 {carReservations.map((r) => (
-                  <div key={r.id} className="rounded-md border bg-background p-4">
+                  <Link key={r.id} href={`/hub/trip/${r.id}`} className="block rounded-md border bg-background p-4 transition-shadow hover:shadow-md">
                     <div className="flex items-center justify-between gap-4">
                       <span className="font-medium text-foreground">{r.reference}</span>
                       <Badge variant={STATE_VARIANT[r.state] ?? 'outline'}>{r.state}</Badge>
@@ -82,7 +82,7 @@ export default async function HubCarRentalPage({
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

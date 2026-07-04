@@ -66,7 +66,7 @@ export default async function HubTransferPage({
             ) : (
               <div className="space-y-4">
                 {reservations.map((r) => (
-                  <div key={r.tripId} className="rounded-lg border bg-background p-4 md:p-5">
+                  <Link key={r.tripId} href={`/hub/trip/${r.tripId}`} className="block rounded-lg border bg-background p-4 md:p-5 transition-shadow hover:shadow-md">
                     <div className="flex items-center justify-between gap-4">
                       <span className="flex items-center gap-2 font-medium text-foreground">
                         <BusFront className="h-4 w-4 text-primary" />
@@ -94,7 +94,7 @@ export default async function HubTransferPage({
                     <p className="mt-3 text-sm text-foreground">
                       {r.priceAmount.toFixed(2)} {r.priceCurrency}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

@@ -263,6 +263,21 @@
       "large": "büyük",
       "dropOff": "Bırakma",
       "pickup": "Alma"
+    },
+    "tripDetail": {
+      "back": "← Hub",
+      "bookedOn": "Rezervasyon tarihi",
+      "total": "Toplam",
+      "paid": "Ödendi",
+      "payViaWhatsApp": "WhatsApp ile Öde",
+      "servicesHeading": "Bu rezervasyondaki hizmetler",
+      "ferryTicketsHeading": "Feribot Biletleri",
+      "voucherNo": "Voucher No",
+      "passengersHeading": "Yolcular",
+      "lead": "Ana Yolcu",
+      "dob": "Doğum Tarihi",
+      "passport": "Pasaport",
+      "nationality": "Uyruk"
     }
   },
 

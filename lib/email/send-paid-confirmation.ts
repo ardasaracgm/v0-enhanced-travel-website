@@ -3,8 +3,7 @@ import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
 import { isPlaceholderEmail } from '@/lib/walk-in-email'
-import { groupFerryLegs } from '@/lib/ferry/group-legs'
-import { expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
+import { ferryVoucherSections } from '@/lib/ferry/voucher-split'
 import type { FerryItemMetadata } from '@/lib/supabase'
 
 /**
@@ -63,55 +62,14 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
       .eq('trip_id', tripId)
       .order('sequence', { ascending: true })
 
-    // Ferry vouchers (Dentur reservation refs), ONE section per leg so each route
-    // lists only its own passengers — mirrors the Dentur voucher. A round-trip is
-    // ONE reservation: its reservation_id + EVERY PNR live on the outbound anchor,
-    // so we split those PNRs back to each leg by expeditionId (the same leg-match
-    // key reconcile uses — NOT ticketDirection). Open-jaw → each one-way group
-    // carries its own reservation_id. reserveFerry ran in confirmTrip before this
-    // email, so a reserved leg has the data; a failed/pending reserve yields no
-    // block. If a PNR can't be matched to a leg (older/partial data) we fall back
-    // to a single section with all the group's PNRs — never a PNR on the wrong route.
-    const safeExpId = (ferryId?: string): number | undefined => {
-      try {
-        return expeditionIdFromFerryId(ferryId)
-      } catch {
-        return undefined
-      }
-    }
+    // Ferry vouchers (Dentur reservation refs) — Dentur-style per-leg sections
+    // (Voucher No + PNRs, split by expeditionId). Shared with the trip-detail page.
+    // reserveFerry ran in confirmTrip before this email, so a reserved leg has the
+    // data; a failed/pending reserve simply yields no voucher block.
     const ferryLegs = (items ?? [])
       .filter((i) => i.item_type === 'ferry')
       .map((i, idx) => ({ id: String(i.id ?? idx), meta: (i.metadata ?? {}) as FerryItemMetadata }))
-    const ferryVouchers = groupFerryLegs(ferryLegs).flatMap((group) => {
-      const anchor = group.anchor.meta
-      if (typeof anchor.reservation_id !== 'number') return []
-      const voucherNo = String(anchor.reservation_id)
-      const all = anchor.vouchers ?? []
-      const line = (v: { pnr: number; passengerName?: string }) => ({
-        pnr: v.pnr,
-        passengerName: v.passengerName || undefined,
-      })
-      // Clean per-leg split by expeditionId (each PNR → exactly one leg).
-      const perLeg = group.legs.map((leg) => {
-        const legExp = safeExpId(leg.meta.ferry_id)
-        return {
-          route: `${leg.meta.from_port} → ${leg.meta.to_port}`,
-          pnrs: all.filter((v) => v.expeditionId != null && v.expeditionId === legExp).map(line),
-        }
-      })
-      const matched = perLeg.reduce((n, l) => n + l.pnrs.length, 0)
-      if (all.length > 0 && matched === all.length) {
-        return perLeg.map((l) => ({ voucherNo, route: l.route, pnrs: l.pnrs }))
-      }
-      // Fallback: one section, all PNRs under the anchor's route.
-      return [
-        {
-          voucherNo,
-          route: anchor.from_port && anchor.to_port ? `${anchor.from_port} → ${anchor.to_port}` : undefined,
-          pnrs: all.map(line),
-        },
-      ]
-    })
+    const ferryVouchers = ferryVoucherSections(ferryLegs)
 
     await sendBookingConfirmation(claimed.contact_email, {
       paid:         true,
