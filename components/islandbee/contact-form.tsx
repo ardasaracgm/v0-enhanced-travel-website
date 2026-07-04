@@ -177,7 +177,7 @@ export function ContactForm({ className }: ContactFormProps) {
           <Textarea
             id="message"
             placeholder={t('form.messagePlaceholder')}
-            rows={5}
+            rows={4}
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required

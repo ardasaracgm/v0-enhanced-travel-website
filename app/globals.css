@@ -174,6 +174,7 @@
   .hero-compact .p-6 { padding: 1rem; }                 /* form Card: 24→16px */
   .hero-compact .gap-4 { gap: 0.75rem; }                /* form satır arası: 16→12px */
   .hero-compact .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }  /* label→input: 8→4px */
+  .hero-compact .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }  /* contact form ritmi: 16→10px */
 }
 
 /* hero h1 — yalnız md+ (lg:text-6xl→text-5xl). min-width guard'ı olmadan mobil

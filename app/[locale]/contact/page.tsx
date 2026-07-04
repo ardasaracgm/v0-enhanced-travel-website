@@ -25,7 +25,7 @@ export default function ContactPage() {
 
       <main className="flex-1">
         {/* Hero — car2 idiom: full-photo, soldan beyaz fade, sol blok (başlık+form), sağ kanal panelleri */}
-        <section className="relative w-full overflow-hidden py-8 md:py-12">
+        <section className="hero-compact relative w-full overflow-hidden py-8 md:py-12">
           <div className="absolute inset-0">
             <Image
               src="/travelbeez-kos-office.webp"
