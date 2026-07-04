@@ -204,7 +204,6 @@
     "submitButton": "Send sign-in link",
     "sendingButton": "Sending…",
     "googleButton": "Continue with Google",
-    "comingSoonBadge": "Soon",
     "successTitle": "Link sent ✓",
     "successBody": "Sign-in link sent to {email}. Check your inbox.",
     "errorMessage": "Something went wrong. Please try again."

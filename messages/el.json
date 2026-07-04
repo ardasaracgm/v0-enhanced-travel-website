@@ -204,7 +204,6 @@
     "submitButton": "Αποστολή συνδέσμου σύνδεσης",
     "sendingButton": "Αποστολή…",
     "googleButton": "Συνέχεια με Google",
-    "comingSoonBadge": "Σύντομα",
     "successTitle": "Ο σύνδεσμος στάλθηκε ✓",
     "successBody": "Ο σύνδεσμος στάλθηκε στο {email}. Ελέγξτε τα εισερχόμενά σας.",
     "errorMessage": "Κάτι πήγε στραβά. Δοκιμάστε ξανά."

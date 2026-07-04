@@ -42,18 +42,32 @@ function LoginCard() {
   const [status, setStatus] =
     React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
+  // Magic-link ve Google OAuth aynı callback + next mantığını paylaşır.
+  const buildRedirectTo = () => {
+    const next = searchParams.get('next') ?? `/${locale}/hub`
+    return `${HUB_AUTH_ORIGIN}/api/auth/callback?next=${encodeURIComponent(next)}`
+  }
+
   const handleSend = async () => {
     if (!email || status === 'sending') return
     setStatus('sending')
-    const next = searchParams.get('next') ?? `/${locale}/hub`
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${HUB_AUTH_ORIGIN}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: buildRedirectTo(),
       },
     })
     setStatus(error ? 'error' : 'sent')
+  }
+
+  const handleGoogle = async () => {
+    if (status === 'sending') return
+    const supabase = createSupabaseBrowserClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: buildRedirectTo() },
+    })
   }
 
   return (
@@ -110,18 +124,15 @@ function LoginCard() {
               <span className="h-px flex-1 bg-border" />
             </div>
 
-            {/* Google — Seçenek A: disabled + "Yakında" rozeti */}
+            {/* Google OAuth — signInWithOAuth (magic-link ile aynı callback) */}
             <Button
               type="button"
               variant="outline"
-              disabled
-              className="relative w-full h-11 gap-2"
+              onClick={handleGoogle}
+              className="w-full h-11 gap-2"
             >
               <GoogleIcon className="h-4 w-4" />
               {t('googleButton')}
-              <span className="absolute right-3 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                {t('comingSoonBadge')}
-              </span>
             </Button>
           </>
         )}

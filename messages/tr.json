@@ -204,7 +204,6 @@
     "submitButton": "E-posta ile giriş linki gönder",
     "sendingButton": "Gönderiliyor…",
     "googleButton": "Google ile giriş yap",
-    "comingSoonBadge": "Yakında",
     "successTitle": "Link gönderildi ✓",
     "successBody": "{email} adresine giriş linki gönderildi. Gelen kutunuzu kontrol edin.",
     "errorMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
