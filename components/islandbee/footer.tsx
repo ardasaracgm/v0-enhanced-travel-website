@@ -163,6 +163,7 @@ export function Footer() {
             </h3>
             <ul className="space-y-2.5 text-sm text-background/70">
               <li><Link href="/contact" className="hover:text-primary transition-colors">{t('contactSection')}</Link></li>
+              <li><Link href="/login" className="hover:text-primary transition-colors">{tHeader('login')}</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">{t('terms')}</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">{t('privacy')}</Link></li>
             </ul>

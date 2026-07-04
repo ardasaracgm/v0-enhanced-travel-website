@@ -166,6 +166,9 @@
     "packagePickup": "Package Pickup",
     "contact": "Contact",
     "bookNow": "Book Now",
+    "login": "Sign In",
+    "beezTrips": "Beez Trips",
+    "signOut": "Sign Out",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },

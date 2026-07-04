@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { Logo } from "@/components/islandbee/logo";
-import { ChevronDown, Menu, Phone } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Phone } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +17,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TrustBar } from "@/components/islandbee/trust-bar";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
 import { buildWhatsAppLink, getLandline } from "@/lib/contact";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -24,6 +25,34 @@ export function Header() {
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const landline = getLandline();
+  const router = useRouter();
+
+  // Auth-aware header (client-side): Header 31 yerde doğrudan render edildiği ve
+  // çoğu client component olduğu için server-wrapper/prop yerine session'ı burada
+  // okuruz. onAuthStateChange mount'ta INITIAL_SESSION ile mevcut oturumu verir;
+  // sonraki giriş/çıkışta da güncellenir. authReady olana dek auth linkleri
+  // render ETMEYİZ (misafir→girişli flash'ını önler).
+  const [authEmail, setAuthEmail] = React.useState<string | null>(null);
+  const [authReady, setAuthReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthEmail(session?.user?.email ?? null);
+      setAuthReady(true);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    setAuthEmail(null);
+    router.push("/"); // locale-prefixli ana sayfa
+    router.refresh(); // server component'ler misafir olarak yeniden render
+  };
 
   // href + disabled artık lib/services.ts'ten (tek kaynak). Sıra: canlılar
   // (ferry, araç, transfer, vize, sigorta) → "yakında" (tur, organizasyon,
@@ -94,6 +123,36 @@ export function Header() {
               <LanguageSwitcher />
             </div>
 
+            {authReady && (
+              <div className="hidden xl:flex items-center gap-3">
+                {authEmail ? (
+                  <>
+                    <Link
+                      href="/hub"
+                      className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                    >
+                      {t("beezTrips")}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t("signOut")}
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                  >
+                    {t("login")}
+                  </Link>
+                )}
+              </div>
+            )}
+
             <Button
               variant="outline"
               size="sm"
@@ -154,6 +213,40 @@ export function Header() {
                           </span>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  {authReady && (
+                    <div className="mt-1 pt-4 border-t border-border flex flex-col gap-3">
+                      {authEmail ? (
+                        <>
+                          <Link
+                            href="/hub"
+                            className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {t("beezTrips")}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              handleSignOut();
+                            }}
+                            className="flex items-center gap-2 text-left text-lg font-medium text-foreground hover:text-primary transition-colors"
+                          >
+                            <LogOut className="h-5 w-5" />
+                            {t("signOut")}
+                          </button>
+                        </>
+                      ) : (
+                        <Link
+                          href="/login"
+                          className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {t("login")}
+                        </Link>
+                      )}
                     </div>
                   )}
                   <div className="mt-2 pt-4 border-t border-border">
