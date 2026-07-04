@@ -38,6 +38,17 @@ export interface BookingEmailData {
     arrivalTime?: string | null
     price: number
   }>
+  /**
+   * Ferry reservation vouchers — PAID path only (populated after reserveFerry).
+   * One entry per Dentur reservation group: round-trip → 1 voucher carrying every
+   * leg's PNRs; open-jaw → one voucher per reservation. Rendered as a Dentur-style
+   * block (Voucher No on top, one PNR line per passenger/leg). Omitted on pending.
+   */
+  ferryVouchers?: Array<{
+    voucherNo: string
+    route?: string
+    pnrs: Array<{ pnr: number; passengerName?: string }>
+  }>
   paymentWhatsAppUrl: string
   /**
    * When true, render the "payment received / confirmed" copy and OMIT the
@@ -56,6 +67,8 @@ const T: Record<Locale, Record<string, string>> = {
       'Thank you for choosing TravelBeez. Your booking has been received and is awaiting payment confirmation.',
     refLabel: 'Booking Reference',
     itemsHeading: 'Your Trip',
+    voucherHeading: 'Ferry Tickets',
+    voucherNoLabel: 'Voucher No',
     totalLabel: 'Total',
     paymentHeading: 'Next Step: Confirm Payment',
     paymentBody:
@@ -82,6 +95,8 @@ const T: Record<Locale, Record<string, string>> = {
       "TravelBeez'i tercih ettiğiniz için teşekkür ederiz. Rezervasyonunuz alındı, ödeme onayı bekleniyor.",
     refLabel: 'Rezervasyon Referansı',
     itemsHeading: 'Yolculuğunuz',
+    voucherHeading: 'Feribot Biletleri',
+    voucherNoLabel: 'Voucher No',
     totalLabel: 'Toplam',
     paymentHeading: 'Sonraki Adım: Ödeme Onayı',
     paymentBody:
@@ -108,6 +123,8 @@ const T: Record<Locale, Record<string, string>> = {
       'Σας ευχαριστούμε που επιλέξατε την TravelBeez. Η κράτησή σας καταχωρήθηκε και εκκρεμεί η επιβεβαίωση πληρωμής.',
     refLabel: 'Κωδικός Κράτησης',
     itemsHeading: 'Το Ταξίδι σας',
+    voucherHeading: 'Εισιτήρια Πλοίων',
+    voucherNoLabel: 'Voucher No',
     totalLabel: 'Σύνολο',
     paymentHeading: 'Επόμενο Βήμα: Επιβεβαίωση Πληρωμής',
     paymentBody:
@@ -169,6 +186,33 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     )
     .join('')
 
+  // Ferry voucher block (paid path) — mirrors the Dentur voucher: Voucher No
+  // header + one PNR line per passenger/leg. Round-trip → one block (N PNRs);
+  // open-jaw → one block per reservation. Empty/absent on the pending path.
+  const ferryVoucherBlock =
+    data.ferryVouchers && data.ferryVouchers.length
+      ? `
+        <tr><td style="padding:0 32px 8px 32px;">
+          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:#0f172a;text-transform:uppercase;letter-spacing:0.5px;">${escape(t.voucherHeading)}</h2>
+          ${data.ferryVouchers
+            .map(
+              (v) => `
+          <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin-bottom:10px;">
+            <div style="font-size:13px;color:#64748b;">${escape(t.voucherNoLabel)}: <span style="font-family:monospace;font-weight:700;color:#0f172a;">${escape(v.voucherNo)}</span>${v.route ? ` <span style="color:#94a3b8;">· ${escape(v.route)}</span>` : ''}</div>
+            <div style="margin-top:6px;">
+              ${v.pnrs
+                .map(
+                  (p) =>
+                    `<div style="font-size:13px;color:#334155;padding:2px 0;">PNR <span style="font-family:monospace;font-weight:600;color:#0f172a;">${p.pnr}</span>${p.passengerName ? ` · ${escape(p.passengerName)}` : ''}</div>`,
+                )
+                .join('')}
+            </div>
+          </div>`,
+            )
+            .join('')}
+        </td></tr>`
+      : ''
+
   const html = `<!DOCTYPE html>
 <html lang="${data.locale}">
 <head>
@@ -217,6 +261,7 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
             </tr>
           </table>
         </td></tr>
+        ${ferryVoucherBlock}
 
         <!-- Payment CTA (unpaid) / confirmation (paid) -->
         <tr><td style="padding:32px 32px 24px 32px;">
@@ -277,6 +322,18 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     }),
     '',
     `${t.totalLabel}: ${data.totalAmount.toFixed(2)} ${data.currency}`,
+    ...(data.ferryVouchers && data.ferryVouchers.length
+      ? [
+          '',
+          `${t.voucherHeading}:`,
+          ...data.ferryVouchers.flatMap((v) => [
+            `  ${t.voucherNoLabel}: ${v.voucherNo}${v.route ? ' · ' + v.route : ''}`,
+            ...v.pnrs.map(
+              (p) => `    PNR ${p.pnr}${p.passengerName ? ' · ' + p.passengerName : ''}`,
+            ),
+          ]),
+        ]
+      : []),
     '',
     payHeading,
     payBody,

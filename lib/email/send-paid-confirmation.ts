@@ -3,6 +3,9 @@ import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
 import { isPlaceholderEmail } from '@/lib/walk-in-email'
+import { groupFerryLegs } from '@/lib/ferry/group-legs'
+import { expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
+import type { FerryItemMetadata } from '@/lib/supabase'
 
 /**
  * Race-safe, single-owner paid (confirmed) confirmation email.
@@ -56,9 +59,59 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
 
     const { data: items } = await supabase
       .from('trip_items')
-      .select('item_type, title, scheduled_at, price_amount, metadata')
+      .select('id, item_type, title, scheduled_at, price_amount, metadata')
       .eq('trip_id', tripId)
       .order('sequence', { ascending: true })
+
+    // Ferry vouchers (Dentur reservation refs), ONE section per leg so each route
+    // lists only its own passengers — mirrors the Dentur voucher. A round-trip is
+    // ONE reservation: its reservation_id + EVERY PNR live on the outbound anchor,
+    // so we split those PNRs back to each leg by expeditionId (the same leg-match
+    // key reconcile uses — NOT ticketDirection). Open-jaw → each one-way group
+    // carries its own reservation_id. reserveFerry ran in confirmTrip before this
+    // email, so a reserved leg has the data; a failed/pending reserve yields no
+    // block. If a PNR can't be matched to a leg (older/partial data) we fall back
+    // to a single section with all the group's PNRs — never a PNR on the wrong route.
+    const safeExpId = (ferryId?: string): number | undefined => {
+      try {
+        return expeditionIdFromFerryId(ferryId)
+      } catch {
+        return undefined
+      }
+    }
+    const ferryLegs = (items ?? [])
+      .filter((i) => i.item_type === 'ferry')
+      .map((i, idx) => ({ id: String(i.id ?? idx), meta: (i.metadata ?? {}) as FerryItemMetadata }))
+    const ferryVouchers = groupFerryLegs(ferryLegs).flatMap((group) => {
+      const anchor = group.anchor.meta
+      if (typeof anchor.reservation_id !== 'number') return []
+      const voucherNo = String(anchor.reservation_id)
+      const all = anchor.vouchers ?? []
+      const line = (v: { pnr: number; passengerName?: string }) => ({
+        pnr: v.pnr,
+        passengerName: v.passengerName || undefined,
+      })
+      // Clean per-leg split by expeditionId (each PNR → exactly one leg).
+      const perLeg = group.legs.map((leg) => {
+        const legExp = safeExpId(leg.meta.ferry_id)
+        return {
+          route: `${leg.meta.from_port} → ${leg.meta.to_port}`,
+          pnrs: all.filter((v) => v.expeditionId != null && v.expeditionId === legExp).map(line),
+        }
+      })
+      const matched = perLeg.reduce((n, l) => n + l.pnrs.length, 0)
+      if (all.length > 0 && matched === all.length) {
+        return perLeg.map((l) => ({ voucherNo, route: l.route, pnrs: l.pnrs }))
+      }
+      // Fallback: one section, all PNRs under the anchor's route.
+      return [
+        {
+          voucherNo,
+          route: anchor.from_port && anchor.to_port ? `${anchor.from_port} → ${anchor.to_port}` : undefined,
+          pnrs: all.map(line),
+        },
+      ]
+    })
 
     await sendBookingConfirmation(claimed.contact_email, {
       paid:         true,
@@ -85,6 +138,7 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
           price:         i.price_amount,
         }
       }),
+      ferryVouchers,
       paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
     })
   } catch (emailErr) {

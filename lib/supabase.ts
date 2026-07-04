@@ -213,7 +213,10 @@ export interface FerryItemMetadata {
   reserve_state?: 'pending' | 'reserved' | 'failed'
   reservation_id?: number          // Dentur reservationID
   reservation_guid?: string        // Dentur reservationGUID
-  vouchers?: { pnr: number; direction: string; passengerName: string }[]
+  // expeditionId (== Dentur voucherDetails[].tripID) is the per-leg match key —
+  // on a round-trip all PNRs live on the outbound anchor and this splits them
+  // back to each leg. Persisted whole from the reserve result (reserve-ferry.ts).
+  vouchers?: { pnr: number; direction: string; passengerName: string; expeditionId?: number }[]
 }
 
 export interface TransferItemMetadata {
