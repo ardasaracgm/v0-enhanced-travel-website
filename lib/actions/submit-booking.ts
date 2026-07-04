@@ -363,8 +363,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       // Server-side authoritative. resolveTransferItem (→ calculateTransferTotalCents)
       // throws RangeError on bad input (no leg, unknown region/route/vehicle) —
       // surfaced as 'invalid_transfer'. Client priceAmount ignored (luggage pattern).
+      //
+      // The extras/checkout transfer carries NO date of its own (the wizard only asks
+      // region/route/vehicle) — it rides the ferry trip, so each leg takes the
+      // AUTHORITATIVE ferry travel date (outbound → ferry outbound, return → ferry
+      // return). Without this the row persists dateless (metadata.*.date + scheduled_at
+      // null → "—" in hub/email). Date does NOT affect the transfer price (region/
+      // route/vehicle only) → the charged total is unchanged. Standalone transfers
+      // (submit-transfer-order) collect their own required dates and never reach here.
+      const withDates = {
+        ...item,
+        outbound:
+          item.outbound && outboundDate ? { ...item.outbound, date: outboundDate } : item.outbound,
+        return: item.return && returnDate ? { ...item.return, date: returnDate } : item.return,
+      }
       try {
-        items.push(resolveTransferItem({ item }))
+        items.push(resolveTransferItem({ item: withDates }))
       } catch (err) {
         return {
           ok: false,
