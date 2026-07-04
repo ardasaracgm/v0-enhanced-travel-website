@@ -517,12 +517,22 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
       totalAmount: tripResult.totalAmount,
       currency: tripResult.currency,
       locale: input.locale,
-      items: items.map((i) => ({
-        type: i.type,
-        title: i.title,
-        scheduledAt: i.scheduledAt ?? null,
-        price: i.priceAmount,
-      })),
+      items: items.map((i) => {
+        // Ferry legs carry raw wall-clock times so the email prints them verbatim
+        // (booking-confirmation formatFerryWhen — avoids the tz-shift on the instant).
+        const fm =
+          i.type === 'ferry'
+            ? (i.metadata as { departure_time?: string; arrival_time?: string } | undefined)
+            : undefined
+        return {
+          type: i.type,
+          title: i.title,
+          scheduledAt: i.scheduledAt ?? null,
+          departureTime: fm?.departure_time ?? null,
+          arrivalTime: fm?.arrival_time ?? null,
+          price: i.priceAmount,
+        }
+      }),
       paymentWhatsAppUrl: tripResult.paymentWhatsAppUrl,
     })
   }

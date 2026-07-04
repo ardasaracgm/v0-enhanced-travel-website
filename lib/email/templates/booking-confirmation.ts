@@ -29,6 +29,13 @@ export interface BookingEmailData {
     type: string
     title: string
     scheduledAt?: string | null
+    // Ferry legs only: RAW provider wall-clock times ("HH:MM" from
+    // metadata.departure_time/arrival_time). When present they are printed
+    // VERBATIM — the stored scheduledAt instant is correct, but Intl WITHOUT a
+    // timeZone renders it server-local (UTC on Vercel) and shifts the printed
+    // departure 2–3h off the voucher. Other item types keep formatDate(scheduledAt).
+    departureTime?: string | null
+    arrivalTime?: string | null
     price: number
   }>
   paymentWhatsAppUrl: string
@@ -148,7 +155,9 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
         <td style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
           <div style="font-weight:600;color:#0f172a;font-size:14px;">${escape(item.title)}</div>
           ${
-            item.scheduledAt
+            item.departureTime
+              ? `<div style="color:#64748b;font-size:13px;margin-top:2px;">${formatFerryWhen(item, data.locale)}</div>`
+              : item.scheduledAt
               ? `<div style="color:#64748b;font-size:13px;margin-top:2px;">${formatDate(item.scheduledAt, data.locale)}</div>`
               : ''
           }
@@ -258,10 +267,14 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     `${t.refLabel}: ${data.reference}`,
     '',
     `${t.itemsHeading}:`,
-    ...data.items.map(
-      (i) =>
-        `  - ${i.title}${i.scheduledAt ? ' (' + formatDate(i.scheduledAt, data.locale) + ')' : ''}: ${i.price.toFixed(2)} ${data.currency}`
-    ),
+    ...data.items.map((i) => {
+      const when = i.departureTime
+        ? formatFerryWhen(i, data.locale)
+        : i.scheduledAt
+        ? formatDate(i.scheduledAt, data.locale)
+        : ''
+      return `  - ${i.title}${when ? ' (' + when + ')' : ''}: ${i.price.toFixed(2)} ${data.currency}`
+    }),
     '',
     `${t.totalLabel}: ${data.totalAmount.toFixed(2)} ${data.currency}`,
     '',
@@ -308,4 +321,32 @@ function formatDate(isoString: string, locale: Locale): string {
 
 function localeToBcp47(locale: Locale): string {
   return locale === 'el' ? 'el-GR' : locale === 'tr' ? 'tr-TR' : 'en-GB'
+}
+
+// Ferry legs: date + RAW provider wall-clock times, shown verbatim. NEVER runs
+// Intl on the instant (that would drop the zoned scheduledAt to server-local /
+// UTC and shift the printed departure off the voucher). The date is the local
+// calendar date the zoned instant already carries (sliced, no TZ conversion).
+function formatFerryWhen(
+  item: BookingEmailData['items'][number],
+  locale: Locale,
+): string {
+  const datePart = item.scheduledAt ? formatDateOnly(item.scheduledAt.slice(0, 10), locale) : ''
+  const times = [item.departureTime, item.arrivalTime].filter(Boolean).join(' – ')
+  return [datePart, times].filter(Boolean).join(' · ')
+}
+
+// "2026-01-15" → localized date. Parsed at noon UTC so the calendar date is
+// stable in every viewer/server timezone (a date-only value has no instant).
+function formatDateOnly(ymd: string, locale: Locale): string {
+  try {
+    const d = new Date(`${ymd}T12:00:00Z`)
+    return new Intl.DateTimeFormat(localeToBcp47(locale), {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    }).format(d)
+  } catch {
+    return ymd
+  }
 }

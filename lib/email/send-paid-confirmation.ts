@@ -56,7 +56,7 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
 
     const { data: items } = await supabase
       .from('trip_items')
-      .select('item_type, title, scheduled_at, price_amount')
+      .select('item_type, title, scheduled_at, price_amount, metadata')
       .eq('trip_id', tripId)
       .order('sequence', { ascending: true })
 
@@ -69,12 +69,22 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
       totalAmount:  claimed.total_amount,
       currency:     claimed.currency,
       locale:       claimed.locale,
-      items: (items ?? []).map((i) => ({
-        type:        i.item_type,
-        title:       i.title,
-        scheduledAt: i.scheduled_at,
-        price:       i.price_amount,
-      })),
+      items: (items ?? []).map((i) => {
+        // Ferry: print raw wall-clock times verbatim (see formatFerryWhen — the
+        // stored instant would otherwise render server-local/UTC on the voucher).
+        const fm =
+          i.item_type === 'ferry'
+            ? (i.metadata as { departure_time?: string; arrival_time?: string } | null)
+            : null
+        return {
+          type:          i.item_type,
+          title:         i.title,
+          scheduledAt:   i.scheduled_at,
+          departureTime: fm?.departure_time ?? null,
+          arrivalTime:   fm?.arrival_time ?? null,
+          price:         i.price_amount,
+        }
+      }),
       paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
     })
   } catch (emailErr) {
