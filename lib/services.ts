@@ -21,6 +21,9 @@ export interface ServiceRoute {
   href: string;
   /** true → tıklanamaz "Yakında" olarak render (common.comingSoon). */
   disabled: boolean;
+  /** true → header nav'da hiç gösterme (yakında ama gizli). Diğer yüzeyler
+   *  (grid/footer) isterse yok sayabilir; şimdilik yalnız header okur. */
+  hidden?: boolean;
 }
 
 export const SERVICE_ROUTES: Record<ServiceKey, ServiceRoute> = {
@@ -29,8 +32,8 @@ export const SERVICE_ROUTES: Record<ServiceKey, ServiceRoute> = {
   insurance:     { href: "/insurance",      disabled: false },
   transfer:      { href: "/transfer",       disabled: false },
   visa:          { href: "/visa",           disabled: false },
-  tours:         { href: "/tours",          disabled: true  },
-  events:        { href: "/events",         disabled: true  },
-  packagePickup: { href: "/package-pickup", disabled: true  },
+  tours:         { href: "/tours",          disabled: true, hidden: true },
+  events:        { href: "/events",         disabled: true, hidden: true },
+  packagePickup: { href: "/package-pickup", disabled: true, hidden: true },
   contact:       { href: "/contact",        disabled: false },
 };

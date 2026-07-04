@@ -156,12 +156,12 @@
   },
 
   "header": {
-    "ferryTickets": "Feribot Biletleri",
-    "carRental": "Araç Kiralama",
+    "ferryTickets": "Feribot Bileti",
+    "carRental": "Kos Araç",
     "tours": "Turlar",
-    "visaSupport": "Vize Desteği",
-    "insurance": "Seyahat Sigortası",
-    "transfer": "Transfer",
+    "visaSupport": "Kapıda Vize",
+    "insurance": "Sigorta",
+    "transfer": "Bodrum VIP",
     "eventsGroups": "Organizasyonlar",
     "packagePickup": "Paket Teslim",
     "contact": "İletişim",

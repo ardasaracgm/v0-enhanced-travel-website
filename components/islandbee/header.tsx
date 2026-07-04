@@ -40,10 +40,11 @@ export function Header() {
     { key: "contact", labelKey: "contact" },
   ];
 
-  // SERVICE_ROUTES.disabled'a göre ayır: canlılar inline, "yakında" olanlar
-  // tek bir dropdown (desktop) / gruplanmış blok (mobil) içinde.
-  const liveItems = navItems.filter((i) => !SERVICE_ROUTES[i.key].disabled);
-  const comingSoonItems = navItems.filter((i) => SERVICE_ROUTES[i.key].disabled);
+  // Önce hidden olanları tamamen düş (yakında ama gizli). Kalanları
+  // disabled'a göre ayır: canlılar inline, "yakında" olanlar dropdown/blok.
+  const visibleItems = navItems.filter((i) => !SERVICE_ROUTES[i.key].hidden);
+  const liveItems = visibleItems.filter((i) => !SERVICE_ROUTES[i.key].disabled);
+  const comingSoonItems = visibleItems.filter((i) => SERVICE_ROUTES[i.key].disabled);
 
   return (
     <>
