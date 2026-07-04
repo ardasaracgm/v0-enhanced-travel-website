@@ -194,6 +194,21 @@
     "rightsReserved": "All rights reserved",
     "operatingAs": "FerryBee Travel IKE, operating as TravelBeez"
   },
+  "login": {
+    "heroBadge": "Account access",
+    "heroTitle": "Your bookings, all in one place",
+    "heroSubtitle": "Track all your bookings from one dashboard.",
+    "orDivider": "or",
+    "trust": "No password needed — we email you a one-time sign-in link.",
+    "emailPlaceholder": "you@example.com",
+    "submitButton": "Send sign-in link",
+    "sendingButton": "Sending…",
+    "googleButton": "Continue with Google",
+    "comingSoonBadge": "Soon",
+    "successTitle": "Link sent ✓",
+    "successBody": "Sign-in link sent to {email}. Check your inbox.",
+    "errorMessage": "Something went wrong. Please try again."
+  },
 
   "hero": {
     "imageAlt": "Greek islands coastline with ferry, Aegean Sea",
