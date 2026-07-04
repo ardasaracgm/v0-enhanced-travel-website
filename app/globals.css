@@ -157,6 +157,40 @@
   .wizard-compact .wc-optional { display: none; }   /* dekoratif/opsiyonel satır */
   .wizard-compact .wc-panel { min-height: 0; }       /* panel min-h floor'unu kaldır */
   .wizard-compact .wc-media { max-height: 5.5rem; }  /* görseli kıs */
+
+  /* Marketing hero (car-rental/visa) — kısa ekranda üst-nefes trim. Kök
+     .hero-compact <section>'da; generic Tailwind-class hedefleme (wizard-compact
+     emsali, layer'sız > layer'lı). Geniş+uzun ekran (>820px) HİÇ etkilenmez.
+     Alt padding (pb) korunur → hero-altı float (-mt-8/-mt-12) bozulmaz.
+     h1 AYRI blokta (min-width guard'lı) — mobilde base text-4xl'i büyütmemek için. */
+  .hero-compact { padding-top: 3rem; }                 /* pt-24→pt-12; alt korunur */
+  .hero-compact .mb-6 { margin-bottom: 1rem; }         /* car2 eyebrow + h1 */
+  .hero-compact .mt-6 { margin-top: 1rem; }            /* car2 2026 badge */
+  .hero-compact .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }  /* car2 sol kolon */
+  .hero-compact .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }    /* visa sol kolon */
+
+  /* Form yükü (özellikle vize 5-alanlı) — kısa ekranda kart padding/gap/label kıs.
+     Input yükseklikleri DOKUNULMAZ (tap-target). car2 formunu da kısar (zararsız, pay var). */
+  .hero-compact .p-6 { padding: 1rem; }                 /* form Card: 24→16px */
+  .hero-compact .gap-4 { gap: 0.75rem; }                /* form satır arası: 16→12px */
+  .hero-compact .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }  /* label→input: 8→4px */
+  .hero-compact .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }  /* contact form ritmi: 16→10px */
+
+  /* Kısa ekranda WhatsApp float → ikon dairesi (form tıklama alanını açar) */
+  .wa-float span { display: none; }
+  .wa-float { padding: 0.75rem; gap: 0; }   /* px-5 py-3 pill → 48px daire */
+}
+
+/* hero h1 — yalnız md+ (lg:text-6xl→text-5xl). min-width guard'ı olmadan mobil
+   base text-4xl (2.25rem) 3rem'e BÜYÜRDÜ; md'de zaten text-5xl (no-op), lg'de trim. */
+@media (max-height: 820px) and (min-width: 768px) {
+  .hero-compact h1 { font-size: 3rem; line-height: 1.1; }
+}
+
+/* Kademe 2 — vize-özel h1 (car2 ALMAZ). Üstteki .hero-compact h1 (3rem) ile
+   AYNI koşul + EŞİT özgüllük (0,2,1) → kaynak-sırası kazanır, bu blok sonra. */
+@media (max-height: 820px) and (min-width: 768px) {
+  .hero-compact-tight h1 { font-size: 2.25rem; line-height: 1.1; }  /* 48→36px */
 }
 
 /* ── Katman 2: yalnız ≤784px (1366×768 sınıfı). 800px'i BOZMAZ (800>784).

@@ -45,7 +45,7 @@ export function Car2Hero({
   const locale = useLocale()
 
   return (
-    <section className="relative w-full overflow-hidden py-16 md:py-24">
+    <section className="hero-compact relative w-full overflow-hidden py-16 md:py-24">
       <div className="absolute inset-0">
         <Image src={HERO_IMAGE} alt={t('heroTitle')} fill priority className="object-cover" />
       </div>

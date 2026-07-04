@@ -62,7 +62,7 @@ export function Footer() {
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <span className="text-background font-medium">{t('addressLine1')}</span>
-                  <p className="text-xs text-background/60">G. Averos 4, under Achilleas Hotel & Apartments</p>
+                  <p className="text-xs text-background/60">4, G. Averof str, under Achilleas Hotel & Apartments</p>
                   <p className="text-xs text-primary">First shop at Kos Port exit</p>
                 </div>
               </div>

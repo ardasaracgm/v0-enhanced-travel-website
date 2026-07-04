@@ -20,7 +20,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold text-foreground">1. Introduction</h2>
               <p>
                 These Terms of Service govern your use of the TravelBeez website and services operated by FerryBee Travel IKE, 
-                a licensed Greek travel agency (MH.T.E. 1471E60000074600) with offices at G Averos 4, Kos, Greece.
+                a licensed Greek travel agency (MH.T.E. 1471E60000074600) with offices at 4, G. Averof str, 853 00, Kos, Greece.
               </p>
             </section>
 
