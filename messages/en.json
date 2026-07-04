@@ -208,6 +208,25 @@
     "successBody": "Sign-in link sent to {email}. Check your inbox.",
     "errorMessage": "Something went wrong. Please try again."
   },
+  "hub": {
+    "title": "Beez Trips",
+    "subtitleUser": "All your travels",
+    "subtitleGuest": "Sign in to manage your travels",
+    "signedInAs": "Signed in as {email}",
+    "authExpired": "Your sign-in link expired or was already used. Request a new one from your booking confirmation.",
+    "tabs": {
+      "visa": "Visa",
+      "ferry": "Ferry",
+      "car_rental": "Car Rental",
+      "tour": "Tours",
+      "hotel": "Hotels",
+      "transfer": "Transfers",
+      "package_pickup": "Package Pickup",
+      "insurance": "Insurance",
+      "esim": "eSIM",
+      "luggage": "Luggage"
+    }
+  },
 
   "hero": {
     "imageAlt": "Greek islands coastline with ferry, Aegean Sea",

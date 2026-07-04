@@ -208,6 +208,25 @@
     "successBody": "{email} adresine giriş linki gönderildi. Gelen kutunuzu kontrol edin.",
     "errorMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
   },
+  "hub": {
+    "title": "Beez Trips",
+    "subtitleUser": "Tüm seyahatleriniz",
+    "subtitleGuest": "Seyahatlerinizi yönetmek için giriş yapın",
+    "signedInAs": "{email} olarak giriş yapıldı",
+    "authExpired": "Giriş bağlantınızın süresi doldu veya zaten kullanıldı. Rezervasyon onayınızdan yeni bir tane isteyin.",
+    "tabs": {
+      "visa": "Vize",
+      "ferry": "Feribot",
+      "car_rental": "Araç Kiralama",
+      "tour": "Turlar",
+      "hotel": "Oteller",
+      "transfer": "Transferler",
+      "package_pickup": "Koli Teslim",
+      "insurance": "Sigorta",
+      "esim": "eSIM",
+      "luggage": "Bagaj"
+    }
+  },
 
   "hero": {
     "imageAlt": "Feribotuyla Yunan adaları kıyı şeridi, Ege Denizi",

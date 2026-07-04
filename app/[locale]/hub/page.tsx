@@ -4,6 +4,7 @@ import {
   ShieldCheck, Smartphone, Luggage, BusFront, Lock, AlertCircle,
 } from 'lucide-react'
 
+import { getTranslations } from 'next-intl/server'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
@@ -12,24 +13,24 @@ import type { LucideIcon } from 'lucide-react'
 
 interface HubTab {
   key: string
-  label: string
   icon: LucideIcon
   locked: boolean
   href?: string
 }
 
 // 10 sekme. TripItemType ile hizalı (custom hariç). Vize AÇIK, gerisi kilitli.
+// Etiketler i18n'den (hub.tabs.<key>) — key TripItemType slug'ı ile birebir.
 const TABS: HubTab[] = [
-  { key: 'visa',          label: 'Visa',           icon: FileCheck,   href: '/hub/visa', locked: false },
-  { key: 'ferry',         label: 'Ferry',          icon: Ship,        locked: true },
-  { key: 'car_rental',    label: 'Car Rental',     icon: Car,         href: '/hub/car-rental', locked: false },
-  { key: 'tour',          label: 'Tours',          icon: MapPinned,   locked: true },
-  { key: 'hotel',         label: 'Hotels',         icon: Hotel,       locked: true },
-  { key: 'transfer',      label: 'Transfers',      icon: BusFront,    locked: true },
-  { key: 'package_pickup',label: 'Package Pickup', icon: Package,     locked: true },
-  { key: 'insurance',     label: 'Insurance',      icon: ShieldCheck, href: '/hub/insurance', locked: false },
-  { key: 'esim',          label: 'eSIM',           icon: Smartphone,  locked: true },
-  { key: 'luggage',       label: 'Luggage',        icon: Luggage,     locked: true },
+  { key: 'visa',          icon: FileCheck,   href: '/hub/visa', locked: false },
+  { key: 'ferry',         icon: Ship,        locked: true },
+  { key: 'car_rental',    icon: Car,         href: '/hub/car-rental', locked: false },
+  { key: 'tour',          icon: MapPinned,   locked: true },
+  { key: 'hotel',         icon: Hotel,       locked: true },
+  { key: 'transfer',      icon: BusFront,    locked: true },
+  { key: 'package_pickup',icon: Package,     locked: true },
+  { key: 'insurance',     icon: ShieldCheck, href: '/hub/insurance', locked: false },
+  { key: 'esim',          icon: Smartphone,  locked: true },
+  { key: 'luggage',       icon: Luggage,     locked: true },
 ] as const
 
 export default async function HubPage({
@@ -38,6 +39,8 @@ export default async function HubPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
+  const t = await getTranslations('hub')
+  const tCommon = await getTranslations('common')
 
   // SSR auth-aware client — RLS geçerli. Misafirde user=null.
   const supabase = await createSupabaseServerClient()
@@ -53,30 +56,30 @@ export default async function HubPage({
           <div className="w-full bg-destructive/10 border-b border-destructive/30">
             <div className="container px-4 md:px-6 py-3 flex items-center gap-2 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>
-                Your sign-in link expired or was already used. Request a new one
-                from your booking confirmation.
-              </span>
+              <span>{t('authExpired')}</span>
             </div>
           </div>
         )}
         <section className="w-full py-10 bg-gradient-to-b from-primary/5 to-background">
           <div className="container px-4 md:px-6">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Your Hub
+              {t('title')}
             </h1>
             <p className="text-muted-foreground">
-              {user
-                ? `Signed in as ${user.email}`
-                : 'Open the access link from your booking confirmation to sign in.'}
+              {user ? t('subtitleUser') : t('subtitleGuest')}
             </p>
+            {user && (
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                {t('signedInAs', { email: user.email ?? '' })}
+              </p>
+            )}
           </div>
         </section>
 
         <section className="w-full py-8">
           <div className="container px-4 md:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {TABS.map(({ key, label, icon: Icon, locked, href }) => {
+              {TABS.map(({ key, icon: Icon, locked, href }) => {
                 const body = (
                   <Card
                     className={
@@ -87,10 +90,10 @@ export default async function HubPage({
                   >
                     <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                       <Icon className="h-8 w-8 text-primary" />
-                      <span className="font-medium text-foreground">{label}</span>
+                      <span className="font-medium text-foreground">{t(`tabs.${key}`)}</span>
                       {locked && (
                         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Lock className="h-3 w-3" /> Coming soon
+                          <Lock className="h-3 w-3" /> {tCommon('comingSoon')}
                         </span>
                       )}
                     </CardContent>
