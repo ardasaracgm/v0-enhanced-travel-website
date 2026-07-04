@@ -194,6 +194,21 @@
     "rightsReserved": "Tüm hakları saklıdır",
     "operatingAs": "FerryBee Travel IKE, TravelBeez markası altında faaliyet göstermektedir"
   },
+  "login": {
+    "heroBadge": "Hesabınıza giriş",
+    "heroTitle": "Rezervasyonlarınız tek yerde",
+    "heroSubtitle": "Tüm rezervasyonlarınızı tek panelden takip edin.",
+    "orDivider": "veya",
+    "trust": "Şifre gerekmez — e-postanıza tek kullanımlık giriş linki gönderiyoruz.",
+    "emailPlaceholder": "ornek@eposta.com",
+    "submitButton": "E-posta ile giriş linki gönder",
+    "sendingButton": "Gönderiliyor…",
+    "googleButton": "Google ile giriş yap",
+    "comingSoonBadge": "Yakında",
+    "successTitle": "Link gönderildi ✓",
+    "successBody": "{email} adresine giriş linki gönderildi. Gelen kutunuzu kontrol edin.",
+    "errorMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+  },
 
   "hero": {
     "imageAlt": "Feribotuyla Yunan adaları kıyı şeridi, Ege Denizi",

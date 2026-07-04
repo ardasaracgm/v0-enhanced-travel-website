@@ -194,6 +194,21 @@
     "rightsReserved": "Με την επιφύλαξη παντός δικαιώματος",
     "operatingAs": "FerryBee Travel ΙΚΕ, με την επωνυμία TravelBeez"
   },
+  "login": {
+    "heroBadge": "Πρόσβαση λογαριασμού",
+    "heroTitle": "Οι κρατήσεις σας σε ένα μέρος",
+    "heroSubtitle": "Παρακολουθήστε όλες τις κρατήσεις σας από έναν πίνακα.",
+    "orDivider": "ή",
+    "trust": "Χωρίς κωδικό — σας στέλνουμε σύνδεσμο σύνδεσης μιας χρήσης.",
+    "emailPlaceholder": "you@example.com",
+    "submitButton": "Αποστολή συνδέσμου σύνδεσης",
+    "sendingButton": "Αποστολή…",
+    "googleButton": "Συνέχεια με Google",
+    "comingSoonBadge": "Σύντομα",
+    "successTitle": "Ο σύνδεσμος στάλθηκε ✓",
+    "successBody": "Ο σύνδεσμος στάλθηκε στο {email}. Ελέγξτε τα εισερχόμενά σας.",
+    "errorMessage": "Κάτι πήγε στραβά. Δοκιμάστε ξανά."
+  },
 
   "hero": {
     "imageAlt": "Ακτογραμμή ελληνικών νησιών με φεριμπότ, Αιγαίο Πέλαγος",
