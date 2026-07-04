@@ -26,11 +26,11 @@ const TABS: HubTab[] = [
   { key: 'car_rental',    icon: Car,         href: '/hub/car-rental', locked: false },
   { key: 'tour',          icon: MapPinned,   locked: true },
   { key: 'hotel',         icon: Hotel,       locked: true },
-  { key: 'transfer',      icon: BusFront,    locked: true },
+  { key: 'transfer',      icon: BusFront,    href: '/hub/transfer', locked: false },
   { key: 'package_pickup',icon: Package,     locked: true },
   { key: 'insurance',     icon: ShieldCheck, href: '/hub/insurance', locked: false },
   { key: 'esim',          icon: Smartphone,  locked: true },
-  { key: 'luggage',       icon: Luggage,     locked: true },
+  { key: 'luggage',       icon: Luggage,     href: '/hub/luggage', locked: false },
 ] as const
 
 export default async function HubPage({

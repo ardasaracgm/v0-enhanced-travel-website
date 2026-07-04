@@ -246,6 +246,23 @@
       "completed": "Completed",
       "cancelled": "Cancelled",
       "failed": "Failed"
+    },
+    "transferPage": {
+      "title": "Transfer Bookings",
+      "noTransfer": "No transfer bookings found for {email}.",
+      "back": "← Hub",
+      "outbound": "Outbound",
+      "return": "Return"
+    },
+    "luggagePage": {
+      "title": "Luggage Storage",
+      "noLuggage": "No luggage bookings found for {email}.",
+      "back": "← Hub",
+      "small": "small",
+      "medium": "medium",
+      "large": "large",
+      "dropOff": "Drop-off",
+      "pickup": "Pick-up"
     }
   },
 

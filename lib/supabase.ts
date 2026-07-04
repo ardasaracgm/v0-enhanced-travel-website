@@ -221,8 +221,10 @@ export interface FerryItemMetadata {
 
 export interface TransferItemMetadata {
   region_id: string
-  outbound?: { route_id: string; vehicle_id: string }
-  return?: { route_id: string; vehicle_id: string }
+  // date is written by resolveTransferItem when the standalone wizard supplies a
+  // per-leg date (ferry-extras legs omit it → undefined). YYYY-MM-DD, local.
+  outbound?: { route_id: string; vehicle_id: string; date?: string }
+  return?: { route_id: string; vehicle_id: string; date?: string }
   pickup_location: string
   dropoff_location: string
   total_cents?: number

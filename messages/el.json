@@ -246,6 +246,23 @@
       "completed": "Ολοκληρωμένη",
       "cancelled": "Ακυρωμένη",
       "failed": "Απέτυχε"
+    },
+    "transferPage": {
+      "title": "Κρατήσεις Μεταφορών",
+      "noTransfer": "Δεν βρέθηκαν κρατήσεις μεταφοράς για {email}.",
+      "back": "← Hub",
+      "outbound": "Μετάβαση",
+      "return": "Επιστροφή"
+    },
+    "luggagePage": {
+      "title": "Φύλαξη Αποσκευών",
+      "noLuggage": "Δεν βρέθηκαν κρατήσεις αποσκευών για {email}.",
+      "back": "← Hub",
+      "small": "μικρή",
+      "medium": "μεσαία",
+      "large": "μεγάλη",
+      "dropOff": "Παράδοση",
+      "pickup": "Παραλαβή"
     }
   },
 

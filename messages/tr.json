@@ -246,6 +246,23 @@
       "completed": "Tamamlandı",
       "cancelled": "İptal Edildi",
       "failed": "Başarısız"
+    },
+    "transferPage": {
+      "title": "Transfer Rezervasyonları",
+      "noTransfer": "{email} için transfer rezervasyonu bulunamadı.",
+      "back": "← Hub",
+      "outbound": "Gidiş",
+      "return": "Dönüş"
+    },
+    "luggagePage": {
+      "title": "Bagaj Emaneti",
+      "noLuggage": "{email} için bagaj rezervasyonu bulunamadı.",
+      "back": "← Hub",
+      "small": "küçük",
+      "medium": "orta",
+      "large": "büyük",
+      "dropOff": "Bırakma",
+      "pickup": "Alma"
     }
   },
 
