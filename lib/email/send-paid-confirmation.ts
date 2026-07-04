@@ -87,12 +87,20 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
           i.item_type === 'ferry'
             ? (i.metadata as { departure_time?: string; arrival_time?: string } | null)
             : null
+        // Transfer prints RAW leg dates (metadata); scheduled_at can be absent and
+        // the midnight+03:00 instant would tz-shift — align with the trip-detail row.
+        const tm =
+          i.item_type === 'transfer'
+            ? (i.metadata as { outbound?: { date?: string }; return?: { date?: string } } | null)
+            : null
         return {
           type:          i.item_type,
           title:         i.title,
           scheduledAt:   i.scheduled_at,
           departureTime: fm?.departure_time ?? null,
           arrivalTime:   fm?.arrival_time ?? null,
+          startDate:     tm ? tm.outbound?.date ?? tm.return?.date ?? null : null,
+          endDate:       tm && tm.outbound?.date && tm.return?.date ? tm.return.date : null,
           price:         i.price_amount,
         }
       }),

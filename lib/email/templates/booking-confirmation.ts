@@ -36,6 +36,12 @@ export interface BookingEmailData {
     // departure 2–3h off the voucher. Other item types keep formatDate(scheduledAt).
     departureTime?: string | null
     arrivalTime?: string | null
+    // Transfer only: RAW leg dates (metadata.outbound.date/return.date, YYYY-MM-DD).
+    // Rendered as a date range VERBATIM — scheduled_at is a midnight+03:00 instant
+    // that Intl-without-tz would shift a day (same trap as the ferry times); and it
+    // can be absent for a transfer row. one-way → single date; round-trip → start→end.
+    startDate?: string | null
+    endDate?: string | null
     price: number
   }>
   /**
@@ -174,6 +180,8 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
           ${
             item.departureTime
               ? `<div style="color:#64748b;font-size:13px;margin-top:2px;">${formatFerryWhen(item, data.locale)}</div>`
+              : item.startDate
+              ? `<div style="color:#64748b;font-size:13px;margin-top:2px;">${formatTransferWhen(item, data.locale)}</div>`
               : item.scheduledAt
               ? `<div style="color:#64748b;font-size:13px;margin-top:2px;">${formatDate(item.scheduledAt, data.locale)}</div>`
               : ''
@@ -315,6 +323,8 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     ...data.items.map((i) => {
       const when = i.departureTime
         ? formatFerryWhen(i, data.locale)
+        : i.startDate
+        ? formatTransferWhen(i, data.locale)
         : i.scheduledAt
         ? formatDate(i.scheduledAt, data.locale)
         : ''
@@ -391,6 +401,17 @@ function formatFerryWhen(
   const datePart = item.scheduledAt ? formatDateOnly(item.scheduledAt.slice(0, 10), locale) : ''
   const times = [item.departureTime, item.arrivalTime].filter(Boolean).join(' – ')
   return [datePart, times].filter(Boolean).join(' · ')
+}
+
+// Transfer legs: RAW date range, shown verbatim (no Intl-on-instant → no tz shift).
+// one-way → single date; round-trip → start → end. Matches the trip-detail row.
+function formatTransferWhen(
+  item: BookingEmailData['items'][number],
+  locale: Locale,
+): string {
+  if (!item.startDate) return ''
+  const start = formatDateOnly(item.startDate.slice(0, 10), locale)
+  return item.endDate ? `${start} → ${formatDateOnly(item.endDate.slice(0, 10), locale)}` : start
 }
 
 // "2026-01-15" → localized date. Parsed at noon UTC so the calendar date is

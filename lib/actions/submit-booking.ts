@@ -524,12 +524,20 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
           i.type === 'ferry'
             ? (i.metadata as { departure_time?: string; arrival_time?: string } | undefined)
             : undefined
+        // Transfer prints its RAW leg dates (metadata) so the email never tz-shifts
+        // the midnight+03:00 instant — same alignment as the trip-detail row.
+        const tm =
+          i.type === 'transfer'
+            ? (i.metadata as { outbound?: { date?: string }; return?: { date?: string } } | undefined)
+            : undefined
         return {
           type: i.type,
           title: i.title,
           scheduledAt: i.scheduledAt ?? null,
           departureTime: fm?.departure_time ?? null,
           arrivalTime: fm?.arrival_time ?? null,
+          startDate: tm ? tm.outbound?.date ?? tm.return?.date ?? null : null,
+          endDate: tm && tm.outbound?.date && tm.return?.date ? tm.return.date : null,
           price: i.priceAmount,
         }
       }),
