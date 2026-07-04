@@ -1059,7 +1059,7 @@
     "phoneDesc": "Καλέστε το γραφείο μας στην Κω",
     "emailDesc": "Απαντάμε εντός 24 ωρών",
     "officeDesc": "Επισκεφθείτε μας από κοντά",
-    "officeAddress": "Γ. Αβέρωφ 4, Κως, Ελλάδα",
+    "officeAddress": "Γ. Αβέρωφ 4, 853 00, Κως, Ελλάδα",
     "officeNote": "Κάτω από το ξενοδοχείο Αχιλλέας, στην έξοδο του λιμανιού",
     "hoursSeason": "Υψηλή σεζόν (Απρ–Οκτ)",
     "hoursValue": "Καθημερινά: 08:00 – 20:00",
@@ -1590,7 +1590,7 @@
   },
   "homeFooter": {
     "tagline": "Your trusted partner for Greek island travel from Turkey. Licensed and registered in Greece (ΜΗ.Τ.Ε.).",
-    "addressLine": "G Averos 4, Kos, Greece",
+    "addressLine": "4, G. Averof str, 853 00, Kos, Greece",
     "addressSub": "Under Achilleas Hotel, at Port exit",
     "servicesTitle": "Services",
     "islandsTitle": "Islands",

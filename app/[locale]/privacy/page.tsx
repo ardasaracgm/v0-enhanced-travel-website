@@ -73,7 +73,7 @@ export default function PrivacyPage() {
               <h2 className="text-xl font-semibold text-foreground">7. Contact</h2>
               <p>
                 For privacy-related inquiries, contact us at info@travelbeez.com or visit our office at 
-                G Averos 4, Kos, Greece.
+                4, G. Averof str, 853 00, Kos, Greece.
               </p>
             </section>
           </div>
