@@ -109,7 +109,7 @@ function VisaSupportPageInner() {
       
       <main className="flex-1">
         {/* Hero Section — car2/insurance idiomu: açık sol-fade + blue-950 + amber */}
-        <section className="hero-compact relative w-full overflow-hidden py-16 md:py-24">
+        <section className="hero-compact hero-compact-tight relative w-full overflow-hidden py-16 md:py-24">
           <div className="absolute inset-0">
             <Image
               src="/visa-hero.webp"

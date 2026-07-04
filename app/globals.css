@@ -182,6 +182,12 @@
   .hero-compact h1 { font-size: 3rem; line-height: 1.1; }
 }
 
+/* Kademe 2 — vize-özel h1 (car2 ALMAZ). Üstteki .hero-compact h1 (3rem) ile
+   AYNI koşul + EŞİT özgüllük (0,2,1) → kaynak-sırası kazanır, bu blok sonra. */
+@media (max-height: 820px) and (min-width: 768px) {
+  .hero-compact-tight h1 { font-size: 2.25rem; line-height: 1.1; }  /* 48→36px */
+}
+
 /* ── Katman 2: yalnız ≤784px (1366×768 sınıfı). 800px'i BOZMAZ (800>784).
    820 katmanı 800'ü mükemmel yapar; bu katman 768'deki ~32-40px açığı
    AYNI kaldıraçları bir tık daha kısarak kapatır. Transfer JSX'e sıfır
