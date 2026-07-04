@@ -22,7 +22,7 @@ interface HubTab {
 // Etiketler i18n'den (hub.tabs.<key>) — key TripItemType slug'ı ile birebir.
 const TABS: HubTab[] = [
   { key: 'visa',          icon: FileCheck,   href: '/hub/visa', locked: false },
-  { key: 'ferry',         icon: Ship,        locked: true },
+  { key: 'ferry',         icon: Ship,        href: '/hub/ferry', locked: false },
   { key: 'car_rental',    icon: Car,         href: '/hub/car-rental', locked: false },
   { key: 'tour',          icon: MapPinned,   locked: true },
   { key: 'hotel',         icon: Hotel,       locked: true },

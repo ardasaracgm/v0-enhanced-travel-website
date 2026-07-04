@@ -228,6 +228,24 @@
       "insurance": "Ασφάλιση",
       "esim": "eSIM",
       "luggage": "Αποσκευές"
+    },
+    "ferryPage": {
+      "title": "Κρατήσεις Πλοίων",
+      "noFerry": "Δεν βρέθηκαν κρατήσεις πλοίων για {email}.",
+      "voucherNo": "Voucher No",
+      "reservationPending": "Η κράτησή σας επεξεργάζεται.",
+      "reserveFailed": "Παρουσιάστηκε πρόβλημα με την ολοκλήρωση αυτής της κράτησης.",
+      "contactSupport": "Επικοινωνήστε μαζί μας στο WhatsApp",
+      "back": "← Hub"
+    },
+    "reservationState": {
+      "draft": "Πρόχειρο",
+      "pending_payment": "Αναμονή Πληρωμής",
+      "confirmed": "Επιβεβαιωμένη",
+      "in_progress": "Σε Εξέλιξη",
+      "completed": "Ολοκληρωμένη",
+      "cancelled": "Ακυρωμένη",
+      "failed": "Απέτυχε"
     }
   },
 

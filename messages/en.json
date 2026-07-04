@@ -228,6 +228,24 @@
       "insurance": "Insurance",
       "esim": "eSIM",
       "luggage": "Luggage"
+    },
+    "ferryPage": {
+      "title": "Ferry Bookings",
+      "noFerry": "No ferry bookings found for {email}.",
+      "voucherNo": "Voucher No",
+      "reservationPending": "Your reservation is being processed.",
+      "reserveFailed": "There was a problem completing this reservation.",
+      "contactSupport": "Contact us on WhatsApp",
+      "back": "← Hub"
+    },
+    "reservationState": {
+      "draft": "Draft",
+      "pending_payment": "Awaiting Payment",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
     }
   },
 

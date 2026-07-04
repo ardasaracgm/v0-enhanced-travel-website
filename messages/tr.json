@@ -228,6 +228,24 @@
       "insurance": "Sigorta",
       "esim": "eSIM",
       "luggage": "Bagaj"
+    },
+    "ferryPage": {
+      "title": "Feribot Rezervasyonları",
+      "noFerry": "{email} için feribot rezervasyonu bulunamadı.",
+      "voucherNo": "Voucher No",
+      "reservationPending": "Rezervasyonunuz işleniyor.",
+      "reserveFailed": "Bu rezervasyon tamamlanırken bir sorun oluştu.",
+      "contactSupport": "WhatsApp'tan bize ulaşın",
+      "back": "← Hub"
+    },
+    "reservationState": {
+      "draft": "Taslak",
+      "pending_payment": "Ödeme Bekliyor",
+      "confirmed": "Onaylandı",
+      "in_progress": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "cancelled": "İptal Edildi",
+      "failed": "Başarısız"
     }
   },
 
