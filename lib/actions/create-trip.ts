@@ -36,6 +36,7 @@ import type {
   TripItemType,
   TripItemMetadata,
   PassengerType,
+  TripState,
 } from '@/lib/supabase'
 
 // ============================================================
@@ -115,6 +116,10 @@ export type CreateTripResult =
       currency: string
       emailSent: boolean
       alreadyExisted: boolean
+      /** Current trip state. Callers gate payment on this: an idempotent
+       *  re-submit that resolves to an already-confirmed trip must NOT open a
+       *  second payment order (double-charge). */
+      state: TripState
     }
   | { ok: false; error: string; code: CreateTripErrorCode }
 
@@ -172,6 +177,7 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
         currency: existing.currency,
         emailSent: false,
         alreadyExisted: true,
+        state: existing.state as TripState,
       }
     }
 
@@ -228,7 +234,7 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
       if (tripErr?.code === '23505') {
         const { data: raced } = await supabase
           .from('trips')
-          .select('id, reference, currency, total_amount, locale')
+          .select('id, reference, currency, total_amount, locale, state')
           .eq('idempotency_key', input.idempotencyKey)
           .maybeSingle()
         if (raced) {
@@ -247,6 +253,7 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
             currency: raced.currency,
             emailSent: false,
             alreadyExisted: true,
+            state: raced.state as TripState,
           }
         }
       }
@@ -327,6 +334,7 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
       currency,
       emailSent: false,
       alreadyExisted: false,
+      state: 'pending_payment',
     }
   } catch (err) {
     console.error('[createTrip] unexpected error:', err)

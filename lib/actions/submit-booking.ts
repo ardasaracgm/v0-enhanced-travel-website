@@ -504,18 +504,28 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
   //    an error, the trip is already safely in pending_payment and the WhatsApp
   //    link from createTrip serves as the fallback payment path.
   let vivaRedirectUrl: string | undefined
-  try {
-    const vivaResult = await createPaymentOrder({
-      tripId: tripResult.tripId,
-      locale: input.locale,
-    })
-    if (vivaResult.ok) {
-      vivaRedirectUrl = vivaResult.redirectUrl
-    } else {
-      console.warn('[submitBooking] Viva order failed, WhatsApp fallback active:', vivaResult.error)
+  // Only a PAYABLE (pending_payment) trip gets a payment order. An idempotent
+  // re-submit that resolves to an already-confirmed trip (paid via Viva, but the
+  // user never reached /confirmation so the key was never rotated) must NOT open
+  // a second Viva order — double-charge. Non-pending states (confirmed/cancelled/
+  // expired) skip payment; with no vivaRedirectUrl the caller routes to
+  // /confirmation, correctly surfacing the existing trip.
+  if (tripResult.state === 'pending_payment') {
+    try {
+      const vivaResult = await createPaymentOrder({
+        tripId: tripResult.tripId,
+        locale: input.locale,
+      })
+      if (vivaResult.ok) {
+        vivaRedirectUrl = vivaResult.redirectUrl
+      } else {
+        console.warn('[submitBooking] Viva order failed, WhatsApp fallback active:', vivaResult.error)
+      }
+    } catch (err) {
+      console.error('[submitBooking] createPaymentOrder threw unexpectedly:', err)
     }
-  } catch (err) {
-    console.error('[submitBooking] createPaymentOrder threw unexpectedly:', err)
+  } else {
+    console.warn(`[submitBooking] re-submit resolved to '${tripResult.state}' trip ${tripResult.reference} — skipping payment (no re-charge)`)
   }
 
   // Pending+WhatsApp email — ONLY when Viva produced no redirect (graceful
