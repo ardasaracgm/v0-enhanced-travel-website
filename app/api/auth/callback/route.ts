@@ -1,5 +1,7 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, after, type NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { sendSignupNotification } from '@/lib/email/send-signup-notification'
 
 /**
  * Supabase Auth callback — PKCE code exchange (Hub lazy-reg dönüş ucu).
@@ -40,11 +42,37 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createSupabaseServerClient()
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
+  const { data: exchanged, error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
     console.error('[auth/callback] exchangeCodeForSession failed:', error.message)
     return NextResponse.redirect(`${origin}/${locale}/hub?error=auth_failed`)
+  }
+
+  // First login → one internal "new member" notice to NOTIFY_ADDRESS. Runs via
+  // after() (post-response), so the login redirect is NEVER delayed and — unlike
+  // a bare fire-and-forget — Vercel keeps the function alive to finish it. The
+  // atomic claim (service-role, context-free inside after) fires exactly once per
+  // user across the every-login callback (magic-link + Google OAuth). Fully
+  // non-fatal: any failure is logged, never surfaced to the user.
+  const userId = exchanged.user?.id
+  if (userId) {
+    after(async () => {
+      try {
+        const { data: claimed } = await getSupabaseAdmin()
+          .from('profiles')
+          .update({ welcome_notified_at: new Date().toISOString() })
+          .eq('id', userId)
+          .is('welcome_notified_at', null)
+          .select('email, created_at')
+          .maybeSingle()
+        if (claimed?.email) {
+          await sendSignupNotification(claimed.email as string, (claimed.created_at as string | null) ?? null)
+        }
+      } catch (e) {
+        console.error('[signup-notify] claim/send failed (non-fatal):', e instanceof Error ? e.message : String(e))
+      }
+    })
   }
 
   return NextResponse.redirect(`${origin}${safeNext}`)
