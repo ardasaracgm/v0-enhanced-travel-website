@@ -94,11 +94,14 @@ export async function getCompanionForPrefill(id: string): Promise<CompanionPrefi
     .maybeSingle()
   if (!c) return null
 
+  // Gender null/blank on the companion → 'unspecified' (a value the ferry select
+  // and Zod both accept, and which the Dentur adapter maps to 'M'), NOT '' which
+  // would leave the required select empty after prefill.
   const g = (c.gender as string | null) ?? ''
   return {
     firstName: (c.first_name as string | null) ?? '',
     lastName: (c.last_name as string | null) ?? '',
-    gender: (g === 'male' || g === 'female' || g === 'unspecified' ? g : '') as CompanionPrefill['gender'],
+    gender: (g === 'male' || g === 'female' ? g : 'unspecified') as CompanionPrefill['gender'],
     birthDate: (c.birth_date as string | null) ?? '',
     passportNumber: (c.passport_number as string | null) ?? '',
     passportExpiryDate: (c.passport_expiry as string | null) ?? '',
