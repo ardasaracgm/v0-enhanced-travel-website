@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { sendCompanionInvite } from '@/lib/email/send-companion-invite'
+import { parseISODate, ageOn, todayAthensISO } from '@/lib/validation/dates'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -39,6 +40,15 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
 
   if (!firstName || !lastName || !EMAIL_RE.test(contactEmail)) {
     redirect(`/${locale}/hub/companions?err=invalid`)
+  }
+
+  // Birth date optional, but if present it must be a real date, not in the future,
+  // and age 0–120 (same bound as ferry passengers — blocks garbage years).
+  if (birthDate) {
+    const age = ageOn(birthDate, todayAthensISO())
+    if (!parseISODate(birthDate) || age < 0 || age > 120) {
+      redirect(`/${locale}/hub/companions?err=invalid`)
+    }
   }
 
   // Owner display name: customers.full_name (booking-captured) → email local-part.

@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Users, Trash2 } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { todayAthensISO } from '@/lib/validation/dates'
 import { getMyCompanions, type CompanionStatus } from '@/lib/hub/get-my-companions'
 import {
   addCompanionFormAction,
@@ -45,6 +46,7 @@ export default async function HubCompanionsPage({
   }
 
   const companions = await getMyCompanions(supabase, user.id)
+  const today = todayAthensISO() // birth-date max (no future); pre-1900 blocked below
 
   const banner = err
     ? {
@@ -111,7 +113,7 @@ export default async function HubCompanionsPage({
                 </label>
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.birthDate')}</span>
-                  <input name="birthDate" type="date" className="h-9 w-full rounded-md border px-3" />
+                  <input name="birthDate" type="date" min="1900-01-01" max={today} className="h-9 w-full rounded-md border px-3" />
                 </label>
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.gender')}</span>
