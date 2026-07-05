@@ -48,12 +48,18 @@ export async function sendBookingConfirmation(
   }
 
   const from = process.env.RESEND_FROM_ADDRESS || FROM_FALLBACK
+  // Internal archive copy: BCC every customer confirmation to NOTIFY_ADDRESS
+  // (e.g. info@travelbeez.gr). Env-gated — unset in dev/test → no BCC added, so
+  // the office inbox isn't spammed from non-prod. BCC recipients don't require
+  // Resend domain verification (only `from` does).
+  const notifyBcc = process.env.NOTIFY_ADDRESS?.trim()
   const { subject, html, text } = renderBookingConfirmationEmail(data)
 
   try {
     const result = await resend.emails.send({
       from,
       to: [to],
+      ...(notifyBcc ? { bcc: [notifyBcc] } : {}),
       subject,
       html,
       text,
