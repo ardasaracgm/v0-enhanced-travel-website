@@ -42,6 +42,7 @@ import {
 } from '@/lib/booking-context'
 import type { InsuranceTariff } from '@/lib/insurs' // type-only (server-only guard tetiklenmez)
 import { submitBooking } from '@/lib/actions/submit-booking'
+import { computeBookingIdempotencyKey } from '@/lib/booking-idempotency'
 import { assertNever } from '@/lib/trip-items/types'
 import { summarizeItem } from '@/lib/trip-items/summary'
 import { serviceVisual, type ServiceTone, type ServiceVisual } from '@/lib/service-theme'
@@ -149,8 +150,18 @@ export default function CheckoutPage() {
     dispatch({ type: 'SET_SUBMIT_ERROR', payload: null })
 
     try {
+      // Content-addressed idempotency key: derived from the semantic cart so a
+      // CHANGED cart yields a new trip (no stale-trip reuse from the old session
+      // key) while a double-click / unchanged re-submit still dedupes.
+      // state.idempotencyKey is the per-session salt (blocks cross-user collision).
+      const idempotencyKey = await computeBookingIdempotencyKey(
+        state.idempotencyKey,
+        state.items,
+        state.passengers,
+        { email: state.contactEmail, phone: state.contactPhone },
+      )
       const result = await submitBooking({
-        idempotencyKey: state.idempotencyKey,
+        idempotencyKey,
         locale,
         // IDs/params only — submitBooking resolves every price server-side
         // (ferry/car from trusted sources, luggage via calculateLuggagePriceCents).
