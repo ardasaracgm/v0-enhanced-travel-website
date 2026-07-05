@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { maskPassport } from './mask-passport'
 import { ferryVoucherSections, type VoucherSection } from '@/lib/ferry/voucher-split'
 import type { FerryItemMetadata, TransferItemMetadata, TripItemType, TripState } from '@/lib/supabase'
 
@@ -35,15 +36,6 @@ export interface HubTripDetail {
   passengers: HubTripPassenger[]
   ferryVouchers: VoucherSection[]  // Dentur-style Voucher No + PNR sections
   ferryReserveFailed: boolean      // any ferry leg whose provider reserve failed
-}
-
-// KVKK/GDPR: only the last 2 digits reach the client; the rest is masked at the
-// server boundary (screen-share / shoulder-surf / cache exposure guard). The same
-// rule becomes CRITICAL for Travel Companions (someone else's data) — set it here.
-function maskPassport(n?: string | null): string | null {
-  const s = (n ?? '').trim()
-  if (!s) return null
-  return s.length <= 2 ? s : '••••••' + s.slice(-2)
 }
 
 /**
