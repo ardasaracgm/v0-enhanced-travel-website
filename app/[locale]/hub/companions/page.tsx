@@ -4,6 +4,7 @@ import { Users, Trash2 } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { todayAthensISO } from '@/lib/validation/dates'
+import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
 import { getMyCompanions, type CompanionStatus } from '@/lib/hub/get-my-companions'
 import {
   addCompanionFormAction,
@@ -35,6 +36,7 @@ export default async function HubCompanionsPage({
   const { locale } = await params
   const { added, deleted, err } = await searchParams
   const t = await getTranslations('hub')
+  const tNat = await getTranslations('passengerDetails') // shared nationality labels
 
   const supabase = await createSupabaseServerClient()
   const {
@@ -125,15 +127,24 @@ export default async function HubCompanionsPage({
                 </label>
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.nationality')}</span>
-                  <input name="nationality" className="h-9 w-full rounded-md border px-3" />
+                  <select name="nationality" defaultValue={DEFAULT_NATIONALITY} className="h-9 w-full rounded-md border px-3">
+                    {NATIONALITIES.map((n) => (
+                      <option key={n} value={n}>{tNat(`nationalities.${n}`)}</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.passportCountry')}</span>
-                  <input name="passportCountry" className="h-9 w-full rounded-md border px-3" />
+                  <select name="passportCountry" defaultValue="" className="h-9 w-full rounded-md border px-3">
+                    <option value="">—</option>
+                    {NATIONALITIES.map((n) => (
+                      <option key={n} value={n}>{tNat(`nationalities.${n}`)}</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="text-sm sm:col-span-2">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.passport')}</span>
-                  <input name="passportNumber" className="h-9 w-full rounded-md border px-3" />
+                  <input name="passportNumber" maxLength={20} className="h-9 w-full rounded-md border px-3" />
                 </label>
               </div>
               <button

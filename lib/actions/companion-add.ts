@@ -7,6 +7,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { sendCompanionInvite } from '@/lib/email/send-companion-invite'
 import { parseISODate, ageOn, todayAthensISO } from '@/lib/validation/dates'
+import { PASSPORT_RE } from '@/lib/validation/booking'
+import { isNationality } from '@/lib/countries'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -49,6 +51,17 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
     if (!parseISODate(birthDate) || age < 0 || age > 120) {
       redirect(`/${locale}/hub/companions?err=invalid`)
     }
+  }
+
+  // Nationality / passport country: must be from the shared list if provided
+  // (the form uses a select, so this is a forged-post backstop).
+  if ((nationality && !isNationality(nationality)) || (passportCountry && !isNationality(passportCountry))) {
+    redirect(`/${locale}/hub/companions?err=invalid`)
+  }
+
+  // Passport number: same rule as ferry passengers (5–20 alphanumeric) if provided.
+  if (passportNumber && !PASSPORT_RE.test(passportNumber)) {
+    redirect(`/${locale}/hub/companions?err=invalid`)
   }
 
   // Owner display name: customers.full_name (booking-captured) → email local-part.
