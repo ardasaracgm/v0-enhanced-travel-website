@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
 import { makePassengerFormSchema } from '@/lib/validation/booking'
+import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -50,22 +51,6 @@ const SUMMARY_TONE_BORDER: Record<ServiceTone, string> = {
   luggage: 'border-amber-400',
   none: 'border-transparent',
 }
-
-const nationalities = [
-  'Turkey',
-  'Germany',
-  'United Kingdom',
-  'Netherlands',
-  'France',
-  'Belgium',
-  'Austria',
-  'Switzerland',
-  'Italy',
-  'Spain',
-  'Greece',
-  'United States',
-  'Other',
-]
 
 // Maps a Zod schema field name → the error-key suffix the JSX reads.
 // Identity for most; only the two passport fields differ.
@@ -125,7 +110,7 @@ export default function PassengerDetailsPage() {
         birthDate: '',
         passportNumber: '',
         passportExpiryDate: '',
-        nationality: 'Turkey',
+        nationality: DEFAULT_NATIONALITY,
       })
     )
     setPassengers(initialPassengers)
@@ -369,7 +354,7 @@ export default function PassengerDetailsPage() {
                               <SelectValue placeholder={t('labels.nationalityPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
-                              {nationalities.map((nat) => (
+                              {NATIONALITIES.map((nat) => (
                                 <SelectItem key={nat} value={nat}>{t(`nationalities.${nat}`)}</SelectItem>
                               ))}
                             </SelectContent>

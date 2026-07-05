@@ -23,6 +23,10 @@
 import { z } from 'zod'
 import type { PassengerType } from '@/lib/supabase'
 
+/** Passport number format — 5–20 alphanumeric. Single source: the ferry
+ *  passenger schema and the companions form both validate against this. */
+export const PASSPORT_RE = /^[A-Z0-9]{5,20}$/i
+
 // ============================================================
 // Date helpers (calendar-correct — no 365.25 float approximation)
 // ============================================================
@@ -149,7 +153,7 @@ export function makePassengerSchema(
     passportNumber: z
       .string()
       .trim()
-      .regex(/^[A-Z0-9]{5,20}$/i, 'passport.invalid'),
+      .regex(PASSPORT_RE, 'passport.invalid'),
 
     // Optional: empty allowed. If provided, must be a real date AFTER travel.
     passportExpiryDate: z
