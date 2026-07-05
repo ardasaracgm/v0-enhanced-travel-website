@@ -28,6 +28,7 @@ import {
   getCompanionForPrefill,
   type CompanionOption,
 } from '@/lib/actions/companion-prefill'
+import { upperName, upperPassport } from '@/lib/text/uppercase'
 import { INSURANCE_COVERAGE_CATALOG } from '@/lib/insurance/coverage-catalog'
 import { getOrCreateInsuranceOrderKey, clearInsuranceOrderKey } from '@/lib/insurance/order-key'
 import type { InsuranceTariff } from '@/lib/insurs'             // type-only (server-only guard tetiklenmez)
@@ -263,12 +264,30 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   }
   const isLast = step === TOTAL_STEPS - 1
 
-  const updatePassenger = (index: number, field: keyof PassengerForm, value: string) => {
-    setPassengers((prev) => {
-      const next = [...prev]
-      next[index] = { ...next[index], [field]: value }
-      return next
-    })
+  // User edit path. Uppercases names/passport, and — the strict reset rule — if
+  // this block was prefilled from a companion, any manual edit detaches it: the
+  // block is cleared (keeping only the field just edited) and the companion is
+  // freed. Prefill uses prefillPassenger and never lands here.
+  const updatePassenger = (index: number, field: keyof PassengerForm, rawValue: string) => {
+    const value =
+      field === 'firstName' || field === 'lastName'
+        ? upperName(rawValue)
+        : field === 'passportNumber'
+          ? upperPassport(rawValue)
+          : rawValue
+    const bound = !!assignments[index]
+    setPassengers((prev) =>
+      prev.map((p, i) =>
+        i !== index ? p : bound ? { ...emptyPassenger(), [field]: value } : { ...p, [field]: value }
+      )
+    )
+    if (bound) {
+      setAssignments((prev) => {
+        const next = { ...prev }
+        delete next[index]
+        return next
+      })
+    }
   }
 
   const prefillPassenger = (index: number, patch: Partial<PassengerForm>) => {
@@ -281,10 +300,10 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
     // Insurance only has firstName/lastName/birthDate/passportNumber — take that
     // subset; gender/nationality/expiry have no target here (no expiry gate).
     prefillPassenger(index, {
-      firstName: data.firstName,
-      lastName: data.lastName,
+      firstName: upperName(data.firstName),
+      lastName: upperName(data.lastName),
       birthDate: data.birthDate,
-      passportNumber: data.passportNumber,
+      passportNumber: upperPassport(data.passportNumber),
     })
     setAssignments((prev) => ({ ...prev, [index]: companionId }))
   }

@@ -12,6 +12,7 @@ import {
   isPassportExpiryValidForTravel,
 } from '@/lib/validation/booking'
 import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
+import { upperName, upperPassport } from '@/lib/text/uppercase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -111,21 +112,15 @@ export default function PassengerDetailsPage() {
   const [expiryWarnings, setExpiryWarnings] = React.useState<Record<number, boolean>>({})
   const [assignments, setAssignments] = React.useState<Record<number, string>>({})
 
+  const emptyPassenger = (): Passenger => ({
+    firstName: '', lastName: '', gender: '', birthDate: '',
+    passportNumber: '', passportExpiryDate: '', nationality: DEFAULT_NATIONALITY,
+  })
+
   React.useEffect(() => {
     // Initialize passenger forms based on number of passengers
-    const initialPassengers: Passenger[] = Array.from(
-      { length: state.searchParams.passengers },
-      () => ({
-        firstName: '',
-        lastName: '',
-        gender: '',
-        birthDate: '',
-        passportNumber: '',
-        passportExpiryDate: '',
-        nationality: DEFAULT_NATIONALITY,
-      })
-    )
-    setPassengers(initialPassengers)
+    setPassengers(Array.from({ length: state.searchParams.passengers }, () => emptyPassenger()))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.searchParams.passengers])
 
   // Signed-in owners: load their saved companions (name-only) + prefill contact.
@@ -147,10 +142,32 @@ export default function PassengerDetailsPage() {
     }
   }, [])
 
-  const updatePassenger = (index: number, field: keyof Passenger, value: string) => {
-    const updated = [...passengers]
-    updated[index] = { ...updated[index], [field]: value }
-    setPassengers(updated)
+  // User edit path (input onChange). Uppercases names/passport, and — the strict
+  // reset rule — if this block was prefilled from a companion, any manual edit
+  // detaches it: the block is cleared (keeping only the field just edited) and the
+  // companion is freed for reuse. Prefill uses prefillPassenger and never lands
+  // here, so it never triggers a reset.
+  const updatePassenger = (index: number, field: keyof Passenger, rawValue: string) => {
+    const value =
+      field === 'firstName' || field === 'lastName'
+        ? upperName(rawValue)
+        : field === 'passportNumber'
+          ? upperPassport(rawValue)
+          : rawValue
+    const bound = !!assignments[index]
+    setPassengers((prev) =>
+      prev.map((p, i) =>
+        i !== index ? p : bound ? { ...emptyPassenger(), [field]: value } : { ...p, [field]: value }
+      )
+    )
+    if (bound) {
+      setAssignments((prev) => {
+        const next = { ...prev }
+        delete next[index]
+        return next
+      })
+      setExpiryWarnings((prev) => ({ ...prev, [index]: false }))
+    }
   }
 
   // Prefill a whole block from a saved companion. One functional merge so it
@@ -168,7 +185,13 @@ export default function PassengerDetailsPage() {
     const floor = passportExpiryFloor({ outboundDate, returnDate })
     const expiryInvalid =
       !!data.passportExpiryDate && !isPassportExpiryValidForTravel(data.passportExpiryDate, floor)
-    prefillPassenger(index, expiryInvalid ? { ...data, passportExpiryDate: '' } : data)
+    prefillPassenger(index, {
+      ...data,
+      firstName: upperName(data.firstName),
+      lastName: upperName(data.lastName),
+      passportNumber: upperPassport(data.passportNumber),
+      ...(expiryInvalid ? { passportExpiryDate: '' } : {}),
+    })
     setExpiryWarnings((prev) => ({ ...prev, [index]: expiryInvalid }))
     setAssignments((prev) => ({ ...prev, [index]: companionId }))
   }
