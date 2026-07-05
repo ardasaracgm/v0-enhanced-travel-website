@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/select'
 
 import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
+import { upperName, upperPassport } from '@/lib/text/uppercase'
 import {
   resolveDocuments,
   type ResolvedVisaDoc,
@@ -85,6 +86,16 @@ type FieldName =
   | 'contactName' | 'contactAddress' | 'contactPhone' | 'contactFax' | 'contactEmail'
 
 type FormState = Record<FieldName, string>
+
+// Fields uppercased as-typed (and again on the server) because they appear
+// uppercase on the passport/document: personal-name fields (Turkish-locale
+// casing) and the document numbers. Everything else (address, email, occupation,
+// nationality, selects, dates) is left exactly as entered.
+const UPPER_NAME_FIELDS = new Set<FieldName>([
+  'firstName', 'lastName', 'previousLastName', 'fatherName', 'motherName',
+  'guardianName', 'birthPlace', 'birthCountry', 'issuingAuthority',
+])
+const UPPER_DOC_FIELDS = new Set<FieldName>(['docNumber', 'idNumber', 'residencePermitNumber'])
 
 // Validation surfaces issues for non-text fields too (e.g. the financingMeans
 // checkbox group) — those ride alongside the text FieldNames in error maps.
@@ -344,7 +355,12 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   const isUploading = Object.values(docStatuses).some((s) => s === 'uploading')
 
   const update = (name: FieldName, value: string) => {
-    setForm((f) => ({ ...f, [name]: value }))
+    const next = UPPER_NAME_FIELDS.has(name)
+      ? upperName(value)
+      : UPPER_DOC_FIELDS.has(name)
+        ? upperPassport(value)
+        : value
+    setForm((f) => ({ ...f, [name]: next }))
     // Clear the field's error as the user edits it.
     setErrors((e) => {
       if (!e[name]) return e

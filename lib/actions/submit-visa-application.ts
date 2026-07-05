@@ -31,6 +31,7 @@ import {
   EMPLOYER_HIDDEN_OCCUPATIONS,
 } from '@/lib/validation/visa'
 import { ageOn, parseISODate, todayAthensISO } from '@/lib/validation/dates'
+import { upperName, upperPassport } from '@/lib/text/uppercase'
 import { z } from 'zod'
 
 export type SubmitVisaApplicationResult =
@@ -110,7 +111,7 @@ export async function submitVisaApplication(
   const isMinor = Number.isFinite(age) && age < GUARDIAN_AGE_THRESHOLD
   const guardian = isMinor
     ? cleanObject({
-        name: v.guardianName,
+        name: v.guardianName ? upperName(v.guardianName) : v.guardianName,
         address: v.guardianAddress,
         city: v.guardianCity,
         province: v.guardianProvince,
@@ -169,30 +170,30 @@ export async function submitVisaApplication(
     locale: v.locale,
     entry_point: v.entryPoint,
     vessel_type: v.vesselType,
-    last_name: v.lastName,
-    previous_last_name: v.previousLastName?.trim() || null,
-    first_name: v.firstName,
-    father_name: v.fatherName,
-    mother_name: v.motherName,
+    last_name: upperName(v.lastName),
+    previous_last_name: upperName(v.previousLastName?.trim() || '') || null,
+    first_name: upperName(v.firstName),
+    father_name: upperName(v.fatherName),
+    mother_name: upperName(v.motherName),
     birth_date: v.birthDate,
-    birth_place: v.birthPlace,
-    birth_country: v.birthCountry,
+    birth_place: upperName(v.birthPlace),
+    birth_country: upperName(v.birthCountry),
     nationality: v.nationality,
     previous_nationality: v.previousNationality?.trim() || null,
     gender: v.gender,
     marital_status: v.maritalStatus,
-    id_number: v.idNumber,
+    id_number: upperPassport(v.idNumber),
     doc_type: v.docType,
-    doc_number: v.docNumber,
+    doc_number: upperPassport(v.docNumber),
     doc_issue_date: v.docIssueDate,
     doc_expiry_date: v.docExpiryDate,
-    issuing_authority: v.issuingAuthority,
+    issuing_authority: upperName(v.issuingAuthority),
     residence_address: v.residenceAddress,
     email: v.email,
     phone: v.phone,
     lives_in_other_country: v.livesInOtherCountry,
     occupation: v.occupation,
-    residence_permit_number: residencePermitNumber,
+    residence_permit_number: residencePermitNumber ? upperPassport(residencePermitNumber) : null,
     residence_permit_expiry: residencePermitExpiry,
     travel_purpose: v.travelPurpose,
     stay_duration: stayDuration,
