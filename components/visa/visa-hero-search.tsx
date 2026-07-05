@@ -79,7 +79,7 @@ export function VisaHeroSearch() {
       <div className="space-y-1.5">
         <Label htmlFor="visa-hero-entryPoint" className="text-xs">{tForm('labels.entryPoint')}</Label>
         <Select value={form.entryPoint} onValueChange={(v) => update('entryPoint', v)}>
-          <SelectTrigger id="visa-hero-entryPoint" className="h-11 rounded-xl">
+          <SelectTrigger id="visa-hero-entryPoint" className="h-10 rounded-xl">
             <SelectValue placeholder={tForm('selectPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
@@ -92,7 +92,7 @@ export function VisaHeroSearch() {
       <div className="space-y-1.5">
         <Label htmlFor="visa-hero-vesselType" className="text-xs">{tForm('labels.vesselType')}</Label>
         <Select value={form.vesselType} onValueChange={(v) => update('vesselType', v)}>
-          <SelectTrigger id="visa-hero-vesselType" className="h-11 rounded-xl">
+          <SelectTrigger id="visa-hero-vesselType" className="h-10 rounded-xl">
             <SelectValue placeholder={tForm('selectPlaceholder')} />
           </SelectTrigger>
           <SelectContent>

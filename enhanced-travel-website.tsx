@@ -322,8 +322,8 @@ export default function TravelBeez() {
                       })}
                     </TabsList>
                     {/* Feribot: tam arama formu (bare → hero kartının içine düz gömülür) */}
-                    <TabsContent value="ferry" className="mt-0 sm:min-h-[148px]">
-                      <FerrySearchForm bare />
+                    <TabsContent value="ferry" className="mt-0 sm:min-h-[148px] data-[state=active]:flex flex-col justify-end">
+                      <FerrySearchForm bare className="md:p-4" />
                     </TabsContent>
                     {/* Vize = inline ön-seçim formu (VisaHeroSearch → /visa?…);
                         kalan 3 servis generic CTA (sonraki turlarda aynı desen). */}
@@ -334,7 +334,7 @@ export default function TravelBeez() {
                         <TabsContent
                           key={tab.value}
                           value={tab.value}
-                          className="mt-0 p-4 sm:min-h-[148px] data-[state=active]:flex flex-col justify-center"
+                          className="mt-0 p-4 sm:min-h-[148px] data-[state=active]:flex flex-col justify-end"
                         >
                           {tab.value === "visa" ? (
                             <VisaHeroSearch />
