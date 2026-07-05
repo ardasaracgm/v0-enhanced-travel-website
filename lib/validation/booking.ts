@@ -27,6 +27,23 @@ import type { PassengerType } from '@/lib/supabase'
  *  passenger schema and the companions form both validate against this. */
 export const PASSPORT_RE = /^[A-Z0-9]{5,20}$/i
 
+/**
+ * Passport must stay valid through the LAST travel day: returnDate for a
+ * round-trip, else outboundDate, else today (Athens). Single source for both the
+ * passenger schema (below) and the companion-prefill expiry check on the client.
+ */
+export function passportExpiryFloor(
+  { outboundDate, returnDate }: { outboundDate?: string; returnDate?: string } = {}
+): string {
+  return returnDate ?? outboundDate ?? todayAthensISO()
+}
+
+/** True if `expiry` is a real date strictly after the travel `floor`. Mirror of
+ *  the schema's `val <= expiryFloor` rejection (valid ⟺ not-before-or-on-floor). */
+export function isPassportExpiryValidForTravel(expiry: string, floor: string): boolean {
+  return !!parseISODate(expiry) && expiry > floor
+}
+
 // ============================================================
 // Date helpers (calendar-correct — no 365.25 float approximation)
 // ============================================================
@@ -123,7 +140,7 @@ export function makePassengerSchema(
   { outboundDate, returnDate }: { outboundDate?: string; returnDate?: string } = {}
 ) {
   // Passport must be valid through the last day of travel (see note above).
-  const expiryFloor = returnDate ?? outboundDate ?? todayAthensISO()
+  const expiryFloor = passportExpiryFloor({ outboundDate, returnDate })
 
   return z.object({
     firstName: z.string().trim().min(1, 'firstName.required'),
