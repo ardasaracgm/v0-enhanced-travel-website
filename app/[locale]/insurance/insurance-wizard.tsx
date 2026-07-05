@@ -23,6 +23,11 @@ import {
   INSURANCE_DATE_RE, MAX_TRAVELLERS, insuranceStep1Schema, insuranceStep2Schema,
 } from '@/lib/validation/insurance'
 import { submitInsuranceOrder } from '@/lib/actions/submit-insurance-order'
+import {
+  getCompanionPrefillContext,
+  getCompanionForPrefill,
+  type CompanionOption,
+} from '@/lib/actions/companion-prefill'
 import { INSURANCE_COVERAGE_CATALOG } from '@/lib/insurance/coverage-catalog'
 import { getOrCreateInsuranceOrderKey, clearInsuranceOrderKey } from '@/lib/insurance/order-key'
 import type { InsuranceTariff } from '@/lib/insurs'             // type-only (server-only guard tetiklenmez)
@@ -110,6 +115,7 @@ export interface InsurancePrefill {
 
 export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null }) {
   const t = useTranslations('insurance')
+  const tCompanion = useTranslations('passengerDetails') // shared prefill label
   const locale = useLocale()
   const today = todayAthensISO()
 
@@ -127,6 +133,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   // Adım 2
   const [passengers, setPassengers] = React.useState<PassengerForm[]>([emptyPassenger()])
   const [step2Errors, setStep2Errors] = React.useState<Record<string, string>>({})
+  const [companions, setCompanions] = React.useState<CompanionOption[]>([])
 
   // Quote
   const [tariffs, setTariffs] = React.useState<InsuranceTariff[]>([])
@@ -142,6 +149,23 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
 
   // Idempotency key mount'ta üretilir + sessionStorage'a yazılır (submit'te okunur).
   React.useEffect(() => { getOrCreateInsuranceOrderKey() }, [])
+
+  // Signed-in owners: load saved companions (name-only) + prefill contact. The
+  // server action reads the cookie session; guests get signedIn:false. Contact
+  // fields are filled only if still empty (functional set) so a late response
+  // never clobbers typed input. Reuses the ferry prefill actions unchanged.
+  React.useEffect(() => {
+    let cancelled = false
+    getCompanionPrefillContext()
+      .then((ctx) => {
+        if (cancelled || !ctx.signedIn) return
+        setCompanions(ctx.companions)
+        if (ctx.contactEmail) setContactEmail((prev) => (prev === '' ? ctx.contactEmail : prev))
+        if (ctx.contactPhone) setContactPhone((prev) => (prev === '' ? ctx.contactPhone : prev))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   // Hero prefill (Vize WizardPrefill deseni, boş-ezmez). KRİTİK QUOTE TİMİNG:
   //  • dateFrom/dateTo/travellers HEMEN set → quote effect (aşağıda) tarihle tetiklenir.
@@ -243,6 +267,23 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
       const next = [...prev]
       next[index] = { ...next[index], [field]: value }
       return next
+    })
+  }
+
+  const prefillPassenger = (index: number, patch: Partial<PassengerForm>) => {
+    setPassengers((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)))
+  }
+
+  const handlePrefill = async (index: number, companionId: string) => {
+    const data = await getCompanionForPrefill(companionId)
+    if (!data) return
+    // Insurance only has firstName/lastName/birthDate/passportNumber — take that
+    // subset; gender/nationality/expiry have no target here (no expiry gate).
+    prefillPassenger(index, {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      birthDate: data.birthDate,
+      passportNumber: data.passportNumber,
     })
   }
 
@@ -506,6 +547,19 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                   <p className="text-sm font-medium text-foreground">
                     {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
                   </p>
+                  {companions.length > 0 && (
+                    // value="" → action trigger; resets to placeholder after each pick.
+                    <Select value="" onValueChange={(id) => handlePrefill(index, id)}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder={tCompanion('companionPrefill.placeholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companions.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor={`ins-fn-${index}`}>{t('labels.firstName')} *</Label>
