@@ -233,10 +233,13 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
     <tr><td align="center">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
 
-        <!-- Header -->
+        <!-- Header — full brand lockup (hexagon + wordmark). Absolute URL: email
+             clients can't resolve relative paths. PNG not webp (webp fails in
+             Outlook/some Apple Mail). Asset is 684x206 (retina); shown at 1x.
+             The .png MUST be deployed (public/) before this template goes live,
+             else the URL 404s and the mail shows a broken image. -->
         <tr><td style="padding:32px 32px 16px 32px;text-align:center;">
-          <div style="display:inline-block;height:40px;width:40px;line-height:40px;background:#2563eb;color:#fff;border-radius:50%;font-weight:700;font-size:20px;text-align:center;">B</div>
-          <div style="margin-top:8px;font-size:20px;font-weight:700;color:#0f172a;">Travel<span style="color:#2563eb;">Beez</span></div>
+          <img src="https://www.travelbeez.gr/travelbeez-logo.png" alt="TravelBeez" width="171" height="52" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;height:52px;width:171px;" />
         </td></tr>
 
         <!-- Headline -->
