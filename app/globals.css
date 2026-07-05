@@ -110,7 +110,14 @@
   html {
     scrollbar-gutter: stable;
   }
-  body[data-scroll-locked] {
+  /* Radix/react-remove-scroll (Select/Dialog/Popover) kilitlenince head'e SONRADAN
+     `body[data-scroll-locked]{margin-right:{gap}px !important}` enjekte ediyor (appendChild);
+     aynı specificity + !important olduğu için kaynak sırasında o kazanıp shift yaratıyor.
+     scrollbar-gutter:stable gutter'ı zaten rezerve ettiğinden bu telafi gereksiz. `html body`
+     ile bir kademe spesifik yapıp (0,1,2 > 0,1,1) sırayı önemsizleştiriyoruz — telafi her
+     durumda sıfırlanır. `--removed-body-scroll-bar-size` hiçbir Radix telafisince var() ile
+     okunmuyor (yalnızca set ediliyor), 0'a zorlamak güvenli. */
+  html body[data-scroll-locked] {
     margin-right: 0 !important;
     padding-right: 0 !important;
     --removed-body-scroll-bar-size: 0 !important;
