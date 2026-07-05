@@ -35,6 +35,7 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
   const gender = String(formData.get('gender') ?? '').trim()
   const passportNumber = String(formData.get('passportNumber') ?? '').trim()
   const passportCountry = String(formData.get('passportCountry') ?? '').trim()
+  const passportExpiry = String(formData.get('passportExpiry') ?? '').trim()
 
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -64,6 +65,15 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
     redirect(`/${locale}/hub/companions?err=invalid`)
   }
 
+  // Passport number and its expiry are bound: provide both or neither, and the
+  // expiry (if present) must be a real date.
+  if (Boolean(passportNumber) !== Boolean(passportExpiry)) {
+    redirect(`/${locale}/hub/companions?err=invalid`)
+  }
+  if (passportExpiry && !parseISODate(passportExpiry)) {
+    redirect(`/${locale}/hub/companions?err=invalid`)
+  }
+
   // Owner display name: customers.full_name (booking-captured) → email local-part.
   // Read via service-role — customers has no owner-read RLS policy for this user.
   const email = (user.email ?? '').toLowerCase()
@@ -88,6 +98,7 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
       gender: gender || null,
       passport_number: passportNumber || null,
       passport_country: passportCountry || null,
+      passport_expiry: passportExpiry || null,
       status: 'pending',
     })
     .select('consent_token, contact_email')

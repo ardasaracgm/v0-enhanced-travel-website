@@ -6,7 +6,11 @@ import { Ship, ChevronLeft, ArrowRight, User, CheckCircle, Shield, AlertCircle, 
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
-import { makePassengerFormSchema } from '@/lib/validation/booking'
+import {
+  makePassengerFormSchema,
+  passportExpiryFloor,
+  isPassportExpiryValidForTravel,
+} from '@/lib/validation/booking'
 import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -104,6 +108,7 @@ export default function PassengerDetailsPage() {
   const [contactPhone, setContactPhone] = React.useState('')
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [companions, setCompanions] = React.useState<CompanionOption[]>([])
+  const [expiryWarnings, setExpiryWarnings] = React.useState<Record<number, boolean>>({})
 
   React.useEffect(() => {
     // Initialize passenger forms based on number of passengers
@@ -155,7 +160,15 @@ export default function PassengerDetailsPage() {
 
   const handlePrefill = async (index: number, companionId: string) => {
     const data = await getCompanionForPrefill(companionId)
-    if (data) prefillPassenger(index, data)
+    if (!data) return
+    // Passport must be valid through the last travel day (same floor as the Zod
+    // schema). If the companion's expiry isn't, fill everything EXCEPT the expiry
+    // and flag the block so the owner enters a current date / updates the Hub.
+    const floor = passportExpiryFloor({ outboundDate, returnDate })
+    const expiryInvalid =
+      !!data.passportExpiryDate && !isPassportExpiryValidForTravel(data.passportExpiryDate, floor)
+    prefillPassenger(index, expiryInvalid ? { ...data, passportExpiryDate: '' } : data)
+    setExpiryWarnings((prev) => ({ ...prev, [index]: expiryInvalid }))
   }
 
   const validateForm = () => {
@@ -307,6 +320,12 @@ export default function PassengerDetailsPage() {
                       </CardHeader>
                       {/* 7 alan tek grid: lg 4-kol (4+3), md 2-kol, mobil 1-kol. h-9 kompakt. */}
                       <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 pt-0">
+                        {expiryWarnings[index] && (
+                          <div className="sm:col-span-2 lg:col-span-4 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                            <span>{t('companionPrefill.expiredWarning')}</span>
+                          </div>
+                        )}
                         <div className="space-y-1.5">
                           <Label htmlFor={`firstName-${index}`}>{t('labels.firstName')} *</Label>
                           <Input

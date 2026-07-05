@@ -246,6 +246,7 @@
       "genderFemale": "Kadın",
       "passportCountry": "Pasaport ülkesi",
       "passport": "Pasaport",
+      "passportExpiry": "Pasaport bitiş tarihi",
       "addCta": "Ekle ve onay isteği gönder",
       "empty": "Henüz seyahat arkadaşı eklemediniz.",
       "delete": "Kaldır",
@@ -1316,7 +1317,10 @@
     "subheading": "Lütfen bilgileri pasaportta göründüğü şekilde girin",
     "passengerNumber": "Yolcu {number}",
     "leadPassenger": "(Ana Yolcu)",
-    "companionPrefill": { "placeholder": "Kayıtlı kişiden doldur…" },
+    "companionPrefill": {
+      "placeholder": "Kayıtlı kişiden doldur…",
+      "expiredWarning": "Bu kişinin pasaportu seyahat tarihlerinde geçerli değil — güncel bitiş tarihini girin ya da Hub'dan güncelleyin."
+    },
     "totalPrice": "Toplam Fiyat",
     "steps": {
       "selectFerry": "Feribot Seçimi",

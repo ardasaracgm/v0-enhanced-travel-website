@@ -142,9 +142,13 @@ export default async function HubCompanionsPage({
                     ))}
                   </select>
                 </label>
-                <label className="text-sm sm:col-span-2">
+                <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.passport')}</span>
                   <input name="passportNumber" maxLength={20} className="h-9 w-full rounded-md border px-3" />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-muted-foreground">{t('companionsPage.passportExpiry')}</span>
+                  <input name="passportExpiry" type="date" min={today} className="h-9 w-full rounded-md border px-3" />
                 </label>
               </div>
               <button

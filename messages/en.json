@@ -246,6 +246,7 @@
       "genderFemale": "Female",
       "passportCountry": "Passport country",
       "passport": "Passport",
+      "passportExpiry": "Passport expiry",
       "addCta": "Add & send consent request",
       "empty": "You haven't added any travel companions yet.",
       "delete": "Remove",
@@ -1316,7 +1317,10 @@
     "subheading": "Please enter details exactly as they appear on passports",
     "passengerNumber": "Passenger {number}",
     "leadPassenger": "(Lead Passenger)",
-    "companionPrefill": { "placeholder": "Prefill from a saved companion…" },
+    "companionPrefill": {
+      "placeholder": "Prefill from a saved companion…",
+      "expiredWarning": "This companion's passport isn't valid for the travel dates — enter a current expiry date or update them in your Hub."
+    },
     "totalPrice": "Total Price",
     "steps": {
       "selectFerry": "Select Ferry",
