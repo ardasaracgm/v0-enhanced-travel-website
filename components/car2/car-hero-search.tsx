@@ -36,10 +36,13 @@ export function CarHeroSearch() {
   }
 
   return (
-    <div className="w-full space-y-3">
-      {/* "2026 model" rozeti — car2-hero:82-90 ile aynı markup/ikon/renk/key
-          (framer-motion animasyon sarmalayıcısı hariç: bu bileşende motion yok).
-          Mevcut dikey slack'e oturur → TabsContent sm:min-h-[148px] değişmez. */}
+    <div className="w-full space-y-2">
+      {/* space-y-2 (space-y-3 değil): badge↔form boşluğu 8px → geniş tek-satır
+          layout'ta badge + form yüksekliği TabsContent sm:min-h-[148px] floor'una
+          oturur (12px gap ~1px taşırıp bar'ı büyütüyordu). Dar/stacked layout'ta
+          min-h bağlayıcı değil, tek etki daha kompakt gap. transfer ile aynı.
+          "2026 model" rozeti — car2-hero:82-90 ile aynı markup/ikon/renk/key
+          (framer-motion animasyon sarmalayıcısı hariç: bu bileşende motion yok). */}
       <div className="inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white">
         <Sparkles className="h-4 w-4 text-amber-400" />
         {t('heroFleetYear')}

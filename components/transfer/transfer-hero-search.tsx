@@ -66,9 +66,11 @@ export function TransferHeroSearch() {
   }
 
   return (
-    <div className="w-full space-y-3">
-      {/* Fiyat — salt görüntü; seçim tamamlanınca çıkar. h-6 ile yer rezerve →
-          TabsContent sm:min-h-[148px] slack'ine oturur, zıplama yok (car badge deseni). */}
+    <div className="w-full space-y-2">
+      {/* space-y-2 (space-y-3 değil): fiyat satırı↔form boşluğu 8px → geniş
+          tek-satır layout'ta TabsContent sm:min-h-[148px] floor'una oturur, bar
+          büyümez (car badge deseni ile aynı; 12px gap ~1px taşırıyordu).
+          Fiyat — salt görüntü; seçim tamamlanınca çıkar. h-6 ile yer rezerve. */}
       <div className="flex h-6 items-center">
         {canContinue && route && (
           <span className="text-sm font-semibold text-primary">€{fmtEur(totalEur)}</span>
