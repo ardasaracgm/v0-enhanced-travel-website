@@ -1322,6 +1322,7 @@
     "passengerNumber": "Yolcu {number}",
     "leadPassenger": "(Ana Yolcu)",
     "companionPrefill": {
+      "label": "Kayıtlı kişi",
       "placeholder": "Kayıtlı kişiden doldur…",
       "expiredWarning": "Bu kişinin pasaportu seyahat tarihlerinde geçerli değil — güncel bitiş tarihini girin ya da Hub'dan güncelleyin."
     },

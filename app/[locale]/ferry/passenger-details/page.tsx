@@ -109,6 +109,7 @@ export default function PassengerDetailsPage() {
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [companions, setCompanions] = React.useState<CompanionOption[]>([])
   const [expiryWarnings, setExpiryWarnings] = React.useState<Record<number, boolean>>({})
+  const [assignments, setAssignments] = React.useState<Record<number, string>>({})
 
   React.useEffect(() => {
     // Initialize passenger forms based on number of passengers
@@ -169,6 +170,7 @@ export default function PassengerDetailsPage() {
       !!data.passportExpiryDate && !isPassportExpiryValidForTravel(data.passportExpiryDate, floor)
     prefillPassenger(index, expiryInvalid ? { ...data, passportExpiryDate: '' } : data)
     setExpiryWarnings((prev) => ({ ...prev, [index]: expiryInvalid }))
+    setAssignments((prev) => ({ ...prev, [index]: companionId }))
   }
 
   const validateForm = () => {
@@ -300,23 +302,6 @@ export default function PassengerDetailsPage() {
                           </div>
                           {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadPassenger')}` : ''}
                         </CardTitle>
-                        {companions.length > 0 && (
-                          <div className="mt-2">
-                            {/* value="" → an action trigger, not a sticky choice: resets to
-                                the placeholder after each pick so the block isn't bound to a
-                                companion and a different one can be selected next. */}
-                            <Select value="" onValueChange={(id) => handlePrefill(index, id)}>
-                              <SelectTrigger className="h-9">
-                                <SelectValue placeholder={t('companionPrefill.placeholder')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {companions.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
                       </CardHeader>
                       {/* 7 alan tek grid: lg 4-kol (4+3), md 2-kol, mobil 1-kol. h-9 kompakt. */}
                       <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 pt-0">
@@ -324,6 +309,27 @@ export default function PassengerDetailsPage() {
                           <div className="sm:col-span-2 lg:col-span-4 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                             <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                             <span>{t('companionPrefill.expiredWarning')}</span>
+                          </div>
+                        )}
+                        {companions.length > 0 && (
+                          // First grid cell → the 1/4 slot fills the row. Controlled
+                          // value = the companion held by THIS block (persists, no reset);
+                          // options exclude companions already chosen in OTHER blocks so
+                          // the same person can't be prefilled twice. Reselect frees the old.
+                          <div className="space-y-1.5">
+                            <Label htmlFor={`companion-${index}`}>{t('companionPrefill.label')}</Label>
+                            <Select value={assignments[index] ?? ''} onValueChange={(id) => handlePrefill(index, id)}>
+                              <SelectTrigger id={`companion-${index}`} className="h-9">
+                                <SelectValue placeholder={t('companionPrefill.placeholder')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {companions
+                                  .filter((c) => !Object.entries(assignments).some(([i, id]) => Number(i) !== index && id === c.id))
+                                  .map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         )}
                         <div className="space-y-1.5">

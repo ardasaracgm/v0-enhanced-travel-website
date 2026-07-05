@@ -1322,6 +1322,7 @@
     "passengerNumber": "Passenger {number}",
     "leadPassenger": "(Lead Passenger)",
     "companionPrefill": {
+      "label": "Saved companion",
       "placeholder": "Prefill from a saved companion…",
       "expiredWarning": "This companion's passport isn't valid for the travel dates — enter a current expiry date or update them in your Hub."
     },
