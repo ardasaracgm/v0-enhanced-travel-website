@@ -134,6 +134,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
   const [passengers, setPassengers] = React.useState<PassengerForm[]>([emptyPassenger()])
   const [step2Errors, setStep2Errors] = React.useState<Record<string, string>>({})
   const [companions, setCompanions] = React.useState<CompanionOption[]>([])
+  const [assignments, setAssignments] = React.useState<Record<number, string>>({})
 
   // Quote
   const [tariffs, setTariffs] = React.useState<InsuranceTariff[]>([])
@@ -285,6 +286,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
       birthDate: data.birthDate,
       passportNumber: data.passportNumber,
     })
+    setAssignments((prev) => ({ ...prev, [index]: companionId }))
   }
 
   const validateStep2 = (): boolean => {
@@ -548,15 +550,19 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                     {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadBadge')}` : ''}
                   </p>
                   {companions.length > 0 && (
-                    // value="" → action trigger; resets to placeholder after each pick.
-                    <Select value="" onValueChange={(id) => handlePrefill(index, id)}>
+                    // Controlled value = the companion held by THIS block (persists);
+                    // options exclude companions chosen in OTHER blocks so the same
+                    // person can't be prefilled twice. Reselect frees the old.
+                    <Select value={assignments[index] ?? ''} onValueChange={(id) => handlePrefill(index, id)}>
                       <SelectTrigger className="h-9">
                         <SelectValue placeholder={tCompanion('companionPrefill.placeholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {companions.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                        ))}
+                        {companions
+                          .filter((c) => !Object.entries(assignments).some(([i, id]) => Number(i) !== index && id === c.id))
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   )}
