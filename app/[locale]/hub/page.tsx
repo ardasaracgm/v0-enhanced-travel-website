@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/routing'
 import {
   Ship, Car, MapPinned, Hotel, FileCheck, Package,
-  ShieldCheck, Smartphone, Luggage, BusFront, Lock, AlertCircle,
+  ShieldCheck, Smartphone, Luggage, BusFront, Users, Lock, AlertCircle,
 } from 'lucide-react'
 
 import { getTranslations } from 'next-intl/server'
@@ -31,6 +31,7 @@ const TABS: HubTab[] = [
   { key: 'insurance',     icon: ShieldCheck, href: '/hub/insurance', locked: false },
   { key: 'esim',          icon: Smartphone,  locked: true },
   { key: 'luggage',       icon: Luggage,     href: '/hub/luggage', locked: false },
+  { key: 'companions',    icon: Users,       href: '/hub/companions', locked: false },
 ] as const
 
 export default async function HubPage({
