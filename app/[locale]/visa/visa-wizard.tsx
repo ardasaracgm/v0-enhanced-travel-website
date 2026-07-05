@@ -182,7 +182,9 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
     setForm((prev) => {
       const next = { ...prev }
       for (const [k, v] of Object.entries(prefill)) {
-        if (v) (next as Record<string, string>)[k] = v
+        // Prefill bypasses update(); apply the same name uppercasing here so a
+        // hero/URL-sourced firstName/lastName lands in passport shape.
+        if (v) (next as Record<string, string>)[k] = UPPER_NAME_FIELDS.has(k as FieldName) ? upperName(v) : v
       }
       return next
     })

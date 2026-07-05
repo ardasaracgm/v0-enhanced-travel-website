@@ -34,6 +34,7 @@ import { WhatsAppCTA } from '@/components/islandbee/whatsapp-cta'
 import { TrustIndicators, SecurePaymentBanner } from '@/components/islandbee/trust-indicators'
 import { VisaWizard, type WizardPrefill } from './visa-wizard'
 import { ENTRY_POINTS, VESSEL_TYPES } from '@/lib/validation/visa'
+import { upperName } from '@/lib/text/uppercase'
 
 type Stat = { key: string; number?: string; icon?: React.ComponentType<{ className?: string }> }
 
@@ -70,7 +71,9 @@ function VisaSupportPageInner() {
   // Başlangıç değeri URL'den (ana sayfa hero'su → prefill).
   const [hero, setHero] = React.useState(heroFromUrl)
   const updateHero = (k: keyof typeof hero, v: string) =>
-    setHero((h) => ({ ...h, [k]: v }))
+    // Name fields uppercase as-typed so the hero shows — and the wizard prefill
+    // carries — the passport shape (same upperName as the wizard/companion forms).
+    setHero((h) => ({ ...h, [k]: k === 'firstName' || k === 'lastName' ? upperName(v) : v }))
 
   // Wizard'a geçen lifted prefill. URL'de ön-seçim varsa mount'ta set edilir,
   // yoksa Başlat'a basınca. Wizard useEffect([prefill]) mevcut form'a merge
