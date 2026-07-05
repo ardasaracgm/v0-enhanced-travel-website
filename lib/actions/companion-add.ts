@@ -50,28 +50,28 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
   if (birthDate) {
     const age = ageOn(birthDate, todayAthensISO())
     if (!parseISODate(birthDate) || age < 0 || age > 120) {
-      redirect(`/${locale}/hub/companions?err=invalid`)
+      redirect(`/${locale}/hub/companions?err=birthdate`)
     }
   }
 
   // Nationality / passport country: must be from the shared list if provided
   // (the form uses a select, so this is a forged-post backstop).
   if ((nationality && !isNationality(nationality)) || (passportCountry && !isNationality(passportCountry))) {
-    redirect(`/${locale}/hub/companions?err=invalid`)
+    redirect(`/${locale}/hub/companions?err=country`)
   }
 
   // Passport number: same rule as ferry passengers (5–20 alphanumeric) if provided.
   if (passportNumber && !PASSPORT_RE.test(passportNumber)) {
-    redirect(`/${locale}/hub/companions?err=invalid`)
+    redirect(`/${locale}/hub/companions?err=passport_format`)
   }
 
   // Passport number and its expiry are bound: provide both or neither, and the
   // expiry (if present) must be a real date.
   if (Boolean(passportNumber) !== Boolean(passportExpiry)) {
-    redirect(`/${locale}/hub/companions?err=invalid`)
+    redirect(`/${locale}/hub/companions?err=passport_expiry`)
   }
   if (passportExpiry && !parseISODate(passportExpiry)) {
-    redirect(`/${locale}/hub/companions?err=invalid`)
+    redirect(`/${locale}/hub/companions?err=passport_expiry`)
   }
 
   // Owner display name: customers.full_name (booking-captured) → email local-part.

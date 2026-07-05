@@ -50,16 +50,16 @@ export default async function HubCompanionsPage({
   const companions = await getMyCompanions(supabase, user.id)
   const today = todayAthensISO() // birth-date max (no future); pre-1900 blocked below
 
+  const ERR_KEYS: Record<string, string> = {
+    duplicate: 'errDuplicate',
+    invalid: 'errInvalid',
+    birthdate: 'errBirthdate',
+    country: 'errCountry',
+    passport_format: 'errPassportFormat',
+    passport_expiry: 'errPassportExpiry',
+  }
   const banner = err
-    ? {
-        tone: 'err' as const,
-        msg:
-          err === 'duplicate'
-            ? t('companionsPage.errDuplicate')
-            : err === 'invalid'
-              ? t('companionsPage.errInvalid')
-              : t('companionsPage.errSave'),
-      }
+    ? { tone: 'err' as const, msg: t(`companionsPage.${ERR_KEYS[err] ?? 'errSave'}`) }
     : added
       ? { tone: 'ok' as const, msg: t('companionsPage.added') }
       : deleted

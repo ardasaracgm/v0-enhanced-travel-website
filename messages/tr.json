@@ -254,6 +254,10 @@
       "deleted": "Arkadaş kaldırıldı.",
       "errDuplicate": "Bu kişi zaten arkadaşlarınızda.",
       "errInvalid": "Lütfen ad, soyad ve geçerli bir e-posta girin.",
+      "errBirthdate": "Geçerli bir doğum tarihi girin.",
+      "errCountry": "Uyruk / pasaport ülkesi listeden seçilmelidir.",
+      "errPassportFormat": "Pasaport numarası 5–20 harf veya rakam olmalıdır.",
+      "errPassportExpiry": "Pasaport numarası girdiyseniz geçerlilik tarihini de girin (ya da ikisini de boş bırakın).",
       "errSave": "Arkadaş kaydedilemedi. Lütfen tekrar deneyin.",
       "status": { "pending": "Onay bekliyor", "active": "Onayladı", "revoked": "Çıktı" }
     },

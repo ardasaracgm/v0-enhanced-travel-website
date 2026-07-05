@@ -254,6 +254,10 @@
       "deleted": "Companion removed.",
       "errDuplicate": "This person is already in your companions.",
       "errInvalid": "Please enter a first name, last name and a valid email.",
+      "errBirthdate": "Enter a valid date of birth.",
+      "errCountry": "Nationality / passport country must be chosen from the list.",
+      "errPassportFormat": "Passport number must be 5–20 letters or digits.",
+      "errPassportExpiry": "If you enter a passport number, also enter its expiry date (or leave both blank).",
       "errSave": "Could not save the companion. Please try again.",
       "status": { "pending": "Awaiting consent", "active": "Consented", "revoked": "Withdrawn" }
     },
