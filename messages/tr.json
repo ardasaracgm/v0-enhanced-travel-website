@@ -228,7 +228,18 @@
       "insurance": "Sigorta",
       "esim": "eSIM",
       "luggage": "Bagaj",
-      "companions": "Seyahat Arkadaşları"
+      "companions": "Seyahat Arkadaşları",
+      "profile": "Profil"
+    },
+    "profilePage": {
+      "back": "← Hub",
+      "title": "Profilim",
+      "intro": "Kendi yolcu bilgilerinizi kaydedin — rezervasyonlarda \"Kendim\" olarak otomatik dolar. Telefonunuz rezervasyon iletişimi için kullanılır.",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "saveCta": "Kaydet",
+      "saved": "Profil kaydedildi.",
+      "errName": "Lütfen ad ve soyad girin."
     },
     "companionsPage": {
       "back": "← Hub",
@@ -1323,6 +1334,7 @@
     "leadPassenger": "(Ana Yolcu)",
     "companionPrefill": {
       "label": "Kayıtlı kişi",
+      "self": "Kendim",
       "placeholder": "Kayıtlı kişiden doldur…",
       "expiredWarning": "Bu kişinin pasaportu seyahat tarihlerinde geçerli değil — güncel bitiş tarihini girin ya da Hub'dan güncelleyin."
     },

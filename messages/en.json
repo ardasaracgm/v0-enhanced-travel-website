@@ -228,7 +228,18 @@
       "insurance": "Insurance",
       "esim": "eSIM",
       "luggage": "Luggage",
-      "companions": "Travel Companions"
+      "companions": "Travel Companions",
+      "profile": "Profile"
+    },
+    "profilePage": {
+      "back": "← Hub",
+      "title": "My Profile",
+      "intro": "Save your own passenger details so they autofill as \"Myself\" at booking. Your phone is used to contact you about bookings.",
+      "phone": "Phone",
+      "email": "Email",
+      "saveCta": "Save",
+      "saved": "Profile saved.",
+      "errName": "Please enter a first and last name."
     },
     "companionsPage": {
       "back": "← Hub",
@@ -1323,6 +1334,7 @@
     "leadPassenger": "(Lead Passenger)",
     "companionPrefill": {
       "label": "Saved companion",
+      "self": "Myself",
       "placeholder": "Prefill from a saved companion…",
       "expiredWarning": "This companion's passport isn't valid for the travel dates — enter a current expiry date or update them in your Hub."
     },

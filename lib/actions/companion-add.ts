@@ -140,7 +140,9 @@ export async function deleteCompanionFormAction(formData: FormData): Promise<voi
   if (!user) redirect(`/${locale}/hub`)
 
   if (id) {
-    await supabase.from('travel_companions').delete().eq('id', id).eq('owner_id', user.id)
+    // is_self guard: the owner's self-row can never be deleted here (managed on
+    // the profile page); only invited companions are removable.
+    await supabase.from('travel_companions').delete().eq('id', id).eq('owner_id', user.id).eq('is_self', false)
     revalidatePath(`/${locale}/hub/companions`)
   }
   redirect(`/${locale}/hub/companions?deleted=1`)

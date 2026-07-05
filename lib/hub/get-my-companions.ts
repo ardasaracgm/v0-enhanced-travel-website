@@ -48,6 +48,7 @@ export async function getMyCompanions(
     .from('travel_companions')
     .select('id, first_name, last_name, contact_email, birth_date, nationality, passport_number, status')
     .eq('owner_id', ownerId)
+    .eq('is_self', false) // the owner's self-row is managed on the profile page, not here
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
