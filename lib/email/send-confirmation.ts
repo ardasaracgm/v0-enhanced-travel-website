@@ -21,23 +21,11 @@
  */
 
 import 'server-only'
-import { Resend } from 'resend'
 import {
   renderBookingConfirmationEmail,
   type BookingEmailData,
 } from './templates/booking-confirmation'
-
-const FROM_FALLBACK = 'TravelBeez <onboarding@resend.dev>' // Resend's test domain
-
-let resendInstance: Resend | null = null
-
-function getResend(): Resend | null {
-  if (resendInstance) return resendInstance
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) return null
-  resendInstance = new Resend(apiKey)
-  return resendInstance
-}
+import { getResend, FROM_FALLBACK } from './resend-client'
 
 export interface SendResult {
   sent: boolean
