@@ -1316,6 +1316,7 @@
     "subheading": "Παρακαλούμε εισαγάγετε τα στοιχεία ακριβώς όπως αναγράφονται στα διαβατήρια",
     "passengerNumber": "Επιβάτης {number}",
     "leadPassenger": "(Κύριος Επιβάτης)",
+    "companionPrefill": { "placeholder": "Συμπλήρωση από αποθηκευμένο…" },
     "totalPrice": "Συνολική Τιμή",
     "steps": {
       "selectFerry": "Επιλογή Πλοίου",

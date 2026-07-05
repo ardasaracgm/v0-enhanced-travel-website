@@ -33,6 +33,11 @@ import {
   type Passenger,
 } from '@/lib/booking-context'
 import { OrderSummaryItems, useRemoveBookingItem } from '@/components/booking/order-summary-items'
+import {
+  getCompanionPrefillContext,
+  getCompanionForPrefill,
+  type CompanionOption,
+} from '@/lib/actions/companion-prefill'
 import type { ServiceTone } from '@/lib/service-theme'
 
 // Servis tone→class — results/extras ile BİREBİR (app/ taranır, purge-safe;
@@ -98,6 +103,7 @@ export default function PassengerDetailsPage() {
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+  const [companions, setCompanions] = React.useState<CompanionOption[]>([])
 
   React.useEffect(() => {
     // Initialize passenger forms based on number of passengers
@@ -116,10 +122,40 @@ export default function PassengerDetailsPage() {
     setPassengers(initialPassengers)
   }, [state.searchParams.passengers])
 
+  // Signed-in owners: load their saved companions (name-only) + prefill contact.
+  // A server action reads the cookie session, so no browser auth client is needed;
+  // guests get signedIn:false and see nothing new. Contact fields are filled only
+  // if still empty (functional set) so a late response never clobbers typed input.
+  React.useEffect(() => {
+    let cancelled = false
+    getCompanionPrefillContext()
+      .then((ctx) => {
+        if (cancelled || !ctx.signedIn) return
+        setCompanions(ctx.companions)
+        if (ctx.contactEmail) setContactEmail((prev) => (prev === '' ? ctx.contactEmail : prev))
+        if (ctx.contactPhone) setContactPhone((prev) => (prev === '' ? ctx.contactPhone : prev))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const updatePassenger = (index: number, field: keyof Passenger, value: string) => {
     const updated = [...passengers]
     updated[index] = { ...updated[index], [field]: value }
     setPassengers(updated)
+  }
+
+  // Prefill a whole block from a saved companion. One functional merge so it
+  // never clobbers via a stale closure; fields stay fully editable afterwards.
+  const prefillPassenger = (index: number, patch: Partial<Passenger>) => {
+    setPassengers((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)))
+  }
+
+  const handlePrefill = async (index: number, companionId: string) => {
+    const data = await getCompanionForPrefill(companionId)
+    if (data) prefillPassenger(index, data)
   }
 
   const validateForm = () => {
@@ -251,6 +287,23 @@ export default function PassengerDetailsPage() {
                           </div>
                           {t('passengerNumber', { number: index + 1 })}{index === 0 ? ` ${t('leadPassenger')}` : ''}
                         </CardTitle>
+                        {companions.length > 0 && (
+                          <div className="mt-2">
+                            {/* value="" → an action trigger, not a sticky choice: resets to
+                                the placeholder after each pick so the block isn't bound to a
+                                companion and a different one can be selected next. */}
+                            <Select value="" onValueChange={(id) => handlePrefill(index, id)}>
+                              <SelectTrigger className="h-9">
+                                <SelectValue placeholder={t('companionPrefill.placeholder')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {companions.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </CardHeader>
                       {/* 7 alan tek grid: lg 4-kol (4+3), md 2-kol, mobil 1-kol. h-9 kompakt. */}
                       <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 pt-0">

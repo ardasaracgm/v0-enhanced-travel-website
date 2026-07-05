@@ -1316,6 +1316,7 @@
     "subheading": "Lütfen bilgileri pasaportta göründüğü şekilde girin",
     "passengerNumber": "Yolcu {number}",
     "leadPassenger": "(Ana Yolcu)",
+    "companionPrefill": { "placeholder": "Kayıtlı kişiden doldur…" },
     "totalPrice": "Toplam Fiyat",
     "steps": {
       "selectFerry": "Feribot Seçimi",

@@ -1316,6 +1316,7 @@
     "subheading": "Please enter details exactly as they appear on passports",
     "passengerNumber": "Passenger {number}",
     "leadPassenger": "(Lead Passenger)",
+    "companionPrefill": { "placeholder": "Prefill from a saved companion…" },
     "totalPrice": "Total Price",
     "steps": {
       "selectFerry": "Select Ferry",
