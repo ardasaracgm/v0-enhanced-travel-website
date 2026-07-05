@@ -580,7 +580,7 @@ export function InsuranceWizard({ prefill }: { prefill?: InsurancePrefill | null
                         {companions
                           .filter((c) => !Object.entries(assignments).some(([i, id]) => Number(i) !== index && id === c.id))
                           .map((c) => (
-                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            <SelectItem key={c.id} value={c.id}>{c.isSelf ? tCompanion('companionPrefill.self') : c.name}</SelectItem>
                           ))}
                       </SelectContent>
                     </Select>

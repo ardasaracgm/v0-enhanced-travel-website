@@ -349,7 +349,7 @@ export default function PassengerDetailsPage() {
                                 {companions
                                   .filter((c) => !Object.entries(assignments).some(([i, id]) => Number(i) !== index && id === c.id))
                                   .map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    <SelectItem key={c.id} value={c.id}>{c.isSelf ? t('companionPrefill.self') : c.name}</SelectItem>
                                   ))}
                               </SelectContent>
                             </Select>

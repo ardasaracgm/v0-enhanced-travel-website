@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 export interface CompanionOption {
   id: string
   name: string
+  isSelf: boolean // the owner's own self-row (managed on /hub/profile) — labelled "Kendim", sorted first
 }
 
 export interface CompanionPrefillContext {
@@ -49,17 +50,21 @@ export async function getCompanionPrefillContext(): Promise<CompanionPrefillCont
   const [{ data: rows }, { data: profile }] = await Promise.all([
     supabase
       .from('travel_companions')
-      .select('id, first_name, last_name')
+      .select('id, first_name, last_name, is_self')
       .eq('owner_id', user.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false }),
     supabase.from('profiles').select('phone').eq('id', user.id).maybeSingle(),
   ])
 
-  const companions: CompanionOption[] = (rows ?? []).map((c) => ({
-    id: c.id as string,
-    name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
-  }))
+  const companions: CompanionOption[] = (rows ?? [])
+    .map((c) => ({
+      id: c.id as string,
+      name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
+      isSelf: Boolean(c.is_self),
+    }))
+    // Self-row first ("Kendim"), then invited companions in created_at order.
+    .sort((a, b) => Number(b.isSelf) - Number(a.isSelf))
 
   return {
     signedIn: true,
