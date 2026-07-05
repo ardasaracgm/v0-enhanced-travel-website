@@ -9,6 +9,7 @@ import { sendCompanionInvite } from '@/lib/email/send-companion-invite'
 import { parseISODate, ageOn, todayAthensISO } from '@/lib/validation/dates'
 import { PASSPORT_RE } from '@/lib/validation/booking'
 import { isNationality } from '@/lib/countries'
+import { upperName, upperPassport } from '@/lib/text/uppercase'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -27,13 +28,15 @@ function asLocale(v: string): Locale {
  */
 export async function addCompanionFormAction(formData: FormData): Promise<void> {
   const locale = String(formData.get('locale') ?? 'tr')
-  const firstName = String(formData.get('firstName') ?? '').trim()
-  const lastName = String(formData.get('lastName') ?? '').trim()
+  // Names/passport are uppercased at the boundary so hub-saved companions match
+  // what the passenger forms produce (shared upperName/upperPassport helpers).
+  const firstName = upperName(String(formData.get('firstName') ?? '').trim())
+  const lastName = upperName(String(formData.get('lastName') ?? '').trim())
   const contactEmail = String(formData.get('contactEmail') ?? '').trim().toLowerCase()
   const birthDate = String(formData.get('birthDate') ?? '').trim()
   const nationality = String(formData.get('nationality') ?? '').trim()
   const gender = String(formData.get('gender') ?? '').trim()
-  const passportNumber = String(formData.get('passportNumber') ?? '').trim()
+  const passportNumber = upperPassport(String(formData.get('passportNumber') ?? '').trim())
   const passportCountry = String(formData.get('passportCountry') ?? '').trim()
   const passportExpiry = String(formData.get('passportExpiry') ?? '').trim()
 
