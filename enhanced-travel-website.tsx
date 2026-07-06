@@ -34,6 +34,7 @@ import {
   Award,
   Heart,
   Package,
+  Luggage,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -64,6 +65,7 @@ export default function TravelBeez() {
   const tSvc = useTranslations("services");
   const tCommon = useTranslations("common");
   const tFleet = useTranslations("carFleet");
+  const tGrid = useTranslations("serviceGrid");
   const tPay = useTranslations("payment");
   const tIslands = useTranslations("popularIslands");
   const tTours = useTranslations("homeTours");
@@ -790,6 +792,99 @@ export default function TravelBeez() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Service Grid — Sigorta · Bodrum VIP · Valiz (3'lü eşit) + Kapıda Vize
+            (tam-genişlik ayrı blok). insurance/transfer/visa SERVICE_ROUTES'tan;
+            valiz menüde YOK → doğrudan /luggage Link (kasıtlı, registry'ye girmez). */}
+        <section className="w-full py-16 md:py-24">
+          <div className="container px-4 md:px-6">
+            {/* car2 başlık */}
+            <div className="mx-auto mb-12 max-w-2xl text-center">
+              <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-600">{tGrid("eyebrow")}</p>
+              <h2 className="mb-4 text-3xl font-bold text-blue-950 md:text-4xl">{tGrid("title")}</h2>
+              <p className="text-lg text-muted-foreground">{tGrid("subtitle")}</p>
+            </div>
+
+            {/* Üst satır — 3 eşit kutu */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              {[
+                { key: "insurance", href: SERVICE_ROUTES.insurance.href, image: "/services/insurance-hero.webp", Icon: Shield },
+                { key: "transfer", href: SERVICE_ROUTES.transfer.href, image: "/services/transfer-hero.webp", Icon: CarTaxiFront },
+                { key: "luggage", href: "/luggage", image: "/services/luggage-sizes.webp", Icon: Luggage },
+              ].map((box, index) => (
+                <motion.div
+                  key={box.key}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Link href={box.href}>
+                    <Card className="group h-full overflow-hidden rounded-3xl border-border/50 bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                      <div className="relative h-44 overflow-hidden">
+                        <Image
+                          src={box.image}
+                          alt={tGrid(`${box.key}.title`)}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-blue-950/50 to-transparent" />
+                        <div className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-primary shadow">
+                          <box.Icon className="h-6 w-6" />
+                        </div>
+                      </div>
+                      <CardContent className="p-6">
+                        <h3 className="mb-2 text-xl font-bold text-blue-950">{tGrid(`${box.key}.title`)}</h3>
+                        <p className="mb-4 text-sm text-muted-foreground">{tGrid(`${box.key}.desc`)}</p>
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                          {tGrid(`${box.key}.cta`)}
+                          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Kapıda Vize — tam genişlik ayrı blok (blue-950 zemin, amber rozet) */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-6"
+            >
+              <Link href={SERVICE_ROUTES.visa.href}>
+                <Card className="group overflow-hidden rounded-3xl border-none bg-blue-950 text-white transition-all duration-300 hover:shadow-xl">
+                  <div className="grid md:grid-cols-2">
+                    <div className="relative h-56 md:h-auto md:min-h-[16rem]">
+                      <Image
+                        src="/visa-hero.webp"
+                        alt={tGrid("visa.title")}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-950/70 md:to-blue-950" />
+                    </div>
+                    <div className="flex flex-col justify-center gap-3 p-8 md:p-10">
+                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold text-blue-950">
+                        <FileText className="h-3.5 w-3.5" /> {tGrid("visa.badge")}
+                      </span>
+                      <h3 className="text-2xl font-bold md:text-3xl">{tGrid("visa.title")}</h3>
+                      <p className="text-white/80">{tGrid("visa.desc")}</p>
+                      <span className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-blue-950 transition-transform group-hover:translate-x-1">
+                        {tGrid("visa.cta")}
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
           </div>
         </section>
 

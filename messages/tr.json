@@ -42,6 +42,32 @@
       "whatsappCta": "WhatsApp ile Öde"
     }
   },
+  "serviceGrid": {
+    "eyebrow": "TÜM HİZMETLER",
+    "title": "Yolculuğunuzun Her Adımı",
+    "subtitle": "Feribot ve araçtan öte — sigorta, VIP transfer, valiz emaneti ve vize desteği tek çatıda.",
+    "insurance": {
+      "title": "Seyahat Sigortası",
+      "desc": "Schengen onaylı poliçe, dakikalar içinde.",
+      "cta": "Poliçe al"
+    },
+    "transfer": {
+      "title": "Bodrum VIP Transfer",
+      "desc": "Adresinizden feribot limanına özel araç.",
+      "cta": "Transfer ayırt"
+    },
+    "luggage": {
+      "title": "Günlük Valiz Emaneti",
+      "desc": "Valizinizi bırakın, Kos'u özgürce gezin.",
+      "cta": "Emanete bırak"
+    },
+    "visa": {
+      "badge": "Kapıda Vize",
+      "title": "Schengen Vize Desteği",
+      "desc": "Belge hazırlığından randevuya — Türkçe uzman destek.",
+      "cta": "Vize desteği al"
+    }
+  },
   "steps": {
     "selectFerry": "Feribot Seçimi",
     "extras": "Ekstralar",

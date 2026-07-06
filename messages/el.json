@@ -42,6 +42,32 @@
       "whatsappCta": "Pay via WhatsApp"
     }
   },
+  "serviceGrid": {
+    "eyebrow": "ALL SERVICES",
+    "title": "Every Step of Your Trip",
+    "subtitle": "Beyond ferries and cars — insurance, VIP transfers, luggage storage and visa support under one roof.",
+    "insurance": {
+      "title": "Travel Insurance",
+      "desc": "Schengen-approved policy in minutes.",
+      "cta": "Get a policy"
+    },
+    "transfer": {
+      "title": "Bodrum VIP Transfer",
+      "desc": "Private car from your address to the ferry port.",
+      "cta": "Book a transfer"
+    },
+    "luggage": {
+      "title": "Daily Luggage Storage",
+      "desc": "Drop your bags and explore Kos freely.",
+      "cta": "Store your bags"
+    },
+    "visa": {
+      "badge": "Visa on Arrival",
+      "title": "Schengen Visa Support",
+      "desc": "From document prep to appointment — expert support in Turkish.",
+      "cta": "Get visa support"
+    }
+  },
   "steps": {
     "selectFerry": "Επιλογή πλοίου",
     "extras": "Έξτρα",
