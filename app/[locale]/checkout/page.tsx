@@ -142,6 +142,18 @@ export default function CheckoutPage() {
     })
   }
 
+  // Hata set + hataya kaydır tek yerde: submitBooking sonucu ve catch aynı
+  // yardımcıyı çağırır. Blok koşullu render olduğu için rAF ile ilk paint
+  // sonrası ateşle (visa/page paterni) — hedef DOM'a basılmadan scroll ıskalar.
+  const showSubmitError = (message: string) => {
+    dispatch({ type: 'SET_SUBMIT_ERROR', payload: message })
+    requestAnimationFrame(() => {
+      document
+        .getElementById('checkout-submit-error')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
   const handleConfirm = async () => {
     if (!acceptTerms || isProcessing || insuranceBlocking) return
     if (state.items.length === 0) return
@@ -212,7 +224,7 @@ export default function CheckoutPage() {
 
       if (!result.ok) {
         const message = result.code === 'car_unavailable' ? t('error.carUnavailable') : result.error
-        dispatch({ type: 'SET_SUBMIT_ERROR', payload: message })
+        showSubmitError(message)
         setIsProcessing(false)
         return
       }
@@ -234,10 +246,7 @@ export default function CheckoutPage() {
       router.push('/confirmation')
     } catch (err) {
       console.error('[checkout] submit threw:', err)
-      dispatch({
-        type: 'SET_SUBMIT_ERROR',
-        payload: t('error.unexpected'),
-      })
+      showSubmitError(t('error.unexpected'))
       setIsProcessing(false)
     }
   }
@@ -418,15 +427,6 @@ export default function CheckoutPage() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Submit error display */}
-                {state.submitError && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t('errorTitle')}</AlertTitle>
-                    <AlertDescription>{state.submitError}</AlertDescription>
-                  </Alert>
-                )}
               </div>
 
               {/* Order Summary */}
@@ -589,6 +589,16 @@ export default function CheckoutPage() {
                             </p>
                           </div>
                         </div>
+
+                        {/* Submit error — aksiyonun hemen üstünde (göz burada).
+                            Set olunca handleConfirm rAF ile buraya kaydırır. */}
+                        {state.submitError && (
+                          <Alert variant="destructive" id="checkout-submit-error">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>{t('errorTitle')}</AlertTitle>
+                            <AlertDescription>{state.submitError}</AlertDescription>
+                          </Alert>
+                        )}
 
                         <Button
                           className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground h-12"
