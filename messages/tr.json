@@ -1,4 +1,47 @@
 {
+  "luggagePage": {
+    "eyebrow": "GÜNLÜK EMANET",
+    "title": "Kos'u Valizsiz Keşfedin",
+    "subtitle": "Valizinizi güvenle bırakın, adayı rahatça gezin. Otel giriş saatinize veya dönüş feribotunuza kadar saklarız.",
+    "luggage": {
+      "heading": "Kos'u Valizsiz Keşfedin!",
+      "subheading": "Valizinizi ister otel giriş saatine kadar, ister dönüş feribotunuza kadar güvenle saklayın.",
+      "size": {
+        "small": "Küçük",
+        "medium": "Orta",
+        "large": "Büyük"
+      },
+      "removeAria": "Kaldır"
+    },
+    "perDay": "/gün",
+    "total": "Toplam",
+    "dateLabel": "Bırakma → alma günü",
+    "datePlaceholder": "Tarih seçin",
+    "dayCount": "{count, plural, one {# gün} other {# gün}}",
+    "contact": {
+      "heading": "İletişim Bilgileri",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "email": "E-posta",
+      "phone": "Telefon"
+    },
+    "payButton": "Öde",
+    "processing": "İşleniyor…",
+    "secureNote": "Güvenli ödeme · Anında onay",
+    "error": {
+      "submit": "Sipariş oluşturulamadı. Lütfen tekrar deneyin."
+    },
+    "hint": {
+      "addPiece": "Devam etmek için en az bir valiz seçin.",
+      "pickDates": "Bırakma ve alma tarihini seçin.",
+      "fillContact": "İletişim bilgilerinizi doldurun."
+    },
+    "success": {
+      "title": "Rezervasyonunuz alındı!",
+      "body": "Ödeme ve onay için WhatsApp üzerinden size ulaşacağız.",
+      "whatsappCta": "WhatsApp ile Öde"
+    }
+  },
   "steps": {
     "selectFerry": "Feribot Seçimi",
     "extras": "Ekstralar",

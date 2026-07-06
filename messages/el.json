@@ -1,4 +1,47 @@
 {
+  "luggagePage": {
+    "eyebrow": "DAILY STORAGE",
+    "title": "Explore Kos Luggage-Free",
+    "subtitle": "Drop your bags safely and roam the island. We hold them until hotel check-in or your return ferry.",
+    "luggage": {
+      "heading": "Explore Kos Luggage-Free!",
+      "subheading": "Store your luggage safely — until hotel check-in or your return ferry.",
+      "size": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "removeAria": "Remove"
+    },
+    "perDay": "/day",
+    "total": "Total",
+    "dateLabel": "Drop-off → pick-up day",
+    "datePlaceholder": "Select dates",
+    "dayCount": "{count, plural, one {# day} other {# days}}",
+    "contact": {
+      "heading": "Contact Details",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "payButton": "Pay",
+    "processing": "Processing…",
+    "secureNote": "Secure payment · Instant confirmation",
+    "error": {
+      "submit": "Could not create the order. Please try again."
+    },
+    "hint": {
+      "addPiece": "Select at least one bag to continue.",
+      "pickDates": "Choose drop-off and pick-up dates.",
+      "fillContact": "Fill in your contact details."
+    },
+    "success": {
+      "title": "Your reservation is received!",
+      "body": "We'll reach out on WhatsApp for payment and confirmation.",
+      "whatsappCta": "Pay via WhatsApp"
+    }
+  },
   "steps": {
     "selectFerry": "Επιλογή πλοίου",
     "extras": "Έξτρα",
