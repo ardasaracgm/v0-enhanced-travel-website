@@ -728,17 +728,6 @@ export async function completeBooking(): Promise<never> {
   throw new Error(`completeBooking: ${DEPRECATED_MSG}`)
 }
 
-export async function saveContactRequest(input: {
-  name: string
-  email: string
-  phone?: string
-  subject: string
-  message: string
-}): Promise<{ success: boolean; error?: string }> {
-  // Forward to the new function so legacy callers still work transparently.
-  return submitContactRequest(input)
-}
-
 export async function getBookingByReference(): Promise<never> {
   throw new Error(`getBookingByReference: ${DEPRECATED_MSG}`)
 }

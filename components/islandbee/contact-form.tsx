@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { saveContactRequest } from '@/lib/supabase'
+import { submitContactRequestAction } from '@/lib/actions/submit-contact-request'
 
 interface ContactFormProps {
   className?: string
@@ -56,7 +56,7 @@ export function ContactForm({ className }: ContactFormProps) {
 
     setStatus('submitting')
 
-    const result = await saveContactRequest({
+    const result = await submitContactRequestAction({
       name: formData.name,
       email: formData.email,
       phone: formData.phone || undefined,
