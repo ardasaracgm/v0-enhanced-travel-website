@@ -118,7 +118,7 @@ export default async function IslandPage({
         <section className="relative min-h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <Image src={island.heroImage} alt={name} fill sizes="100vw" className="object-cover" priority />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/30 to-transparent" />
           </div>
           <div className="container relative flex min-h-[70vh] items-center px-4 py-12 md:px-6">
             <div className="w-full max-w-[30rem] space-y-5">
@@ -126,7 +126,7 @@ export default async function IslandPage({
                 <MapPin className="h-4 w-4" /> {location}
               </div>
               <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl">{name}</h1>
-              <p className="text-pretty text-lg text-blue-950/80">{prose.intro}</p>
+              <p className="text-pretty text-lg text-blue-950">{prose.intro}</p>
               <div className="pt-2">
                 <p className="mb-2 text-sm font-semibold text-blue-950">{t('ui.ferrySectionTitle')}</p>
                 <FerrySearchForm
