@@ -69,7 +69,6 @@ export default function TravelBeez() {
   const tPay = useTranslations("payment");
   const tIslands = useTranslations("popularIslands");
   const tTours = useTranslations("homeTours");
-  const tVI = useTranslations("visaInsurance");
   const tTesti = useTranslations("testimonials");
   const tWa = useTranslations("whatsappCta");
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -1065,99 +1064,6 @@ export default function TravelBeez() {
                   </Card>
                 </motion.div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Visa & Insurance Support */}
-        <section id="support" className="w-full py-16 md:py-24">
-          <div className="container px-4 md:px-6">
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Visa Support */}
-              <Card className="overflow-hidden bg-card border-border/50">
-                <CardContent className="p-0">
-                  <div className="relative h-48">
-                    <Image
-                      src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80"
-                      alt="Visa Support"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-primary/60" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <FileText className="h-16 w-16 text-primary-foreground" />
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-foreground mb-3">
-                      {tVI("visa.title")}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {tVI("visa.desc")}
-                    </p>
-                    <ul className="space-y-2 mb-6">
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("visa.item1")}
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("visa.item2")}
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("visa.item3")}
-                      </li>
-                    </ul>
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      {tVI("visa.cta")}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Travel Insurance */}
-              <Card className="overflow-hidden bg-card border-border/50">
-                <CardContent className="p-0">
-                  <div className="relative h-48">
-                    <Image
-                      src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80"
-                      alt="Travel Insurance"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-accent/60" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Shield className="h-16 w-16 text-white" />
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-foreground mb-3">
-                      {tVI("insurance.title")}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {tVI("insurance.desc")}
-                    </p>
-                    <ul className="space-y-2 mb-6">
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("insurance.item1")}
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("insurance.item2")}
-                      </li>
-                      <li className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        {tVI("insurance.item3")}
-                      </li>
-                    </ul>
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                      {tVI("insurance.cta")}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>
