@@ -20,8 +20,12 @@ export async function sendSignupNotification(email: string, signedUpAt: string |
     await resend.emails.send({
       from,
       to: [to],
-      subject: `Yeni üye kaydı — ${email}`,
-      text: `Yeni bir üye Hub'a kaydoldu.\n\nE-posta: ${email}\nKayıt zamanı (UTC): ${when}`,
+      // İç ofis bildirimi (info@) — iki-dilli tek mail: TR bloğu + ayraç + EN bloğu.
+      subject: `Yeni üye kaydı / New member — ${email}`,
+      text:
+        `Yeni bir üye Hub'a kaydoldu.\n\nE-posta: ${email}\nKayıt zamanı (UTC): ${when}\n\n` +
+        `———\n\n` +
+        `A new member signed up for the Hub.\n\nEmail: ${email}\nSigned up (UTC): ${when}`,
       tags: [{ name: 'category', value: 'signup_notification' }],
     })
   } catch (err) {
