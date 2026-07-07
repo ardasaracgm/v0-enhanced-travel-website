@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import Image from 'next/image'
 import { MapPin } from 'lucide-react'
@@ -12,10 +13,40 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion'
 import { ISLANDS, ISLAND_SLUGS, type Locale } from '@/lib/islands-content'
+import { SITE_URL } from '@/lib/site-config'
 
 // SSG: her ada slug'ı statik üretilir (locale × slug, [locale] segmentiyle çarpılır).
 export function generateStaticParams() {
   return ISLAND_SLUGS.map((slug) => ({ slug }))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>
+}): Promise<Metadata> {
+  const { locale, slug } = await params
+  const island = ISLANDS[slug]
+  if (!island) return {}
+
+  const t = await getTranslations({ locale, namespace: 'islands' })
+  const tTr = await getTranslations({ locale: 'tr', namespace: 'islands' })
+  // meta boşsa (EN/EL, DeepL öncesi) TR'ye düş — prose fallback deseni.
+  const title = t(`meta.${slug}.title`) || tTr(`meta.${slug}.title`)
+  const description = t(`meta.${slug}.description`) || tTr(`meta.${slug}.description`)
+
+  const path = `/islands/${slug}`
+  return {
+    // meta zaten "| TravelBeez" içeriyor → absolute (layout %s·template'ini bypass et).
+    title: { absolute: title },
+    description,
+    // GÖRELİ — metadataBase (SITE_URL) mutlaklar. hreflang 3 dil.
+    alternates: {
+      canonical: `/${locale}${path}`,
+      languages: { tr: `/tr${path}`, en: `/en${path}`, el: `/el${path}` },
+    },
+    openGraph: { title, description, type: 'article', images: [island.heroImage], locale },
+  }
 }
 
 const LOCALES = ['tr', 'en', 'el'] as const
@@ -41,10 +72,48 @@ export default async function IslandPage({
   const name = tIslands(`items.${slug}.name`)
   const location = tIslands(`items.${slug}.location`)
 
+  // JSON-LD (mutlak URL — SITE_URL tek kaynak). meta boşsa TR fallback.
+  const tTrMeta = await getTranslations({ locale: 'tr', namespace: 'islands' })
+  const metaDescription =
+    t(`meta.${slug}.description`) || tTrMeta(`meta.${slug}.description`)
+  const url = `${SITE_URL}/${locale}/islands/${slug}`
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TouristDestination',
+        '@id': `${url}#destination`,
+        name, url, description: metaDescription,
+        image: `${SITE_URL}${island.heroImage}`,
+        address: { '@type': 'PostalAddress', addressRegion: island.facts.region, addressCountry: 'GR' },
+      },
+      prose.faq.length > 0 && {
+        '@type': 'FAQPage',
+        '@id': `${url}#faq`,
+        mainEntity: prose.faq.map((f) => ({
+          '@type': 'Question', name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'TravelBeez', item: `${SITE_URL}/${locale}` },
+          { '@type': 'ListItem', position: 2, name: t('ui.breadcrumb'), item: `${SITE_URL}/${locale}#islands` },
+          { '@type': 'ListItem', position: 3, name },
+        ],
+      },
+    ].filter(Boolean),
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* HERO — car2 idiom: full-bleed görsel + sol rail (başlık + gömülü ferry widget) */}
         <section className="relative min-h-[70vh] overflow-hidden">
           <div className="absolute inset-0">

@@ -3,6 +3,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { SITE_URL } from '@/lib/site-config'
 import { BookingProvider } from '@/lib/booking-context'
 import { Suspense } from 'react'
 import { Dancing_Script } from 'next/font/google'
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
   },
   description:
     'Licensed Greek travel agency. Ferry tickets, car rentals, hotels and tours across the Aegean. Operating from Kos Port.',
-  metadataBase: new URL('https://travelbeez.gr'),
+  metadataBase: new URL(SITE_URL),
   alternates: {
     languages: {
       en: '/en',
