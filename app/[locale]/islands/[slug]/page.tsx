@@ -1,0 +1,106 @@
+import { notFound } from 'next/navigation'
+import { setRequestLocale, getTranslations } from 'next-intl/server'
+import Image from 'next/image'
+import { MapPin } from 'lucide-react'
+
+import { Link } from '@/i18n/routing'
+import { Header } from '@/components/islandbee/header'
+import { Footer } from '@/components/islandbee/footer'
+import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
+import { FerrySearchForm } from '@/components/ferry/ferry-search-form'
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from '@/components/ui/accordion'
+import { ISLANDS, ISLAND_SLUGS, type Locale } from '@/lib/islands-content'
+
+// SSG: her ada slug'ı statik üretilir (locale × slug, [locale] segmentiyle çarpılır).
+export function generateStaticParams() {
+  return ISLAND_SLUGS.map((slug) => ({ slug }))
+}
+
+const LOCALES = ['tr', 'en', 'el'] as const
+const asLocale = (l: string): Locale =>
+  (LOCALES as readonly string[]).includes(l) ? (l as Locale) : 'tr'
+
+export default async function IslandPage({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>
+}) {
+  const { locale, slug } = await params
+  const island = ISLANDS[slug]
+  if (!island) notFound()
+
+  setRequestLocale(locale)
+  const loc = asLocale(locale)
+  // TR fallback: hedef locale prose'u boşsa (DeepL turu henüz doldurmadıysa) TR göster.
+  const prose = island.prose[loc].intro ? island.prose[loc] : island.prose.tr
+
+  const t = await getTranslations({ locale, namespace: 'islands' })
+  const tIslands = await getTranslations({ locale, namespace: 'popularIslands' })
+  const name = tIslands(`items.${slug}.name`)
+  const location = tIslands(`items.${slug}.location`)
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <Header />
+      <main className="flex-1">
+        {/* HERO — car2 idiom: full-bleed görsel + sol rail (başlık + gömülü ferry widget) */}
+        <section className="relative min-h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image src={island.heroImage} alt={name} fill sizes="100vw" className="object-cover" priority />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/25 to-transparent" />
+          </div>
+          <div className="container relative flex min-h-[70vh] items-center px-4 py-12 md:px-6">
+            <div className="w-full max-w-[30rem] space-y-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-blue-950">
+                <MapPin className="h-4 w-4" /> {location}
+              </div>
+              <h1 className="text-balance text-4xl font-bold text-blue-950 md:text-5xl lg:text-6xl">{name}</h1>
+              <p className="text-pretty text-lg text-blue-950/80">{prose.intro}</p>
+              <div className="pt-2">
+                <p className="mb-2 text-sm font-semibold text-blue-950">{t('ui.ferrySectionTitle')}</p>
+                <FerrySearchForm
+                  initial={{ from: island.facts.ferryFrom, to: island.facts.ferryTo }}
+                  bare
+                  orientation="vertical"
+                  className="rounded-3xl bg-card/90 backdrop-blur shadow-2xl"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Zengin gövde */}
+        <div className="container px-4 py-16 md:px-6 md:py-24">
+          <div className="mx-auto max-w-3xl space-y-16">
+            {prose.sections.map((s) => (
+              <section key={s.id} id={s.id} className="scroll-mt-24">
+                <h2 className="mb-4 text-3xl font-bold text-blue-950">{s.heading}</h2>
+                <div className="space-y-4 text-lg text-muted-foreground">
+                  {s.body.map((p, i) => <p key={i}>{p}</p>)}
+                </div>
+              </section>
+            ))}
+
+            {prose.faq.length > 0 && (
+              <section id="faq" className="scroll-mt-24">
+                <h2 className="mb-6 text-3xl font-bold text-blue-950">{t('ui.faqTitle')}</h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {prose.faq.map((f, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`}>
+                      <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </section>
+            )}
+          </div>
+        </div>
+      </main>
+      <Footer />
+      <FloatingWhatsApp />
+    </div>
+  )
+}

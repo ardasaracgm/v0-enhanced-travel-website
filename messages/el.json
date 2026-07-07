@@ -1686,6 +1686,21 @@
     "comingSoon": "Αυτή η λειτουργία ξεκινά σύντομα. Για άμεση υποστήριξη, επικοινωνήστε μέσω WhatsApp.",
     "contactViaWhatsapp": "Επικοινωνία μέσω WhatsApp"
   },
+  "islands": {
+    "meta": {
+      "kos":    { "title": "", "description": "" },
+      "rhodes": { "title": "", "description": "" },
+      "samos":  { "title": "", "description": "" },
+      "leros":  { "title": "", "description": "" },
+      "patmos": { "title": "", "description": "" }
+    },
+    "ui": {
+      "breadcrumb": "Νησιά",
+      "ferrySectionTitle": "Αναζήτηση πλοίων για αυτό το νησί",
+      "faqTitle": "Συχνές Ερωτήσεις"
+    }
+  },
+
   "popularIslands": {
     "title": "Popular Greek Islands",
     "subtitle": "Explore the most beautiful destinations in the Aegean Sea",

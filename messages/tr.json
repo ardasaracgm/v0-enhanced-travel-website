@@ -1686,6 +1686,21 @@
     "comingSoon": "Bu özellik yakında aktif olacak. Hemen yardım için WhatsApp'tan iletişime geçebilirsiniz.",
     "contactViaWhatsapp": "WhatsApp'tan İletişim"
   },
+  "islands": {
+    "meta": {
+      "kos":    { "title": "Kos Adası Rehberi — Feribot, Plajlar, Gezi | TravelBeez", "description": "Bodrum'dan Kos'a feribot, plajlar, antik Asklepion ve gezi rehberi. Bilet ve vize desteği TravelBeez'de." },
+      "rhodes": { "title": "Rodos Rehberi — Şövalyeler Şehri & Feribot | TravelBeez", "description": "Fethiye'den Rodos'a feribot, ortaçağ eski şehri, Lindos ve plajlar. Gezi rehberi ve bilet." },
+      "samos":  { "title": "Samos (Sisam) Rehberi — Feribot & Plajlar | TravelBeez", "description": "Kuşadası'ndan Samos'a feribot, yeşil doğa, köyler ve koylar. Gezi rehberi ve bilet." },
+      "leros":  { "title": "Leros Rehberi — Sakin Ada & Feribot | TravelBeez", "description": "Turgutreis üzerinden Leros'a feribot, İtalyan mimarisi ve korunaklı koylar." },
+      "patmos": { "title": "Patmos Rehberi — Manastır & Feribot | TravelBeez", "description": "Kuşadası bağlantısıyla Patmos; Aziz Yuhanna Manastırı ve sakin plajlar." }
+    },
+    "ui": {
+      "breadcrumb": "Adalar",
+      "ferrySectionTitle": "Bu adaya feribot ara",
+      "faqTitle": "Sıkça Sorulan Sorular"
+    }
+  },
+
   "popularIslands": {
     "title": "Popüler Yunan Adaları",
     "subtitle": "Ege Denizi'nin en güzel destinasyonlarını keşfedin",

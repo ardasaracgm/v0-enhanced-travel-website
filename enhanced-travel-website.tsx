@@ -905,11 +905,14 @@ export default function TravelBeez() {
                             {island.ferryTime}
                           </span>
                           <Button
+                            asChild
                             size="sm"
                             variant="outline"
                             className="text-xs text-foreground border-border"
                           >
-                            {tIslands("explore")}
+                            <Link href={`/islands/${island.id}`}>
+                              {tIslands("explore")}
+                            </Link>
                           </Button>
                         </div>
                       </div>

@@ -1686,6 +1686,21 @@
     "comingSoon": "This feature is launching soon. For immediate assistance, please reach out via WhatsApp.",
     "contactViaWhatsapp": "Contact via WhatsApp"
   },
+  "islands": {
+    "meta": {
+      "kos":    { "title": "", "description": "" },
+      "rhodes": { "title": "", "description": "" },
+      "samos":  { "title": "", "description": "" },
+      "leros":  { "title": "", "description": "" },
+      "patmos": { "title": "", "description": "" }
+    },
+    "ui": {
+      "breadcrumb": "Islands",
+      "ferrySectionTitle": "Search ferries to this island",
+      "faqTitle": "Frequently Asked Questions"
+    }
+  },
+
   "popularIslands": {
     "title": "Popular Greek Islands",
     "subtitle": "Explore the most beautiful destinations in the Aegean Sea",
