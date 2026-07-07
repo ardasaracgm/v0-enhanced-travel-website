@@ -994,22 +994,26 @@ export default function TravelBeez() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 flex items-center gap-3">
                   {tTours("title")}
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground align-middle">
+                    {tCommon("comingSoon")}
+                  </span>
                 </h2>
                 <p className="text-muted-foreground text-lg max-w-xl">
                   {tTours("subtitle")}
                 </p>
               </div>
-              <Link href="/tours">
+              <div aria-disabled="true" className="cursor-not-allowed">
                 <Button
                   variant="outline"
-                  className="mt-4 md:mt-0 text-foreground border-border"
+                  disabled
+                  className="mt-4 md:mt-0 text-foreground border-border pointer-events-none opacity-60"
                 >
                   {tTours("viewAll")}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
-              </Link>
+              </div>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {tours.map((tour, index) => (
@@ -1020,7 +1024,7 @@ export default function TravelBeez() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
+                  <Card className="overflow-hidden bg-card opacity-60">
                     <CardContent className="p-0">
                       <div className="relative h-48">
                         <Image
@@ -1054,7 +1058,8 @@ export default function TravelBeez() {
                           </div>
                           <Button
                             size="sm"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            disabled
+                            className="bg-primary text-primary-foreground pointer-events-none opacity-70"
                           >
                             {tTours("book")}
                           </Button>
