@@ -1688,11 +1688,11 @@
   },
   "islands": {
     "meta": {
-      "kos":    { "title": "", "description": "" },
-      "rhodes": { "title": "", "description": "" },
-      "samos":  { "title": "", "description": "" },
-      "leros":  { "title": "", "description": "" },
-      "patmos": { "title": "", "description": "" }
+      "kos":    { "title": "Kos Travel Guide — Beaches, Asklepion & Ferries | TravelBeez", "description": "Discover Kos: long sandy beaches, the ancient Asklepion and sunset at Zia village. Book your Bodrum–Kos ferry and plan the whole trip with TravelBeez." },
+      "rhodes": { "title": "Rhodes Travel Guide — Medieval Old Town & Ferries | TravelBeez", "description": "Discover Rhodes: the medieval Old Town, the Acropolis of Lindos and long sandy beaches. Book your Fethiye–Rhodes ferry and plan your trip with TravelBeez." },
+      "samos":  { "title": "Samos Travel Guide — Nature, Beaches & Ferries | TravelBeez", "description": "Discover Samos: pine-clad hills, ancient Pythagoreio, quiet coves and Muscat wine. Book your Kuşadası–Samos ferry and plan your trip with TravelBeez." },
+      "leros":  { "title": "Leros Travel Guide — Quiet Bays & Ferries | TravelBeez", "description": "Discover Leros: Italian-era architecture, sheltered bays and quiet fishing villages. Book your Turgutreis–Leros ferry and plan your trip with TravelBeez." },
+      "patmos": { "title": "Patmos Travel Guide — Monastery & Ferries | TravelBeez", "description": "Discover Patmos: the Monastery of St John, the Cave of the Apocalypse and whitewashed Chora. Book your Kuşadası–Patmos ferry and plan your trip with TravelBeez." }
     },
     "ui": {
       "breadcrumb": "Islands",
