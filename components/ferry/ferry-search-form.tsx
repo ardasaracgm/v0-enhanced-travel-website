@@ -57,10 +57,12 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
   const locale = useLocale()
   const router = useRouter()
   const { dispatch } = useBooking()
+  // Bugün (Athens tz), kanonik YYYY-MM-DD — date öndolumu + takvim minDate tek kaynağı.
+  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
   const [tripType, setTripType] = React.useState<'one-way' | 'round-trip'>(initial?.tripType ?? 'one-way')
   const [from, setFrom] = React.useState(initial?.from ?? 'bodrum')
   const [to, setTo] = React.useState(initial?.to ?? 'kos')
-  const [date, setDate] = React.useState(initial?.date ?? '')
+  const [date, setDate] = React.useState(initial?.date ?? todayAthens) // boşsa bugün öndolu
   const [returnDate, setReturnDate] = React.useState(initial?.returnDate ?? '')
   const [returnTo, setReturnTo] = React.useState(initial?.returnTo ?? '')
   const [passengers, setPassengers] = React.useState(initial?.passengers ?? '2')
@@ -70,8 +72,6 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
   const [returnArrivals, setReturnArrivals] = React.useState<CatalogPort[]>([])
   // Sefer-availability: seçili OUTBOUND hat (from→to) sezon takvimi.
   const [availability, setAvailability] = React.useState<RouteAvailability | null>(null)
-
-  const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
 
   // Display name by locale, with en→tr fallback (el may be a TODO in ports.ts).
   const portLabel = React.useCallback(
@@ -142,7 +142,8 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
   // Catalog still loading (departures empty) or no valid arrival picked → block search.
   // Round-trip → dönüş varışı da seçili olmalı (açık-jaw veya klasik).
   const canSearch =
-    departures.length > 0 && !!from && !!to &&
+    // Gidiş tarihi zorunlu (mount'ta bugün öndolu; kullanıcı silerse arama bloke + inline uyarı).
+    departures.length > 0 && !!from && !!to && !!date &&
     // Round-trip → dönüş varışı VE dönüş tarihi zorunlu (yarım-range engeli:
     // gidiş seçilip dönüş seçilmemiş aralıkla aramayı bloke eder).
     (tripType !== 'round-trip' || (!!returnTo && !!returnDate))
@@ -265,6 +266,10 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
               placeholder={t('departDate')}
               disabledDates={disabledDateSet}
             />
+            {/* Öndolu bugün → normalde görünmez; kullanıcı tarihi silerse çıkar (canSearch da bloke eder). */}
+            {!date && (
+              <p className="text-xs text-destructive">{t('dateRequired')}</p>
+            )}
           </div>
           {/* Dönüş varışı slot — kolonu HER ZAMAN işgal eder (one-way'de boş
               yer tutar) → tek-yön↔gidiş-dönüş toggle'da ortak 5 alan (Kalkış/

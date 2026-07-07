@@ -562,6 +562,7 @@
     "oneWay": "One way",
     "roundTrip": "Round trip",
     "searchButton": "Search Ferries",
+    "dateRequired": "Please select a departure date",
     "popularRoutes": "Popular Routes",
     "heroBadge": "Turkey to Greek Islands",
     "heroImageAlt": "Ferry sailing in the Aegean Sea",
