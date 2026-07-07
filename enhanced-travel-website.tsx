@@ -28,11 +28,9 @@ import {
   Building2,
   Globe,
   CreditCard,
-  Headphones,
   BadgeCheck,
   Lock,
   Award,
-  Heart,
   Package,
   Luggage,
 } from "lucide-react";
@@ -61,7 +59,6 @@ export default function TravelBeez() {
   const tBar = useTranslations("trustBar");
   const tLic = useTranslations("license");
   const tOffice = useTranslations("kosOffice");
-  const tSup = useTranslations("support");
   const tSvc = useTranslations("services");
   const tCommon = useTranslations("common");
   const tFleet = useTranslations("carFleet");
@@ -589,73 +586,6 @@ export default function TravelBeez() {
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Customer Support Highlights */}
-        <section className="w-full py-16 md:py-20 bg-muted/30">
-          <div className="container px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                {tSup("title")}
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                {tSup("subtitle")}
-              </p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: <MessageCircle className="h-8 w-8" />,
-                  title: tSup("c1Title"),
-                  description: tSup("c1Desc"),
-                  highlight: tSup("c1Highlight"),
-                },
-                {
-                  icon: <Phone className="h-8 w-8" />,
-                  title: tSup("c2Title"),
-                  description: tSup("c2Desc"),
-                  highlight: tSup("c2Highlight"),
-                },
-                {
-                  icon: <Headphones className="h-8 w-8" />,
-                  title: tSup("c3Title"),
-                  description: tSup("c3Desc"),
-                  highlight: tSup("c3Highlight"),
-                },
-                {
-                  icon: <Heart className="h-8 w-8" />,
-                  title: tSup("c4Title"),
-                  description: tSup("c4Desc"),
-                  highlight: tSup("c4Highlight"),
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="h-full bg-card border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <CardContent className="p-6">
-                      <div className="mb-4 p-3 inline-block bg-primary/10 rounded-xl text-primary">
-                        {item.icon}
-                      </div>
-                      <h3 className="font-semibold text-lg text-foreground mb-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {item.description}
-                      </p>
-                      <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
-                        {item.highlight}
-                      </span>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
             </div>
           </div>
         </section>
