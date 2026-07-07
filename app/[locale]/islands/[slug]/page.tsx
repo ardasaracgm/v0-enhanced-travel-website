@@ -9,6 +9,7 @@ import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 import { FerrySearchForm } from '@/components/ferry/ferry-search-form'
+import { OtherIslands } from '@/components/islandbee/other-islands'
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion'
@@ -167,6 +168,8 @@ export default async function IslandPage({
             )}
           </div>
         </div>
+
+        <OtherIslands currentSlug={slug} locale={locale} />
       </main>
       <Footer />
       <FloatingWhatsApp />

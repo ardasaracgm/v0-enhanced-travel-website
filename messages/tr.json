@@ -1697,7 +1697,8 @@
     "ui": {
       "breadcrumb": "Adalar",
       "ferrySectionTitle": "Bu adaya feribot ara",
-      "faqTitle": "Sıkça Sorulan Sorular"
+      "faqTitle": "Sıkça Sorulan Sorular",
+      "otherIslandsTitle": "Diğer Adalar"
     }
   },
 

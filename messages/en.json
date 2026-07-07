@@ -1697,7 +1697,8 @@
     "ui": {
       "breadcrumb": "Islands",
       "ferrySectionTitle": "Search ferries to this island",
-      "faqTitle": "Frequently Asked Questions"
+      "faqTitle": "Frequently Asked Questions",
+      "otherIslandsTitle": "Other Islands"
     }
   },
 

@@ -1697,7 +1697,8 @@
     "ui": {
       "breadcrumb": "Νησιά",
       "ferrySectionTitle": "Αναζήτηση πλοίων για αυτό το νησί",
-      "faqTitle": "Συχνές Ερωτήσεις"
+      "faqTitle": "Συχνές Ερωτήσεις",
+      "otherIslandsTitle": "Άλλα Νησιά"
     }
   },
 
