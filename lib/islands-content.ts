@@ -49,7 +49,7 @@ export const ISLANDS: Record<string, IslandContent> = {
   kos: {
     slug: 'kos',
     heroImage: '/island/Kos.webp',
-    facts: { ferryFrom: 'bodrum', ferryTo: 'kos', region: 'Onikiadalar',
+    facts: { ferryFrom: 'bodrum', ferryTo: 'kos', region: 'Dodecanese',
       ferryDuration: '20–60 dk', areaKm2: 290, population: 37000 }, // ✓ verified 2026-07 (web) — ferryDuration İDO canlı seferiyle güncellenebilir
     prose: {
       tr: {
@@ -142,7 +142,7 @@ export const ISLANDS: Record<string, IslandContent> = {
   rhodes: {
     slug: 'rhodes',
     heroImage: '/island/Rodos.webp',
-    facts: { ferryFrom: 'fethiye', ferryTo: 'rodos', region: 'Onikiadalar',
+    facts: { ferryFrom: 'fethiye', ferryTo: 'rodos', region: 'Dodecanese',
       ferryDuration: '90 dk–2 sa', areaKm2: 1401, population: 125000 }, // ✓ verified 2026-07 (web) — ferryDuration İDO canlı seferiyle güncellenebilir
     prose: {
       tr: {
@@ -235,7 +235,7 @@ export const ISLANDS: Record<string, IslandContent> = {
   samos: {
     slug: 'samos',
     heroImage: '/island/Samos.webp',
-    facts: { ferryFrom: 'kusadasi', ferryTo: 'samos', region: 'Kuzey Ege',
+    facts: { ferryFrom: 'kusadasi', ferryTo: 'samos', region: 'North Aegean',
       ferryDuration: '30–90 dk', areaKm2: 478, population: 33000 }, // ✓ verified 2026-07 (web) — ferryDuration İDO canlı seferiyle güncellenebilir
     prose: {
       tr: {
@@ -325,7 +325,7 @@ export const ISLANDS: Record<string, IslandContent> = {
   leros: {
     slug: 'leros',
     heroImage: '/island/Leros.webp',
-    facts: { ferryFrom: 'turgutreis', ferryTo: 'leros', region: 'Onikiadalar',
+    facts: { ferryFrom: 'turgutreis', ferryTo: 'leros', region: 'Dodecanese',
       ferryDuration: '45–60 dk', areaKm2: 74, population: 8000 }, // ✓ verified 2026-07 (web) — ferryDuration İDO canlı seferiyle güncellenebilir
     prose: {
       tr: {
@@ -415,7 +415,7 @@ export const ISLANDS: Record<string, IslandContent> = {
   patmos: {
     slug: 'patmos',
     heroImage: '/island/Patmos.webp',
-    facts: { ferryFrom: 'kusadasi', ferryTo: 'patmos', region: 'Onikiadalar',
+    facts: { ferryFrom: 'kusadasi', ferryTo: 'patmos', region: 'Dodecanese',
       ferryDuration: '~2 sa 15 dk', areaKm2: 34, population: 3300 }, // ✓ verified 2026-07 (web) — ferryDuration İDO canlı seferiyle güncellenebilir
     prose: {
       tr: {
