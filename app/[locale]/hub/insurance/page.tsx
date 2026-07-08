@@ -1,8 +1,6 @@
 import { Link, redirect } from '@/i18n/routing'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyInsurancePolicies } from '@/lib/hub/get-my-insurance-policies'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -44,11 +42,7 @@ export default async function HubInsurancePage({
   const policies = await getMyInsurancePolicies(user.email ?? '')
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6 space-y-6">
+    <div className="space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 ← Hub
@@ -110,10 +104,6 @@ export default async function HubInsurancePage({
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }

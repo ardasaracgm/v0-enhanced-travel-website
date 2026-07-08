@@ -4,8 +4,6 @@ import { Ship } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyFerryReservations } from '@/lib/hub/get-my-ferry-reservations'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -42,11 +40,7 @@ export default async function HubFerryPage({
   const reservations = await getMyFerryReservations(user.email ?? '')
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6 space-y-6">
+    <div className="space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 {t('ferryPage.back')}
@@ -98,10 +92,6 @@ export default async function HubFerryPage({
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }

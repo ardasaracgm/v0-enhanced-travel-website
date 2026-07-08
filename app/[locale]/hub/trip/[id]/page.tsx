@@ -6,8 +6,6 @@ import { Ship, Users, Ticket, CheckCircle2, Clock, AlertCircle } from 'lucide-re
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyTripById } from '@/lib/hub/get-my-trip-by-id'
 import { buildWhatsAppLink, buildPaymentMessage } from '@/lib/contact'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -62,11 +60,7 @@ export default async function HubTripDetailPage({
   })
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6 max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 {t('tripDetail.back')}
@@ -228,10 +222,6 @@ export default async function HubTripDetailPage({
                 </div>
               </div>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }

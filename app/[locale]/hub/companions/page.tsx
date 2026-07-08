@@ -11,8 +11,6 @@ import {
   addCompanionFormAction,
   deleteCompanionFormAction,
 } from '@/lib/actions/companion-add'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 import { SavePassengerCard } from '@/components/hub/save-passenger-card'
 import { Badge } from '@/components/ui/badge'
 
@@ -70,11 +68,7 @@ export default async function HubCompanionsPage({
         : null
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6 space-y-6">
+    <div className="space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 {t('companionsPage.back')}
@@ -242,10 +236,6 @@ export default async function HubCompanionsPage({
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }

@@ -5,8 +5,6 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
 import { saveProfileFormAction } from '@/lib/actions/profile'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,11 +56,7 @@ export default async function HubProfilePage({
       : null
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container max-w-2xl space-y-6 px-4 md:px-6">
+    <div className="max-w-2xl space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 {t('profilePage.back')}
@@ -144,10 +138,6 @@ export default async function HubProfilePage({
                 {t('profilePage.saveCta')}
               </button>
             </form>
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }

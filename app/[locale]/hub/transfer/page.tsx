@@ -4,8 +4,6 @@ import { BusFront } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyTransferReservations } from '@/lib/hub/get-my-transfer-reservations'
-import { Header } from '@/components/islandbee/header'
-import { Footer } from '@/components/islandbee/footer'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -45,11 +43,7 @@ export default async function HubTransferPage({
   const reservations = await getMyTransferReservations(user.email ?? '')
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
-      <main className="flex-1">
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6 space-y-6">
+    <div className="space-y-6">
             <div>
               <Link href="/hub" className="text-sm text-muted-foreground hover:underline">
                 {t('transferPage.back')}
@@ -98,10 +92,6 @@ export default async function HubTransferPage({
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
     </div>
   )
 }
