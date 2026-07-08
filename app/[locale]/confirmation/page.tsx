@@ -54,10 +54,11 @@ const LOCAL_STORAGE_KEY = 'travelbeez-confirmation'
 const TTL_MS = 24 * 60 * 60 * 1000
 
 interface ConfirmationRecord {
-  reference:   string
-  whatsappUrl: string
-  isCarOnly:   boolean
-  timestamp:   number
+  reference:    string
+  whatsappUrl:  string
+  isCarOnly:    boolean
+  contactEmail: string
+  timestamp:    number
 }
 
 function writeConfirmationRecord(data: Omit<ConfirmationRecord, 'timestamp'>): void {
@@ -197,9 +198,10 @@ export default function ConfirmationPage() {
       })
 
       writeConfirmationRecord({
-        reference:   state.bookingReference,
-        whatsappUrl: state.paymentWhatsAppUrl,
-        isCarOnly:   isCarOnly(state.items),
+        reference:    state.bookingReference,
+        whatsappUrl:  state.paymentWhatsAppUrl,
+        isCarOnly:    isCarOnly(state.items),
+        contactEmail: state.contactEmail,
       })
 
       clearBookingStorage()
@@ -619,8 +621,9 @@ export default function ConfirmationPage() {
                 </CardContent>
               </Card>
 
-              {/* Hub erişim CTA — email saklanmadığı için input ile */}
-              <HubAccessCard />
+              {/* Hub erişim CTA — email artık kayıtta; refresh'te de preset gelir
+                  (deploy-öncesi eski kayıtlar undefined → input'a düşer, sorunsuz) */}
+              <HubAccessCard presetEmail={storedRecord.contactEmail} />
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button type="button" variant="outline" onClick={() => handleNewBooking('/')}>
