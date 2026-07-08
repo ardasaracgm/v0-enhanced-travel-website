@@ -281,6 +281,52 @@
     "errorMessage": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
   },
   "hub": {
+    "dashboard": {
+      "title": "Beez Hub",
+      "subtitle": "Tüm seyahat ihtiyaçlarınız tek panelde.",
+      "greeting": "Merhaba {name}",
+      "greetingBody": "Satın aldığınız hizmetleri, yaklaşan rezervasyonlarınızı ve gerekli belgelerinizi buradan kolayca yönetin.",
+      "summaryTitle": "Satın Alınmış Ama Henüz Gerçekleşmemiş Hizmetleriniz",
+      "viewAll": "Tümünü Gör",
+      "view": "Görüntüle",
+      "cards": {
+        "ferry": "Feribot Bileti",
+        "car_rental": "Araç Kiralama",
+        "visa": "Vize Hizmeti",
+        "insurance": "Sigorta"
+      },
+      "upcomingTitle": "Yaklaşan Rezervasyonlar",
+      "upcomingEmpty": "Henüz yaklaşan rezervasyonunuz yok.",
+      "account": {
+        "title": "Hesap Bilgileriniz",
+        "editProfile": "Profilimi Düzenle"
+      },
+      "support": {
+        "title": "Yardıma mı ihtiyacınız var?",
+        "body": "Destek ekibimiz size her zaman yardımcı olmaya hazır.",
+        "cta": "Destek ile İletişime Geç"
+      },
+      "trust": {
+        "securePayment": { "title": "Güvenli Ödeme", "body": "Tüm ödemeleriniz 256bit SSL ile korunur." },
+        "support247": { "title": "7/24 Destek", "body": "Türkçe, İngilizce ve Yunanca destek sağlıyoruz." },
+        "kosOffice": { "title": "Kos Ofis", "body": "Kos limanında size yakınız." },
+        "reliable": { "title": "Güvenilir Hizmet", "body": "Yüzlerce mutlu müşterimizle seyahatleri kolaylaştırıyoruz." }
+      }
+    },
+    "sidebar": {
+      "home": "Ana Sayfa",
+      "reservations": "Rezervasyonlarım",
+      "ferry": "Feribot Biletlerim",
+      "car_rental": "Araç Kiralamalarım",
+      "visa": "Vize İşlemlerim",
+      "insurance": "Sigortalarım",
+      "companions": "Seyahat Arkadaşlarım",
+      "payments": "Ödemelerim",
+      "messages": "Mesajlarım",
+      "profile": "Profil Bilgilerim",
+      "logout": "Çıkış Yap",
+      "comingSoon": "Yakında"
+    },
     "title": "Beez Trips",
     "subtitleUser": "Tüm seyahatleriniz",
     "subtitleGuest": "Seyahatlerinizi yönetmek için giriş yapın",

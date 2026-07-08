@@ -1,16 +1,25 @@
 import { Link } from '@/i18n/routing'
+import { getTranslations } from 'next-intl/server'
 import {
   Ship, Car, MapPinned, Hotel, FileCheck, Package,
   ShieldCheck, Smartphone, Luggage, BusFront, Users, UserCircle, Lock, AlertCircle,
+  ArrowRight, CalendarClock, Headphones, MapPin, BadgeCheck,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
-import { getTranslations } from 'next-intl/server'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { buildWhatsAppLink } from '@/lib/contact'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
 import { Card, CardContent } from '@/components/ui/card'
-import type { LucideIcon } from 'lucide-react'
+import { HubSidebar } from '@/components/hub/hub-sidebar'
 
+export const dynamic = 'force-dynamic'
+
+// ── Guest landing (UNCHANGED from the pre-redesign page) ──────────────────────
+// A1 only reworks the SIGNED-IN dashboard. Guests keep the original tab-grid
+// landing + auth_failed banner so the 4b "sign in to see your booking" nudge and
+// magic-link error feedback are not regressed. A2/A3 don't touch this branch.
 interface HubTab {
   key: string
   icon: LucideIcon
@@ -18,8 +27,6 @@ interface HubTab {
   href?: string
 }
 
-// 10 sekme. TripItemType ile hizalı (custom hariç). Vize AÇIK, gerisi kilitli.
-// Etiketler i18n'den (hub.tabs.<key>) — key TripItemType slug'ı ile birebir.
 const TABS: HubTab[] = [
   { key: 'visa',          icon: FileCheck,   href: '/hub/visa', locked: false },
   { key: 'ferry',         icon: Ship,        href: '/hub/ferry', locked: false },
@@ -35,81 +42,240 @@ const TABS: HubTab[] = [
   { key: 'profile',       icon: UserCircle,  href: '/hub/profile', locked: false },
 ] as const
 
+// ── Signed-in dashboard (A1: visual skeleton — counts/list wired in A3) ───────
+interface SummaryCard {
+  key: 'ferry' | 'car_rental' | 'visa' | 'insurance'
+  icon: LucideIcon
+  href: string
+  tint: string
+  ink: string
+}
+
+const SUMMARY: SummaryCard[] = [
+  { key: 'ferry',      icon: Ship,        href: '/hub/ferry',      tint: 'bg-blue-100',    ink: 'text-blue-600' },
+  { key: 'car_rental', icon: Car,         href: '/hub/car-rental', tint: 'bg-emerald-100', ink: 'text-emerald-600' },
+  { key: 'visa',       icon: FileCheck,   href: '/hub/visa',       tint: 'bg-orange-100',  ink: 'text-orange-600' },
+  { key: 'insurance',  icon: ShieldCheck, href: '/hub/insurance',  tint: 'bg-violet-100',  ink: 'text-violet-600' },
+]
+
+interface TrustBadge {
+  key: 'securePayment' | 'support247' | 'kosOffice' | 'reliable'
+  icon: LucideIcon
+  tint: string
+  ink: string
+}
+
+const TRUST: TrustBadge[] = [
+  { key: 'securePayment', icon: Lock,       tint: 'bg-emerald-100', ink: 'text-emerald-600' },
+  { key: 'support247',    icon: Headphones, tint: 'bg-violet-100',  ink: 'text-violet-600' },
+  { key: 'kosOffice',     icon: MapPin,     tint: 'bg-blue-100',    ink: 'text-blue-600' },
+  { key: 'reliable',      icon: BadgeCheck, tint: 'bg-emerald-100', ink: 'text-emerald-600' },
+]
+
 export default async function HubPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>
   searchParams: Promise<{ error?: string }>
 }) {
+  const { locale } = await params
   const { error } = await searchParams
-  const t = await getTranslations('hub')
-  const tCommon = await getTranslations('common')
 
-  // SSR auth-aware client — RLS geçerli. Misafirde user=null.
   const supabase = await createSupabaseServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // ── GUEST: original landing preserved verbatim (no redirect regression) ──
+  if (!user) {
+    const t = await getTranslations('hub')
+    const tCommon = await getTranslations('common')
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1">
+          {error === 'auth_failed' && (
+            <div className="w-full bg-destructive/10 border-b border-destructive/30">
+              <div className="container px-4 md:px-6 py-3 flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{t('authExpired')}</span>
+              </div>
+            </div>
+          )}
+          <section className="w-full py-10 bg-gradient-to-b from-primary/5 to-background">
+            <div className="container px-4 md:px-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{t('title')}</h1>
+              <p className="text-muted-foreground">{t('subtitleGuest')}</p>
+            </div>
+          </section>
+
+          <section className="w-full py-8">
+            <div className="container px-4 md:px-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {TABS.map(({ key, icon: Icon, locked, href }) => {
+                  const body = (
+                    <Card className={locked ? 'opacity-60 cursor-not-allowed' : 'transition-shadow hover:shadow-md cursor-pointer'}>
+                      <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                        <Icon className="h-8 w-8 text-primary" />
+                        <span className="font-medium text-foreground">{t(`tabs.${key}`)}</span>
+                        {locked && (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <Lock className="h-3 w-3" /> {tCommon('comingSoon')}
+                          </span>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                  return locked || !href ? (
+                    <div key={key} aria-disabled>{body}</div>
+                  ) : (
+                    <Link key={key} href={href}>{body}</Link>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  // ── SIGNED IN: new Beez Hub dashboard shell ──
+  const t = await getTranslations('hub.dashboard')
+
+  // Görünen isim: self-row ("Kendim") → fallback e-posta yerel-parçası. Gerçek,
+  // basit; sayaç/rezervasyon verisi DEĞİL (o A3).
+  const { data: self } = await supabase
+    .from('travel_companions')
+    .select('first_name, last_name')
+    .eq('owner_id', user.id)
+    .eq('is_self', true)
+    .maybeSingle()
+
+  const email = user.email ?? ''
+  const fullName = [self?.first_name, self?.last_name].filter(Boolean).join(' ').trim()
+  const displayName = fullName || email.split('@')[0] || 'Traveler'
+  const initial = (displayName[0] ?? 'T').toUpperCase()
+  const supportUrl = buildWhatsAppLink(locale)
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-slate-50">
       <Header />
       <main className="flex-1">
-        {error === 'auth_failed' && (
-          <div className="w-full bg-destructive/10 border-b border-destructive/30">
-            <div className="container px-4 md:px-6 py-3 flex items-center gap-2 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>{t('authExpired')}</span>
-            </div>
-          </div>
-        )}
-        <section className="w-full py-10 bg-gradient-to-b from-primary/5 to-background">
-          <div className="container px-4 md:px-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              {t('title')}
-            </h1>
-            <p className="text-muted-foreground">
-              {user ? t('subtitleUser') : t('subtitleGuest')}
-            </p>
-            {user && (
-              <p className="text-sm text-muted-foreground/70 mt-1">
-                {t('signedInAs', { email: user.email ?? '' })}
-              </p>
-            )}
-          </div>
-        </section>
+        <div className="container px-4 py-8 md:px-6">
+          <div className="flex gap-6">
+            <HubSidebar />
 
-        <section className="w-full py-8">
-          <div className="container px-4 md:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {TABS.map(({ key, icon: Icon, locked, href }) => {
-                const body = (
-                  <Card
-                    className={
-                      locked
-                        ? 'opacity-60 cursor-not-allowed'
-                        : 'transition-shadow hover:shadow-md cursor-pointer'
-                    }
-                  >
-                    <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                      <Icon className="h-8 w-8 text-primary" />
-                      <span className="font-medium text-foreground">{t(`tabs.${key}`)}</span>
-                      {locked && (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Lock className="h-3 w-3" /> {tCommon('comingSoon')}
-                        </span>
-                      )}
-                    </CardContent>
-                  </Card>
-                )
-                return locked || !href ? (
-                  <div key={key} aria-disabled>{body}</div>
-                ) : (
-                  <Link key={key} href={href}>{body}</Link>
-                )
-              })}
+            <div className="min-w-0 flex-1 space-y-6">
+              <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+                <div className="space-y-6">
+                  <div>
+                    <h1 className="text-3xl font-bold text-blue-950 md:text-4xl">{t('title')}</h1>
+                    <p className="mt-1 text-slate-500">{t('subtitle')}</p>
+                    <p className="mt-4 text-lg font-semibold text-blue-950">
+                      {t('greeting', { name: displayName })} <span aria-hidden>👋</span>
+                    </p>
+                    <p className="mt-1 max-w-md text-sm text-slate-500">{t('greetingBody')}</p>
+                  </div>
+
+                  {/* 4 özet kart (STATİK — veri A3) */}
+                  <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                      <h2 className="text-sm font-semibold text-blue-950 md:text-base">{t('summaryTitle')}</h2>
+                      <span className="inline-flex cursor-not-allowed items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-400">
+                        {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      {SUMMARY.map(({ key, icon: Icon, href, tint, ink }) => (
+                        <div key={key} className="rounded-2xl border border-slate-100 p-4">
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full ${tint}`}>
+                            <Icon className={`h-5 w-5 ${ink}`} />
+                          </div>
+                          <p className="mt-3 text-2xl font-bold text-blue-950">—</p>
+                          <p className="text-xs text-slate-500">{t(`cards.${key}`)}</p>
+                          <Link
+                            href={href}
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+                          >
+                            {t('view')} <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Yaklaşan Rezervasyonlar (boş-durum — veri A3) */}
+                  <div className="space-y-3">
+                    <h2 className="text-lg font-semibold text-blue-950">{t('upcomingTitle')}</h2>
+                    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                        <CalendarClock className="h-6 w-6 text-slate-400" />
+                      </div>
+                      <p className="mt-3 text-sm text-slate-500">{t('upcomingEmpty')}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sağ rail */}
+                <aside className="space-y-6">
+                  <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                    <h2 className="text-base font-semibold text-blue-950">{t('account.title')}</h2>
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white">
+                        {initial}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-blue-950">{displayName}</p>
+                        <p className="truncate text-sm text-slate-500">{email}</p>
+                      </div>
+                    </div>
+                    <Link
+                      href="/hub/profile"
+                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-blue-950 transition-colors hover:bg-slate-50"
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      {t('account.editProfile')}
+                    </Link>
+                  </div>
+
+                  <div className="rounded-3xl border border-blue-100 bg-blue-50/60 p-6">
+                    <h2 className="text-base font-semibold text-blue-950">{t('support.title')}</h2>
+                    <p className="mt-2 text-sm text-slate-600">{t('support.body')}</p>
+                    <a
+                      href={supportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                    >
+                      <Headphones className="h-4 w-4" />
+                      {t('support.cta')}
+                    </a>
+                  </div>
+                </aside>
+              </div>
+
+              {/* Güven rozetleri */}
+              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {TRUST.map(({ key, icon: Icon, tint, ink }) => (
+                    <div key={key} className="flex items-start gap-3">
+                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${tint}`}>
+                        <Icon className={`h-5 w-5 ${ink}`} />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-blue-950">{t(`trust.${key}.title`)}</h3>
+                        <p className="text-xs text-slate-500">{t(`trust.${key}.body`)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
       </main>
       <Footer />
     </div>

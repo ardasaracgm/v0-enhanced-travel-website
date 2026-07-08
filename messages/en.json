@@ -281,6 +281,52 @@
     "errorMessage": "Something went wrong. Please try again."
   },
   "hub": {
+    "dashboard": {
+      "title": "Beez Hub",
+      "subtitle": "All your travel needs in one panel.",
+      "greeting": "Hello {name}",
+      "greetingBody": "Manage the services you've purchased, your upcoming reservations and required documents right here.",
+      "summaryTitle": "Purchased but not yet completed services",
+      "viewAll": "View all",
+      "view": "View",
+      "cards": {
+        "ferry": "Ferry Ticket",
+        "car_rental": "Car Rental",
+        "visa": "Visa Service",
+        "insurance": "Insurance"
+      },
+      "upcomingTitle": "Upcoming Reservations",
+      "upcomingEmpty": "You have no upcoming reservations yet.",
+      "account": {
+        "title": "Account Details",
+        "editProfile": "Edit My Profile"
+      },
+      "support": {
+        "title": "Need help?",
+        "body": "Our support team is always ready to help you.",
+        "cta": "Contact Support"
+      },
+      "trust": {
+        "securePayment": { "title": "Secure Payment", "body": "All payments protected with 256-bit SSL." },
+        "support247": { "title": "24/7 Support", "body": "We support you in Turkish, English and Greek." },
+        "kosOffice": { "title": "Kos Office", "body": "We're close to you at Kos port." },
+        "reliable": { "title": "Reliable Service", "body": "Hundreds of happy customers travel with ease." }
+      }
+    },
+    "sidebar": {
+      "home": "Home",
+      "reservations": "My Reservations",
+      "ferry": "My Ferry Tickets",
+      "car_rental": "My Car Rentals",
+      "visa": "My Visa Applications",
+      "insurance": "My Insurance",
+      "companions": "Travel Companions",
+      "payments": "My Payments",
+      "messages": "My Messages",
+      "profile": "Profile Details",
+      "logout": "Sign Out",
+      "comingSoon": "Soon"
+    },
     "title": "Beez Trips",
     "subtitleUser": "All your travels",
     "subtitleGuest": "Sign in to manage your travels",
