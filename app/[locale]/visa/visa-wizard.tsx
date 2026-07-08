@@ -1265,7 +1265,7 @@ function VisaSidebar({
         </CardContent>
       </Card>
 
-      {/* Destek — locale-aware WhatsApp (proje kanonu 5008/5009) */}
+      {/* Destek — locale-aware WhatsApp (lib/contact.ts tek kaynak) */}
       <Card className="rounded-3xl border-0 bg-card shadow-md">
         <CardContent className="space-y-2 p-4">
           <div className="flex items-center gap-3">
