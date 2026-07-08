@@ -7,14 +7,31 @@ import type { FerryPort } from './provider'
  * departure and a Greek one differ by an hour. The old hardcoded +03:00 was a
  * summer-only assumption that drifted a Greek-side sailing an hour off-season.
  *
- * Two countries today (all current routes Bodrum/Turgutreis ⇄ Kos). The list
- * grows per new port; an unmapped port is NOT silently given a wrong offset —
- * see portTimezone's fail-safe.
+ * All 17 catalog ports (lib/ferry/ports.ts) are mapped by country: Turkish ports
+ * → Europe/Istanbul (+03 permanent), Greek islands → Europe/Athens (EU DST). An
+ * unmapped port is NOT silently given a wrong offset — see portTimezone's
+ * fail-safe. Keys are catalog slugs (= FerryPort.id).
  */
 const PORT_TIMEZONES: Record<string, string> = {
+  // Türkiye (+03 permanent, no DST since 2016)
   bodrum: 'Europe/Istanbul',
   turgutreis: 'Europe/Istanbul',
+  fethiye: 'Europe/Istanbul',
+  cesme: 'Europe/Istanbul',
+  ayvalik: 'Europe/Istanbul',
+  kusadasi: 'Europe/Istanbul',
+  dikili: 'Europe/Istanbul',
+  seferihisar: 'Europe/Istanbul',
+  aliaga: 'Europe/Istanbul',
+  // Ελλάδα (EU DST: +03 summer / +02 winter)
   kos: 'Europe/Athens',
+  kalymnos: 'Europe/Athens',
+  samos: 'Europe/Athens',
+  rodos: 'Europe/Athens',
+  leros: 'Europe/Athens',
+  'chios-(sakiz)': 'Europe/Athens',
+  midilli: 'Europe/Athens',
+  patmos: 'Europe/Athens',
 }
 
 /** Operator is Kos-based; an unmapped port defaults to Greece — but loudly. */

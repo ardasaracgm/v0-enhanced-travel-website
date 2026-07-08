@@ -16,6 +16,7 @@
  * user's calendar.
  */
 import type { FerryPort } from './provider'
+import { resolvePort } from './ports'
 import { portTimezone, zonedDateTime } from './timezone'
 
 export interface FerryIcsContact {
@@ -105,6 +106,12 @@ function buildEvent(leg: FerryIcsLeg, opts: FerryIcsOptions, dtstamp: string): s
   const { trip, kind } = leg
   const summary = `TravelBeez: ${trip.from.name} → ${trip.to.name} (${trip.operator})`
 
+  // Bridge the departure port name → canonical catalog entry for LOCATION text +
+  // GEO pin. `pier` overrides the town label where the berth is elsewhere (e.g.
+  // Seferihisar sailings depart Sığacık) so the text matches the map pin.
+  const fromPort = resolvePort(trip.from.name)
+  const locationName = fromPort?.pier ?? trip.from.name
+
   const contactValue = opts.contact.whatsappUrl || opts.contact.phone || ''
   const description = [
     `${opts.labels.reference}: ${opts.reference}`,
@@ -122,7 +129,11 @@ function buildEvent(leg: FerryIcsLeg, opts: FerryIcsOptions, dtstamp: string): s
     `DTSTART:${zonedToIcsUtc(trip.date, trip.departureTime, trip.from)}`,
     `DTEND:${zonedToIcsUtc(trip.date, trip.arrivalTime, trip.to)}`,
     foldLine(`SUMMARY:${escapeText(summary)}`),
-    foldLine(`LOCATION:${escapeText(trip.from.name)}`),
+    foldLine(`LOCATION:${escapeText(locationName)}`),
+    // GEO (RFC 5545 §3.8.1.6) is a "lat;lng" FLOAT PAIR, not a TEXT value — the
+    // semicolon is the field separator, so it must NOT pass through escapeText.
+    // Omitted entirely for a port without catalog coords.
+    ...(fromPort?.coords ? [`GEO:${fromPort.coords.lat};${fromPort.coords.lng}`] : []),
     foldLine(`DESCRIPTION:${escapeText(description)}`),
     'END:VEVENT',
   ]

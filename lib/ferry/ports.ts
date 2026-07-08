@@ -40,30 +40,41 @@ export interface Port {
    *  Dentur regionID is resolved live by name today; populated when a 2nd ferry
    *  API integrates and static disambiguation is required. */
   providerIds?: Record<string, string>
+  /** Ferry TERMINAL / pier coordinates (decimal degrees, WGS84) — the actual
+   *  berth passengers board at, NOT the town center. Feeds the .ics GEO field so
+   *  the calendar map pin lands on the pier. Sourced/verified from OpenStreetMap
+   *  ferry_terminal nodes (2026-07-08). Optional: a port without coords simply
+   *  emits no GEO line. Entries marked "⚠️ MED" are ±500m (no dedicated berth
+   *  node found / multi-berth city). */
+  coords?: { lat: number; lng: number }
+  /** Physical pier/terminal name shown in the .ics LOCATION when it differs from
+   *  the town display name — e.g. Seferihisar sailings actually depart Sığacık.
+   *  Keeps the LOCATION text consistent with the GEO pin. */
+  pier?: string
 }
 
 /** All 17 Dentur regions. Order: TR side first, then GR side. */
 export const PORTS: Port[] = [
   // ----- Türkiye (TR) -----
-  { slug: 'bodrum',      country: 'TR', name: { tr: 'Bodrum',      en: 'Bodrum',      el: 'Μπόντρουμ' }, unlocode: 'TRBXN', berthId: 'TRBXN-0001', cityGroup: 'TRBXN' },
-  { slug: 'turgutreis',  country: 'TR', name: { tr: 'Turgutreis',  en: 'Turgutreis'  /* TODO(el) */ }, unlocode: 'TRTUR', berthId: 'TRTUR-0001', cityGroup: 'TRTUR' },
-  { slug: 'fethiye',     country: 'TR', name: { tr: 'Fethiye',     en: 'Fethiye'     /* TODO(el) */ }, unlocode: 'TRFET', berthId: 'TRFET-0001', cityGroup: 'TRFET' },
-  { slug: 'cesme',       country: 'TR', name: { tr: 'Çeşme',       en: 'Cesme',       el: 'Τσεσμές' }, unlocode: 'TRCES', berthId: 'TRCES-0001', cityGroup: 'TRCES' },
-  { slug: 'ayvalik',     country: 'TR', name: { tr: 'Ayvalık',     en: 'Ayvalik',     el: 'Αϊβαλί' }, aliases: ['Ayvali'], unlocode: 'TRAYV', berthId: 'TRAYV-0001', cityGroup: 'TRAYV' },
-  { slug: 'kusadasi',    country: 'TR', name: { tr: 'Kuşadası',    en: 'Kusadasi'    /* TODO(el) */ }, unlocode: 'TRKUS', berthId: 'TRKUS-0001', cityGroup: 'TRKUS' },
-  { slug: 'dikili',      country: 'TR', name: { tr: 'Dikili',      en: 'Dikili'      /* TODO(el) */ }, unlocode: 'TRDIK', berthId: 'TRDIK-0001', cityGroup: 'TRDIK' },
-  { slug: 'seferihisar', country: 'TR', name: { tr: 'Seferihisar', en: 'Seferihisar' /* TODO(el) */ }, unlocode: 'TRSFH', berthId: 'TRSFH-0001', cityGroup: 'TRSFH' },
-  { slug: 'aliaga',      country: 'TR', name: { tr: 'Aliağa',      en: 'Aliaga'      /* TODO(el) */ }, unlocode: 'TRALI', berthId: 'TRALI-0001', cityGroup: 'TRALI' },
+  { slug: 'bodrum',      country: 'TR', name: { tr: 'Bodrum',      en: 'Bodrum',      el: 'Μπόντρουμ' }, unlocode: 'TRBXN', berthId: 'TRBXN-0001', cityGroup: 'TRBXN', coords: { lat: 37.03209, lng: 27.42675 } },
+  { slug: 'turgutreis',  country: 'TR', name: { tr: 'Turgutreis',  en: 'Turgutreis'  /* TODO(el) */ }, unlocode: 'TRTUR', berthId: 'TRTUR-0001', cityGroup: 'TRTUR', coords: { lat: 36.99916, lng: 27.25679 } },
+  { slug: 'fethiye',     country: 'TR', name: { tr: 'Fethiye',     en: 'Fethiye'     /* TODO(el) */ }, unlocode: 'TRFET', berthId: 'TRFET-0001', cityGroup: 'TRFET', coords: { lat: 36.62285, lng: 29.10515 } },
+  { slug: 'cesme',       country: 'TR', name: { tr: 'Çeşme',       en: 'Cesme',       el: 'Τσεσμές' }, unlocode: 'TRCES', berthId: 'TRCES-0001', cityGroup: 'TRCES', coords: { lat: 38.32279, lng: 26.29763 } },
+  { slug: 'ayvalik',     country: 'TR', name: { tr: 'Ayvalık',     en: 'Ayvalik',     el: 'Αϊβαλί' }, aliases: ['Ayvali'], unlocode: 'TRAYV', berthId: 'TRAYV-0001', cityGroup: 'TRAYV', coords: { lat: 39.32837, lng: 26.69594 } },
+  { slug: 'kusadasi',    country: 'TR', name: { tr: 'Kuşadası',    en: 'Kusadasi'    /* TODO(el) */ }, unlocode: 'TRKUS', berthId: 'TRKUS-0001', cityGroup: 'TRKUS', coords: { lat: 37.86500, lng: 27.25200 } }, // ⚠️ MED ±500m (Ege Port; no berth node)
+  { slug: 'dikili',      country: 'TR', name: { tr: 'Dikili',      en: 'Dikili'      /* TODO(el) */ }, unlocode: 'TRDIK', berthId: 'TRDIK-0001', cityGroup: 'TRDIK', coords: { lat: 39.07049, lng: 26.88646 } },
+  { slug: 'seferihisar', country: 'TR', name: { tr: 'Seferihisar', en: 'Seferihisar' /* TODO(el) */ }, unlocode: 'TRSFH', berthId: 'TRSFH-0001', cityGroup: 'TRSFH', coords: { lat: 38.19078, lng: 26.78309 }, pier: 'Sığacık' }, // ferries depart Sığacık/Teos Marina, not Seferihisar town
+  { slug: 'aliaga',      country: 'TR', name: { tr: 'Aliağa',      en: 'Aliaga'      /* TODO(el) */ }, unlocode: 'TRALI', berthId: 'TRALI-0001', cityGroup: 'TRALI', coords: { lat: 38.82280, lng: 26.98286 } },
 
   // ----- Ελλάδα / Yunanistan (GR) -----
-  { slug: 'kos',           country: 'GR', name: { tr: 'Kos',      en: 'Kos',      el: 'Κως' },      aliases: ['İstanköy'], unlocode: 'GRKGS', berthId: 'GRKGS-0001', cityGroup: 'GRKGS' },
-  { slug: 'kalymnos',      country: 'GR', name: { tr: 'Kalimnos', en: 'Kalymnos', el: 'Κάλυμνος' }, aliases: ['Kalimnos'], unlocode: 'GRKMI', berthId: 'GRKMI-0001', cityGroup: 'GRKMI' },
-  { slug: 'samos',         country: 'GR', name: { tr: 'Sisam',    en: 'Samos',    el: 'Σάμος' },    aliases: ['Sisam'], unlocode: 'GRSMI', berthId: 'GRSMI-0001', cityGroup: 'GRSMI' },
-  { slug: 'rodos',         country: 'GR', name: { tr: 'Rodos',    en: 'Rhodes',   el: 'Ρόδος' },    aliases: ['Rhodes', 'Rodi'], unlocode: 'GRRHO', berthId: 'GRRHO-0001', cityGroup: 'GRRHO' },
-  { slug: 'leros',         country: 'GR', name: { tr: 'Leros',    en: 'Leros',    el: 'Λέρος' }, unlocode: 'GRLRS', berthId: 'GRLRS-0001', cityGroup: 'GRLRS' },
-  { slug: 'chios-(sakiz)', country: 'GR', name: { tr: 'Sakız',    en: 'Chios',    el: 'Χίος' },     aliases: ['Chios', 'Sakız', 'Sakiz'], unlocode: 'GRJKH', berthId: 'GRJKH-0001', cityGroup: 'GRJKH' },
-  { slug: 'midilli',       country: 'GR', name: { tr: 'Midilli',  en: 'Lesvos',   el: 'Λέσβος' },   aliases: ['Lesvos', 'Mytilene', 'Mitilini', 'Lesbos'], unlocode: 'GRMJT', berthId: 'GRMJT-0001', cityGroup: 'GRMJT' },
-  { slug: 'patmos',        country: 'GR', name: { tr: 'Patmos',   en: 'Patmos',   el: 'Πάτμος' }, unlocode: 'GRPMS', berthId: 'GRPMS-0001', cityGroup: 'GRPMS' },
+  { slug: 'kos',           country: 'GR', name: { tr: 'Kos',      en: 'Kos',      el: 'Κως' },      aliases: ['İstanköy'], unlocode: 'GRKGS', berthId: 'GRKGS-0001', cityGroup: 'GRKGS', coords: { lat: 36.89856, lng: 27.29045 } },
+  { slug: 'kalymnos',      country: 'GR', name: { tr: 'Kalimnos', en: 'Kalymnos', el: 'Κάλυμνος' }, aliases: ['Kalimnos'], unlocode: 'GRKMI', berthId: 'GRKMI-0001', cityGroup: 'GRKMI', coords: { lat: 36.94841, lng: 26.98812 } },
+  { slug: 'samos',         country: 'GR', name: { tr: 'Sisam',    en: 'Samos',    el: 'Σάμος' },    aliases: ['Sisam'], unlocode: 'GRSMI', berthId: 'GRSMI-0001', cityGroup: 'GRSMI', coords: { lat: 37.75747, lng: 26.97112 } }, // ⚠️ MED (Vathy; island also has Pythagoreio/Karlovasi)
+  { slug: 'rodos',         country: 'GR', name: { tr: 'Rodos',    en: 'Rhodes',   el: 'Ρόδος' },    aliases: ['Rhodes', 'Rodi'], unlocode: 'GRRHO', berthId: 'GRRHO-0001', cityGroup: 'GRRHO', coords: { lat: 36.44500, lng: 28.23201 } }, // ⚠️ MED (Kolona/Tourist Port; big RoRo uses Akandia)
+  { slug: 'leros',         country: 'GR', name: { tr: 'Leros',    en: 'Leros',    el: 'Λέρος' }, unlocode: 'GRLRS', berthId: 'GRLRS-0001', cityGroup: 'GRLRS', coords: { lat: 37.13318, lng: 26.85321 } }, // ⚠️ MED ±500m (Lakki; no berth node)
+  { slug: 'chios-(sakiz)', country: 'GR', name: { tr: 'Sakız',    en: 'Chios',    el: 'Χίος' },     aliases: ['Chios', 'Sakız', 'Sakiz'], unlocode: 'GRJKH', berthId: 'GRJKH-0001', cityGroup: 'GRJKH', coords: { lat: 38.36999, lng: 26.13797 } },
+  { slug: 'midilli',       country: 'GR', name: { tr: 'Midilli',  en: 'Lesvos',   el: 'Λέσβος' },   aliases: ['Lesvos', 'Mytilene', 'Mitilini', 'Lesbos'], unlocode: 'GRMJT', berthId: 'GRMJT-0001', cityGroup: 'GRMJT', coords: { lat: 39.10246, lng: 26.56247 } },
+  { slug: 'patmos',        country: 'GR', name: { tr: 'Patmos',   en: 'Patmos',   el: 'Πάτμος' }, unlocode: 'GRPMS', berthId: 'GRPMS-0001', cityGroup: 'GRPMS', coords: { lat: 37.32356, lng: 26.54459 } },
 ]
 
 /**
