@@ -1,46 +1,19 @@
-import { Link } from '@/i18n/routing'
+import { Link, redirect } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
 import {
-  Ship, Car, MapPinned, Hotel, FileCheck, Package,
-  ShieldCheck, Smartphone, Luggage, BusFront, Users, UserCircle, Lock, AlertCircle,
+  Ship, Car, FileCheck, ShieldCheck, UserCircle, Lock,
   ArrowRight, CalendarClock, Headphones, MapPin, BadgeCheck,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { buildWhatsAppLink } from '@/lib/contact'
-import { Card, CardContent } from '@/components/ui/card'
 
 export const dynamic = 'force-dynamic'
 
 // The Hub shell (Header + sidebar + Footer) lives in hub/layout.tsx (A2). This
-// page returns only the content that goes inside the shell's <main>.
-
-// ── Guest landing (UNCHANGED from the pre-redesign page) ──────────────────────
-// Guests keep the original tab-grid landing + auth_failed banner so the 4b
-// "sign in to see your booking" nudge and magic-link error feedback are not
-// regressed. The layout shows no sidebar for guests.
-interface HubTab {
-  key: string
-  icon: LucideIcon
-  locked: boolean
-  href?: string
-}
-
-const TABS: HubTab[] = [
-  { key: 'visa',          icon: FileCheck,   href: '/hub/visa', locked: false },
-  { key: 'ferry',         icon: Ship,        href: '/hub/ferry', locked: false },
-  { key: 'car_rental',    icon: Car,         href: '/hub/car-rental', locked: false },
-  { key: 'tour',          icon: MapPinned,   locked: true },
-  { key: 'hotel',         icon: Hotel,       locked: true },
-  { key: 'transfer',      icon: BusFront,    href: '/hub/transfer', locked: false },
-  { key: 'package_pickup',icon: Package,     locked: true },
-  { key: 'insurance',     icon: ShieldCheck, href: '/hub/insurance', locked: false },
-  { key: 'esim',          icon: Smartphone,  locked: true },
-  { key: 'luggage',       icon: Luggage,     href: '/hub/luggage', locked: false },
-  { key: 'companions',    icon: Users,       href: '/hub/companions', locked: false },
-  { key: 'profile',       icon: UserCircle,  href: '/hub/profile', locked: false },
-] as const
+// page returns only the content that goes inside the shell's <main>. Guests are
+// redirected to /login (auth_failed feedback is shown there, not here).
 
 // ── Signed-in dashboard (A1: visual skeleton — counts/list wired in A3) ───────
 interface SummaryCard {
@@ -74,62 +47,22 @@ const TRUST: TrustBadge[] = [
 
 export default async function HubPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ error?: string }>
 }) {
   const { locale } = await params
-  const { error } = await searchParams
 
   const supabase = await createSupabaseServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // ── GUEST: original landing preserved (layout renders no sidebar for guests) ──
+  // Auth-gate: Hub app-benzeri dashboard → misafir login'e (next=/hub → dönüş).
   if (!user) {
-    const t = await getTranslations('hub')
-    const tCommon = await getTranslations('common')
-    return (
-      <div className="space-y-8">
-        {error === 'auth_failed' && (
-          <div className="flex items-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span>{t('authExpired')}</span>
-          </div>
-        )}
-        <div>
-          <h1 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">{t('title')}</h1>
-          <p className="text-muted-foreground">{t('subtitleGuest')}</p>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {TABS.map(({ key, icon: Icon, locked, href }) => {
-            const body = (
-              <Card className={locked ? 'opacity-60 cursor-not-allowed' : 'transition-shadow hover:shadow-md cursor-pointer'}>
-                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <Icon className="h-8 w-8 text-primary" />
-                  <span className="font-medium text-foreground">{t(`tabs.${key}`)}</span>
-                  {locked && (
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Lock className="h-3 w-3" /> {tCommon('comingSoon')}
-                    </span>
-                  )}
-                </CardContent>
-              </Card>
-            )
-            return locked || !href ? (
-              <div key={key} aria-disabled>{body}</div>
-            ) : (
-              <Link key={key} href={href}>{body}</Link>
-            )
-          })}
-        </div>
-      </div>
-    )
+    redirect({ href: `/login?next=${encodeURIComponent(`/${locale}/hub`)}`, locale })
+    return null
   }
 
-  // ── SIGNED IN: Beez Hub dashboard content (shell provided by layout) ──
   const t = await getTranslations('hub.dashboard')
 
   const { data: self } = await supabase

@@ -37,8 +37,12 @@ export async function GET(request: NextRequest) {
   // locale'i (doğrulanmış veya default) safeNext'ten türet — hata redirect'i için.
   const locale = safeNext.slice(1, 3) // 'en' | 'tr' | 'el'
 
+  // Başarısız giriş → /login (retry sayfası) + hata + 'next' korunur (guest /hub
+  // artık login'e yönlendiriyor; auth_failed geri bildirimi login'de gösterilir).
+  const failUrl = `${origin}/${locale}/login?error=auth_failed&next=${encodeURIComponent(safeNext)}`
+
   if (!code) {
-    return NextResponse.redirect(`${origin}/${locale}/hub?error=auth_failed`)
+    return NextResponse.redirect(failUrl)
   }
 
   const supabase = await createSupabaseServerClient()
@@ -46,7 +50,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[auth/callback] exchangeCodeForSession failed:', error.message)
-    return NextResponse.redirect(`${origin}/${locale}/hub?error=auth_failed`)
+    return NextResponse.redirect(failUrl)
   }
 
   // First login → one internal "new member" notice to NOTIFY_ADDRESS. Runs via

@@ -12,7 +12,7 @@ import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Sparkles, Mail, Ship, Car, ShieldCheck, Stamp, Bus } from 'lucide-react'
+import { Sparkles, Mail, Ship, Car, ShieldCheck, Stamp, Bus, AlertCircle, Info } from 'lucide-react'
 import { createSupabaseBrowserClient, HUB_AUTH_ORIGIN } from '@/lib/supabase-browser'
 import { Logo } from '@/components/islandbee/logo'
 import { Button } from '@/components/ui/button'
@@ -41,6 +41,11 @@ function LoginCard() {
   const [email, setEmail] = React.useState(searchParams.get('email') ?? '')
   const [status, setStatus] =
     React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  // Guest yönlendirme bağlamı: auth_failed (başarısız magic-link, callback'ten) →
+  // hata banner; sade 'next' (ör. /hub'dan gelen misafir) → "devam için giriş" satırı.
+  const authError = searchParams.get('error') === 'auth_failed'
+  const hasNext = Boolean(searchParams.get('next'))
 
   // Magic-link ve Google OAuth aynı callback + next mantığını paylaşır.
   const buildRedirectTo = () => {
@@ -88,6 +93,19 @@ function LoginCard() {
             ))}
           </div>
         </div>
+
+        {authError && (
+          <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{t('authError')}</span>
+          </div>
+        )}
+        {!authError && hasNext && (
+          <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+            <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{t('continueContext')}</span>
+          </div>
+        )}
 
         {status === 'sent' ? (
           <div className="rounded-xl border border-green-200 bg-green-50 p-4">

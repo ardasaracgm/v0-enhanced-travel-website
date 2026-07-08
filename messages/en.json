@@ -267,6 +267,8 @@
     "operatingAs": "FerryBee Travel IKE, operating as TravelBeez"
   },
   "login": {
+    "authError": "Your sign-in link expired or was already used. Please sign in again below.",
+    "continueContext": "Sign in to continue to your account.",
     "heroBadge": "Account access",
     "heroTitle": "Your bookings, all in one place",
     "heroSubtitle": "Track all your bookings from one dashboard.",
@@ -331,7 +333,6 @@
     "subtitleUser": "All your travels",
     "subtitleGuest": "Sign in to manage your travels",
     "signedInAs": "Signed in as {email}",
-    "authExpired": "Your sign-in link expired or was already used. Request a new one from your booking confirmation.",
     "tabs": {
       "visa": "Visa",
       "ferry": "Ferry",

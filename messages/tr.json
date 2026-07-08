@@ -267,6 +267,8 @@
     "operatingAs": "FerryBee Travel IKE, TravelBeez markası altında faaliyet göstermektedir"
   },
   "login": {
+    "authError": "Giriş bağlantınızın süresi doldu veya zaten kullanıldı. Lütfen aşağıdan tekrar giriş yapın.",
+    "continueContext": "Hesabınıza devam etmek için giriş yapın.",
     "heroBadge": "Hesabınıza giriş",
     "heroTitle": "Rezervasyonlarınız tek yerde",
     "heroSubtitle": "Tüm rezervasyonlarınızı tek panelden takip edin.",
@@ -331,7 +333,6 @@
     "subtitleUser": "Tüm seyahatleriniz",
     "subtitleGuest": "Seyahatlerinizi yönetmek için giriş yapın",
     "signedInAs": "{email} olarak giriş yapıldı",
-    "authExpired": "Giriş bağlantınızın süresi doldu veya zaten kullanıldı. Rezervasyon onayınızdan yeni bir tane isteyin.",
     "tabs": {
       "visa": "Vize",
       "ferry": "Feribot",
