@@ -15,7 +15,7 @@
  * sailing crossing the +03/+02 boundary lands at the right wall-clock in the
  * user's calendar.
  */
-import type { FerryTrip } from './provider'
+import type { FerryPort } from './provider'
 import { portTimezone, zonedDateTime } from './timezone'
 
 export interface FerryIcsContact {
@@ -31,8 +31,24 @@ export interface FerryIcsLabels {
   contact: string
 }
 
+/**
+ * The subset of a sailing the .ics needs. A full FerryTrip (provider / booking
+ * snapshot) is structurally assignable to this, and the paid email builds one
+ * directly from stored trip_item metadata — so both callers stay type-safe
+ * without the .ics depending on the whole domain type.
+ */
+export interface FerryIcsTrip {
+  from: FerryPort
+  to: FerryPort
+  operator: string
+  vessel: string
+  date: string           // wall-clock local departure date "YYYY-MM-DD"
+  departureTime: string  // wall-clock "HH:MM" at the origin port
+  arrivalTime: string    // wall-clock "HH:MM" at the destination port
+}
+
 export interface FerryIcsLeg {
-  trip: FerryTrip
+  trip: FerryIcsTrip
   /** Stable UID discriminator + open-jaw disambiguation. */
   kind: 'outbound' | 'return'
 }
@@ -81,7 +97,7 @@ function toIcsUtc(d: Date): string {
 }
 
 /** Zoned wall-clock (date + "HH:MM" + port tz) → UTC .ics stamp. */
-function zonedToIcsUtc(date: string, time: string, port: FerryTrip['from']): string {
+function zonedToIcsUtc(date: string, time: string, port: FerryPort): string {
   return toIcsUtc(new Date(zonedDateTime(date, time, portTimezone(port))))
 }
 

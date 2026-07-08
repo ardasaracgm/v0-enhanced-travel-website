@@ -49,6 +49,21 @@ export function zonedDateTime(date: string, time: string, timeZone: string): str
 }
 
 /**
+ * Inverse of zonedDateTime's date part: a stored instant → the wall-clock
+ * "YYYY-MM-DD" it falls on in an IANA zone (DST-aware). A ferry's scheduled_at
+ * was built as zonedDateTime(date, departureTime, tz) (resolvers.ts:41), so this
+ * round-trips back to that exact local date even when the UTC date differs
+ * (a near-midnight sailing) — the .ics rebuilds the SAME instant, no drift.
+ */
+export function zonedDate(instant: string, timeZone: string): string {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+  })
+  const p = Object.fromEntries(dtf.formatToParts(new Date(instant)).map((x) => [x.type, x.value]))
+  return `${p.year}-${p.month}-${p.day}`
+}
+
+/**
  * Offset (minutes east of UTC) a zone is at for a wall-clock time. Reads the
  * zone-local parts of a UTC guess via Intl, then diffs — the standard no-dep
  * approach. Exact except inside the ~1h DST overlap, which never contains a

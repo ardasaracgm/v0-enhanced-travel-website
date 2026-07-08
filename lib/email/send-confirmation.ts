@@ -34,9 +34,17 @@ export interface SendResult {
   skipReason?: string
 }
 
+/** Resend-compatible attachment (Buffer content → SDK base64-encodes it). */
+export interface EmailAttachment {
+  filename: string
+  content: Buffer
+  contentType?: string
+}
+
 export async function sendBookingConfirmation(
   to: string,
-  data: BookingEmailData
+  data: BookingEmailData,
+  attachments?: EmailAttachment[]
 ): Promise<SendResult> {
   const resend = getResend()
 
@@ -63,6 +71,7 @@ export async function sendBookingConfirmation(
       subject,
       html,
       text,
+      ...(attachments && attachments.length ? { attachments } : {}),
       tags: [
         { name: 'category', value: 'booking_confirmation' },
         { name: 'locale', value: data.locale },

@@ -1,10 +1,61 @@
 import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { sendBookingConfirmation } from '@/lib/email/send-confirmation'
+import { sendBookingConfirmation, type EmailAttachment } from '@/lib/email/send-confirmation'
 import { isPlaceholderEmail } from '@/lib/walk-in-email'
 import { ferryVoucherSections } from '@/lib/ferry/voucher-split'
+import { buildFerryIcs, type FerryIcsLeg } from '@/lib/ferry/ics'
+import { resolvePort } from '@/lib/ferry/ports'
+import { portTimezone, zonedDate } from '@/lib/ferry/timezone'
+import type { Locale } from '@/lib/notifications/whatsapp-link'
 import type { FerryItemMetadata } from '@/lib/supabase'
+
+// Same dict convention as the email templates (T: Record<Locale,…>) — NOT
+// next-intl; the email path has no request context. Mirrors confirmation.ics*.
+const ICS_LABELS: Record<Locale, { reference: string; vessel: string; operator: string; contact: string }> = {
+  tr: { reference: 'Rezervasyon No', vessel: 'Gemi', operator: 'Operatör', contact: 'İletişim' },
+  en: { reference: 'Reservation', vessel: 'Vessel', operator: 'Operator', contact: 'Contact' },
+  el: { reference: 'Κράτηση', vessel: 'Πλοίο', operator: 'Εταιρεία', contact: 'Επικοινωνία' },
+}
+
+const asLocale = (v: string | null | undefined): Locale => (v === 'en' || v === 'el' ? v : 'tr')
+
+/**
+ * Build .ics legs from a trip's ferry items. PII-free (only port/time metadata).
+ * Ports are stored as display NAMES → resolvePort maps each to its canonical
+ * slug (portTimezone keys on the slug). The departure DATE isn't in metadata, so
+ * it's recovered from scheduled_at in the origin zone (zonedDate), which
+ * round-trips the value the instant was built from. Returns null if any leg
+ * can't resolve its ports/date/times — never a wrong-offset calendar; the mail
+ * just goes out without the attachment.
+ */
+function ferryIcsLegs(
+  items: { item_type: string; scheduled_at: string | null; metadata: unknown }[],
+): FerryIcsLeg[] | null {
+  const legs: FerryIcsLeg[] = []
+  for (const i of items) {
+    if (i.item_type !== 'ferry') continue
+    const m = (i.metadata ?? {}) as FerryItemMetadata
+    const fromPort = resolvePort(m.from_port ?? '')
+    const toPort = resolvePort(m.to_port ?? '')
+    if (!fromPort || !toPort || !i.scheduled_at || !m.departure_time || !m.arrival_time) return null
+    const from = { id: fromPort.slug, name: m.from_port }
+    const to = { id: toPort.slug, name: m.to_port }
+    legs.push({
+      trip: {
+        from,
+        to,
+        operator: m.operator ?? '',
+        vessel: m.vessel ?? '',
+        date: zonedDate(i.scheduled_at, portTimezone(from)),
+        departureTime: m.departure_time,
+        arrivalTime: m.arrival_time,
+      },
+      kind: m.direction === 'return' ? 'return' : 'outbound',
+    })
+  }
+  return legs.length > 0 ? legs : null
+}
 
 /**
  * Race-safe, single-owner paid (confirmed) confirmation email.
@@ -71,6 +122,24 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
       .map((i, idx) => ({ id: String(i.id ?? idx), meta: (i.metadata ?? {}) as FerryItemMetadata }))
     const ferryVouchers = ferryVoucherSections(ferryLegs)
 
+    // Ferry .ics calendar attachment — SAME builder as the confirmation page's
+    // "Add to calendar" (single source). Paid path only (a calendar entry before
+    // payment is premature). Non-fatal: any resolution gap → no attachment.
+    let attachments: EmailAttachment[] | undefined
+    const icsLegs = ferryIcsLegs(items ?? [])
+    if (icsLegs) {
+      const ics = buildFerryIcs(icsLegs, {
+        reference: claimed.reference,
+        contact: { phone: claimed.contact_phone },
+        labels: ICS_LABELS[asLocale(claimed.locale)],
+      })
+      attachments = [{
+        filename: `travelbeez-${claimed.reference}.ics`,
+        content: Buffer.from(ics, 'utf8'),
+        contentType: 'text/calendar',
+      }]
+    }
+
     await sendBookingConfirmation(claimed.contact_email, {
       paid:         true,
       reference:    claimed.reference,
@@ -106,7 +175,7 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
       }),
       ferryVouchers,
       paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
-    })
+    }, attachments)
   } catch (emailErr) {
     const msg = emailErr instanceof Error ? emailErr.message : String(emailErr)
     console.error('[paid-email] send failed (non-fatal, claim kept):', msg)
