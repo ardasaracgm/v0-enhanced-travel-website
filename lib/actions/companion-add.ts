@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
-import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { sendCompanionInvite } from '@/lib/email/send-companion-invite'
+import { createCompanionForOwner } from '@/lib/companions/create-companion'
 import { parseISODate, ageOn, todayAthensISO } from '@/lib/validation/dates'
 import { PASSPORT_RE } from '@/lib/validation/booking'
 import { isNationality } from '@/lib/countries'
@@ -77,46 +77,22 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
     redirect(`/${locale}/hub/companions?err=passport_expiry`)
   }
 
-  // Owner display name: customers.full_name (booking-captured) → email local-part.
-  // Read via service-role — customers has no owner-read RLS policy for this user.
   const email = (user.email ?? '').toLowerCase()
-  let ownerName = email.split('@')[0] || 'TravelBeez'
-  const { data: cust } = await getSupabaseAdmin()
-    .from('customers')
-    .select('full_name')
-    .eq('email', email)
-    .maybeSingle()
-  if (cust?.full_name) ownerName = cust.full_name
+  const result = await createCompanionForOwner(
+    supabase,
+    { id: user.id, email },
+    { firstName, lastName, contactEmail, birthDate, nationality, gender, passportNumber, passportCountry, passportExpiry },
+  )
 
-  const { data: inserted, error } = await supabase
-    .from('travel_companions')
-    .insert({
-      owner_id: user.id,
-      owner_name: ownerName,
-      first_name: firstName,
-      last_name: lastName,
-      contact_email: contactEmail,
-      birth_date: birthDate || null,
-      nationality: nationality || null,
-      gender: gender || null,
-      passport_number: passportNumber || null,
-      passport_country: passportCountry || null,
-      passport_expiry: passportExpiry || null,
-      status: 'pending',
-    })
-    .select('consent_token, contact_email')
-    .maybeSingle()
-
-  if (error) {
-    // 23505 = adult double-add unique index (owner_id, lower(contact_email)).
-    redirect(`/${locale}/hub/companions?err=${error.code === '23505' ? 'duplicate' : 'save'}`)
+  if (!result.ok) {
+    redirect(`/${locale}/hub/companions?err=${result.errorCode}`)
   }
 
-  if (inserted?.consent_token && inserted.contact_email) {
-    await sendCompanionInvite(inserted.contact_email, {
-      ownerName,
+  if (result.consentToken && result.contactEmail) {
+    await sendCompanionInvite(result.contactEmail, {
+      ownerName: result.ownerName,
       companionName: firstName,
-      consentToken: inserted.consent_token,
+      consentToken: result.consentToken,
       locale: asLocale(locale),
     })
   }
