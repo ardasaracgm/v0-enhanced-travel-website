@@ -6,12 +6,14 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { todayAthensISO } from '@/lib/validation/dates'
 import { NATIONALITIES, DEFAULT_NATIONALITY } from '@/lib/countries'
 import { getMyCompanions, type CompanionStatus } from '@/lib/hub/get-my-companions'
+import { getMySaveablePassengers } from '@/lib/hub/get-my-saveable-passengers'
 import {
   addCompanionFormAction,
   deleteCompanionFormAction,
 } from '@/lib/actions/companion-add'
 import { Header } from '@/components/islandbee/header'
 import { Footer } from '@/components/islandbee/footer'
+import { SavePassengerCard } from '@/components/hub/save-passenger-card'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -48,6 +50,7 @@ export default async function HubCompanionsPage({
   }
 
   const companions = await getMyCompanions(supabase, user.id)
+  const saveable = await getMySaveablePassengers(user.email ?? '')
   const today = todayAthensISO() // birth-date max (no future); pre-1900 blocked below
 
   const ERR_KEYS: Record<string, string> = {
@@ -91,6 +94,40 @@ export default async function HubCompanionsPage({
                 }
               >
                 {banner.msg}
+              </div>
+            )}
+
+            {saveable.length > 0 && (
+              <div className="space-y-3 rounded-lg border bg-background p-4 md:p-5">
+                <div>
+                  <h2 className="font-medium text-foreground">
+                    {t('companionsPage.fromBookings.heading')}
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t('companionsPage.fromBookings.intro')}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {saveable.map((p) => (
+                    <SavePassengerCard
+                      key={p.passengerId}
+                      passengerId={p.passengerId}
+                      name={p.name}
+                      tripReference={p.tripReference}
+                      locale={locale}
+                      labels={{
+                        emailPlaceholder: t('companionsPage.fromBookings.emailPlaceholder'),
+                        cta: t('companionsPage.fromBookings.cta'),
+                        saving: t('companionsPage.fromBookings.saving'),
+                        saved: t('companionsPage.fromBookings.saved'),
+                        duplicate: t('companionsPage.fromBookings.duplicate'),
+                        invalid: t('companionsPage.fromBookings.invalid'),
+                        error: t('companionsPage.fromBookings.error'),
+                        tripLabel: t('companionsPage.fromBookings.tripLabel'),
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 

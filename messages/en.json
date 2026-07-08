@@ -315,6 +315,18 @@
       "title": "Travel Companions",
       "intro": "Save the people you travel with so their details autofill at booking. Each companion is emailed a consent request and must approve before their details can be used.",
       "addHeading": "Add a companion",
+      "fromBookings": {
+        "heading": "Add from your bookings",
+        "intro": "Save the travel companions from your paid bookings. Each one gets a consent request by email.",
+        "emailPlaceholder": "Email",
+        "cta": "Save & invite",
+        "saving": "Saving…",
+        "saved": "✓ Saved",
+        "duplicate": "Already saved",
+        "invalid": "Enter a valid email",
+        "error": "Couldn't save",
+        "tripLabel": "Booking"
+      },
       "firstName": "First name",
       "lastName": "Last name",
       "email": "Email",

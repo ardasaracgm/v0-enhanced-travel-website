@@ -315,6 +315,18 @@
       "title": "Seyahat Arkadaşları",
       "intro": "Birlikte seyahat ettiğiniz kişileri kaydedin; bilgileri rezervasyonda otomatik dolsun. Her arkadaşa e-posta ile onay isteği gider ve bilgileri kullanılmadan önce onaylaması gerekir.",
       "addHeading": "Arkadaş ekle",
+      "fromBookings": {
+        "heading": "Rezervasyonlarınızdan ekleyin",
+        "intro": "Ödemesi tamamlanmış rezervasyonlarınızdaki yol arkadaşlarını kaydedin. Her birine e-posta ile onay isteği gönderilir.",
+        "emailPlaceholder": "E-posta",
+        "cta": "Kaydet ve davet et",
+        "saving": "Kaydediliyor…",
+        "saved": "✓ Kaydedildi",
+        "duplicate": "Zaten kayıtlı",
+        "invalid": "Geçerli e-posta girin",
+        "error": "Kaydedilemedi",
+        "tripLabel": "Rezervasyon"
+      },
       "firstName": "Ad",
       "lastName": "Soyad",
       "email": "E-posta",
