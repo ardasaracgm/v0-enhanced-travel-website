@@ -2028,5 +2028,12 @@
     "searchDatesPlaceholder": "Pickup – Return",
     "availableLabel": "Available",
     "comingSoon": "Coming Soon"
+  },
+  "confirmation": {
+    "addToCalendar": "Add to calendar",
+    "icsReference": "Reservation",
+    "icsVessel": "Vessel",
+    "icsOperator": "Operator",
+    "icsContact": "Contact"
   }
 }

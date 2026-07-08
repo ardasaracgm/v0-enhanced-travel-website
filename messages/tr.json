@@ -2028,5 +2028,12 @@
     "searchDatesPlaceholder": "Alış – İade",
     "availableLabel": "Müsait",
     "comingSoon": "Çok Yakında"
+  },
+  "confirmation": {
+    "addToCalendar": "Takvime Ekle",
+    "icsReference": "Rezervasyon No",
+    "icsVessel": "Gemi",
+    "icsOperator": "Operatör",
+    "icsContact": "İletişim"
   }
 }

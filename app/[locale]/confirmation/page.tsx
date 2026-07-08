@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useSearchParams } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { buildWhatsAppLink } from '@/lib/contact'
 import {
   Ship,
@@ -18,6 +18,7 @@ import {
   Check,
   Sparkles,
   Loader2,
+  CalendarPlus,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
@@ -42,6 +43,7 @@ import {
   type BookingItem,
 } from '@/lib/booking-context'
 import { summarizeItem } from '@/lib/trip-items/summary'
+import { buildFerryIcs, type FerryIcsLeg } from '@/lib/ferry/ics'
 import { ferryDisplayPrice } from '@/lib/ferry/display'
 import type { FerryTrip } from '@/lib/ferry/provider'
 import { confirmFromReturn } from '@/lib/actions/confirm-from-return'
@@ -119,6 +121,7 @@ export default function ConfirmationPage() {
   const { state, dispatch } = useBooking()
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('confirmation')
 
   const [mode, setMode]                 = React.useState<ConfirmationMode>('loading')
   const [snapshot, setSnapshot]         = React.useState<BookingSnapshot | null>(null)
@@ -276,6 +279,39 @@ export default function ConfirmationPage() {
   }
 
   /**
+   * Build a .ics for the ferry leg(s) and trigger a client-side download — no
+   * server route, works for guests. Round-trip / open-jaw → one VEVENT per leg.
+   * Times are converted origin-tz→UTC by buildFerryIcs (see lib/ferry/ics.ts),
+   * so the calendar entry lands at the correct local wall-clock.
+   */
+  const handleAddToCalendar = () => {
+    if (!snapshot?.outbound) return
+    const legs: FerryIcsLeg[] = [{ trip: snapshot.outbound, kind: 'outbound' }]
+    if (snapshot.returnFerry) legs.push({ trip: snapshot.returnFerry, kind: 'return' })
+
+    const ics = buildFerryIcs(legs, {
+      reference: snapshot.bookingReference,
+      contact: { whatsappUrl: snapshot.paymentWhatsAppUrl, phone: snapshot.contactPhone },
+      labels: {
+        reference: t('icsReference'),
+        vessel:    t('icsVessel'),
+        operator:  t('icsOperator'),
+        contact:   t('icsContact'),
+      },
+    })
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `travelbeez-${snapshot.bookingReference}.ics`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  /**
    * Clears booking state then navigates imperatively.
    *
    * Why not <Button asChild><Link>? The asChild pattern merges onClick onto
@@ -397,6 +433,20 @@ export default function ConfirmationPage() {
                         <span className="font-bold text-foreground">Total Paid</span>
                         <span className="text-2xl font-bold text-primary">€{snapshot.grandTotal}</span>
                       </div>
+                      {snapshot.outbound && (
+                        <>
+                          <Separator className="my-4" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleAddToCalendar}
+                          >
+                            <CalendarPlus className="h-4 w-4 mr-2" />
+                            {t('addToCalendar')}
+                          </Button>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
                 )}
@@ -739,6 +789,21 @@ export default function ConfirmationPage() {
                   <span className="font-bold text-foreground">Total</span>
                   <span className="text-2xl font-bold text-primary">€{snapshot.grandTotal}</span>
                 </div>
+
+                {snapshot.outbound && (
+                  <>
+                    <Separator className="my-4" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleAddToCalendar}
+                    >
+                      <CalendarPlus className="h-4 w-4 mr-2" />
+                      {t('addToCalendar')}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
 

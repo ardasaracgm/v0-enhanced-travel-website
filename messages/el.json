@@ -2028,5 +2028,12 @@
     "searchDatesPlaceholder": "Παραλαβή – Επιστροφή",
     "availableLabel": "Διαθέσιμο",
     "comingSoon": "Σύντομα διαθέσιμο"
+  },
+  "confirmation": {
+    "addToCalendar": "Προσθήκη στο ημερολόγιο",
+    "icsReference": "Κράτηση",
+    "icsVessel": "Πλοίο",
+    "icsOperator": "Εταιρεία",
+    "icsContact": "Επικοινωνία"
   }
 }
