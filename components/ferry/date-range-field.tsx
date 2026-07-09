@@ -119,7 +119,14 @@ export function DateRangeField({
           <Calendar
             mode="range"
             locale={dfLocale}
-            disabled={disabled}
+            // A month spans 5 or 6 week rows depending on where it starts, and a row
+            // is 36px (--cell-size 1.75rem + mt-2). Without this the popover changed
+            // height on month navigation — worst when Radix flips it above the
+            // trigger, since then the bottom edge is pinned and the whole calendar
+            // jumps. Side by side it also left the shorter of the two months ragged.
+            // showOutsideDays (Calendar's default) fills the extra row with the
+            // neighbouring month's days, so nothing renders blank.
+            fixedWeeks
             numberOfMonths={2}
             selected={{
               from: date ? parseISO(date) : undefined,
@@ -174,6 +181,7 @@ export function DateRangeField({
           <Calendar
             mode="single"
             locale={dfLocale}
+            fixedWeeks // same constant height as the range calendar above
             disabled={disabled}
             selected={date ? parseISO(date) : undefined}
             onSelect={(d: Date | undefined) => {
