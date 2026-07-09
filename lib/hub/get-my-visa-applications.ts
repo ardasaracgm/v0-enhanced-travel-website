@@ -11,6 +11,11 @@ export interface HubVisaApplication {
   state: string
   promoCode: string | null
   tripId: string | null
+  // Planlanan seyahat penceresi (Postgres `date` → "YYYY-MM-DD").
+  // NULL yalnızca 'draft' satırlarında olabilir (008 DROP NOT NULL); submit
+  // yolundan geçen her başvuruda doludur.
+  schengenEntryDate: string | null
+  schengenExitDate: string | null
 }
 
 /**
@@ -22,7 +27,8 @@ export interface HubVisaApplication {
  * INSERT) → service-role okur; bu email filtresi kullanıcılar arası TEK bariyerdir.
  *
  * association = email equality (user_id FK yok — visa_applications tasarımı).
- * Liste için yeterli alanlar; belge/ödeme/detay YOK (o Parça 2).
+ * Liste için yeterli alanlar; belge/ödeme/detay YOK (o Parça 2). Schengen
+ * tarihleri Hub dashboard'unun tarih sıralaması için (A3).
  */
 export async function getMyVisaApplications(email: string): Promise<HubVisaApplication[]> {
   const normalized = email.trim().toLowerCase()
@@ -31,7 +37,9 @@ export async function getMyVisaApplications(email: string): Promise<HubVisaAppli
   const supabase = getSupabaseAdmin()
   const { data: apps, error } = await supabase
     .from('visa_applications')
-    .select('id, created_at, first_name, last_name, email, state, promo_code, trip_id')
+    .select(
+      'id, created_at, first_name, last_name, email, state, promo_code, trip_id, schengen_entry_date, schengen_exit_date',
+    )
     .ilike('email', normalized) // case-insensitive (auth email lowercase, stored as-entered)
     .order('created_at', { ascending: false })
   if (error || !apps) return []
@@ -48,6 +56,8 @@ export async function getMyVisaApplications(email: string): Promise<HubVisaAppli
       state: a.state,
       promoCode: a.promo_code,
       tripId: a.trip_id,
+      schengenEntryDate: a.schengen_entry_date ?? null,
+      schengenExitDate: a.schengen_exit_date ?? null,
     }))
 }
 
