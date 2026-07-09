@@ -401,6 +401,7 @@
       "passportCountry": "Passport country",
       "passport": "Passport",
       "passportExpiry": "Passport expiry",
+      "licenseExpiry": "Driver's licence expiry",
       "addCta": "Add & send consent request",
       "empty": "You haven't added any travel companions yet.",
       "delete": "Remove",
@@ -412,6 +413,7 @@
       "errCountry": "Nationality / passport country must be chosen from the list.",
       "errPassportFormat": "Passport number must be 5–20 letters or digits.",
       "errPassportExpiry": "If you enter a passport number, also enter its expiry date (or leave both blank).",
+      "errLicenseExpiry": "Enter a valid driver's licence expiry date.",
       "errSave": "Could not save the companion. Please try again.",
       "status": { "pending": "Awaiting consent", "active": "Consented", "revoked": "Withdrawn" }
     },

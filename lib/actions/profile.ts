@@ -28,6 +28,7 @@ export async function saveProfileFormAction(formData: FormData): Promise<void> {
   const passportNumber = upperPassport(String(formData.get('passportNumber') ?? '').trim())
   const passportCountry = String(formData.get('passportCountry') ?? '').trim()
   const passportExpiry = String(formData.get('passportExpiry') ?? '').trim()
+  const licenseExpiry = String(formData.get('licenseExpiry') ?? '').trim()
   const phone = String(formData.get('phone') ?? '').trim()
 
   const supabase = await createSupabaseServerClient()
@@ -49,6 +50,8 @@ export async function saveProfileFormAction(formData: FormData): Promise<void> {
   if (passportNumber && !PASSPORT_RE.test(passportNumber)) back('?err=passport_format')
   if (Boolean(passportNumber) !== Boolean(passportExpiry)) back('?err=passport_expiry')
   if (passportExpiry && !parseISODate(passportExpiry)) back('?err=passport_expiry')
+  // Licence expiry: optional, unbound (no licence number to pair with).
+  if (licenseExpiry && !parseISODate(licenseExpiry)) back('?err=license_expiry')
 
   // Contact phone → profiles.phone (the single contact source; RLS update-own).
   await supabase.from('profiles').update({ phone: phone || null }).eq('id', user.id)
@@ -67,6 +70,7 @@ export async function saveProfileFormAction(formData: FormData): Promise<void> {
     passport_number: passportNumber || null,
     passport_country: passportCountry || null,
     passport_expiry: passportExpiry || null,
+    license_expiry: licenseExpiry || null,
     updated_at: new Date().toISOString(),
   }
   const { data: existing } = await supabase

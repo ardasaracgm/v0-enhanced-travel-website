@@ -58,6 +58,7 @@ export default async function HubCompanionsPage({
     country: 'errCountry',
     passport_format: 'errPassportFormat',
     passport_expiry: 'errPassportExpiry',
+    license_expiry: 'errLicenseExpiry',
   }
   const banner = err
     ? { tone: 'err' as const, msg: t(`companionsPage.${ERR_KEYS[err] ?? 'errSave'}`) }
@@ -180,6 +181,10 @@ export default async function HubCompanionsPage({
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.passportExpiry')}</span>
                   <input name="passportExpiry" type="date" min={today} className="h-9 w-full rounded-md border px-3" />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-muted-foreground">{t('companionsPage.licenseExpiry')}</span>
+                  <input name="licenseExpiry" type="date" min={today} className="h-9 w-full rounded-md border px-3" />
                 </label>
               </div>
               <button

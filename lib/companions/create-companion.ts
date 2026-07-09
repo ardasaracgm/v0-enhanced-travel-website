@@ -15,6 +15,9 @@ export interface CompanionFields {
   passportNumber?: string | null
   passportCountry?: string | null
   passportExpiry?: string | null
+  /** Driver's licence expiry. Standalone (no licence number is collected), so
+   *  unlike passport it is bound to nothing — optional on its own. */
+  licenseExpiry?: string | null
 }
 
 export type CreateCompanionResult =
@@ -59,6 +62,7 @@ export async function createCompanionForOwner(
       passport_number: fields.passportNumber || null,
       passport_country: fields.passportCountry || null,
       passport_expiry: fields.passportExpiry || null,
+      license_expiry: fields.licenseExpiry || null,
       status: 'pending',
     })
     .select('consent_token, contact_email')

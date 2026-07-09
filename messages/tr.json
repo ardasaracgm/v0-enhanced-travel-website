@@ -401,6 +401,7 @@
       "passportCountry": "Pasaport ülkesi",
       "passport": "Pasaport",
       "passportExpiry": "Pasaport bitiş tarihi",
+      "licenseExpiry": "Ehliyet geçerlilik tarihi",
       "addCta": "Ekle ve onay isteği gönder",
       "empty": "Henüz seyahat arkadaşı eklemediniz.",
       "delete": "Kaldır",
@@ -412,6 +413,7 @@
       "errCountry": "Uyruk / pasaport ülkesi listeden seçilmelidir.",
       "errPassportFormat": "Pasaport numarası 5–20 harf veya rakam olmalıdır.",
       "errPassportExpiry": "Pasaport numarası girdiyseniz geçerlilik tarihini de girin (ya da ikisini de boş bırakın).",
+      "errLicenseExpiry": "Geçerli bir ehliyet geçerlilik tarihi girin.",
       "errSave": "Arkadaş kaydedilemedi. Lütfen tekrar deneyin.",
       "status": { "pending": "Onay bekliyor", "active": "Onayladı", "revoked": "Çıktı" }
     },

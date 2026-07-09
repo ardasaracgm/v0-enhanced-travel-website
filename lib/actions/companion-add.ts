@@ -39,6 +39,7 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
   const passportNumber = upperPassport(String(formData.get('passportNumber') ?? '').trim())
   const passportCountry = String(formData.get('passportCountry') ?? '').trim()
   const passportExpiry = String(formData.get('passportExpiry') ?? '').trim()
+  const licenseExpiry = String(formData.get('licenseExpiry') ?? '').trim()
 
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -77,11 +78,18 @@ export async function addCompanionFormAction(formData: FormData): Promise<void> 
     redirect(`/${locale}/hub/companions?err=passport_expiry`)
   }
 
+  // Driver's licence expiry: optional and unbound (no licence number exists to
+  // pair it with). Only shape is checked here — whether it covers a given rental
+  // is the car flow's business (makeDriverSchema's licenseExpiry.beforeDropoff).
+  if (licenseExpiry && !parseISODate(licenseExpiry)) {
+    redirect(`/${locale}/hub/companions?err=license_expiry`)
+  }
+
   const email = (user.email ?? '').toLowerCase()
   const result = await createCompanionForOwner(
     supabase,
     { id: user.id, email },
-    { firstName, lastName, contactEmail, birthDate, nationality, gender, passportNumber, passportCountry, passportExpiry },
+    { firstName, lastName, contactEmail, birthDate, nationality, gender, passportNumber, passportCountry, passportExpiry, licenseExpiry },
   )
 
   if (!result.ok) {

@@ -14,6 +14,7 @@ const ERR_KEYS: Record<string, string> = {
   country: 'companionsPage.errCountry',
   passport_format: 'companionsPage.errPassportFormat',
   passport_expiry: 'companionsPage.errPassportExpiry',
+  license_expiry: 'companionsPage.errLicenseExpiry',
 }
 
 export default async function HubProfilePage({
@@ -40,7 +41,7 @@ export default async function HubProfilePage({
   const [{ data: self }, { data: profile }] = await Promise.all([
     supabase
       .from('travel_companions')
-      .select('first_name, last_name, birth_date, gender, nationality, passport_number, passport_country, passport_expiry')
+      .select('first_name, last_name, birth_date, gender, nationality, passport_number, passport_country, passport_expiry, license_expiry')
       .eq('owner_id', user.id)
       .eq('is_self', true)
       .maybeSingle(),
@@ -124,6 +125,10 @@ export default async function HubProfilePage({
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('companionsPage.passportExpiry')}</span>
                   <input name="passportExpiry" type="date" min={today} defaultValue={s.passport_expiry ?? ''} className="h-9 w-full rounded-md border px-3" />
+                </label>
+                <label className="text-sm">
+                  <span className="mb-1 block text-muted-foreground">{t('companionsPage.licenseExpiry')}</span>
+                  <input name="licenseExpiry" type="date" min={today} defaultValue={s.license_expiry ?? ''} className="h-9 w-full rounded-md border px-3" />
                 </label>
                 <label className="text-sm">
                   <span className="mb-1 block text-muted-foreground">{t('profilePage.phone')}</span>
