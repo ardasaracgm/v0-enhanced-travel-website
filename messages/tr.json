@@ -480,6 +480,7 @@
     "tabs": {
       "ferry": "Feribot",
       "cars": "Kos Araç",
+      "carsLong": "Kos Araç Kiralama",
       "transfer": "Bodrum Transfer",
       "insurance": "Sigorta",
       "visa": "Vize"

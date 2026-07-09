@@ -166,8 +166,11 @@ export default function TravelBeez() {
     icon: React.ComponentType<{ className?: string }>;
     descKey: string;
     buttonKey: string;
+    // Wider label shown from md up, where the 1/5 column has room for it. Only
+    // "cars" has one — the others already read as complete service names.
+    longKey?: string;
   }[] = [
-    { value: "cars", svc: "carRental", icon: Car, descKey: "serviceCta.carsDesc", buttonKey: "serviceCta.carsButton" },
+    { value: "cars", svc: "carRental", icon: Car, descKey: "serviceCta.carsDesc", buttonKey: "serviceCta.carsButton", longKey: "tabs.carsLong" },
     { value: "transfer", svc: "transfer", icon: CarTaxiFront, descKey: "serviceCta.transferDesc", buttonKey: "serviceCta.transferButton" },
     { value: "insurance", svc: "insurance", icon: Shield, descKey: "serviceCta.insuranceDesc", buttonKey: "serviceCta.insuranceButton" },
     { value: "visa", svc: "visa", icon: FileText, descKey: "serviceCta.visaDesc", buttonKey: "serviceCta.visaButton" },
@@ -297,12 +300,16 @@ export default function TravelBeez() {
               <Card className="border-0 shadow-xl bg-card/90 backdrop-blur">
                 <CardContent className="p-0">
                   <Tabs defaultValue="ferry" className="w-full">
-                    <TabsList className="w-full grid grid-cols-5 rounded-t-lg rounded-b-none h-14 bg-muted/50">
+                    {/* items-stretch: the primitive's items-center leaves each trigger at
+                        content height, so an active tab's background never filled the
+                        strip (nor met the card's rounded corners). Stretching also keeps
+                        every tab the same height once one of them wraps to two lines. */}
+                    <TabsList className="w-full grid grid-cols-5 items-stretch rounded-t-lg rounded-b-none h-14 bg-muted/50">
                       <TabsTrigger
                         value="ferry"
-                        className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none first:rounded-tl-lg"
+                        className="gap-2 whitespace-normal text-center leading-tight data-[state=active]:bg-card data-[state=active]:text-primary rounded-none first:rounded-tl-lg"
                       >
-                        <Ship className="h-4 w-4" />
+                        <Ship className="h-4 w-4 shrink-0" />
                         <span className="hidden sm:inline">{t("tabs.ferry")}</span>
                       </TabsTrigger>
                       {heroServiceTabs.map((tab) => {
@@ -311,10 +318,22 @@ export default function TravelBeez() {
                           <TabsTrigger
                             key={tab.value}
                             value={tab.value}
-                            className="gap-2 data-[state=active]:bg-card data-[state=active]:text-primary rounded-none last:rounded-tr-lg"
+                            className="gap-2 whitespace-normal text-center leading-tight data-[state=active]:bg-card data-[state=active]:text-primary rounded-none last:rounded-tr-lg"
                           >
-                            <Icon className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t(`tabs.${tab.value}`)}</span>
+                            <Icon className="h-4 w-4 shrink-0" />
+                            {tab.longKey ? (
+                              // Below sm no label renders at all (icon-only strip). Between
+                              // sm and md the 1/5 column is too narrow for the full service
+                              // name — it would break onto three lines and overflow h-14 —
+                              // so the short label holds there and the long one takes over
+                              // at md, wrapping to at most two lines.
+                              <>
+                                <span className="hidden sm:inline md:hidden">{t(`tabs.${tab.value}`)}</span>
+                                <span className="hidden md:inline">{t(tab.longKey)}</span>
+                              </>
+                            ) : (
+                              <span className="hidden sm:inline">{t(`tabs.${tab.value}`)}</span>
+                            )}
                           </TabsTrigger>
                         );
                       })}
