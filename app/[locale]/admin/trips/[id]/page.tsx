@@ -5,6 +5,8 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { Link } from '@/i18n/routing'
 import { Badge } from '@/components/ui/badge'
 import { confirmPayment } from '@/lib/actions/admin-confirm-payment'
+import { formatLocalDay, formatFerryDay } from '@/lib/dates/display'
+import type { FerryItemMetadata } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,7 +114,16 @@ export default async function AdminTripDetailPage({
                   <p className="text-sm font-medium text-foreground">{i.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {i.item_type}
-                    {i.scheduled_at ? ` · ${new Date(i.scheduled_at).toLocaleDateString('en-GB')}` : ''}
+                    {i.scheduled_at
+                      ? ` · ${
+                          i.item_type === 'ferry'
+                            ? formatFerryDay(
+                                i.scheduled_at,
+                                (i.metadata as FerryItemMetadata | null)?.from_port,
+                              )
+                            : formatLocalDay(i.scheduled_at)
+                        }`
+                      : ''}
                   </p>
                   {i.item_type === 'ferry' && (
                     <div className="mt-1">

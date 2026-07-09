@@ -10,6 +10,10 @@ export interface HubTripDetailItem {
   title: string
   scheduledAt: string | null
   endsAt: string | null
+  /** ferry only — departure/arrival port names, so the view can pick the right
+   *  timezone for the day (see lib/dates/display.ts ferryLocalDay). */
+  fromPort: string | null
+  toPort: string | null
   priceAmount: number
   priceCurrency: string
 }
@@ -86,11 +90,14 @@ export async function getMyTripById(id: string, email: string): Promise<HubTripD
       scheduledAt = m.outbound?.date ?? m.return?.date ?? scheduledAt ?? null
       endsAt = m.outbound?.date && m.return?.date ? m.return.date : null
     }
+    const fm = it.item_type === 'ferry' ? ((it.metadata ?? {}) as FerryItemMetadata) : null
     return {
       type: it.item_type as TripItemType,
       title: it.title,
       scheduledAt,
       endsAt,
+      fromPort: fm?.from_port ?? null,
+      toPort: fm?.to_port ?? null,
       priceAmount: Number(it.price_amount ?? 0),
       priceCurrency: (it.price_currency as string | null) ?? trip.currency ?? 'EUR',
     }

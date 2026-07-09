@@ -2,12 +2,13 @@ import 'server-only'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { groupFerryLegs } from '@/lib/ferry/group-legs'
+import { ferryLocalDay } from '@/lib/dates/display'
 import { expeditionIdFromFerryId } from '@/lib/ferry/reconcile'
 import type { FerryItemMetadata, TripState } from '@/lib/supabase'
 
 export interface HubFerryLeg {
   route: string                 // "Bodrum → Kos"
-  date: string | null           // LOCAL calendar date "YYYY-MM-DD" (scheduled_at sliced)
+  date: string | null           // LOCAL calendar date "YYYY-MM-DD" in the DEPARTURE port's zone
   departureTime: string | null  // RAW provider wall-clock "HH:MM" — NEVER the instant
   arrivalTime: string | null
   pnrs: Array<{ pnr: number; passengerName?: string }>
@@ -110,7 +111,7 @@ export async function getMyFerryReservations(email: string): Promise<HubFerryRes
 
       const legs: HubFerryLeg[] = group.legs.map((leg, i) => ({
         route: `${leg.meta.from_port} → ${leg.meta.to_port}`,
-        date: leg.scheduledAt ? leg.scheduledAt.slice(0, 10) : null,
+        date: ferryLocalDay(leg.scheduledAt, leg.meta.from_port),
         departureTime: leg.meta.departure_time ?? null,
         arrivalTime: leg.meta.arrival_time ?? null,
         pnrs: (clean ? byLeg[i] : i === 0 ? all : []).map((v) => ({

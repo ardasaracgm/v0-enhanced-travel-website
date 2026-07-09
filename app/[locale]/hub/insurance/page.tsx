@@ -1,6 +1,7 @@
 import { Link, redirect } from '@/i18n/routing'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyInsurancePolicies } from '@/lib/hub/get-my-insurance-policies'
+import { formatLocalDay } from '@/lib/dates/display'
 import { Badge } from '@/components/ui/badge'
 
 export const dynamic = 'force-dynamic'
@@ -80,8 +81,8 @@ export default async function HubInsurancePage({
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground">{p.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {p.startsAt ? new Date(p.startsAt).toLocaleDateString('en-GB') : '—'}
-                          {p.endsAt ? ` → ${new Date(p.endsAt).toLocaleDateString('en-GB')}` : ''}
+                          {formatLocalDay(p.startsAt)}
+                          {p.endsAt ? ` → ${formatLocalDay(p.endsAt)}` : ''}
                           {p.coverageValue ? ` · €${p.coverageValue.toLocaleString('en-GB')} cover` : ''}
                           {p.policeNum ? ` · Policy #${p.policeNum}` : ''}
                         </p>

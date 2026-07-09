@@ -5,6 +5,7 @@ import { Ship, Users, Ticket, CheckCircle2, Clock, AlertCircle } from 'lucide-re
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyTripById } from '@/lib/hub/get-my-trip-by-id'
+import { formatDay, formatLocalDay, formatFerryDay } from '@/lib/dates/display'
 import { buildWhatsAppLink, buildPaymentMessage } from '@/lib/contact'
 import { Badge } from '@/components/ui/badge'
 
@@ -24,11 +25,6 @@ const STATE_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'o
 const LABELLED = new Set([
   'ferry', 'car_rental', 'tour', 'hotel', 'transfer', 'package_pickup', 'insurance', 'luggage', 'esim',
 ])
-
-// ISO/date string → localized date via its LOCAL date part (slice, no tz shift);
-// noon-UTC keeps the calendar date stable in every timezone.
-const fmtDate = (d?: string | null) =>
-  d ? new Date(`${d.slice(0, 10)}T12:00:00Z`).toLocaleDateString('en-GB') : '—'
 
 export default async function HubTripDetailPage({
   params,
@@ -74,7 +70,7 @@ export default async function HubTripDetailPage({
                 </Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                {t('tripDetail.bookedOn')}: {fmtDate(trip.createdAt)}
+                {t('tripDetail.bookedOn')}: {formatLocalDay(trip.createdAt)}
               </p>
             </div>
 
@@ -90,7 +86,7 @@ export default async function HubTripDetailPage({
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-600">
                   <CheckCircle2 className="h-4 w-4" />
                   {t('tripDetail.paid')}
-                  {trip.confirmedAt ? ` · ${fmtDate(trip.confirmedAt)}` : ''}
+                  {trip.confirmedAt ? ` · ${formatLocalDay(trip.confirmedAt)}` : ''}
                 </p>
               ) : isPending ? (
                 <div className="mt-3">
@@ -126,8 +122,16 @@ export default async function HubTripDetailPage({
                         {LABELLED.has(it.type) ? t(`tabs.${it.type}`) : it.title}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {fmtDate(it.scheduledAt)}
-                        {it.endsAt ? ` → ${fmtDate(it.endsAt)}` : ''}
+                        {it.type === 'ferry'
+                          ? formatFerryDay(it.scheduledAt, it.fromPort)
+                          : formatLocalDay(it.scheduledAt)}
+                        {it.endsAt
+                          ? ` → ${
+                              it.type === 'ferry'
+                                ? formatFerryDay(it.endsAt, it.toPort)
+                                : formatLocalDay(it.endsAt)
+                            }`
+                          : ''}
                       </p>
                     </div>
                     <span className="shrink-0 text-sm text-foreground">
@@ -212,7 +216,8 @@ export default async function HubTripDetailPage({
                               </Badge>
                             ) : null}
                           </td>
-                          <td className="px-3 py-2 text-muted-foreground">{fmtDate(p.birthDate)}</td>
+                          {/* A birth date is a civil date, not an instant — format it verbatim. */}
+                          <td className="px-3 py-2 text-muted-foreground">{formatDay(p.birthDate)}</td>
                           <td className="px-3 py-2 font-mono text-muted-foreground">{p.passportMasked ?? '—'}</td>
                           <td className="px-3 py-2 text-muted-foreground">{p.nationality ?? '—'}</td>
                         </tr>
