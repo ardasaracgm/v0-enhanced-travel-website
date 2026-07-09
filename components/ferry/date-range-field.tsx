@@ -119,6 +119,7 @@ export function DateRangeField({
           <Calendar
             mode="range"
             locale={dfLocale}
+            disabled={disabled}
             // A month spans 5 or 6 week rows depending on where it starts, and a row
             // is 36px (--cell-size 1.75rem + mt-2). Without this the popover changed
             // height on month navigation — worst when Radix flips it above the
