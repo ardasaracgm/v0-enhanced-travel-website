@@ -26,6 +26,21 @@ export interface CompanionPrefill {
 }
 
 /**
+ * What the car-rental driver form needs — and nothing else. Deliberately NOT a
+ * superset of CompanionPrefill: the driver form shows no passport, so no
+ * passport crosses the wire for it. Keeping the two payloads separate also
+ * keeps licenceExpiry out of the ferry passenger blocks, whose prefill spreads
+ * the whole object into a Passenger (which has an optional licenseExpiry field
+ * meant only for the car-only driver).
+ */
+export interface DriverPrefill {
+  firstName: string
+  lastName: string
+  birthDate: string
+  licenseExpiry: string
+}
+
+/**
  * Mount-time context for the ferry passenger step. A server action sees the
  * cookie session, so it reads the signed-in owner even though the caller is a
  * client component. Returns ONLY companion id+name (no PII shipped eagerly) plus
@@ -81,7 +96,15 @@ export async function getCompanionPrefillContext(): Promise<CompanionPrefillCont
  * never for a pending/revoked row (status='active' filter). RLS + owner_id scope
  * the read to the owner. Returns null if not found / not active / not theirs.
  */
-export async function getCompanionForPrefill(id: string): Promise<CompanionPrefill | null> {
+type CompanionRow = Record<string, string | null>
+
+/**
+ * The one ownership gate both prefill payloads go through: signed-in owner, own
+ * row, active only. `columns` decides how much of the row is read — the caller
+ * asks for exactly the fields its form renders, so a narrow form never pulls
+ * passport data it will not show.
+ */
+async function fetchOwnedCompanion(id: string, columns: string): Promise<CompanionRow | null> {
   if (!id) return null
 
   const supabase = await createSupabaseServerClient()
@@ -90,13 +113,21 @@ export async function getCompanionForPrefill(id: string): Promise<CompanionPrefi
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: c } = await supabase
+  const { data } = await supabase
     .from('travel_companions')
-    .select('first_name, last_name, gender, birth_date, nationality, passport_number, passport_expiry')
+    .select(columns)
     .eq('id', id)
     .eq('owner_id', user.id)
     .eq('status', 'active')
     .maybeSingle()
+  return (data as CompanionRow | null) ?? null
+}
+
+export async function getCompanionForPrefill(id: string): Promise<CompanionPrefill | null> {
+  const c = await fetchOwnedCompanion(
+    id,
+    'first_name, last_name, gender, birth_date, nationality, passport_number, passport_expiry',
+  )
   if (!c) return null
 
   // Gender null/blank on the companion → 'unspecified' (a value the ferry select
@@ -111,5 +142,25 @@ export async function getCompanionForPrefill(id: string): Promise<CompanionPrefi
     passportNumber: (c.passport_number as string | null) ?? '',
     passportExpiryDate: (c.passport_expiry as string | null) ?? '',
     nationality: (c.nationality as string | null) ?? '',
+  }
+}
+
+/**
+ * Prefill payload for the car-rental driver form. Same on-demand, owner-scoped
+ * read as getCompanionForPrefill, but only the four fields that form renders.
+ * licenseExpiry may be '' — a companion saved for ferry travel need never have
+ * one; the driver then types it in. Whether a present expiry actually covers
+ * the rental is the caller's check (makeDriverSchema's licenseExpiry
+ * .beforeDropoff), mirroring how passport expiry is gated at the ferry step.
+ */
+export async function getCompanionForDriverPrefill(id: string): Promise<DriverPrefill | null> {
+  const c = await fetchOwnedCompanion(id, 'first_name, last_name, birth_date, license_expiry')
+  if (!c) return null
+
+  return {
+    firstName: c.first_name ?? '',
+    lastName: c.last_name ?? '',
+    birthDate: c.birth_date ?? '',
+    licenseExpiry: c.license_expiry ?? '',
   }
 }
