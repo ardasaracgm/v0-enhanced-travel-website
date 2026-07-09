@@ -237,31 +237,37 @@ export default function CarRentalDriverPage() {
                       <p className="text-sm text-muted-foreground">{t('subheading')}</p>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Guests have no companions → no selector, form unchanged. */}
-                      {companions.length > 0 && (
-                        <div className="space-y-2 md:max-w-xs">
-                          <Label htmlFor="companion">{tp('companionPrefill.label')}</Label>
-                          <Select value={assignment} onValueChange={handlePrefill}>
-                            <SelectTrigger id="companion">
-                              <SelectValue placeholder={tp('companionPrefill.placeholder')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {companions.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>
-                                  {c.isSelf ? tp('companionPrefill.self') : c.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
                       {licenseWarning && (
                         <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                           <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                           <span>{t('companionLicenseWarning')}</span>
                         </div>
                       )}
-                      <div className="grid md:grid-cols-2 gap-4">
+                      {/* Identity row. The picker shares it with the names, so the form is
+                          two rows instead of three. A guest has no picker → two columns,
+                          exactly the layout that shipped before it existed. */}
+                      <div
+                        className={`grid grid-cols-1 items-start gap-4 ${
+                          companions.length > 0 ? 'md:grid-cols-3' : 'md:grid-cols-2'
+                        }`}
+                      >
+                        {companions.length > 0 && (
+                          <div className="space-y-2">
+                            <Label htmlFor="companion">{tp('companionPrefill.label')}</Label>
+                            <Select value={assignment} onValueChange={handlePrefill}>
+                              <SelectTrigger id="companion">
+                                <SelectValue placeholder={tp('companionPrefill.placeholder')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {companions.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>
+                                    {c.isSelf ? tp('companionPrefill.self') : c.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Label htmlFor="firstName">{tp('labels.firstName')} *</Label>
                           <Input
@@ -285,7 +291,9 @@ export default function CarRentalDriverPage() {
                           {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
                         </div>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      {/* Dates row. items-start so a field whose hint is replaced by a
+                          one-line error never drags its neighbour's box taller. */}
+                      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="birthDate">{tp('labels.birthDate')} *</Label>
                           <Input
