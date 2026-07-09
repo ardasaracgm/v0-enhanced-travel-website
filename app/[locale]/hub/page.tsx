@@ -3,11 +3,15 @@ import { getTranslations } from 'next-intl/server'
 import {
   Ship, Car, FileCheck, ShieldCheck, UserCircle, Lock,
   ArrowRight, CalendarClock, Headphones, MapPin, BadgeCheck,
+  Clock, Users, ChevronRight, Luggage, Bus,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { buildWhatsAppLink } from '@/lib/contact'
+import { titleCaseTr } from '@/lib/text/title-case'
+import { getDashboardData } from '@/lib/hub/get-dashboard-data'
+import type { HubDashboardCard, HubDashboardRowType } from '@/lib/hub/get-dashboard-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,20 +19,21 @@ export const dynamic = 'force-dynamic'
 // page returns only the content that goes inside the shell's <main>. Guests are
 // redirected to /login (auth_failed feedback is shown there, not here).
 
-// ── Signed-in dashboard (A1: visual skeleton — counts/list wired in A3) ───────
-interface SummaryCard {
-  key: 'ferry' | 'car_rental' | 'visa' | 'insurance'
-  icon: LucideIcon
-  href: string
-  tint: string
-  ink: string
+// Tek renk/ikon tablosu: özet kartları da yaklaşan-rezervasyon satırları da bundan besleniyor.
+const TYPE_TONE: Record<HubDashboardRowType, { icon: LucideIcon; tint: string; ink: string }> = {
+  ferry:      { icon: Ship,        tint: 'bg-blue-100',    ink: 'text-blue-600' },
+  car_rental: { icon: Car,         tint: 'bg-emerald-100', ink: 'text-emerald-600' },
+  visa:       { icon: FileCheck,   tint: 'bg-orange-100',  ink: 'text-orange-600' },
+  insurance:  { icon: ShieldCheck, tint: 'bg-violet-100',  ink: 'text-violet-600' },
+  transfer:   { icon: Bus,         tint: 'bg-sky-100',     ink: 'text-sky-600' },
+  luggage:    { icon: Luggage,     tint: 'bg-amber-100',   ink: 'text-amber-600' },
 }
 
-const SUMMARY: SummaryCard[] = [
-  { key: 'ferry',      icon: Ship,        href: '/hub/ferry',      tint: 'bg-blue-100',    ink: 'text-blue-600' },
-  { key: 'car_rental', icon: Car,         href: '/hub/car-rental', tint: 'bg-emerald-100', ink: 'text-emerald-600' },
-  { key: 'visa',       icon: FileCheck,   href: '/hub/visa',       tint: 'bg-orange-100',  ink: 'text-orange-600' },
-  { key: 'insurance',  icon: ShieldCheck, href: '/hub/insurance',  tint: 'bg-violet-100',  ink: 'text-violet-600' },
+const SUMMARY: Array<{ key: HubDashboardCard; href: string }> = [
+  { key: 'ferry',      href: '/hub/ferry' },
+  { key: 'car_rental', href: '/hub/car-rental' },
+  { key: 'visa',       href: '/hub/visa' },
+  { key: 'insurance',  href: '/hub/insurance' },
 ]
 
 interface TrustBadge {
@@ -64,6 +69,7 @@ export default async function HubPage({
   }
 
   const t = await getTranslations('hub.dashboard')
+  const th = await getTranslations('hub') // tabs.* + reservationState.* zaten üç dilde var
 
   const { data: self } = await supabase
     .from('travel_companions')
@@ -73,6 +79,18 @@ export default async function HubPage({
     .maybeSingle()
 
   const email = user.email ?? ''
+  const data = await getDashboardData(email)
+
+  const intl = locale === 'el' ? 'el-GR' : locale === 'tr' ? 'tr-TR' : 'en-GB'
+  // "YYYY-MM-DD" zaten yerel takvim günü (getDashboardData zonedDate ile çözdü);
+  // öğlen-UTC ile kurup formatlamak sunucu TZ'inin günü kaydırmasını engeller.
+  const fmtDay = (d: string) =>
+    new Date(`${d}T12:00:00Z`).toLocaleDateString(intl, {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
+  const money = (amount: number, currency: string) =>
+    new Intl.NumberFormat(intl, { style: 'currency', currency }).format(amount)
+
   const fullName = [self?.first_name, self?.last_name].filter(Boolean).join(' ').trim()
   const displayName = fullName || email.split('@')[0] || 'Traveler'
   const initial = (displayName[0] ?? 'T').toUpperCase()
@@ -100,33 +118,111 @@ export default async function HubPage({
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {SUMMARY.map(({ key, icon: Icon, href, tint, ink }) => (
-                <div key={key} className="rounded-2xl border border-slate-100 p-4">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-full ${tint}`}>
-                    <Icon className={`h-5 w-5 ${ink}`} />
+              {SUMMARY.map(({ key, href }) => {
+                const { icon: Icon, tint, ink } = TYPE_TONE[key]
+                return (
+                  <div key={key} className="rounded-2xl border border-slate-100 p-4">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-full ${tint}`}>
+                      <Icon className={`h-5 w-5 ${ink}`} />
+                    </div>
+                    <p className="mt-3 text-2xl font-bold text-blue-950">{data.counts[key]}</p>
+                    <p className="text-xs text-slate-500">{t(`cards.${key}`)}</p>
+                    <Link
+                      href={href}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+                    >
+                      {t('view')} <ArrowRight className="h-3 w-3" />
+                    </Link>
                   </div>
-                  <p className="mt-3 text-2xl font-bold text-blue-950">—</p>
-                  <p className="text-xs text-slate-500">{t(`cards.${key}`)}</p>
-                  <Link
-                    href={href}
-                    className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
-                  >
-                    {t('view')} <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
-          {/* Yaklaşan Rezervasyonlar (boş-durum — veri A3) */}
+          {/* Yaklaşan Rezervasyonlar */}
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-blue-950">{t('upcomingTitle')}</h2>
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-                <CalendarClock className="h-6 w-6 text-slate-400" />
+            {data.rows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                  <CalendarClock className="h-6 w-6 text-slate-400" />
+                </div>
+                <p className="mt-3 max-w-sm text-sm text-slate-500">
+                  {data.hasPast ? t('upcomingEmptyPast') : t('upcomingEmpty')}
+                </p>
               </div>
-              <p className="mt-3 text-sm text-slate-500">{t('upcomingEmpty')}</p>
-            </div>
+            ) : (
+              <div className="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+                {data.rows.map((r) => {
+                  const { icon: Icon, tint, ink } = TYPE_TONE[r.type]
+                  // Vize ödemesinin tamamlanacağı bir sayfa yok (/hub/visa/[id] yalnız durum
+                  // gösterir); trip sayfasında ise WhatsApp ödeme butonu var → CTA orada değişir.
+                  const payable = r.state === 'pending_payment' && r.type !== 'visa'
+                  const title =
+                    r.type === 'ferry' ? titleCaseTr(r.title)
+                    : r.type === 'visa' ? t('rows.visaTitle')
+                    : r.type === 'insurance' ? t('rows.insuranceTitle')
+                    : r.title
+                  return (
+                    <Link
+                      key={r.key}
+                      href={r.href}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-3 p-4 transition-colors hover:bg-slate-50"
+                    >
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${tint}`}>
+                        <Icon className={`h-5 w-5 ${ink}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          {th(`tabs.${r.type}`)}
+                        </span>
+                        <p className="truncate font-semibold text-blue-950">{title}</p>
+                        {/* Başvuru sahibinin adı: pasaporttaki gibi, olduğu gibi (bkz. title-case.ts). */}
+                        {r.type === 'visa' && (
+                          <p className="truncate text-xs text-slate-500">{r.title}</p>
+                        )}
+                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarClock className="h-3.5 w-3.5" />
+                            {r.endDate ? `${fmtDay(r.startDate)} – ${fmtDay(r.endDate)}` : fmtDay(r.startDate)}
+                          </span>
+                          {r.departureTime && (
+                            <span className="inline-flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {r.departureTime}
+                            </span>
+                          )}
+                          {r.passengerCount ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Users className="h-3.5 w-3.5" />
+                              {t('rows.pax', { count: r.passengerCount })}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <p className="font-semibold text-blue-950">{money(r.priceAmount, r.priceCurrency)}</p>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          r.state === 'pending_payment'
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {th(`reservationState.${r.state}`)}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold ${
+                          payable ? 'border-amber-200 text-amber-700' : 'border-slate-200 text-blue-950'
+                        }`}
+                      >
+                        {payable ? t('rows.payCta') : t(`rows.cta.${r.type}`)}
+                      </span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
 

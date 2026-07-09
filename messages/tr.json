@@ -299,6 +299,21 @@
       },
       "upcomingTitle": "Yaklaşan Rezervasyonlar",
       "upcomingEmpty": "Henüz yaklaşan rezervasyonunuz yok.",
+      "upcomingEmptyPast": "Yaklaşan rezervasyonunuz yok. Geçmiş rezervasyonlarınızı soldaki hizmet sayfalarından görüntüleyebilirsiniz.",
+      "rows": {
+        "visaTitle": "Kapıda Vize",
+        "insuranceTitle": "Seyahat Sağlık Sigortası",
+        "pax": "{count} Kişi",
+        "payCta": "Ödemeyi Tamamla",
+        "cta": {
+          "ferry": "Bileti Gör",
+          "car_rental": "Rezervasyonu Gör",
+          "visa": "Belgeleri Gör",
+          "insurance": "Poliçeyi Gör",
+          "transfer": "Rezervasyonu Gör",
+          "luggage": "Rezervasyonu Gör"
+        }
+      },
       "account": {
         "title": "Hesap Bilgileriniz",
         "editProfile": "Profilimi Düzenle"

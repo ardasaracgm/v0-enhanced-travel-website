@@ -299,6 +299,21 @@
       },
       "upcomingTitle": "Upcoming Reservations",
       "upcomingEmpty": "You have no upcoming reservations yet.",
+      "upcomingEmptyPast": "You have no upcoming reservations. Your past ones are on the service pages in the menu.",
+      "rows": {
+        "visaTitle": "Visa on Arrival",
+        "insuranceTitle": "Travel Health Insurance",
+        "pax": "{count, plural, one {# person} other {# people}}",
+        "payCta": "Complete Payment",
+        "cta": {
+          "ferry": "View Ticket",
+          "car_rental": "View Booking",
+          "visa": "View Documents",
+          "insurance": "View Policy",
+          "transfer": "View Booking",
+          "luggage": "View Booking"
+        }
+      },
       "account": {
         "title": "Account Details",
         "editProfile": "Edit My Profile"
