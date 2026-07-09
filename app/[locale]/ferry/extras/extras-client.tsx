@@ -565,6 +565,10 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                           locale={locale}
                           placeholder={t('dateRangePlaceholder')}
                           alignOffset={4}
+                          // Servis rengi kutuyu bulunabilir kılar: shadcn'in border-input'u
+                          // 1px ve nötr, çevredeki kartlar border-2. Ton "Eklendi" rozetiyle
+                          // aynı kaynaktan gelir (literal kopyalamıyoruz — ayrışamaz).
+                          triggerClassName={`border-2 ${SUMMARY_TONE_BORDER.car}`}
                         />
                       </div>
                       {validRange && (
@@ -939,7 +943,14 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                 {/* Görsel altı: rota dropdown (label yok, placeholder yeter) + Vito/Sprinter 2'li grid */}
                 <div className="space-y-3">
                   <Select value={transferRouteId ?? ''} onValueChange={handleTransferRoute}>
-                    <SelectTrigger className="w-full">
+                    {/* Çerçeve durumu taşır: boşken koyu mavi ("seç"), doluyken yan
+                        banttaki transfer satırının yeşili — aynı sabitten, ayrışamaz.
+                        Yalnız TRIGGER; açılan liste portal'da (bg-popover) çizilir. */}
+                    <SelectTrigger
+                      className={`w-full border-2 ${
+                        transferRouteId ? SUMMARY_TONE_BORDER.transfer : 'border-blue-700'
+                      }`}
+                    >
                       <SelectValue placeholder={t('transfer.selectRoute')} />
                     </SelectTrigger>
                     <SelectContent>
