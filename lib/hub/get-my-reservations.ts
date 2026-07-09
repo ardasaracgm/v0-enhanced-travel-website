@@ -8,6 +8,10 @@ export interface HubReservationItem {
   title: string
   scheduledAt: string | null
   endsAt: string | null
+  // ⚠️ Kişi sayısı olarak yalnızca `ferry` ve `insurance` için anlamlı.
+  // `transfer` ve `luggage` resolver'ları bunu sabit 1 yazar (araç-/kalem-bazlı);
+  // transfer'in gerçek yolcu sayısı metadata.passenger_count_info'dadır.
+  passengerCount: number
   priceAmount: number
   priceCurrency: string
 }
@@ -52,7 +56,9 @@ export async function getMyReservations(email: string): Promise<HubReservation[]
   const tripIds = mine.map((t) => t.id)
   const { data: items } = await supabase
     .from('trip_items')
-    .select('trip_id, item_type, title, scheduled_at, ends_at, price_amount, price_currency')
+    .select(
+      'trip_id, item_type, title, scheduled_at, ends_at, passenger_count, price_amount, price_currency',
+    )
     .in('trip_id', tripIds)
     .order('sequence', { ascending: true })
 
@@ -64,6 +70,7 @@ export async function getMyReservations(email: string): Promise<HubReservation[]
       title: it.title,
       scheduledAt: it.scheduled_at,
       endsAt: it.ends_at,
+      passengerCount: Number(it.passenger_count ?? 1),
       priceAmount: Number(it.price_amount ?? 0),
       priceCurrency: it.price_currency ?? 'EUR',
     })
