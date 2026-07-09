@@ -13,6 +13,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  getCompanionPrefillContext,
+  getCompanionForDriverPrefill,
+  type CompanionOption,
+} from '@/lib/actions/companion-prefill'
 
 import { BookingStepper } from '@/components/booking/stepper'
 import { Header } from '@/components/islandbee/header'
@@ -42,6 +48,71 @@ export default function CarRentalDriverPage() {
   const [contactEmail, setContactEmail] = React.useState('')
   const [contactPhone, setContactPhone] = React.useState('')
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+  const [companions, setCompanions] = React.useState<CompanionOption[]>([])
+  // The companion this form is currently filled from ('' = typed by hand).
+  const [assignment, setAssignment] = React.useState('')
+  const [licenseWarning, setLicenseWarning] = React.useState(false)
+
+  // Signed-in owners: load their saved people (name-only) + contact defaults. A
+  // server action reads the cookie session, so no browser auth client is needed;
+  // a guest gets signedIn:false, keeps an empty list, and sees no selector at all.
+  // Contact fields fill only if still empty, so a late response can't clobber typing.
+  React.useEffect(() => {
+    let cancelled = false
+    getCompanionPrefillContext()
+      .then((ctx) => {
+        if (cancelled || !ctx.signedIn) return
+        setCompanions(ctx.companions)
+        if (ctx.contactEmail) setContactEmail((prev) => (prev === '' ? ctx.contactEmail : prev))
+        if (ctx.contactPhone) setContactPhone((prev) => (prev === '' ? ctx.contactPhone : prev))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Fill the whole form from a saved person. Names are already uppercased at the
+  // Hub boundary, so nothing is transformed here. A licence that expires before
+  // drop-off is NOT copied in — the field stays empty and the block warns, the
+  // same shape as the ferry step's expired-passport rule.
+  const handlePrefill = async (companionId: string) => {
+    const data = await getCompanionForDriverPrefill(companionId)
+    if (!data) return
+    const expired =
+      !!data.licenseExpiry && !!car?.dropoffAt && data.licenseExpiry < car.dropoffAt
+    setFirstName(data.firstName)
+    setLastName(data.lastName)
+    setBirthDate(data.birthDate)
+    setLicenseExpiry(expired ? '' : data.licenseExpiry)
+    setLicenseWarning(expired)
+    setAssignment(companionId)
+  }
+
+  // Manual edit while the form holds a companion's data. Editing WHO the driver is
+  // (name / birth date) detaches: the other identity fields are cleared so a typed
+  // name can never end up carrying someone else's licence. Editing the licence
+  // expiry does NOT detach — that is the very correction the expired-licence
+  // warning asks for, and it belongs to the same person.
+  const updateDriver = (field: 'firstName' | 'lastName' | 'birthDate', value: string) => {
+    if (assignment) {
+      setFirstName(field === 'firstName' ? value : '')
+      setLastName(field === 'lastName' ? value : '')
+      setBirthDate(field === 'birthDate' ? value : '')
+      setLicenseExpiry('')
+      setAssignment('')
+      setLicenseWarning(false)
+      return
+    }
+    if (field === 'firstName') setFirstName(value)
+    else if (field === 'lastName') setLastName(value)
+    else setBirthDate(value)
+  }
+
+  const updateLicenseExpiry = (value: string) => {
+    setLicenseExpiry(value)
+    if (value) setLicenseWarning(false)
+  }
   // Car image derived from the convention (/cars/<modelKey>.webp); no payload
   // change. Falls back to a neutral shot if the file 404s or modelKey is absent.
   const [imgError, setImgError] = React.useState(false)
@@ -166,6 +237,30 @@ export default function CarRentalDriverPage() {
                       <p className="text-sm text-muted-foreground">{t('subheading')}</p>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {/* Guests have no companions → no selector, form unchanged. */}
+                      {companions.length > 0 && (
+                        <div className="space-y-2 md:max-w-xs">
+                          <Label htmlFor="companion">{tp('companionPrefill.label')}</Label>
+                          <Select value={assignment} onValueChange={handlePrefill}>
+                            <SelectTrigger id="companion">
+                              <SelectValue placeholder={tp('companionPrefill.placeholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {companions.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.isSelf ? tp('companionPrefill.self') : c.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      {licenseWarning && (
+                        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                          <span>{t('companionLicenseWarning')}</span>
+                        </div>
+                      )}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">{tp('labels.firstName')} *</Label>
@@ -173,7 +268,7 @@ export default function CarRentalDriverPage() {
                             id="firstName"
                             placeholder={tp('placeholders.firstName')}
                             value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            onChange={(e) => updateDriver('firstName', e.target.value)}
                             className={errors.firstName ? 'border-destructive' : ''}
                           />
                           {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
@@ -184,7 +279,7 @@ export default function CarRentalDriverPage() {
                             id="lastName"
                             placeholder={tp('placeholders.lastName')}
                             value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
+                            onChange={(e) => updateDriver('lastName', e.target.value)}
                             className={errors.lastName ? 'border-destructive' : ''}
                           />
                           {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
@@ -199,7 +294,7 @@ export default function CarRentalDriverPage() {
                             min="1900-01-01"
                             max={todayAthens}
                             value={birthDate}
-                            onChange={(e) => setBirthDate(e.target.value)}
+                            onChange={(e) => updateDriver('birthDate', e.target.value)}
                             className={errors.birthDate ? 'border-destructive' : ''}
                           />
                           {errors.birthDate
@@ -214,7 +309,7 @@ export default function CarRentalDriverPage() {
                             min={todayAthens}
                             max="2099-12-31"
                             value={licenseExpiry}
-                            onChange={(e) => setLicenseExpiry(e.target.value)}
+                            onChange={(e) => updateLicenseExpiry(e.target.value)}
                             className={errors.licenseExpiry ? 'border-destructive' : ''}
                           />
                           {errors.licenseExpiry

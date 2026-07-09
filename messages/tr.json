@@ -1421,6 +1421,7 @@
     "driverTitle": "Ana sürücü",
     "minAgeHint": "Sürücü en az 21 yaşında olmalı.",
     "licenseLabel": "Ehliyet geçerlilik tarihi",
+    "companionLicenseWarning": "Bu kişinin ehliyeti araç teslim tarihinde geçerli değil — güncel bitiş tarihini girin ya da Hub'dan güncelleyin.",
     "licenseHint": "Ehliyetiniz aracı teslim tarihine kadar geçerli olmalı.",
     "noCar": {
       "title": "Araç seçilmedi",

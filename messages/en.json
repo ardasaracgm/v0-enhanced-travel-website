@@ -1421,6 +1421,7 @@
     "driverTitle": "Main driver",
     "minAgeHint": "The driver must be at least 21 years old.",
     "licenseLabel": "Driver's licence expiry",
+    "companionLicenseWarning": "This person's licence is not valid through the drop-off date — enter a current expiry date, or update it in the Hub.",
     "licenseHint": "Your licence must be valid through the drop-off date.",
     "noCar": {
       "title": "No car selected",
