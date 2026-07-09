@@ -115,6 +115,10 @@ export interface RouteAvailability {
    *  EUR). Fiyatlı şerit altyapısı — UI'da showPrice flag'i ile gizlenir, şimdilik
    *  render EDİLMEZ. Yetişkin tarifesi olmayan/0 sefer atlanır. */
   minPriceByDate: Record<string, number>
+  /** Bu rotanın sezondaki SON sefer günü (YYYY-MM-DD), sefer yoksa null.
+   *  DateRangeField.maxDate'i besler → takvim Kasım'a gezinmez. disabledDates
+   *  yalnız ufkun İÇİNİ kapatır; ufkun sonunu bu alan kapatır. */
+  lastSailingDate: string | null
 }
 
 /**
@@ -133,7 +137,7 @@ export async function getRouteScheduleAction(
   try {
     schedule = await provider.getRouteSchedule(slug(from), slug(to))
   } catch (e) {
-    if (isUnknownRouteError(e)) return { disabledDates: [], countByDate: {}, seatsByDate: {}, minPriceByDate: {} }
+    if (isUnknownRouteError(e)) return { disabledDates: [], countByDate: {}, seatsByDate: {}, minPriceByDate: {}, lastSailingDate: null }
     throw e
   }
 
@@ -152,14 +156,15 @@ export async function getRouteScheduleAction(
   }
 
   const sailing = Object.keys(countByDate).sort()
-  if (sailing.length === 0) return { disabledDates: [], countByDate, seatsByDate, minPriceByDate }
+  if (sailing.length === 0) return { disabledDates: [], countByDate, seatsByDate, minPriceByDate, lastSailingDate: null }
 
   // Sezon ufku = min–max sefer-günü. Aralıktaki sefersiz günler = tümleyen → kapalı.
-  // Ufuk dışı (max sonrası) günler set'te değil → takvimde açık kalır (round-trip MVP
-  // kararı + nearest-fallback sefersiz güne aramayı zaten yakalar).
+  // Ufkun SONU artık disabledDates'in değil lastSailingDate'in işi: takvim ona kadar
+  // gezilebiliyor, ötesi hiç çizilmiyor (DateRangeField.maxDate). Ufkun BAŞI (bugün ile
+  // ilk sefer arası) hâlâ açık — nearest-fallback onu yakalıyor, ayrı iş.
   const disabledDates: string[] = []
   for (let d = sailing[0]; d <= sailing[sailing.length - 1]; d = addDaysISO(d, 1)) {
     if (!(d in countByDate)) disabledDates.push(d)
   }
-  return { disabledDates, countByDate, seatsByDate, minPriceByDate }
+  return { disabledDates, countByDate, seatsByDate, minPriceByDate, lastSailingDate: sailing[sailing.length - 1] }
 }

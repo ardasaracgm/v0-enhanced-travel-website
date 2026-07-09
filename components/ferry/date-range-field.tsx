@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { CalendarIcon } from 'lucide-react'
-import { format, parseISO } from 'date-fns'
+import { addMonths, endOfMonth, format, parseISO } from 'date-fns'
 import { tr, enUS, el } from 'date-fns/locale'
 import type { DateRange } from 'react-day-picker'
 
@@ -23,6 +23,14 @@ interface DateRangeFieldProps {
   onReturnDateChange: (date: string) => void     // birebir setReturnDate
   /** Seçilebilir en erken gün (YYYY-MM-DD) — todayAthens. */
   minDate: string
+  /**
+   * Seçilebilir en geç gün (YYYY-MM-DD). Verilmezse minDate + 12 ayın SONU —
+   * araç/sigorta/vize/bagaj için bu sabit ufuk doğru, çağrıları değiştirmiyoruz.
+   * Ferry rotaya göre daha erken biter (sezonun son sefer günü) ve onu geçer.
+   * minDate'ten küçük bir değer (sezon kapandı, son sefer geçmişte) yok sayılır:
+   * endMonth < startMonth react-day-picker'da BOŞ takvim çizdirir.
+   */
+  maxDate?: string
   /** UI dili — takvim lokalizasyonu (tr/en/el). */
   locale: string
   /** Boşken trigger metni. */
@@ -67,7 +75,7 @@ const LOCALES = { tr, en: enUS, el } as const
  */
 export function DateRangeField({
   mode, date, returnDate, onDateChange, onReturnDateChange,
-  minDate, locale, placeholder, alignOffset = 0, align = 'start', triggerClassName,
+  minDate, maxDate, locale, placeholder, alignOffset = 0, align = 'start', triggerClassName,
   disabledDates, dayModifiers, dayModifiersClassNames,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false)
@@ -78,9 +86,21 @@ export function DateRangeField({
   const dfLocale = LOCALES[locale as keyof typeof LOCALES] ?? enUS
   const fmt = (s: string) => format(parseISO(s), 'd MMM', { locale: dfLocale })
 
-  // Geçmiş günler + (Adım 2) sefersiz günler kapalı. disabledDates yoksa sadece geçmiş.
+  // Takvimin iki ucu. Aynı minDate'ten türerler, dolayısıyla `disabled` sınırı ile
+  // startMonth/endMonth navigasyon sınırı arasında bir gün kayması yapısal olarak
+  // imkânsız. `today` da buradan gelir: react-day-picker'ın kendi varsayılanı
+  // new Date() — tarayıcı saat dilimi — ve kışın bir Türk kullanıcı için Atina
+  // gününden bir gün ileride olabilir.
+  const minDay = parseISO(minDate)
+  const maxDay =
+    maxDate && maxDate >= minDate ? parseISO(maxDate) : endOfMonth(addMonths(minDay, 12))
+
+  // Geçmiş + ufuk-sonrası günler + (Adım 2) sefersiz günler kapalı. endMonth tek
+  // başına yetmez: o AY granülaritesinde, yani son sefer 12 Ekim'se Ekim'in kalan
+  // günleri gezilebilir kalırdı — `after` onları kapatır.
   const disabled: CalendarProps['disabled'] = [
-    { before: parseISO(minDate) },
+    { before: minDay },
+    { after: maxDay },
     ...(disabledDates ? [(d: Date) => disabledDates.has(format(d, 'yyyy-MM-dd'))] : []),
   ]
 
@@ -120,6 +140,9 @@ export function DateRangeField({
             mode="range"
             locale={dfLocale}
             disabled={disabled}
+            today={minDay}
+            startMonth={minDay}
+            endMonth={maxDay}
             // A month spans 5 or 6 week rows depending on where it starts, and a row
             // is 36px (--cell-size 1.75rem + mt-2). Without fixedWeeks the popover
             // changed height on month navigation — worst when Radix flips it above
@@ -188,6 +211,9 @@ export function DateRangeField({
             locale={dfLocale}
             fixedWeeks // same constant height as the range calendar above
             disabled={disabled}
+            today={minDay}
+            startMonth={minDay}
+            endMonth={maxDay}
             selected={date ? parseISO(date) : undefined}
             onSelect={(d: Date | undefined) => {
               onDateChange(d ? format(d, 'yyyy-MM-dd') : '')

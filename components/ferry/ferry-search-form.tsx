@@ -262,6 +262,7 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
               onDateChange={setDate}
               onReturnDateChange={setReturnDate}
               minDate={todayAthens}
+              maxDate={availability?.lastSailingDate ?? undefined}
               locale={locale}
               placeholder={t('departDate')}
               disabledDates={disabledDateSet}
