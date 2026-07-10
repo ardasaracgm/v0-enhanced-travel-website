@@ -17,11 +17,12 @@ import { PortCombobox } from '@/components/ferry/port-combobox'
 import { DateRangeField } from '@/components/ferry/date-range-field'
 
 // Yolcu üst sınırı: Dentur'da sabit per-rezervasyon cap YOK (paxlimit probe ile
-// kanıtlandı — 8 pax/390 koltuk kabul); tavan sefer kotası. 11 = makul üst sınır
-// (Ferryhopper 9 / Yeşil Marmaris 10 referans). Insurance MAX_TRAVELLERS=9'dan
-// AYRI bilinçli (farklı domain). Fiyat lineer → money-path etkilenmez.
+// kanıtlandı — 8 pax/390 koltuk kabul); tavan sefer kotası. 16 = VIP transfer
+// filosundaki Sprinter'ın koltuk kapasitesi — 16 kişilik bir grup transfer
+// alabiliyorsa feribot bileti de alabilmeli. Fiyat lineer → money-path etkilenmez.
+// Bu YALNIZ bir UI kelepçesi: submit-booking passengers dizisine .max() koymuyor.
 const FERRY_MIN_PAX = 1
-const FERRY_MAX_PAX = 11
+const FERRY_MAX_PAX = 16
 const clampPax = (n: number) =>
   Math.min(FERRY_MAX_PAX, Math.max(FERRY_MIN_PAX, Number.isFinite(n) ? n : FERRY_MIN_PAX))
 
