@@ -564,7 +564,12 @@ export default function ExtrasClient({ cars }: ExtrasClientProps) {
                           minDate={todayAthens}
                           locale={locale}
                           placeholder={t('dateRangePlaceholder')}
-                          alignOffset={4}
+                          // Kutu sol kolonun sağ kenarında (md:justify-end), sağında
+                          // sticky özet paneli var. 2-ay takvim 256px trigger'dan geniş:
+                          // align="start" onu panelin üstüne taşırırdı (collisionPadding
+                          // yalnız viewport'u korur). "end" → takvim sola, kolon içine açılır.
+                          align="end"
+                          alignOffset={0}
                           // Servis rengi kutuyu bulunabilir kılar: shadcn'in border-input'u
                           // 1px ve nötr, çevredeki kartlar border-2. Ton "Eklendi" rozetiyle
                           // aynı kaynaktan gelir (literal kopyalamıyoruz — ayrışamaz).
