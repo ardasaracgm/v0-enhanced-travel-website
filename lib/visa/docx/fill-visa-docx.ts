@@ -61,6 +61,27 @@ function setCheckbox(xml: string, name: string): string {
   return xml.slice(0, off) + '<w:checked w:val="1"/>' + xml.slice(off + '<w:checked w:val="0"/>'.length)
 }
 
+/**
+ * Both setters resolve an anchor with indexOf — the FIRST match. That is only
+ * correct while every mapped name is unique in the template. It once was not:
+ * two FORMTEXT fields were named Κείμενο14, one in box 12 ("Other travel
+ * document — please specify") and the intended one in box 16 ("Issued by"), so
+ * issuing_authority printed into box 12 and box 16 stayed blank — silently, on
+ * a form that goes to a consulate.
+ *
+ * Fail loudly instead. Unmapped duplicates (Κείμενο9, Κείμενο19) are left alone;
+ * they are never written, so they cannot mis-target anything.
+ */
+function assertAnchorsUnique(xml: string, names: string[]): void {
+  const offenders = names
+    .map((name) => ({ name, count: xml.split(`w:val="${name}"/>`).length - 1 }))
+    .filter((a) => a.count !== 1)
+  if (offenders.length) {
+    const detail = offenders.map((o) => `${o.name}×${o.count}`).join(', ')
+    throw new Error(`docx template: mapped anchor must occur exactly once — ${detail}`)
+  }
+}
+
 export async function fillVisaDocx(app: VisaDocxRow): Promise<Buffer> {
   const zip = new PizZip(await readFile(TEMPLATE_PATH))
   const file = zip.file(DOC_XML)
@@ -68,6 +89,7 @@ export async function fillVisaDocx(app: VisaDocxRow): Promise<Buffer> {
   let xml = file.asText()
 
   const { text, checks } = buildVisaDocxFields(app)
+  assertAnchorsUnique(xml, [...Object.keys(text), ...Object.keys(checks)])
   for (const [name, value] of Object.entries(text)) xml = setTextField(xml, name, value)
   for (const [name, on] of Object.entries(checks)) if (on) xml = setCheckbox(xml, name)
 
