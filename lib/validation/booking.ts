@@ -28,6 +28,24 @@ import type { PassengerType } from '@/lib/supabase'
 export const PASSPORT_RE = /^[A-Z0-9]{5,20}$/i
 
 /**
+ * Ferry passenger count bounds. Dentur enforces no per-reservation cap (the
+ * paxlimit probe accepted 8 pax against 390 seats); the only ceiling is the
+ * sailing's own quota. 16 is the seat count of the VIP transfer Sprinter, so a
+ * group that can book the transfer can book the crossing.
+ *
+ * Single source: the search form's stepper clamp AND submitBooking's Zod guard
+ * both read these, so the UI clamp and the server bound cannot drift apart.
+ *
+ * Deliberately NOT applied to makePassengerFormSchema below: an array-level
+ * .max() issue carries the path ['passengers'], for which the page's
+ * pathToErrorKey returns null — the error would be swallowed and Continue would
+ * silently do nothing. The form can't reach the bound anyway (rows are fixed
+ * from searchParams; there is no add-passenger control).
+ */
+export const FERRY_MIN_PAX = 1
+export const FERRY_MAX_PAX = 16
+
+/**
  * Passport must stay valid through the LAST travel day: returnDate for a
  * round-trip, else outboundDate, else today (Athens). Single source for both the
  * passenger schema (below) and the companion-prefill expiry check on the client.

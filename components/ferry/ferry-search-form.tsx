@@ -15,14 +15,10 @@ import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from
 import { getRouteScheduleAction, type RouteAvailability } from '@/lib/actions/ferry-search'
 import { PortCombobox } from '@/components/ferry/port-combobox'
 import { DateRangeField } from '@/components/ferry/date-range-field'
+import { FERRY_MIN_PAX, FERRY_MAX_PAX } from '@/lib/validation/booking'
 
-// Yolcu üst sınırı: Dentur'da sabit per-rezervasyon cap YOK (paxlimit probe ile
-// kanıtlandı — 8 pax/390 koltuk kabul); tavan sefer kotası. 16 = VIP transfer
-// filosundaki Sprinter'ın koltuk kapasitesi — 16 kişilik bir grup transfer
-// alabiliyorsa feribot bileti de alabilmeli. Fiyat lineer → money-path etkilenmez.
-// Bu YALNIZ bir UI kelepçesi: submit-booking passengers dizisine .max() koymuyor.
-const FERRY_MIN_PAX = 1
-const FERRY_MAX_PAX = 16
+// Stepper kelepçesi. Sınırların gerekçesi ve submitBooking ile ortak kaynağı
+// lib/validation/booking.ts'te.
 const clampPax = (n: number) =>
   Math.min(FERRY_MAX_PAX, Math.max(FERRY_MIN_PAX, Number.isFinite(n) ? n : FERRY_MIN_PAX))
 

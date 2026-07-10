@@ -34,7 +34,7 @@ import { getInsuranceQuote } from '@/lib/insurs'
 import { submitItemSchema } from '@/lib/trip-items/registry'
 import { assertNever } from '@/lib/trip-items/types'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
-import { makePassengerSchema, makeDriverSchema, derivePassengerType, isYoungDriver, todayAthensISO } from '@/lib/validation/booking'
+import { makePassengerSchema, makeDriverSchema, derivePassengerType, isYoungDriver, todayAthensISO, FERRY_MIN_PAX, FERRY_MAX_PAX } from '@/lib/validation/booking'
 import { z } from 'zod'
 
 // ============================================================
@@ -213,7 +213,10 @@ export async function submitBooking(input: SubmitBookingInput): Promise<SubmitBo
     ? computeEndDate(carInput.pickupAt, authorizeCarDays(carInput))
     : undefined
   const passengersResult = hasFerry
-    ? z.array(makePassengerSchema({ outboundDate, returnDate })).min(1).safeParse(input.passengers)
+    ? z.array(makePassengerSchema({ outboundDate, returnDate }))
+        .min(FERRY_MIN_PAX)
+        .max(FERRY_MAX_PAX)
+        .safeParse(input.passengers)
     : z.array(makeDriverSchema({ dropoffAt: carDropoff })).length(1).safeParse(input.passengers)
   if (!passengersResult.success) {
     return { ok: false, code: 'validation_failed', error: formatZodError(passengersResult.error) }
