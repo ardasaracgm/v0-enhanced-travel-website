@@ -1,8 +1,11 @@
 import { z } from 'zod'
 
-// Auras get_price 1-9 sınırı (form + server parity). submitInsuranceOrder de
-// aynı sınırı uygular; ileride (B sonu) action bu şemaya hizalanabilir.
-export const MAX_TRAVELLERS = 9
+// Auras'ta turist sayısı sınırı YOK — paxlimit probe'u 16 turisti hem get_price
+// hem add_contract'ta kabul ettirdi (TEST, fiyat lineer: 16×15 = 240 EUR). Eski
+// "get_price 1-9 sınırı" yorumu YANLIŞTI; API spec'inin hiçbir yerinde geçmiyor.
+// 16 = VIP transfer Sprinter kapasitesi, ferry FERRY_MAX_PAX ile hizalı.
+// TEK KAYNAK: quote route'u ve submitInsuranceOrder buradan okur, kendi 9'unu tutmaz.
+export const MAX_TRAVELLERS = 16
 export const INSURANCE_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 // Adım 1 — tarih + yolcu sayısı + teminat + iletişim. coverageId'nin GERÇEK bir

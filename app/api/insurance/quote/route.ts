@@ -7,6 +7,7 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { getInsuranceQuote } from '@/lib/insurs'
+import { MAX_TRAVELLERS } from '@/lib/validation/insurance'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (
     typeof dateFrom !== 'string' || !DATE_RE.test(dateFrom) ||
     typeof dateTo !== 'string' || !DATE_RE.test(dateTo) ||
-    !Number.isInteger(touristCount) || touristCount < 1 || touristCount > 9
+    !Number.isInteger(touristCount) || touristCount < 1 || touristCount > MAX_TRAVELLERS
   ) {
     return NextResponse.json({ error: 'invalid_input' }, { status: 400 })
   }

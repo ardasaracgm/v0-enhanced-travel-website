@@ -18,6 +18,7 @@ import { createTrip } from '@/lib/actions/create-trip'
 import { createPaymentOrder } from '@/lib/actions/create-payment-order'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { getInsuranceQuote } from '@/lib/insurs'
+import { MAX_TRAVELLERS } from '@/lib/validation/insurance'
 import { resolveInsuranceItem } from '@/lib/trip-items/resolvers'
 import type { InsuranceSubmitItem } from '@/lib/trip-items/types'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
@@ -185,8 +186,8 @@ function validate(i: SubmitInsuranceOrderInput): string | null {
   if (!Number.isInteger(i.coverageId)) return 'Invalid coverage selection'
   if (!i.contact || !EMAIL_RE.test(i.contact.email ?? '')) return 'Invalid contact email'
   if (!i.contact.phone || i.contact.phone.length < 6) return 'Invalid contact phone'
-  if (!Array.isArray(i.passengers) || i.passengers.length < 1 || i.passengers.length > 9) {
-    return 'Passengers must be between 1 and 9' // get_price 1..9 sınırı
+  if (!Array.isArray(i.passengers) || i.passengers.length < 1 || i.passengers.length > MAX_TRAVELLERS) {
+    return `Passengers must be between 1 and ${MAX_TRAVELLERS}`
   }
   for (const p of i.passengers) {
     if (!p.firstName?.trim() || !p.lastName?.trim()) return 'Passenger name is required'
