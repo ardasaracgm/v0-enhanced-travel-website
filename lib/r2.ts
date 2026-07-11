@@ -96,6 +96,21 @@ export async function putObject(
 }
 
 /**
+ * Server-side GET — pulls an object's raw bytes into a Buffer (no presign, no
+ * browser). For server code that must READ a stored file, e.g. embedding the
+ * applicant's biometric photo into the generated visa .docx.
+ */
+export async function getObjectBytes(key: string, bucket?: string): Promise<Buffer> {
+  const client = getR2Client()
+  const res = await client.send(
+    new GetObjectCommand({ Bucket: bucket ?? getVisaBucket(), Key: key }),
+  )
+  if (!res.Body) throw new Error(`R2 object has no body: ${key}`)
+  const bytes = await res.Body.transformToByteArray()
+  return Buffer.from(bytes)
+}
+
+/**
  * Presigned PUT URL for a browser upload.
  * The client MUST send the exact same Content-Type header it signed with,
  * or R2 rejects the PUT with SignatureDoesNotMatch.

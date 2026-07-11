@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { fillVisaDocx } from '@/lib/visa/docx/fill-visa-docx'
+import { fillVisaDocx, type VisaPhoto } from '@/lib/visa/docx/fill-visa-docx'
 import { upperAscii } from '@/lib/visa/docx/format'
+import { getObjectBytes } from '@/lib/r2'
 import type { VisaDocxRow } from '@/lib/visa/docx/field-map'
 
 export const runtime = 'nodejs'
@@ -42,8 +43,27 @@ export async function GET(
   if (error) return NextResponse.json({ error: 'lookup_failed' }, { status: 500 })
   if (!app) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
+  // ---- Biyometrik fotoğraf (opsiyonel): docx PHOTO kutusuna göm. NON-FATAL —
+  // eksik/başarısız foto konsolosluk belgesini ASLA bloke etmemeli (henüz
+  // yüklenmemiş olabilir; yalnız png/jpeg gömülür, PDF-foto atlanır). ----
+  let photo: VisaPhoto | undefined
+  try {
+    const { data: doc } = await getSupabaseAdmin()
+      .from('visa_documents')
+      .select('r2_key, mime_type')
+      .eq('application_id', id)
+      .eq('doc_type', 'biometric_photo')
+      .eq('status', 'uploaded')
+      .maybeSingle()
+    if (doc?.r2_key && (doc.mime_type === 'image/png' || doc.mime_type === 'image/jpeg')) {
+      photo = { bytes: await getObjectBytes(doc.r2_key), mime: doc.mime_type }
+    }
+  } catch (e) {
+    console.error('[visa docx] photo embed skipped:', e)
+  }
+
   // ---- Üret: şablonu DB satırıyla doldur ----
-  const buf = await fillVisaDocx(app as VisaDocxRow)
+  const buf = await fillVisaDocx(app as VisaDocxRow, photo)
   const fname = `visa-${upperAscii(app.last_name) || 'APPLICATION'}-${id.slice(0, 8)}.docx`
 
   return new NextResponse(new Uint8Array(buf), {
