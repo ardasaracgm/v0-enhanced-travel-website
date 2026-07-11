@@ -18,10 +18,16 @@ const MUTED = '#64748b'
 const LINE = '#e2e8f0'
 
 export async function buildFerryVoucherPdf(data: FerryVoucherData): Promise<Buffer> {
-  const doc = new PDFDocument({ size: 'A4', margin: 48 })
+  // font:false → pdfkit constructor'ı initFonts(options.font)'a false geçer,
+  // varsayılan 'Helvetica'yı YÜKLEMEZ. Yoksa constructor eager olarak
+  // fs.readFileSync(__dirname+'/data/Helvetica.afm') yapar; webpack pdfkit'i
+  // bundle edince __dirname route output'una kayar → prod'da ENOENT → 500.
+  // Bizim tek font'umuz DejaVu (aşağıda registerFont) — Helvetica'ya HİÇ ihtiyaç
+  // yok, o yüzden hiç yüklenmesin. (Bundle KALIR; externalize/symlink derdi yok.)
+  const doc = new PDFDocument({ size: 'A4', margin: 48, font: false as unknown as string })
   doc.registerFont('body', fs.readFileSync(path.join(FONT_DIR, 'DejaVuSans.ttf')))
   doc.registerFont('bold', fs.readFileSync(path.join(FONT_DIR, 'DejaVuSans-Bold.ttf')))
-  doc.font('body') // built-in Helvetica.afm'e HİÇ düşme
+  doc.font('body') // ilk gerçek font — text'ten önce set edilir
 
   const chunks: Buffer[] = []
   doc.on('data', (c) => chunks.push(c as Buffer))

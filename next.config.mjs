@@ -10,14 +10,6 @@ const nextConfig = {
     },
   },
 
-  // pdfkit, gömülü AFM fontlarını (data/Helvetica.afm) runtime'da
-  // fs.readFileSync(__dirname + '/data/...') ile okur. Webpack bundle edince
-  // __dirname .next/server/app/.../voucher'a kayar → ENOENT → 500 (feribot
-  // voucher prod'da patlıyordu). External bırakınca __dirname node_modules/
-  // pdfkit/js'te kalır ve nft data/ klasörünü otomatik trace eder. fontkit,
-  // pdfkit'in TTF (DejaVu) gömme bağımlılığı — o da external olmalı.
-  serverExternalPackages: ["pdfkit", "fontkit"],
-
   // Vize .docx şablonu binary'i — Vercel serverless trace'i .ts import'undan
   // göremez; admin docx route'una açıkça dahil et (yoksa prod'da readFile patlar).
   // NOT: key glob olarak eşlenir → literal "[id]" bracket'i karakter-sınıfı sayılır
@@ -30,9 +22,6 @@ const nextConfig = {
       "./lib/ferry/fonts/DejaVuSans.ttf",
       "./lib/ferry/fonts/DejaVuSans-Bold.ttf",
       "./public/travelbeez-logo.png",
-      // Kemer+askı: pdfkit'in gömülü AFM'leri. serverExternalPackages asıl
-      // çözüm (__dirname'i düzeltir); bu, nft kaçırırsa ek güvence.
-      "./node_modules/pdfkit/js/data/*.afm",
     ],
   },
 
