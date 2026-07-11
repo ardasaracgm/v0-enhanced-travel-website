@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Link, redirect } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
-import { Ship, Users, Ticket, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Ship, Users, Ticket, CheckCircle2, Clock, AlertCircle, Download } from 'lucide-react'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyTripById } from '@/lib/hub/get-my-trip-by-id'
@@ -168,6 +168,15 @@ export default async function HubTripDetailPage({
                       </ul>
                     </div>
                   ))}
+                  {trip.ferryVouchers.length > 0 && (
+                    <a
+                      href={`/api/hub/trip/${id}/voucher`}
+                      className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-2 text-xs font-medium hover:bg-muted"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {t('tripDetail.downloadVoucher')}
+                    </a>
+                  )}
                   {trip.ferryReserveFailed && (
                     <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                       <p className="flex items-center gap-1.5">
