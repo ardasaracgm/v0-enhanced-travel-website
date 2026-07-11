@@ -511,7 +511,7 @@ export default function TravelBeez() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
-                  <div className="bg-card/95 backdrop-blur p-5 rounded-xl">
+                  <div className="bg-card/80 backdrop-blur p-5 rounded-xl">
                     <div className="flex items-start gap-4">
                       <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                         <Building2 className="h-7 w-7 text-primary-foreground" />
@@ -520,8 +520,11 @@ export default function TravelBeez() {
                         <p className="font-bold text-foreground text-lg">
                           {tOffice("officeName")}
                         </p>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-sm text-muted-foreground mb-1">
                           {tOffice("address")}
+                        </p>
+                        <p className="text-sm font-medium text-primary mb-2">
+                          {tOffice("landmark")}
                         </p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1 text-primary">
@@ -592,16 +595,25 @@ export default function TravelBeez() {
                   </li>
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {tOffice("getDirections")}
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <a
+                      href="https://www.google.com/maps?q=36.897895,27.287188"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {tOffice("getDirections")}
+                    </a>
                   </Button>
                   <Button
+                    asChild
                     variant="outline"
                     className="border-primary/30 text-foreground hover:bg-primary/5"
                   >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    {tOffice("chatWithUs")}
+                    <a href={buildWhatsAppLink(locale)} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      {tOffice("chatWithUs")}
+                    </a>
                   </Button>
                 </div>
               </div>
