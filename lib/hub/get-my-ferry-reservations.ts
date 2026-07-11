@@ -11,6 +11,7 @@ export interface HubFerryLeg {
   date: string | null           // LOCAL calendar date "YYYY-MM-DD" in the DEPARTURE port's zone
   departureTime: string | null  // RAW provider wall-clock "HH:MM" — NEVER the instant
   arrivalTime: string | null
+  operator: string | null       // Dentur, … — voucher'ın "Ferry" sütunu için
   pnrs: Array<{ pnr: number; passengerName?: string }>
 }
 
@@ -114,6 +115,7 @@ export async function getMyFerryReservations(email: string): Promise<HubFerryRes
         date: ferryLocalDay(leg.scheduledAt, leg.meta.from_port),
         departureTime: leg.meta.departure_time ?? null,
         arrivalTime: leg.meta.arrival_time ?? null,
+        operator: leg.meta.operator ?? null,
         pnrs: (clean ? byLeg[i] : i === 0 ? all : []).map((v) => ({
           pnr: v.pnr,
           passengerName: v.passengerName || undefined,

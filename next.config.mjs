@@ -16,6 +16,13 @@ const nextConfig = {
   // ve eşleşmez. "**" tüm alt-yolu (slash dahil [id]/docx) yakalar → güvenli.
   outputFileTracingIncludes: {
     "/api/admin/visa/**": ["./lib/visa/docx/templates/kapi-vizesi-form.docx"],
+    // Feribot voucher PDF: DejaVu TTF (Türkçe/Yunanca) + logo binary'si Vercel
+    // serverless trace'ine .ts import'undan görünmez → açıkça dahil et.
+    "/api/hub/trip/**": [
+      "./lib/ferry/fonts/DejaVuSans.ttf",
+      "./lib/ferry/fonts/DejaVuSans-Bold.ttf",
+      "./public/travelbeez-logo.png",
+    ],
   },
 
   // ignoreBuildErrors stays OFF; if a real type error appears in this
