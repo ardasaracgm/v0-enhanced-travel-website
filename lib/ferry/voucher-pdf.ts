@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import PDFDocument from 'pdfkit'
 import type { FerryVoucherData } from './voucher-data'
+import { FERRY_VOUCHER_TERMS } from './voucher-terms'
 
 // DejaVu = Latin-Extended (Türkçe ğ/ş/İ/ı) + Yunanca. pdfkit built-in Helvetica'sı
 // (WinAnsi) bunları basamaz → TTF gömüyoruz. Vercel serverless trace'ine
@@ -63,10 +64,23 @@ export async function buildFerryVoucherPdf(data: FerryVoucherData): Promise<Buff
     doc.moveDown(0.5)
   }
 
-  // ---- Footer (iletişim; şartlar metni Commit 2'de) ----
+  // ---- Koşullar / Terms (Dentur voucher şartlarıyla birebir) ----
+  doc.moveDown(0.5)
+  doc.font('bold').fontSize(10).fillColor(INK)
+    .text(`${FERRY_VOUCHER_TERMS.title.tr} / ${FERRY_VOUCHER_TERMS.title.en}`)
+  doc.moveDown(0.3)
+  for (const c of FERRY_VOUCHER_TERMS.clauses) {
+    doc.font('bold').fontSize(7.5).fillColor(INK).text(`• ${c.tr}`, { width: 499 })
+    doc.font('body').fontSize(7.5).fillColor(MUTED).text(c.en, { width: 499, indent: 8 })
+    doc.moveDown(0.14)
+  }
+
+  // ---- Footer (iletişim) — akışta: şartlar çok sayfaya taşabilir, bu yüzden
+  // sabit y=790 DEĞİL (yoksa 2. sayfada şartların üstüne biner). ----
+  doc.moveDown(0.8)
   doc.font('body').fontSize(8).fillColor(MUTED)
-    .text('TravelBeez · wa.me/905421450457 · +30 224 2220 224 · Kos Port, Kos 85300, Greece',
-      48, 790, { width: 499, align: 'center' })
+    .text('TravelBeez · FerryBee Travel IKE · wa.me/905421450457 · +30 224 2220 224 · Kos Port, Kos 85300, Greece',
+      { width: 499, align: 'center' })
 
   doc.end()
   return done
