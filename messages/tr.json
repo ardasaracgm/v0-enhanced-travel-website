@@ -956,7 +956,7 @@
       "errType": "Yalnızca {formats} dosyası yükleyebilirsiniz.",
       "errSize": "Dosya boyutu {min} – {max} arasında olmalıdır.",
       "errUpload": "Yükleme başarısız oldu. Lütfen tekrar deneyin.",
-      "formatHint": "Kabul edilen formatlar: {formats} · Boyut: {min} – {max}",
+      "formatHint": "Formatlar: {formats} · Boyut: {min} – {max}",
       "qualityCorrupt": "Dosya açılamadı veya bozuk olabilir, lütfen kontrol edin.",
       "qualityLowResolution": "Görsel çok düşük çözünürlüklü, belge okunmayabilir. Daha net bir görsel yüklemeniz önerilir.",
       "qualityTooDark": "Görsel çok karanlık görünüyor, belge okunmayabilir.",

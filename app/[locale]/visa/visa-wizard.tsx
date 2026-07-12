@@ -1110,7 +1110,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         )}
 
         {isLastStep && (
-          <div id="doc-applicant_signature" className="mt-6">
+          <div id="doc-applicant_signature" className="mt-4">
             <SignaturePad
               label={docByKey['applicant_signature']?.label ?? ''}
               isRequired={docByKey['applicant_signature']?.isRequired ?? true}

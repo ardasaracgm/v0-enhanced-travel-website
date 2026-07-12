@@ -208,7 +208,7 @@ export function SignaturePad({
 
   return (
     <Card className={`border-border/50 ${isUploaded ? 'border-primary/40' : ''}`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
           <CardTitle className="text-base flex items-center gap-2">
             <PenLine className="h-4 w-4 text-primary shrink-0" />
@@ -231,7 +231,7 @@ export function SignaturePad({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
-            className="h-32 w-full touch-none rounded-md"
+            className="h-28 w-full touch-none rounded-md"
             style={{ touchAction: 'none' }}
           />
         </div>
