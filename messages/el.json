@@ -1240,7 +1240,8 @@
         "missingFieldsLabel": "Missing or invalid fields:",
         "missingDocsLabel": "Missing documents:",
         "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank.",
-        "employerOptionalNote": "These details are optional."
+        "employerOptionalNote": "These details are optional.",
+        "creditCardHeading": "Πιστωτική κάρτα (μπροστά/πίσω)"
       },
       "uploading": "Μεταφόρτωση εγγράφου…",
       "promoInvalid": "Μη έγκυρος κωδικός. Ελέγξτε τον ή αφήστε το πεδίο κενό.",

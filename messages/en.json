@@ -1240,7 +1240,8 @@
         "missingFieldsLabel": "Missing or invalid fields:",
         "missingDocsLabel": "Missing documents:",
         "previousSchengenVisaDateHint": "Optional — the validity (expiry) date of your previous Schengen visa. You can leave this blank.",
-        "employerOptionalNote": "These details are optional."
+        "employerOptionalNote": "These details are optional.",
+        "creditCardHeading": "Credit card (front/back)"
       },
       "uploading": "Uploading document…",
       "promoInvalid": "Invalid code. Check it or leave the field empty.",

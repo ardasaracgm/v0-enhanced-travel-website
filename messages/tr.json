@@ -1105,7 +1105,7 @@
           "widowed": "Dul"
         },
         "docType": {
-          "normal": "Umuma mahsus pasaport",
+          "normal": "Standart pasaport",
           "diplomatic": "Diplomatik pasaport",
           "service": "Hizmet pasaportu",
           "official": "Resmî pasaport",
@@ -1240,7 +1240,8 @@
         "missingFieldsLabel": "Eksik veya hatalı alanlar:",
         "missingDocsLabel": "Eksik belgeler:",
         "previousSchengenVisaDateHint": "İsteğe bağlı — önceki Schengen vizenizin geçerlilik (bitiş) tarihi. Boş bırakabilirsiniz.",
-        "employerOptionalNote": "Bu bilgiler isteğe bağlıdır."
+        "employerOptionalNote": "Bu bilgiler isteğe bağlıdır.",
+        "creditCardHeading": "Kredi kartı (ön/arka)"
       },
       "uploading": "Belge yükleniyor…",
       "promoInvalid": "Geçersiz kod. Kontrol edin veya alanı boş bırakın.",

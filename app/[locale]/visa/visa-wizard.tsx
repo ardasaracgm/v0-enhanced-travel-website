@@ -12,7 +12,8 @@
  */
 
 import * as React from 'react'
-import { CheckCircle, ChevronLeft, ChevronRight, Circle, FileText, Loader2, MessageCircle, Phone } from 'lucide-react'
+import { CheckCircle, ChevronDown, ChevronLeft, ChevronRight, Circle, FileText, Loader2, MessageCircle, Phone } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useTranslations, useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
@@ -1091,11 +1092,19 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 {renderDocSlot('insurance')}
                 {renderDocSlot('hotel')}
               </div>
-              {/* Kredi kartı ön/arka (accordion Kademe son; şimdilik 3-kolon satır) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {renderDocSlot('credit_card_front')}
-                {renderDocSlot('credit_card_back')}
-              </div>
+              {/* Kredi kartı ön/arka — Collapsible (kapalı başlar). */}
+              <Collapsible className="rounded-lg border border-border/50">
+                <CollapsibleTrigger className="group flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-blue-950 hover:bg-muted/40">
+                  {t('docs.creditCardHeading')}
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="px-4 pb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {renderDocSlot('credit_card_front')}
+                    {renderDocSlot('credit_card_back')}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </DocsSection>
           </>
         )}
