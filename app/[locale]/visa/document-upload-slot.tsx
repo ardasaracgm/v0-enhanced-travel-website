@@ -300,7 +300,7 @@ export function DocumentUploadSlot({
 
   return (
     <Card className={`border-border/50 ${isUploaded ? 'border-primary/40' : ''}`}>
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="p-3 pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -316,7 +316,7 @@ export function DocumentUploadSlot({
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-2">
+      <CardContent className="p-3 pt-0 space-y-2">
         <input
           ref={inputRef}
           type="file"

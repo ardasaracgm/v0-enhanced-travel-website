@@ -742,7 +742,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   const isLastStep = step === TOTAL_STEPS - 1
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_22rem]">
+    <div className="wizard-compact mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_22rem]">
       <Card className="rounded-3xl border-0 bg-card shadow-xl">
       <CardHeader>
         {/* Başlık solda, nav sağ üstte. Mobilde çakışmayı önlemek için dikey
@@ -803,31 +803,31 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
       <CardContent className="space-y-3">
         {step === 0 && (
           <>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {selectField('entryPoint', ENTRY_POINTS, 'entryPoint')}
               {selectField('vesselType', VESSEL_TYPES, 'vesselType')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('lastName')}
               {textField('previousLastName', 'text', true)}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('firstName')}
               {textField('fatherName')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('motherName')}
               {dateField('birthDate', { max: today })}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('birthPlace')}
               {textField('birthCountry')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('nationality')}
               {textField('previousNationality', 'text', true)}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {selectField('gender', GENDERS, 'gender')}
               {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
             </div>
@@ -837,11 +837,11 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               <FieldGroup title={t('sections.guardian')}>
                 {textField('guardianName')}
                 {textField('guardianAddress')}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('guardianCity')}
                   {textField('guardianProvince')}
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('guardianPostalCode')}
                   {textField('guardianNationality')}
                 </div>
@@ -870,15 +870,15 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
 
         {step === 1 && (
           <>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('idNumber')}
               {selectField('docType', DOC_TYPES, 'docType')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('docNumber')}
               {textField('issuingAuthority')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {dateField('docIssueDate', { max: today })}
               {dateField('docExpiryDate', { min: today })}
             </div>
@@ -897,11 +897,11 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         {step === 2 && (
           <>
             {textField('residenceAddress')}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {textField('email', 'email')}
               {textField('phone', 'tel')}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {selectField('livesInOtherCountry', YES_NO, 'yesNo')}
               {selectField('occupation', OCCUPATIONS, 'occupation')}
             </div>
@@ -909,7 +909,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 lives abroad; both fields required (refineResidencePermit). */}
             {livesAbroad && (
               <FieldGroup title={t('sections.residencePermit')}>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('residencePermitNumber')}
                   {dateField('residencePermitExpiry', { min: '1900-01-01', max: '2100-12-31' })}
                 </div>
@@ -923,11 +923,11 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 <p className="text-xs text-muted-foreground">{t('docs.employerOptionalNote')}</p>
                 {textField('employerName', 'text', true, isStudent ? 'schoolName' : 'employerName')}
                 {textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('employerCity', 'text', true, isStudent ? 'schoolCity' : 'employerCity')}
                   {textField('employerProvince', 'text', true, isStudent ? 'schoolProvince' : 'employerProvince')}
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('employerPostalCode', 'text', true, isStudent ? 'schoolPostalCode' : 'employerPostalCode')}
                   {textField('employerPhone', 'tel', true, isStudent ? 'schoolPhone' : 'employerPhone')}
                 </div>
@@ -939,7 +939,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
 
         {step === 3 && (
           <>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}
               {selectField('fundingSource', FUNDING_SOURCES, 'fundingSource')}
             </div>
@@ -948,22 +948,22 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
             {isSponsor && (
               <FieldGroup title={t('sections.sponsor')}>
                 {textField('inviterOrHotelName')}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('accommodationAddress', 'text', true)}
                   {textField('accommodationPhone', 'tel', true)}
                 </div>
                 {textField('accommodationEmail', 'email', true)}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('inviterCompanyName', 'text', true)}
                   {textField('inviterCompanyAddress', 'text', true)}
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('companyPhone', 'tel', true)}
                   {textField('companyFax', 'tel', true)}
                 </div>
                 {textField('contactName', 'text', true)}
                 {textField('contactAddress', 'text', true)}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   {textField('contactPhone', 'tel', true)}
                   {textField('contactFax', 'tel', true)}
                 </div>
@@ -993,7 +993,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 <p className="text-sm text-destructive">{errors.financingMeans}</p>
               )}
             </FieldGroup>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3">
               {selectField('schengenLast3Years', YES_NO, 'yesNo')}
               {selectField('fingerprintsTaken', YES_NO, 'yesNo')}
               <div className="space-y-2">
@@ -1017,7 +1017,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
             {/* Destination + first-entry country are FIXED to Greece (door visa).
                 Read-only, never user-editable, not submitted — shown only for
                 transparency; the value is hardcoded in the future PDF printout. */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="destinationCountry">{t('labels.destinationCountry')}</Label>
                 <Input id="destinationCountry" value={t('fixedGreece')} disabled readOnly />
