@@ -27,6 +27,27 @@ export const DOC_TYPES         = ['normal', 'diplomatic', 'service', 'official',
 export const TRAVEL_PURPOSES   = ['tourism', 'business'] as const
 export const FUNDING_SOURCES   = ['self', 'sponsor'] as const   // jotform item 33 — who pays
 
+// ------------------------------------------------------------
+// Passport-type preview images — public/passport-types/<key>.webp
+// ------------------------------------------------------------
+/**
+ * DOC_TYPES that ship a preview image under public/passport-types/. ONLY these
+ * render a preview under the docType dropdown — a key absent here shows nothing
+ * (zero broken images). Mirrors EXAMPLE_KEYS/hasExample in lib/visa-documents.ts.
+ * Keep this set in lockstep with the files on disk.
+ */
+export const PASSPORT_TYPE_KEYS: ReadonlySet<string> = new Set([
+  'normal',
+  'diplomatic',
+  'service',
+  'official',
+  'special',
+])
+
+export function hasPassportImage(key: string): boolean {
+  return PASSPORT_TYPE_KEYS.has(key)
+}
+
 // Jotform item 33A — means of subsistence (multi-select, at least one required).
 export const FINANCING_MEANS = [
   'cash', 'travellers_cheque', 'credit_card',

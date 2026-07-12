@@ -50,6 +50,7 @@ import {
   GENDERS,
   MARITAL_STATUSES,
   DOC_TYPES,
+  hasPassportImage,
   TRAVEL_PURPOSES,
   FUNDING_SOURCES,
   OCCUPATIONS,
@@ -689,6 +690,20 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
           ))}
         </SelectContent>
       </Select>
+      {/* Yalnızca docType için: seçili pasaport türünün örnek görseli (item-içi
+          thumbnail YOK → trigger'a sızmaz). Görseli olmayan türde hiç çıkmaz
+          (hasPassportImage gate). name==='docType' guard diğer dropdown'ları
+          (giriş noktası, gemi, cinsiyet, medeni durum) korur. */}
+      {name === 'docType' && hasPassportImage(form[name]) && (
+        <div className="flex justify-center rounded-xl border bg-muted/30 p-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/passport-types/${form[name]}.webp`}
+            alt={t(`options.docType.${form[name]}`)}
+            className="h-auto max-h-40 w-auto rounded-md"
+          />
+        </div>
+      )}
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
   )
