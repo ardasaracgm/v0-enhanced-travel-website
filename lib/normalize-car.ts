@@ -81,15 +81,20 @@ export function normalizeCar(car: CarType | Record<string, unknown>): Normalized
   // Real DB column is price_per_day; fall back to price for static / legacy data
   const price = getNumber('price_per_day') || getNumber('price') || 0
 
-  // Resim: model_key varsa convention ile /cars/<model_key>.webp (yeni filo, repo'da
-  // versiyonlu — public/cars/). model_key yoksa (fallback filo) eski image_url/image →
-  // Unsplash default'a düşülür.
+  // Görsel önceliği: image_url (Supabase Storage, admin upload) > model_key convention
+  // (/cars/<key>.webp, repoya commit'li filo) > legacy image kolonu > Unsplash.
+  // ⚠️ image_url NULL/'' → getString '' döner → falsy → convention'a düşer. Mevcut 8
+  // araç (image_url yok) AYNEN convention okur = sıfır regresyon. Yeni araçlar Supabase
+  // URL kullanır. (Eski mantık image_url'i sadece model_key YOKKEN okuyordu; artık
+  // öncelikli — ama boş olduğu için mevcut filoyu etkilemez.)
   const modelKey = getString('model_key')
-  const image = modelKey
-    ? `/cars/${modelKey}.webp`
-    : getString('image_url') ||
-      getString('image') ||
-      'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'
+  const imageUrl = getString('image_url')
+  const image = imageUrl
+    ? imageUrl
+    : modelKey
+      ? `/cars/${modelKey}.webp`
+      : getString('image') ||
+        'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80'
 
   return {
     id: getString('id'),

@@ -15,6 +15,7 @@ export interface AddCarInput {
   seats: number
   transmission: string
   plate: string
+  imageUrl?: string
 }
 
 export interface AddCarResult {
@@ -88,6 +89,8 @@ export async function addCar(input: AddCarInput): Promise<AddCarResult> {
       source: 'owned',
       priority: 1,
       quantity: 1,
+      // undefined/'' → NULL → kart /cars/<model_key>.webp convention'a düşer (opsiyonel).
+      image_url: input.imageUrl?.trim() || null,
     })
     .select('id')
     .maybeSingle()

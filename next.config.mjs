@@ -2,11 +2,18 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
+// Supabase Storage public URL host'u (env'den — proje taşınırsa kırılmaz).
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : undefined;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ["*.app.github.dev", "localhost:3000", "localhost:3001"],
+      // Araç görseli File server action'a gidiyor; default ~1MB jpg/png'e yetmez.
+      bodySizeLimit: "5mb",
     },
   },
 
@@ -41,6 +48,10 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },
+      // Supabase Storage public bucket (car-images) — kart görseli buradan okunur.
+      ...(supabaseHost
+        ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
+        : []),
     ],
   },
 };

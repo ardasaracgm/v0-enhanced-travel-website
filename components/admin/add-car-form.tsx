@@ -4,11 +4,14 @@ import * as React from 'react'
 
 import { useRouter } from '@/i18n/routing'
 import { addCar } from '@/lib/actions/add-car'
+import { uploadCarImage } from '@/lib/actions/upload-car-image'
 import { carModelKey, MODEL_KEY_RE } from '@/lib/car-slug'
 
 const CATEGORIES = ['microcar', 'compact', '5-seater', 'suv'] as const
 const TRANSMISSIONS = ['Manual', 'Automatic'] as const
 const SEAT_OPTIONS = [2, 4, 5, 7] as const
+const IMG_MIME = ['image/jpeg', 'image/png', 'image/webp']
+const IMG_MAX = 5 * 1024 * 1024 // 5MB
 
 const field = 'h-10 rounded-md border bg-background px-3 text-sm'
 const labelCls = 'text-xs uppercase tracking-wide text-muted-foreground'
@@ -26,10 +29,23 @@ export function AddCarForm() {
   const [seats, setSeats] = React.useState<number>(5)
   const [transmission, setTransmission] = React.useState<(typeof TRANSMISSIONS)[number]>('Manual')
   const [plate, setPlate] = React.useState('')
+  const [imageFile, setImageFile] = React.useState<File | null>(null)
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null)
 
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [ok, setOk] = React.useState<string | null>(null)
+
+  // Local preview — obje URL sızıntısını önlemek için cleanup'ta revoke.
+  React.useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null)
+      return
+    }
+    const url = URL.createObjectURL(imageFile)
+    setImagePreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [imageFile])
 
   const autoKey = carModelKey(brand, model)
   const modelKey = overrideKey ? manualKey.trim() : autoKey
@@ -45,12 +61,41 @@ export function AddCarForm() {
     setSeats(5)
     setTransmission('Manual')
     setPlate('')
+    setImageFile(null)
+  }
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null
+    setError(null)
+    if (f && !IMG_MIME.includes(f.type)) {
+      setError('Only JPG, PNG or WebP images are allowed.')
+      return
+    }
+    if (f && f.size > IMG_MAX) {
+      setError('Image must be 5MB or smaller.')
+      return
+    }
+    setImageFile(f)
   }
 
   async function onSubmit() {
     setError(null)
     setOk(null)
     setPending(true)
+    // Görsel opsiyonel: varsa ÖNCE yükle; upload başarısızsa insert'i durdur (yarım
+    // kayıt olmasın). Yoksa imageUrl undefined → image_url NULL → convention fallback.
+    let imageUrl: string | undefined
+    if (imageFile) {
+      const fd = new FormData()
+      fd.append('file', imageFile)
+      const up = await uploadCarImage(fd)
+      if (!up.ok) {
+        setPending(false)
+        setError(up.error ?? 'Image upload failed.')
+        return
+      }
+      imageUrl = up.url
+    }
     const res = await addCar({
       brand,
       model,
@@ -60,6 +105,7 @@ export function AddCarForm() {
       seats,
       transmission,
       plate,
+      imageUrl,
     })
     setPending(false)
     if (!res.ok) {
@@ -130,9 +176,9 @@ export function AddCarForm() {
             {modelKey || <span className="text-muted-foreground">—</span>}
           </p>
         )}
-        <p className="text-xs text-amber-600 dark:text-amber-500">
-          Add <span className="font-mono">public/cars/{modelKey || '<model-key>'}.webp</span> to the
-          repo — the card image is resolved by this key.
+        <p className="text-xs text-muted-foreground">
+          Upload an image below (optional). If none, the card falls back to{' '}
+          <span className="font-mono">public/cars/{modelKey || '<model-key>'}.webp</span>.
         </p>
         {!keyValid && (brand || model || overrideKey) ? (
           <p className="text-xs text-destructive">
@@ -173,6 +219,22 @@ export function AddCarForm() {
           <input id="ac-plate" className={`${field} font-mono`} value={plate}
             onChange={(e) => setPlate(e.target.value)} placeholder="XPY3835" />
         </div>
+      </div>
+
+      {/* Görsel (opsiyonel) — JPG/PNG/WebP ≤5MB; Supabase Storage'a yüklenir. */}
+      <div className="flex flex-col gap-2">
+        <label htmlFor="ac-image" className={labelCls}>Image (optional)</label>
+        <input
+          id="ac-image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={onPickFile}
+          className="text-sm file:mr-3 file:rounded-md file:border file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium"
+        />
+        {imagePreview ? (
+          // eslint-disable-next-line @next/next/no-img-element -- local blob preview, next/image gereksiz
+          <img src={imagePreview} alt="Preview" className="h-32 w-auto rounded-md border object-cover" />
+        ) : null}
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
