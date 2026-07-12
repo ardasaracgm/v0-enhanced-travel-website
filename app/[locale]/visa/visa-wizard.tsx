@@ -846,8 +846,23 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               {textField('previousNationality', 'text', true)}
             </div>
             <div className="grid md:grid-cols-3 gap-3">
-              {/* Kimlik No — Adım 2'den taşındı (Kişisel). */}
-              {textField('idNumber')}
+              {/* Kimlik No — Adım 2'den taşındı (Kişisel). TC kimlik: 11 hane
+                  numerik (Zod .regex(/^\d{11}$/); input maxLength + digit-strip). */}
+              <div className="space-y-2">
+                <Label htmlFor="idNumber" className="text-blue-950">
+                  {t('labels.idNumber')} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="idNumber"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={11}
+                  value={form.idNumber}
+                  onChange={(e) => update('idNumber', e.target.value.replace(/\D/g, ''))}
+                  className={`h-9 rounded-xl ${errors.idNumber ? 'border-destructive' : ''}`}
+                />
+                {errors.idNumber && <p className="text-sm text-destructive">{errors.idNumber}</p>}
+              </div>
               {textField('birthPlace')}
               {textField('birthCountry')}
             </div>
@@ -962,8 +977,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         {step === 2 && (
           <>
             <div className="grid md:grid-cols-3 gap-3">
-              {textField('residenceAddress')}
-              <div />
+              <div className="md:col-span-2">{textField('residenceAddress')}</div>
               {selectField('occupation', OCCUPATIONS, 'occupation')}
             </div>
             {/* Jotform 18 — residence permit. Trigger + (conditional) permit
@@ -986,8 +1000,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                   {textField('employerProvince', 'text', true, isStudent ? 'schoolProvince' : 'employerProvince')}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
-                  {textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}
-                  <div />
+                  <div className="md:col-span-2">{textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}</div>
                   {textField('employerPostalCode', 'text', true, isStudent ? 'schoolPostalCode' : 'employerPostalCode')}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
@@ -1040,8 +1053,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                   {textField('accommodationEmail', 'email', true)}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
-                  {textField('accommodationAddress', 'text', true)}
-                  <div />
+                  <div className="md:col-span-2">{textField('accommodationAddress', 'text', true)}</div>
                   {textField('companyFax', 'tel', true)}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
@@ -1050,26 +1062,25 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                   {textField('companyPhone', 'tel', true)}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
-                  {textField('inviterCompanyAddress', 'text', true)}
-                  {textField('contactFax', 'tel', true)}
+                  <div className="md:col-span-2">{textField('inviterCompanyAddress', 'text', true)}</div>
                   {textField('contactPhone', 'tel', true)}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
-                  {textField('contactAddress', 'text', true)}
-                  <div />
-                  {textField('contactEmail', 'email', true)}
+                  <div className="md:col-span-2">{textField('contactAddress', 'text', true)}</div>
+                  {textField('contactFax', 'tel', true)}
                 </div>
+                {textField('contactEmail', 'email', true)}
               </FieldGroup>
             )}
             <DocsSection title={t('docs.stepHeading')}>
-              {/* Banka hesap hareketleri */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Banka hesap hareketleri — 2-kolon */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderDocSlot('bank_statement_first')}
                 {renderDocSlot('bank_statement_last')}
               </div>
-              {/* Sponsor mali belgeleri; yalnız sponsor finanse ediyorsa */}
+              {/* Sponsor mali belgeleri (2-kolon); yalnız sponsor finanse ediyorsa */}
               {isSponsor && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {renderDocSlot('sponsor_id')}
                   {renderDocSlot('sponsor_bank')}
                 </div>

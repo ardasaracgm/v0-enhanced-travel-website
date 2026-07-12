@@ -1037,7 +1037,7 @@
         "docIssueDate": "Veriliş Tarihi",
         "docExpiryDate": "Son Geçerlilik Tarihi",
         "issuingAuthority": "Veren Makam",
-        "promoCode": "Promosyon / referans kodu (opsiyonel)",
+        "promoCode": "Promosyon kodu",
         "residenceAddress": "İkamet Adresi",
         "email": "E-posta",
         "phone": "Telefon",
@@ -1175,7 +1175,7 @@
         "nationality": { "required": "Uyruğunuz zorunludur." },
         "gender": { "required": "Lütfen cinsiyet seçin." },
         "maritalStatus": { "required": "Lütfen medeni durumunuzu seçin." },
-        "idNumber": { "required": "Kimlik numarası zorunludur." },
+        "idNumber": { "required": "Kimlik numarası zorunludur.", "invalid": "Kimlik numarası 11 haneli olmalıdır." },
         "docType": { "required": "Lütfen belge türü seçin." },
         "docNumber": { "required": "Belge numarası zorunludur." },
         "docIssueDate": {

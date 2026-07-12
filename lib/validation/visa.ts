@@ -264,7 +264,9 @@ const step2Object = z.object({
   maritalStatus:      enumField(MARITAL_STATUSES, 'maritalStatus.required'),
 
   // National ID — moved from the Travel-Document step into Personal (step 1).
-  idNumber:           requiredText('idNumber.required'),
+  idNumber:           z.string().trim()
+                        .min(1, 'idNumber.required')
+                        .regex(/^\d{11}$/, 'idNumber.invalid'),   // TC kimlik no — 11 hane numerik
 
   // Jotform 10 · legal guardian — optional here, conditionally required for
   // minors via refineGuardian (which also reads birthDate above).

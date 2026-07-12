@@ -1037,7 +1037,7 @@
         "docIssueDate": "Issue Date",
         "docExpiryDate": "Expiry Date",
         "issuingAuthority": "Issuing Authority",
-        "promoCode": "Κωδικός προσφοράς / παραπομπής (προαιρετικό)",
+        "promoCode": "Κωδικός προσφοράς",
         "residenceAddress": "Residence Address",
         "email": "Email",
         "phone": "Phone",
@@ -1175,7 +1175,7 @@
         "nationality": { "required": "Nationality is required." },
         "gender": { "required": "Please select a gender." },
         "maritalStatus": { "required": "Please select your marital status." },
-        "idNumber": { "required": "ID number is required." },
+        "idNumber": { "required": "ID number is required.", "invalid": "ID number must be 11 digits." },
         "docType": { "required": "Please select a document type." },
         "docNumber": { "required": "Document number is required." },
         "docIssueDate": {
