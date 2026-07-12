@@ -435,6 +435,22 @@
       "cancelled": "Cancelled",
       "failed": "Failed"
     },
+    "paymentsPage": {
+      "title": "My Payments",
+      "back": "← Hub",
+      "noPayments": "No payments found for {email}.",
+      "colDate": "Date",
+      "colReference": "Reference",
+      "colAmount": "Amount",
+      "colStatus": "Status"
+    },
+    "paymentState": {
+      "completed": "Paid",
+      "pending": "Pending",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded"
+    },
     "transferPage": {
       "title": "Transfer Bookings",
       "noTransfer": "No transfer bookings found for {email}.",

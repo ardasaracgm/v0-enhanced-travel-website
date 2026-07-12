@@ -435,6 +435,22 @@
       "cancelled": "Ακυρωμένη",
       "failed": "Απέτυχε"
     },
+    "paymentsPage": {
+      "title": "Οι πληρωμές μου",
+      "back": "← Hub",
+      "noPayments": "Δεν βρέθηκαν πληρωμές για {email}.",
+      "colDate": "Ημερομηνία",
+      "colReference": "Αναφορά",
+      "colAmount": "Ποσό",
+      "colStatus": "Κατάσταση"
+    },
+    "paymentState": {
+      "completed": "Πληρωμένο",
+      "pending": "Σε εκκρεμότητα",
+      "failed": "Απέτυχε",
+      "refunded": "Επιστράφηκε",
+      "partially_refunded": "Μερική επιστροφή"
+    },
     "transferPage": {
       "title": "Κρατήσεις Μεταφορών",
       "noTransfer": "Δεν βρέθηκαν κρατήσεις μεταφοράς για {email}.",

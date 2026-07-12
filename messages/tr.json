@@ -435,6 +435,22 @@
       "cancelled": "İptal Edildi",
       "failed": "Başarısız"
     },
+    "paymentsPage": {
+      "title": "Ödemelerim",
+      "back": "← Hub",
+      "noPayments": "{email} için ödeme bulunamadı.",
+      "colDate": "Tarih",
+      "colReference": "Referans",
+      "colAmount": "Tutar",
+      "colStatus": "Durum"
+    },
+    "paymentState": {
+      "completed": "Ödendi",
+      "pending": "Bekliyor",
+      "failed": "Başarısız",
+      "refunded": "İade edildi",
+      "partially_refunded": "Kısmi iade"
+    },
     "transferPage": {
       "title": "Transfer Rezervasyonları",
       "noTransfer": "{email} için transfer rezervasyonu bulunamadı.",

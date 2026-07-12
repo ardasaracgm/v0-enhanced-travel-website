@@ -34,7 +34,7 @@ const NAV: NavItem[] = [
   { key: 'visa',         icon: FileCheck,     href: '/hub/visa' },
   { key: 'insurance',    icon: ShieldCheck,   href: '/hub/insurance' },
   { key: 'companions',   icon: Users,         href: '/hub/companions' },
-  { key: 'payments',     icon: CreditCard /* coming soon */ },
+  { key: 'payments',     icon: CreditCard,    href: '/hub/payments' },
   { key: 'messages',     icon: MessageSquare /* coming soon */ },
   { key: 'profile',      icon: UserCircle,    href: '/hub/profile' },
 ]
