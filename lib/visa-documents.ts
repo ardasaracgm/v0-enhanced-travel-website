@@ -232,3 +232,31 @@ export function resolveDocuments(
     isRequired: typeof spec.required === 'function' ? spec.required(app) : spec.required,
   }))
 }
+
+// ============================================================
+// Example images — public/visa-examples/<key>.webp
+// ============================================================
+
+/**
+ * Keys that ship a reference example image under public/visa-examples/. ONLY
+ * these render the "see example" trigger in the slot — a key absent here shows
+ * no icon (zero broken images). Keep this set in lockstep with the files on
+ * disk. `biometric_photo` is special: it has a correct/wrong PAIR
+ * (biometric_photo_correct.webp + biometric_photo_wrong.webp); every other key
+ * is a single file at /visa-examples/<key>.webp.
+ */
+export const EXAMPLE_KEYS: ReadonlySet<string> = new Set([
+  'biometric_photo',
+  'passport_main',
+  'id_card_front',
+  'id_card_back',
+  'bank_statement_first',
+  'bank_statement_last',
+  'ticket',
+  'insurance',
+  'hotel',
+])
+
+export function hasExample(key: string): boolean {
+  return EXAMPLE_KEYS.has(key)
+}

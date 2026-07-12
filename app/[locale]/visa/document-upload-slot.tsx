@@ -22,12 +22,20 @@
 
 import * as React from 'react'
 import { useTranslations } from 'next-intl'
-import { AlertTriangle, CheckCircle2, FileText, Loader2, Upload } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Eye, FileText, Loader2, Upload, XCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
 import {
   isAllowedVisaDocMime,
@@ -40,7 +48,7 @@ import {
   analyzeImageQuality,
   type ImageQualityWarning,
 } from '@/lib/visa/image-quality-checks'
-import type { ResolvedVisaDoc } from '@/lib/visa-documents'
+import { hasExample, type ResolvedVisaDoc } from '@/lib/visa-documents'
 
 // Quality-warning code → i18n key under visaPage.documents.
 const QUALITY_WARNING_KEY: Record<ImageQualityWarning, string> = {
@@ -109,6 +117,76 @@ interface DocumentUploadSlotProps {
   onStatusChange?: (status: DocumentUploadSlotStatus) => void
   /** Convenience: fired only on a successful (re)upload, with the new filename. */
   onUploaded?: (filename: string) => void
+}
+
+/**
+ * "See example" trigger + lightbox for a document slot. Rendered ONLY when
+ * hasExample(doc.key) (public/visa-examples/<key>.webp exists) → no broken
+ * images. biometric_photo is the one pair: correct + wrong side by side with
+ * ✓/✗; every other key is a single reference image.
+ *
+ * Plain <img> on purpose: these are arbitrary-aspect local webp previews in a
+ * lazily-opened modal (not LCP, not perf-critical). next/image would need each
+ * file's intrinsic width/height to avoid distorting under `h-auto w-full`;
+ * <img> reads them from the file and scales cleanly with zero config.
+ */
+function ExampleDialog({ doc }: { doc: ResolvedVisaDoc }) {
+  const t = useTranslations('visaPage.documents')
+  const isBiometric = doc.key === 'biometric_photo'
+  const caption = t(`examples.${doc.key}`)
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          {t('exampleCta')}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-base">{doc.label}</DialogTitle>
+          <DialogDescription>{caption}</DialogDescription>
+        </DialogHeader>
+        {isBiometric ? (
+          <div className="grid grid-cols-2 gap-3">
+            <figure className="space-y-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/visa-examples/biometric_photo_correct.webp"
+                alt={t('exampleCorrect')}
+                className="h-auto w-full rounded-md border border-primary/40"
+              />
+              <figcaption className="flex items-center justify-center gap-1 text-sm font-medium text-primary">
+                <CheckCircle2 className="h-4 w-4" /> {t('exampleCorrect')}
+              </figcaption>
+            </figure>
+            <figure className="space-y-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/visa-examples/biometric_photo_wrong.webp"
+                alt={t('exampleWrong')}
+                className="h-auto w-full rounded-md border border-destructive/40"
+              />
+              <figcaption className="flex items-center justify-center gap-1 text-sm font-medium text-destructive">
+                <XCircle className="h-4 w-4" /> {t('exampleWrong')}
+              </figcaption>
+            </figure>
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/visa-examples/${doc.key}.webp`}
+            alt={doc.label}
+            className="h-auto w-full rounded-md border border-border"
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 export function DocumentUploadSlot({
@@ -224,10 +302,13 @@ export function DocumentUploadSlot({
     <Card className={`border-border/50 ${isUploaded ? 'border-primary/40' : ''}`}>
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between gap-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary shrink-0" />
-            {doc.label}
-          </CardTitle>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              {doc.label}
+            </CardTitle>
+            {hasExample(doc.key) && <ExampleDialog doc={doc} />}
+          </div>
           {doc.isRequired ? (
             <Badge variant="destructive">{t('badgeRequired')}</Badge>
           ) : (
