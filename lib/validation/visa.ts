@@ -239,6 +239,11 @@ function refineFinancing(
 const step1Object = z.object({
   entryPoint: enumField(ENTRY_POINTS, 'entryPoint.required'),
   vesselType: enumField(VESSEL_TYPES, 'vesselType.required'),
+  // Planned Schengen dates — moved into step 1 (Travel + Personal). Consistency
+  // (exit ≥ entry, ≤6 nights) enforced by refineSchengenDates, now on
+  // visaStep1Schema (was visaStep4Schema before the fields moved).
+  schengenEntryDate:  isoDate('schengenEntryDate.invalid'),
+  schengenExitDate:   isoDate('schengenExitDate.invalid'),
 })
 
 const step2Object = z.object({
@@ -258,6 +263,9 @@ const step2Object = z.object({
   gender:             enumField(GENDERS, 'gender.required'),
   maritalStatus:      enumField(MARITAL_STATUSES, 'maritalStatus.required'),
 
+  // National ID — moved from the Travel-Document step into Personal (step 1).
+  idNumber:           requiredText('idNumber.required'),
+
   // Jotform 10 · legal guardian — optional here, conditionally required for
   // minors via refineGuardian (which also reads birthDate above).
   guardianName:        z.string().trim().optional(),
@@ -269,7 +277,6 @@ const step2Object = z.object({
 })
 
 const step3Object = z.object({
-  idNumber:         requiredText('idNumber.required'),
   docType:          enumField(DOC_TYPES, 'docType.required'),
   docNumber:        requiredText('docNumber.required'),
   docIssueDate:     isoDate('docIssueDate.invalid').refine(
@@ -281,12 +288,16 @@ const step3Object = z.object({
                       { message: 'docExpiryDate.beforeToday' },
                     ),
   issuingAuthority: requiredText('issuingAuthority.required'),
+
+  // Moved into the Document step (step 2): Schengen history + contact.
+  schengenLast3Years: z.boolean({ errorMap: () => ({ message: 'schengenLast3Years.required' }) }),
+  fingerprintsTaken:  z.boolean({ errorMap: () => ({ message: 'fingerprintsTaken.required' }) }),
+  email:              z.string().trim().min(1, 'email.required').email('email.invalid'),
+  phone:              z.string().trim().min(7, 'phone.invalid'),   // REQUIRED, format-only
 })
 
 const step4Object = z.object({
   residenceAddress:    requiredText('residenceAddress.required'),
-  email:               z.string().trim().min(1, 'email.required').email('email.invalid'),
-  phone:               z.string().trim().min(7, 'phone.invalid'),   // REQUIRED, format-only
   livesInOtherCountry: z.boolean({ errorMap: () => ({ message: 'livesInOtherCountry.required' }) }),
   occupation:          enumField(OCCUPATIONS, 'occupation.required'),
 
@@ -315,11 +326,6 @@ const step5Object = z.object({
   stayDuration:       z.coerce.number({ errorMap: () => ({ message: 'stayDuration.range' }) })
                         .int('stayDuration.range').min(1, 'stayDuration.range').max(7, 'stayDuration.range')
                         .optional(),
-  schengenLast3Years: z.boolean({ errorMap: () => ({ message: 'schengenLast3Years.required' }) }),
-  fingerprintsTaken:  z.boolean({ errorMap: () => ({ message: 'fingerprintsTaken.required' }) }),
-  schengenEntryDate:  isoDate('schengenEntryDate.invalid'),
-  schengenExitDate:   isoDate('schengenExitDate.invalid'),
-
   // Jotform 31–32B · sponsor / invitation — conditionally shown (funding =
   // sponsor) via refineSponsor; only the inviter/hotel name (31) is required,
   // the rest are free. Persisted to metadata.sponsor.
@@ -349,12 +355,13 @@ const step5Object = z.object({
 // merge is a plain shape union. The full schema below still composes ALL raw
 // shapes, so every field stays validated on final submit.
 // ============================================================
-export const visaStep1Schema = step1Object.merge(step2Object)              // Travel + Personal
+export const visaStep1Schema = step1Object.merge(step2Object)              // Travel + Personal (+ planned dates, national ID)
   .superRefine(refineGuardian)
-export const visaStep2Schema = step3Object.superRefine(refineDocDates)     // Travel Document
-export const visaStep3Schema = step4Object                                 // Contact & Occupation
+  .superRefine(refineSchengenDates)   // dates moved here from step 4
+export const visaStep2Schema = step3Object.superRefine(refineDocDates)     // Document + Schengen history + contact
+export const visaStep3Schema = step4Object                                 // Residence & Occupation
   .superRefine(refineResidencePermit)
-export const visaStep4Schema = step5Object.superRefine(refineSchengenDates) // Trip Details
+export const visaStep4Schema = step5Object                                 // Trip Details
   .superRefine(refineSponsor)
   .superRefine(refineFinancing)
 

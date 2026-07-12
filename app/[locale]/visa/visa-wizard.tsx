@@ -132,14 +132,14 @@ const EMPTY_FORM: FormState = {
 // Which fields live on which step — used to jump back to the earliest step
 // that has an error after the full-form submit parse.
 const STEP_FIELDS: ErrorKey[][] = [
-  // Step 1 — Travel + Personal (merged) + guardian (minors)
-  ['entryPoint', 'vesselType', 'lastName', 'previousLastName', 'firstName', 'fatherName', 'motherName', 'birthDate', 'birthPlace', 'birthCountry', 'nationality', 'previousNationality', 'gender', 'maritalStatus', 'guardianName', 'guardianAddress', 'guardianCity', 'guardianProvince', 'guardianPostalCode', 'guardianNationality'],
-  // Step 2 — Travel Document
-  ['idNumber', 'docType', 'docNumber', 'docIssueDate', 'docExpiryDate', 'issuingAuthority'],
-  // Step 3 — Contact & Occupation + residence permit + employer/school
-  ['residenceAddress', 'email', 'phone', 'livesInOtherCountry', 'occupation', 'residencePermitNumber', 'residencePermitExpiry', 'employerName', 'employerAddress', 'employerCity', 'employerProvince', 'employerPostalCode', 'employerEmail', 'employerPhone'],
+  // Step 1 — Travel + Personal (merged) + planned dates + national ID + guardian (minors)
+  ['entryPoint', 'vesselType', 'schengenEntryDate', 'schengenExitDate', 'firstName', 'lastName', 'previousLastName', 'fatherName', 'motherName', 'birthDate', 'maritalStatus', 'nationality', 'previousNationality', 'idNumber', 'birthPlace', 'birthCountry', 'gender', 'guardianName', 'guardianAddress', 'guardianCity', 'guardianProvince', 'guardianPostalCode', 'guardianNationality'],
+  // Step 2 — Travel Document + Schengen history + contact
+  ['docType', 'docNumber', 'issuingAuthority', 'docIssueDate', 'docExpiryDate', 'schengenLast3Years', 'fingerprintsTaken', 'email', 'phone'],
+  // Step 3 — Residence & Occupation + residence permit + employer/school
+  ['residenceAddress', 'occupation', 'livesInOtherCountry', 'residencePermitNumber', 'residencePermitExpiry', 'employerName', 'employerAddress', 'employerCity', 'employerProvince', 'employerPostalCode', 'employerEmail', 'employerPhone'],
   // Step 4 — Trip Details + sponsor/invitation + financing means
-  ['travelPurpose', 'fundingSource', 'schengenLast3Years', 'fingerprintsTaken', 'schengenEntryDate', 'schengenExitDate', 'inviterOrHotelName', 'accommodationAddress', 'accommodationEmail', 'accommodationPhone', 'inviterCompanyName', 'inviterCompanyAddress', 'companyPhone', 'companyFax', 'contactName', 'contactAddress', 'contactPhone', 'contactFax', 'contactEmail', 'financingMeans'],
+  ['travelPurpose', 'fundingSource', 'inviterOrHotelName', 'accommodationAddress', 'accommodationEmail', 'accommodationPhone', 'inviterCompanyName', 'inviterCompanyAddress', 'companyPhone', 'companyFax', 'contactName', 'contactAddress', 'contactPhone', 'contactFax', 'contactEmail', 'financingMeans'],
 ]
 const TOTAL_STEPS = STEP_FIELDS.length
 
@@ -148,10 +148,11 @@ const TOTAL_STEPS = STEP_FIELDS.length
 // yok. Sidebar adım-tamamlanma + (ileride) scroll-to-step bunu kullanacak.
 const DOC_STEP_MAP: Record<string, number> = {
   biometric_photo: 0, consent_form: 0,
-  id_card_front: 1, id_card_back: 1, passport_main: 1,
+  id_card_front: 0, id_card_back: 0,          // moved to step 1 (Personal)
+  passport_main: 1, previous_schengen_visa: 1, // previous_schengen moved to step 2
   bank_statement_first: 3, bank_statement_last: 3,
   sponsor_id: 3, sponsor_bank: 3, ticket: 3, insurance: 3, hotel: 3,
-  credit_card_front: 3, credit_card_back: 3, previous_schengen_visa: 3,
+  credit_card_front: 3, credit_card_back: 3,
   applicant_signature: 3,
 }
 
@@ -806,199 +807,11 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
       <CardContent className="space-y-3">
         {step === 0 && (
           <>
-            <div className="grid md:grid-cols-2 gap-3">
+            <div className="grid md:grid-cols-3 gap-3">
               {selectField('entryPoint', ENTRY_POINTS, 'entryPoint')}
               {selectField('vesselType', VESSEL_TYPES, 'vesselType')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('lastName')}
-              {textField('previousLastName', 'text', true)}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('firstName')}
-              {textField('fatherName')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('motherName')}
-              {dateField('birthDate', { max: today })}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('birthPlace')}
-              {textField('birthCountry')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('nationality')}
-              {textField('previousNationality', 'text', true)}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {selectField('gender', GENDERS, 'gender')}
-              {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
-            </div>
-            {/* Jotform 10 — legal guardian. Appears only for minors; all fields
-                become required (refineGuardian). */}
-            {applicantIsMinor && (
-              <FieldGroup title={t('sections.guardian')}>
-                {textField('guardianName')}
-                {textField('guardianAddress')}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('guardianCity')}
-                  {textField('guardianProvince')}
-                </div>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('guardianPostalCode')}
-                  {textField('guardianNationality')}
-                </div>
-              </FieldGroup>
-            )}
-            <div className="grid md:grid-cols-2 gap-3 items-start">
-              <DocsSection title={t('docs.stepHeading')}>
-                {renderDocSlot('biometric_photo')}
-                {applicantIsMinor && renderDocSlot('consent_form')}
-              </DocsSection>
-              <div className="space-y-2">
-                <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
-                <Input
-                  id="promoCode"
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => { setPromoCode(e.target.value); setInvalidPromo(false) }}
-                  className={invalidPromo ? 'border-destructive' : ''}
-                />
-                {invalidPromo && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
-              </div>
-            </div>
-            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
-          </>
-        )}
-
-        {step === 1 && (
-          <>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('idNumber')}
-              {selectField('docType', DOC_TYPES, 'docType')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('docNumber')}
-              {textField('issuingAuthority')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {dateField('docIssueDate', { max: today })}
-              {dateField('docExpiryDate', { min: today })}
-            </div>
-            <DocsSection title={t('docs.stepHeading')}>
-              <p className="text-xs text-muted-foreground">{t('docs.idCardNote')}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {renderDocSlot('id_card_front')}
-                {renderDocSlot('id_card_back')}
-                {renderDocSlot('passport_main')}
-              </div>
-            </DocsSection>
-            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            {textField('residenceAddress')}
-            <div className="grid md:grid-cols-2 gap-3">
-              {textField('email', 'email')}
-              {textField('phone', 'tel')}
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {selectField('livesInOtherCountry', YES_NO, 'yesNo')}
-              {selectField('occupation', OCCUPATIONS, 'occupation')}
-            </div>
-            {/* Jotform 18 — residence permit. Appears only when the applicant
-                lives abroad; both fields required (refineResidencePermit). */}
-            {livesAbroad && (
-              <FieldGroup title={t('sections.residencePermit')}>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('residencePermitNumber')}
-                  {dateField('residencePermitExpiry', { min: '1900-01-01', max: '2100-12-31' })}
-                </div>
-              </FieldGroup>
-            )}
-            {/* Jotform 20 — employer / school. Hidden entirely for the exempt
-                occupations; shown but fully OPTIONAL otherwise. Students see
-                school/faculty labels, everyone else employer labels. */}
-            {!employerHidden && (
-              <FieldGroup title={isStudent ? t('sections.school') : t('sections.employer')}>
-                <p className="text-xs text-muted-foreground">{t('docs.employerOptionalNote')}</p>
-                {textField('employerName', 'text', true, isStudent ? 'schoolName' : 'employerName')}
-                {textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('employerCity', 'text', true, isStudent ? 'schoolCity' : 'employerCity')}
-                  {textField('employerProvince', 'text', true, isStudent ? 'schoolProvince' : 'employerProvince')}
-                </div>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('employerPostalCode', 'text', true, isStudent ? 'schoolPostalCode' : 'employerPostalCode')}
-                  {textField('employerPhone', 'tel', true, isStudent ? 'schoolPhone' : 'employerPhone')}
-                </div>
-                {textField('employerEmail', 'email', true, isStudent ? 'schoolEmail' : 'employerEmail')}
-              </FieldGroup>
-            )}
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <div className="grid md:grid-cols-2 gap-3">
-              {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}
-              {selectField('fundingSource', FUNDING_SOURCES, 'fundingSource')}
-            </div>
-            {/* Jotform 31–32B — sponsor / invitation. Shown only when a sponsor
-                covers the trip; only the inviter/hotel name is required. */}
-            {isSponsor && (
-              <FieldGroup title={t('sections.sponsor')}>
-                {textField('inviterOrHotelName')}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('accommodationAddress', 'text', true)}
-                  {textField('accommodationPhone', 'tel', true)}
-                </div>
-                {textField('accommodationEmail', 'email', true)}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('inviterCompanyName', 'text', true)}
-                  {textField('inviterCompanyAddress', 'text', true)}
-                </div>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('companyPhone', 'tel', true)}
-                  {textField('companyFax', 'tel', true)}
-                </div>
-                {textField('contactName', 'text', true)}
-                {textField('contactAddress', 'text', true)}
-                <div className="grid md:grid-cols-2 gap-3">
-                  {textField('contactPhone', 'tel', true)}
-                  {textField('contactFax', 'tel', true)}
-                </div>
-                {textField('contactEmail', 'email', true)}
-              </FieldGroup>
-            )}
-            {/* Jotform 33A — means of subsistence. Always shown; at least one
-                must be selected (refineFinancing). */}
-            <FieldGroup title={t('sections.financingMeans')}>
-              <div className="flex flex-wrap gap-x-4 gap-y-2">
-                {FINANCING_MEANS.map((val) => (
-                  <label
-                    key={val}
-                    htmlFor={`fm-${val}`}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Checkbox
-                      id={`fm-${val}`}
-                      checked={financingMeans.includes(val)}
-                      onCheckedChange={() => toggleFinancingMeans(val)}
-                    />
-                    <span className="text-sm">{t(`options.financingMeans.${val}`)}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.financingMeans && (
-                <p className="text-sm text-destructive">{errors.financingMeans}</p>
-              )}
-            </FieldGroup>
-            <div className="grid md:grid-cols-3 gap-3">
-              {selectField('schengenLast3Years', YES_NO, 'yesNo')}
-              {selectField('fingerprintsTaken', YES_NO, 'yesNo')}
+              {/* Planlanan tarihler — Adım 4'ten taşındı (refineSchengenDates
+                  artık visaStep1Schema'da). */}
               <div className="space-y-2">
                 <Label className="text-blue-950">
                   {t('labels.plannedDates')} <span className="text-red-500">*</span>
@@ -1017,46 +830,106 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                 <p className="text-xs text-slate-500">{t('labels.plannedDatesHint')}</p>
               </div>
             </div>
-            {/* Destination + first-entry country are FIXED to Greece (door visa).
-                Read-only, never user-editable, not submitted — shown only for
-                transparency; the value is hardcoded in the future PDF printout. */}
-            <div className="grid md:grid-cols-2 gap-3">
+            <div className="grid md:grid-cols-3 gap-3">
+              {textField('firstName')}
+              {textField('lastName')}
+              {textField('previousLastName', 'text', true)}
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {textField('fatherName')}
+              {textField('motherName')}
+              {dateField('birthDate', { max: today })}
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {selectField('maritalStatus', MARITAL_STATUSES, 'maritalStatus')}
+              {textField('nationality')}
+              {textField('previousNationality', 'text', true)}
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {/* Kimlik No — Adım 2'den taşındı (Kişisel). */}
+              {textField('idNumber')}
+              {textField('birthPlace')}
+              {textField('birthCountry')}
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {selectField('gender', GENDERS, 'gender')}
+              <div />
               <div className="space-y-2">
-                <Label htmlFor="destinationCountry">{t('labels.destinationCountry')}</Label>
-                <Input id="destinationCountry" value={t('fixedGreece')} disabled readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="firstEntryCountry">{t('labels.firstEntryCountry')}</Label>
-                <Input id="firstEntryCountry" value={t('fixedGreece')} disabled readOnly />
+                <Label htmlFor="promoCode">{t('labels.promoCode')}</Label>
+                <Input
+                  id="promoCode"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value); setInvalidPromo(false) }}
+                  className={invalidPromo ? 'border-destructive' : ''}
+                />
+                {invalidPromo && <p className="text-sm text-destructive">{t('promoInvalid')}</p>}
               </div>
             </div>
-            <DocsSection title={t('docs.stepHeading')}>
-              {/* Satır A — mali kanıt: başvuran banka hesap hareketleri (2-kolon) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {renderDocSlot('bank_statement_first')}
-                {renderDocSlot('bank_statement_last')}
-              </div>
-              {/* Satır A2 — sponsor mali belgeleri; yalnız sponsor finanse ediyorsa.
-                  Kendi satırında → isSponsor toggle'ı 3-kolon satırları bozmaz. */}
-              {isSponsor && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {renderDocSlot('sponsor_id')}
-                  {renderDocSlot('sponsor_bank')}
+            {/* Jotform 10 — legal guardian. Appears only for minors; all fields
+                become required (refineGuardian, reads birthDate — same step). */}
+            {applicantIsMinor && (
+              <FieldGroup title={t('sections.guardian')}>
+                {textField('guardianName')}
+                {textField('guardianAddress')}
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('guardianCity')}
+                  {textField('guardianProvince')}
+                  {textField('guardianPostalCode')}
                 </div>
-              )}
-              {/* Satır B — seyahat belgeleri (3-kolon) */}
+                {textField('guardianNationality')}
+              </FieldGroup>
+            )}
+            <DocsSection title={t('docs.stepHeading')}>
+              <p className="text-xs text-muted-foreground">{t('docs.idCardNote')}</p>
+              {/* Kimlik ön/arka belge — Adım 2'den taşındı. */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {renderDocSlot('ticket')}
-                {renderDocSlot('insurance')}
-                {renderDocSlot('hotel')}
+                {renderDocSlot('biometric_photo')}
+                {renderDocSlot('id_card_front')}
+                {renderDocSlot('id_card_back')}
               </div>
-              {/* Satır C — kredi kartı + (varsa) önceki Schengen vizesi (3-kolon).
-                  previous_schengen: schengenLast3Years==='true' ise 3. hücrede;
-                  slot + yüklendiğinde altında veriliş-tarihi inputu dikey stack.
-                  Aksi halde 3. hücre boş (2 kart + boşluk). */}
+              {applicantIsMinor && renderDocSlot('consent_form')}
+            </DocsSection>
+            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <div className="grid md:grid-cols-3 gap-3">
+              {selectField('docType', DOC_TYPES, 'docType')}
+              {textField('docNumber')}
+              {textField('issuingAuthority')}
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {dateField('docIssueDate', { max: today })}
+              {dateField('docExpiryDate', { min: today })}
+              {/* Gidilecek Ülke — sabit Yunanistan, salt-okunur, submit edilmez. */}
+              <div className="space-y-2">
+                <Label htmlFor="destinationCountry">{t('labels.destinationCountry')}</Label>
+                <Input id="destinationCountry" value={t('fixedGreece')} disabled readOnly className="h-9 rounded-xl" />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {/* Schengen geçmişi — Adım 4'ten taşındı. */}
+              {selectField('schengenLast3Years', YES_NO, 'yesNo')}
+              {selectField('fingerprintsTaken', YES_NO, 'yesNo')}
+              {/* İlk Giriş Ülkesi — sabit Yunanistan, salt-okunur, submit edilmez. */}
+              <div className="space-y-2">
+                <Label htmlFor="firstEntryCountry">{t('labels.firstEntryCountry')}</Label>
+                <Input id="firstEntryCountry" value={t('fixedGreece')} disabled readOnly className="h-9 rounded-xl" />
+              </div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {/* İletişim — Adım 3'ten taşındı. */}
+              {textField('email', 'email')}
+              {textField('phone', 'tel')}
+            </div>
+            <DocsSection title={t('docs.stepHeading')}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {renderDocSlot('credit_card_front')}
-                {renderDocSlot('credit_card_back')}
+                {renderDocSlot('passport_main')}
+                {/* Önceki Schengen vizesi — Adım 4'ten taşındı; schengenLast3Years
+                    (aynı adımda) 'true' ise açılır + veriliş-tarihi inputu. */}
                 {form.schengenLast3Years === 'true' && (
                   <div className="space-y-2">
                     {renderDocSlot('previous_schengen_visa')}
@@ -1080,6 +953,137 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
                     )}
                   </div>
                 )}
+              </div>
+            </DocsSection>
+            {docMissing && <p className="text-sm text-destructive">{t('docMissing')}</p>}
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <div className="grid md:grid-cols-3 gap-3">
+              {textField('residenceAddress')}
+              <div />
+              {selectField('occupation', OCCUPATIONS, 'occupation')}
+            </div>
+            {/* Jotform 18 — residence permit. Trigger + (conditional) permit
+                fields in one 3-col row. refineResidencePermit reads
+                livesInOtherCountry (same step). Yurtdışı değilse cols 2-3 boş. */}
+            <div className="grid md:grid-cols-3 gap-3">
+              {selectField('livesInOtherCountry', YES_NO, 'yesNo')}
+              {livesAbroad && textField('residencePermitNumber')}
+              {livesAbroad && dateField('residencePermitExpiry', { min: '1900-01-01', max: '2100-12-31' })}
+            </div>
+            {/* Jotform 20 — employer / school. Hidden entirely for the exempt
+                occupations; shown but fully OPTIONAL otherwise. Students see
+                school/faculty labels, everyone else employer labels. */}
+            {!employerHidden && (
+              <FieldGroup title={isStudent ? t('sections.school') : t('sections.employer')}>
+                <p className="text-xs text-muted-foreground">{t('docs.employerOptionalNote')}</p>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('employerName', 'text', true, isStudent ? 'schoolName' : 'employerName')}
+                  {textField('employerCity', 'text', true, isStudent ? 'schoolCity' : 'employerCity')}
+                  {textField('employerProvince', 'text', true, isStudent ? 'schoolProvince' : 'employerProvince')}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('employerAddress', 'text', true, isStudent ? 'schoolAddress' : 'employerAddress')}
+                  <div />
+                  {textField('employerPostalCode', 'text', true, isStudent ? 'schoolPostalCode' : 'employerPostalCode')}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('employerPhone', 'tel', true, isStudent ? 'schoolPhone' : 'employerPhone')}
+                  {textField('employerEmail', 'email', true, isStudent ? 'schoolEmail' : 'employerEmail')}
+                </div>
+              </FieldGroup>
+            )}
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <div className="grid md:grid-cols-3 gap-3">
+              {selectField('travelPurpose', TRAVEL_PURPOSES, 'travelPurpose')}
+              <div />
+              {selectField('fundingSource', FUNDING_SOURCES, 'fundingSource')}
+            </div>
+            {/* Jotform 33A — means of subsistence. Always shown; at least one
+                must be selected (refineFinancing). */}
+            <FieldGroup title={t('sections.financingMeans')}>
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {FINANCING_MEANS.map((val) => (
+                  <label
+                    key={val}
+                    htmlFor={`fm-${val}`}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Checkbox
+                      id={`fm-${val}`}
+                      checked={financingMeans.includes(val)}
+                      onCheckedChange={() => toggleFinancingMeans(val)}
+                    />
+                    <span className="text-sm">{t(`options.financingMeans.${val}`)}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.financingMeans && (
+                <p className="text-sm text-destructive">{errors.financingMeans}</p>
+              )}
+            </FieldGroup>
+            {/* Jotform 31–32B — sponsor / invitation. Shown only when a sponsor
+                covers the trip; only the inviter/hotel name is required
+                (refineSponsor reads fundingSource — same step). */}
+            {isSponsor && (
+              <FieldGroup title={t('sections.sponsor')}>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('inviterOrHotelName')}
+                  {textField('accommodationPhone', 'tel', true)}
+                  {textField('accommodationEmail', 'email', true)}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('accommodationAddress', 'text', true)}
+                  <div />
+                  {textField('companyFax', 'tel', true)}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('inviterCompanyName', 'text', true)}
+                  {textField('contactName', 'text', true)}
+                  {textField('companyPhone', 'tel', true)}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('inviterCompanyAddress', 'text', true)}
+                  {textField('contactFax', 'tel', true)}
+                  {textField('contactPhone', 'tel', true)}
+                </div>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {textField('contactAddress', 'text', true)}
+                  <div />
+                  {textField('contactEmail', 'email', true)}
+                </div>
+              </FieldGroup>
+            )}
+            <DocsSection title={t('docs.stepHeading')}>
+              {/* Banka hesap hareketleri */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {renderDocSlot('bank_statement_first')}
+                {renderDocSlot('bank_statement_last')}
+              </div>
+              {/* Sponsor mali belgeleri; yalnız sponsor finanse ediyorsa */}
+              {isSponsor && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {renderDocSlot('sponsor_id')}
+                  {renderDocSlot('sponsor_bank')}
+                </div>
+              )}
+              {/* Seyahat belgeleri (3-kolon) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {renderDocSlot('ticket')}
+                {renderDocSlot('insurance')}
+                {renderDocSlot('hotel')}
+              </div>
+              {/* Kredi kartı ön/arka (accordion Kademe son; şimdilik 3-kolon satır) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {renderDocSlot('credit_card_front')}
+                {renderDocSlot('credit_card_back')}
               </div>
             </DocsSection>
           </>
