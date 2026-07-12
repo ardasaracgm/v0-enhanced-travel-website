@@ -231,6 +231,9 @@ export function AddCarForm() {
           onChange={onPickFile}
           className="text-sm file:mr-3 file:rounded-md file:border file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium"
         />
+        <p className="text-xs text-muted-foreground">
+          Recommended: 1200×800px (3:2), WebP or JPG, max 5MB.
+        </p>
         {imagePreview ? (
           // eslint-disable-next-line @next/next/no-img-element -- local blob preview, next/image gereksiz
           <img src={imagePreview} alt="Preview" className="h-32 w-auto rounded-md border object-cover" />

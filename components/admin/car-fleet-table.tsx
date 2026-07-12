@@ -6,6 +6,8 @@ import { ChevronDown, ChevronRight, Wrench } from 'lucide-react'
 import { Link, useRouter } from '@/i18n/routing'
 import { setCarStatus } from '@/lib/actions/set-car-status'
 import { updateModelPrice } from '@/lib/actions/update-model-price'
+import { updateModelImage } from '@/lib/actions/update-model-image'
+import { uploadCarImage } from '@/lib/actions/upload-car-image'
 import { activateComingSoonCar } from '@/lib/actions/activate-coming-soon-car'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -63,6 +65,9 @@ export function CarFleetTable({
   const [plateInput, setPlateInput] = React.useState('')
   const [activatingId, setActivatingId] = React.useState<string | null>(null)
   const [activateError, setActivateError] = React.useState<string | null>(null)
+  const [imageKey, setImageKey] = React.useState<string | null>(null)
+  const [imageSaving, setImageSaving] = React.useState<string | null>(null)
+  const [imageError, setImageError] = React.useState<string | null>(null)
 
   const toggleExpand = (key: string) => setExpanded((e) => ({ ...e, [key]: !e[key] }))
 
@@ -114,6 +119,31 @@ export function CarFleetTable({
     router.refresh()
   }
 
+  // Görsel = havuz-seviyesi (model_key). uploadCarImage (storage→URL) → updateModelImage
+  // (URL'yi havuza yaz). Dosya seçilince zincir tetiklenir; upload VEYA update
+  // başarısızsa dur. Grup başlığında → coming-soon dahil tüm plakalar tek görseli paylaşır.
+  async function onPickImage(g: ModelGroup, file: File | null) {
+    setImageError(null)
+    if (!file) return
+    setImageSaving(g.modelKey)
+    const fd = new FormData()
+    fd.append('file', file)
+    const up = await uploadCarImage(fd)
+    if (!up.ok || !up.url) {
+      setImageSaving(null)
+      setImageError(up.error ?? 'Image upload failed.')
+      return
+    }
+    const res = await updateModelImage(g.modelKey, up.url)
+    setImageSaving(null)
+    if (!res.ok) {
+      setImageError(res.error ?? 'Update failed.')
+      return
+    }
+    setImageKey(null)
+    router.refresh()
+  }
+
   async function onToggleStatus(p: PlateRow) {
     setError(null)
     setPending(p.id)
@@ -139,6 +169,7 @@ export function CarFleetTable({
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {priceError ? <p className="text-sm text-destructive">{priceError}</p> : null}
       {activateError ? <p className="text-sm text-destructive">{activateError}</p> : null}
+      {imageError ? <p className="text-sm text-destructive">{imageError}</p> : null}
       <div className="rounded-md border bg-background">
         <Table>
           <TableHeader>
@@ -227,7 +258,46 @@ export function CarFleetTable({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-muted-foreground">—</TableCell>
+                    {/* Görsel = havuz-seviyesi ayrı akış. stopPropagation (satır
+                        onClick=toggleExpand). Coming-soon dahil her grup başlığında görünür. */}
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      {imageKey === g.modelKey ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            disabled={imageSaving === g.modelKey}
+                            onChange={(e) => onPickImage(g, e.target.files?.[0] ?? null)}
+                            className="max-w-[10rem] text-xs file:mr-2 file:rounded-md file:border file:bg-muted file:px-2 file:py-1 file:text-xs file:font-medium"
+                          />
+                          {imageSaving === g.modelKey ? (
+                            <span className="text-xs text-muted-foreground">…</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImageKey(null)
+                                setImageError(null)
+                              }}
+                              className="px-1 text-xs text-muted-foreground hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageKey(g.modelKey)
+                            setImageError(null)
+                          }}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          Change image
+                        </button>
+                      )}
+                    </TableCell>
                   </TableRow>
 
                   {open &&

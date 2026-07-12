@@ -536,6 +536,7 @@ export interface Car {
   coming_soon?: boolean
   price: number
   image: string
+  image_url?: string | null // DB kolonu (add-car yazar, normalizeCar okur, updateModelImage günceller)
 
   // Optional fields — Supabase rows may have either nested specs object
   // OR flat columns, depending on when they were inserted.
