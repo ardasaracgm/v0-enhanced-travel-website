@@ -685,25 +685,29 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
         <SelectContent>
           {values.map((val) => (
             <SelectItem key={val} value={val}>
-              {t(`options.${optionPrefix}.${val}`)}
+              {/* Yalnızca docType: her seçeneğe küçük pasaport thumbnail'i + metin.
+                  SelectValue item children'ı trigger'a kopyalar → seçili türün
+                  görseli trigger'da da görünür (mockup'ta istenen). h-5 küçük →
+                  trigger yüksekliğini (h-9) şişirmez. name==='docType' guard diğer
+                  dropdown'ları (giriş noktası/gemi/cinsiyet/medeni durum) metin-only
+                  bırakır; görseli olmayan key'de hasPassportImage ile thumbnail YOK. */}
+              {name === 'docType' && hasPassportImage(val) ? (
+                <span className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/passport-types/${val}.webp`}
+                    alt=""
+                    className="h-5 w-auto shrink-0 rounded-sm"
+                  />
+                  {t(`options.${optionPrefix}.${val}`)}
+                </span>
+              ) : (
+                t(`options.${optionPrefix}.${val}`)
+              )}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {/* Yalnızca docType için: seçili pasaport türünün örnek görseli (item-içi
-          thumbnail YOK → trigger'a sızmaz). Görseli olmayan türde hiç çıkmaz
-          (hasPassportImage gate). name==='docType' guard diğer dropdown'ları
-          (giriş noktası, gemi, cinsiyet, medeni durum) korur. */}
-      {name === 'docType' && hasPassportImage(form[name]) && (
-        <div className="flex justify-center rounded-xl border bg-muted/30 p-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/passport-types/${form[name]}.webp`}
-            alt={t(`options.docType.${form[name]}`)}
-            className="h-auto max-h-40 w-auto rounded-md"
-          />
-        </div>
-      )}
       {errors[name] && <p className="text-sm text-destructive">{errors[name]}</p>}
     </div>
   )
