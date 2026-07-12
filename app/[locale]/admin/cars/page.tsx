@@ -5,6 +5,7 @@ import { normalizeCar, dateDiffInDays } from '@/lib/normalize-car'
 import { Link } from '@/i18n/routing'
 import { AvailabilityCalendar } from '@/components/admin/availability-calendar'
 import { CarFleetTable, type ModelGroup } from '@/components/admin/car-fleet-table'
+import { AddCarForm } from '@/components/admin/add-car-form'
 
 export const dynamic = 'force-dynamic'
 
@@ -116,6 +117,9 @@ export default async function AdminCarsPage({
           + New reservation
         </Link>
       </div>
+
+      {/* ── Yeni araç ekle (aktif plaka insert; envanter yaşam döngüsünün "ekle" ucu) ── */}
+      <AddCarForm />
 
       {/* ── Aylık dolu/boş takvim (30-gün pencere, seçimsiz default) ── */}
       <section className="space-y-3">
