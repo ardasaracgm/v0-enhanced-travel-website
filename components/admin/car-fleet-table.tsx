@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Wrench } from 'lucide-react'
 
 import { Link, useRouter } from '@/i18n/routing'
 import { setCarStatus } from '@/lib/actions/set-car-status'
+import { updateModelPrice } from '@/lib/actions/update-model-price'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -27,6 +28,7 @@ export interface ModelGroup {
   modelKey: string
   label: string
   category: string
+  price: number // havuz günlük fiyatı (page.tsx: havuzdaki min price_per_day)
   plateCount: number
   remaining: number
   plates: PlateRow[]
@@ -50,8 +52,36 @@ export function CarFleetTable({
   )
   const [pending, setPending] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
+  const [editingKey, setEditingKey] = React.useState<string | null>(null)
+  const [priceInput, setPriceInput] = React.useState('')
+  const [savingKey, setSavingKey] = React.useState<string | null>(null)
+  const [priceError, setPriceError] = React.useState<string | null>(null)
 
   const toggleExpand = (key: string) => setExpanded((e) => ({ ...e, [key]: !e[key] }))
+
+  function startEdit(g: ModelGroup) {
+    setPriceError(null)
+    setEditingKey(g.modelKey)
+    setPriceInput(String(g.price))
+  }
+
+  async function onSavePrice(g: ModelGroup) {
+    setPriceError(null)
+    const val = Number(priceInput)
+    if (!Number.isFinite(val) || val <= 0) {
+      setPriceError('Price must be greater than 0.')
+      return
+    }
+    setSavingKey(g.modelKey)
+    const res = await updateModelPrice(g.modelKey, val)
+    setSavingKey(null)
+    if (!res.ok) {
+      setPriceError(res.error ?? 'Update failed.')
+      return
+    }
+    setEditingKey(null)
+    router.refresh()
+  }
 
   async function onToggleStatus(p: PlateRow) {
     setError(null)
@@ -76,12 +106,14 @@ export function CarFleetTable({
   return (
     <div className="space-y-2">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {priceError ? <p className="text-sm text-destructive">{priceError}</p> : null}
       <div className="rounded-md border bg-background">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Model / Plate</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead className="text-right">Available</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -107,6 +139,52 @@ export function CarFleetTable({
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {g.category} · {g.plateCount} plate{g.plateCount === 1 ? '' : 's'}
+                    </TableCell>
+                    {/* Fiyat = havuz-seviyesi ayrı hücre. Tıklamalar toggleExpand'i
+                        tetiklemesin diye stopPropagation (satır onClick=toggleExpand). */}
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      {editingKey === g.modelKey ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">€</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={priceInput}
+                            onChange={(e) => setPriceInput(e.target.value)}
+                            className="h-8 w-20 rounded-md border bg-background px-2 text-sm"
+                          />
+                          <button
+                            type="button"
+                            disabled={savingKey === g.modelKey}
+                            onClick={() => onSavePrice(g)}
+                            className="rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                          >
+                            {savingKey === g.modelKey ? '…' : 'Save'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingKey(null)
+                              setPriceError(null)
+                            }}
+                            className="px-1 text-xs text-muted-foreground hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="font-medium">€{g.price}/day</span>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(g)}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            edit
+                          </button>
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {g.remaining === 0 ? (
@@ -140,6 +218,8 @@ export function CarFleetTable({
                             <Badge variant="destructive">Booked</Badge>
                           )}
                         </TableCell>
+                        {/* Fiyat havuz-seviyesi (grup başlığında) — plaka satırında boş. */}
+                        <TableCell className="text-muted-foreground">—</TableCell>
                         <TableCell className="text-right">
                           {p.status === 'maintenance' ? (
                             <span className="text-muted-foreground">—</span>

@@ -80,6 +80,7 @@ export default async function AdminCarsPage({
         modelKey: key,
         label: normalizeCar(c).model,
         category: (c.category as string) || '—',
+        price: Number.POSITIVE_INFINITY, // havuzdaki min ile doldurulur (aşağıda)
         plateCount: 0,
         remaining: 0,
         plates: [],
@@ -99,9 +100,14 @@ export default async function AdminCarsPage({
     })
     g.plateCount += 1
     g.remaining += rem
+    // Havuz fiyatı = min(price_per_day) — public car-rental de .order(asc) ile en
+    // düşük plakayı temsilci tutuyor; admin gösterimi public ile birebir olsun.
+    const rowPrice = Number(c.price_per_day) || 0
+    if (rowPrice > 0) g.price = Math.min(g.price, rowPrice)
   }
   const groups = [...groupMap.values()]
   for (const g of groups) {
+    if (!Number.isFinite(g.price)) g.price = 0 // fiyatsız havuz (olmamalı) → 0
     g.plates.sort((a, b) => a.priority - b.priority || a.plate.localeCompare(b.plate))
   }
   groups.sort((a, b) => a.label.localeCompare(b.label))
