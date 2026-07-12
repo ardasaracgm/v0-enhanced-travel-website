@@ -740,6 +740,9 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
   }
 
   const isLastStep = step === TOTAL_STEPS - 1
+  // Submit butonu stili — TEK KAYNAK. Header (çok-amaçlı) submit + imza-altı
+  // ikinci submit aynı sabitten beslenir → biri değişirse öteki geride kalmaz.
+  const submitBtnClass = 'bg-amber-400 text-blue-950 hover:bg-amber-500'
 
   return (
     <div className="wizard-compact mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_22rem]">
@@ -773,7 +776,7 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
             <Button
               onClick={handleNext}
               disabled={submitting || isUploading || checkingPromo}
-              className="bg-amber-400 text-blue-950 hover:bg-amber-500"
+              className={submitBtnClass}
             >
               {submitting ? (
                 <>
@@ -1092,6 +1095,26 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               onStatusChange={(status) => handleDocStatus('applicant_signature', status)}
               onUploaded={(filename) => handleDocUploaded('applicant_signature', filename)}
             />
+            {/* İmza-altı ikinci "Başvuruyu Gönder" — uzun Adım 4'te kullanıcı
+                imzaladıktan sonra yukarı çıkmadan alttan gönderebilsin. Header
+                submit'in TAM KOPYASI: aynı handleNext + aynı disabled + aynı i18n
+                + tek stil kaynağı (submitBtnClass). Yeni submit mantığı YOK. */}
+            <div className="mt-4 flex justify-end">
+              <Button
+                onClick={handleNext}
+                disabled={submitting || isUploading || checkingPromo}
+                className={submitBtnClass}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t('submit.submitting')}
+                  </>
+                ) : (
+                  t('submit.cta')
+                )}
+              </Button>
+            </div>
           </div>
         )}
 
