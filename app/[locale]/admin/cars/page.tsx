@@ -96,6 +96,7 @@ export default async function AdminCarsPage({
       model: normalizeCar(c).model,
       priority: Number(c.priority ?? 1),
       status,
+      comingSoon: c.coming_soon === true,
       remaining: rem,
     })
     g.plateCount += 1

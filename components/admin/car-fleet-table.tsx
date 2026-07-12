@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Wrench } from 'lucide-react'
 import { Link, useRouter } from '@/i18n/routing'
 import { setCarStatus } from '@/lib/actions/set-car-status'
 import { updateModelPrice } from '@/lib/actions/update-model-price'
+import { activateComingSoonCar } from '@/lib/actions/activate-coming-soon-car'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -22,6 +23,7 @@ export interface PlateRow {
   model: string
   priority: number
   status: 'active' | 'maintenance'
+  comingSoon: boolean
   remaining: number // 0/1 for the selected range
 }
 export interface ModelGroup {
@@ -36,6 +38,7 @@ export interface ModelGroup {
 
 const GREEN = 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-500'
 const AMBER = 'border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-500'
+const BLUE = 'border-sky-500/40 bg-sky-500/15 text-sky-700 dark:text-sky-500'
 
 export function CarFleetTable({
   groups,
@@ -56,6 +59,10 @@ export function CarFleetTable({
   const [priceInput, setPriceInput] = React.useState('')
   const [savingKey, setSavingKey] = React.useState<string | null>(null)
   const [priceError, setPriceError] = React.useState<string | null>(null)
+  const [activateKey, setActivateKey] = React.useState<string | null>(null)
+  const [plateInput, setPlateInput] = React.useState('')
+  const [activatingId, setActivatingId] = React.useState<string | null>(null)
+  const [activateError, setActivateError] = React.useState<string | null>(null)
 
   const toggleExpand = (key: string) => setExpanded((e) => ({ ...e, [key]: !e[key] }))
 
@@ -83,6 +90,30 @@ export function CarFleetTable({
     router.refresh()
   }
 
+  function startActivate(p: PlateRow) {
+    setActivateError(null)
+    setActivateKey(p.id)
+    setPlateInput('')
+  }
+
+  async function onActivate(p: PlateRow) {
+    setActivateError(null)
+    const plate = plateInput.trim()
+    if (!plate) {
+      setActivateError('Plate is required.')
+      return
+    }
+    setActivatingId(p.id)
+    const res = await activateComingSoonCar(p.id, plate)
+    setActivatingId(null)
+    if (!res.ok) {
+      setActivateError(res.error ?? 'Activation failed.')
+      return
+    }
+    setActivateKey(null)
+    router.refresh()
+  }
+
   async function onToggleStatus(p: PlateRow) {
     setError(null)
     setPending(p.id)
@@ -107,6 +138,7 @@ export function CarFleetTable({
     <div className="space-y-2">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {priceError ? <p className="text-sm text-destructive">{priceError}</p> : null}
+      {activateError ? <p className="text-sm text-destructive">{activateError}</p> : null}
       <div className="rounded-md border bg-background">
         <Table>
           <TableHeader>
@@ -208,7 +240,9 @@ export function CarFleetTable({
                           </span>
                         </TableCell>
                         <TableCell>
-                          {p.status === 'maintenance' ? (
+                          {p.comingSoon ? (
+                            <Badge className={BLUE}>Coming soon</Badge>
+                          ) : p.status === 'maintenance' ? (
                             <Badge className={AMBER}>
                               <Wrench className="mr-1 h-3 w-3" /> Maintenance
                             </Badge>
@@ -231,26 +265,70 @@ export function CarFleetTable({
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-3">
-                            {p.status === 'active' && p.remaining > 0 ? (
-                              <Link
-                                href={`/admin/trips/new?carId=${p.id}&pickup=${pickup}&dropoff=${dropoff}`}
-                                className="text-sm font-medium text-primary hover:underline"
-                              >
-                                Book
-                              </Link>
-                            ) : null}
-                            <button
-                              type="button"
-                              disabled={pending === p.id}
-                              onClick={() => onToggleStatus(p)}
-                              className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
-                            >
-                              {pending === p.id
-                                ? '…'
-                                : p.status === 'active'
-                                  ? 'Set maintenance'
-                                  : 'Set active'}
-                            </button>
+                            {p.comingSoon ? (
+                              // Coming-soon → aktif: plaka ZORUNLU. setCarStatus toggle bu
+                              // satırda gizli (o coming_soon'u kapatmaz, plaka atamaz).
+                              activateKey === p.id ? (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={plateInput}
+                                    onChange={(e) => setPlateInput(e.target.value)}
+                                    placeholder="Plate"
+                                    className="h-8 w-24 rounded-md border bg-background px-2 font-mono text-xs"
+                                  />
+                                  <button
+                                    type="button"
+                                    disabled={activatingId === p.id || !plateInput.trim()}
+                                    onClick={() => onActivate(p)}
+                                    className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                                  >
+                                    {activatingId === p.id ? '…' : 'Activate'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActivateKey(null)
+                                      setActivateError(null)
+                                    }}
+                                    className="px-1 text-xs text-muted-foreground hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => startActivate(p)}
+                                  className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted"
+                                >
+                                  Activate
+                                </button>
+                              )
+                            ) : (
+                              <>
+                                {p.status === 'active' && p.remaining > 0 ? (
+                                  <Link
+                                    href={`/admin/trips/new?carId=${p.id}&pickup=${pickup}&dropoff=${dropoff}`}
+                                    className="text-sm font-medium text-primary hover:underline"
+                                  >
+                                    Book
+                                  </Link>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  disabled={pending === p.id}
+                                  onClick={() => onToggleStatus(p)}
+                                  className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                                >
+                                  {pending === p.id
+                                    ? '…'
+                                    : p.status === 'active'
+                                      ? 'Set maintenance'
+                                      : 'Set active'}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
