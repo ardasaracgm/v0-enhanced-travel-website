@@ -3,6 +3,7 @@ import 'server-only'
 import fs from 'node:fs'
 import path from 'node:path'
 import PDFDocument from 'pdfkit'
+import QRCode from 'qrcode'
 import type { FerryVoucherData } from './voucher-data'
 import { FERRY_VOUCHER_TERMS } from './voucher-terms'
 
@@ -16,6 +17,13 @@ const BRAND = '#1e40af'
 const INK = '#0f172a'
 const MUTED = '#64748b'
 const LINE = '#e2e8f0'
+
+// QR etiketi — PDF gövdesi TR/EN iki-dilli ama etiket tek satır + locale threaded → 3-yollu.
+const QR_LABEL: Record<string, string> = {
+  tr: 'Bileti doğrula',
+  en: 'Verify ticket',
+  el: 'Επαλήθευση εισιτηρίου', // 🟢 Dimitri review bekliyor
+}
 
 export async function buildFerryVoucherPdf(data: FerryVoucherData): Promise<Buffer> {
   // font:false → pdfkit constructor'ı initFonts(options.font)'a false geçer,
@@ -43,6 +51,26 @@ export async function buildFerryVoucherPdf(data: FerryVoucherData): Promise<Buff
   doc.font('body').fontSize(9).fillColor(MUTED).text('FerryBee Travel IKE · Kos, Greece', 48, 96)
   doc.font('bold').fontSize(15).fillColor(INK).text('Feribot Fişi / Ferry Voucher', 48, 116)
   doc.font('body').fontSize(9).fillColor(MUTED).text(`Rezervasyon / Reference: ${data.reference}`, 48, 138)
+
+  // ---- Bizim doğrulama QR'ı (trip başına TEK) — header sağ üst köşe, absolute ----
+  // Flow'u (doc.y) BOZMAZ: absolute basılır; aşağıdaki doc.y=178 flow'u başlatır.
+  // Logo gibi non-fatal (QR üretimi/embed patlarsa voucher yine üretilir).
+  if (data.ticketUrl) {
+    try {
+      const qr = await QRCode.toBuffer(data.ticketUrl, {
+        errorCorrectionLevel: 'M', // ~%15 — URL için yeter
+        margin: 1,                 // min quiet-zone (scanner için şart)
+        width: 256,                // yüksek çözünürlük → doc.image 92pt'ye küçültür
+        type: 'png',
+      })
+      doc.image(qr, 455, 44, { width: 92 }) // 455+92=547 → sağ margin ile flush
+      doc.font('body').fontSize(7).fillColor(MUTED)
+        .text(QR_LABEL[data.locale] ?? QR_LABEL.tr, 455, 138, { width: 92, align: 'center' })
+    } catch (e) {
+      console.error('[ferry voucher] QR embed skipped:', e)
+    }
+  }
+
   doc.moveTo(48, 158).lineTo(547, 158).strokeColor(LINE).lineWidth(1).stroke()
   doc.y = 178
 

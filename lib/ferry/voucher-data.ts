@@ -1,10 +1,13 @@
 import 'server-only'
 
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getMyFerryReservations, type HubFerryReservation } from '@/lib/hub/get-my-ferry-reservations'
 
 export interface FerryVoucherData {
   reference: string
   reservations: HubFerryReservation[]
+  ticketUrl: string | null   // https://www.travelbeez.gr/<locale>/ticket/<public_token> — bizim QR hedefi
+  locale: string             // QR etiketi dili (tr/en/el)
 }
 
 /**
@@ -21,5 +24,16 @@ export interface FerryVoucherData {
 export async function getFerryVoucherData(tripId: string, email: string): Promise<FerryVoucherData | null> {
   const reservations = (await getMyFerryReservations(email)).filter((r) => r.tripId === tripId)
   if (reservations.length === 0) return null
-  return { reference: reservations[0].reference, reservations }
+  // Ownership zaten email-gate ile doğrulandı (reservations dolu). public_token/locale çek.
+  const supabase = getSupabaseAdmin()
+  const { data: trip } = await supabase
+    .from('trips')
+    .select('public_token, locale')
+    .eq('id', tripId)
+    .maybeSingle()
+  const locale = trip?.locale ?? 'tr'
+  const ticketUrl = trip?.public_token
+    ? `https://www.travelbeez.gr/${locale}/ticket/${trip.public_token}`
+    : null
+  return { reference: reservations[0].reference, reservations, ticketUrl, locale }
 }
