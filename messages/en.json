@@ -1014,6 +1014,8 @@
         "back": "Back",
         "step": "Step {current} of {total}"
       },
+      "startTitle": "Start Your Visa Application",
+      "startDuration": "takes about 2 minutes",
       "labels": {
         "entryPoint": "Entry Point",
         "vesselType": "Vessel",
@@ -1281,10 +1283,6 @@
         "approval": "Approval Rate",
         "experience": "Years of Experience",
         "support": "Turkish-Speaking Support"
-      },
-      "formSection": {
-        "title": "Start Your Visa Application",
-        "subtitle": "Fill out the form below — it takes about 5 minutes."
       },
       "how": {
         "title": "How It Works",

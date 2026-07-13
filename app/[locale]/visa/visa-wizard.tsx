@@ -759,9 +759,12 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               <FileText className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-lg text-blue-950">{t(`sections.step${step + 1}`)}</CardTitle>
+              <CardTitle className="text-lg text-blue-950">
+                {step === 0 ? t('startTitle') : t(`sections.step${step + 1}`)}
+              </CardTitle>
               <p className="text-sm text-slate-500">
                 {t('nav.step', { current: step + 1, total: TOTAL_STEPS })}
+                {step === 0 && ` · ${t('startDuration')}`}
               </p>
             </div>
           </div>

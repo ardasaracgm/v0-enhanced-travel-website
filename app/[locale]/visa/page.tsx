@@ -266,12 +266,8 @@ function VisaSupportPageInner() {
         </section>
 
         {/* Visa Application Form */}
-        <section id="visa-application-form" className="w-full py-10 md:py-12 scroll-mt-20 bg-gradient-to-b from-sky-50 via-blue-50/60 to-white">
+        <section id="visa-application-form" className="w-full pb-10 md:pb-12 scroll-mt-20 bg-gradient-to-b from-sky-50 via-blue-50/60 to-white">
           <div className="container px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{tm('formSection.title')}</h2>
-              <p className="text-muted-foreground text-lg">{tm('formSection.subtitle')}</p>
-            </div>
             <VisaWizard prefill={prefill} />
           </div>
         </section>

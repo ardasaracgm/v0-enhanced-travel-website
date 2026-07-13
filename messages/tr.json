@@ -1014,6 +1014,8 @@
         "back": "Geri",
         "step": "Adım {current} / {total}"
       },
+      "startTitle": "Vize Başvurunuzu Başlatın",
+      "startDuration": "yaklaşık 2 dakika sürer",
       "labels": {
         "entryPoint": "Giriş Noktası",
         "vesselType": "Gemi Tipi",
@@ -1281,10 +1283,6 @@
         "approval": "Onay Oranı",
         "experience": "Yıllık Deneyim",
         "support": "Türkçe Destek"
-      },
-      "formSection": {
-        "title": "Vize Başvurunuzu Başlatın",
-        "subtitle": "Aşağıdaki formu doldurun — yaklaşık 5 dakika sürer."
       },
       "how": {
         "title": "Nasıl Çalışır",
