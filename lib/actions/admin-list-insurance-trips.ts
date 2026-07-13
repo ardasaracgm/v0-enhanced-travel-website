@@ -1,5 +1,6 @@
 import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import type { InsuranceItemMetadata, TripState } from '@/lib/supabase'
 
 export interface InsuranceTripRow {
@@ -23,6 +24,11 @@ export interface InsuranceTripRow {
 export async function listInsuranceTrips(): Promise<
   { ok: true; rows: InsuranceTripRow[] } | { ok: false; error: string }
 > {
+  // Gate — bu modül daha önce gate'siz service-role okuyordu (K2'de tespit).
+  // full-admin (is_admin && admin_role='full') değilse veri DÖNMEZ; cars_only
+  // sigorta trip'lerini (PII) listeleyemez. Insurance sayfası da ayrıca notFound'lar.
+  if (!(await requireFullAdmin()).ok) return { ok: false, error: 'forbidden' }
+
   const supabase = getSupabaseAdmin()
 
   // 1) Önce insurance item'ları (tüm trips taranmaz; yalnız sigortalı evren)

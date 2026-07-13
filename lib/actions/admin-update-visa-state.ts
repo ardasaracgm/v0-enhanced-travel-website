@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 // Admin'in atayabileceği hedef state'ler (review terminalleri). CHECK bunların
@@ -27,19 +27,8 @@ export async function updateVisaState(formData: FormData): Promise<void> {
     throw new Error('invalid_request')
   }
 
-  // 1) Gate — action'ın kendi yetki doğrulaması (layout gate buraya geçmez).
-  const auth = await createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await auth.auth.getUser()
-  if (!user) throw new Error('unauthorized')
-
-  const { data: profile } = await auth
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (!profile?.is_admin) throw new Error('forbidden')
+  // 1) Gate — full-admin (is_admin && admin_role='full'). cars_only reddedilir.
+  if (!(await requireFullAdmin()).ok) throw new Error('forbidden')
 
   // 2) Yazma — service-role (RLS visa_applications UPDATE'e izin vermiyor).
   const admin = getSupabaseAdmin()

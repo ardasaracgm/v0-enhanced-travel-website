@@ -1,4 +1,7 @@
+import { notFound } from 'next/navigation'
+
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { Link } from '@/i18n/routing'
 import {
   Table,
@@ -43,6 +46,10 @@ export default async function AdminVisaPage({
   searchParams: Promise<{ state?: string }>
 }) {
   const { state } = await searchParams
+
+  // K2: cars_only bu sayfayı göremez — sunucu-taraflı enforcement (nav gizleme
+  // yetmez; doğrudan-URL erişimi burada kesilir).
+  if (!(await requireFullAdmin()).ok) notFound()
 
   // Gate layout'ta geçildi → burada service-role ile oku (RLS bypass).
   const supabase = getSupabaseAdmin()

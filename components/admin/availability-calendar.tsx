@@ -11,9 +11,11 @@ function cellClass(remaining: number, quantity: number): string {
 export function AvailabilityCalendar({
   data,
   today,
+  canReserve,
 }: {
   data: CalData
   today: string
+  canReserve: boolean
 }) {
   const { days, cars } = data
   const head = days.map((d) => {
@@ -70,7 +72,7 @@ export function AvailabilityCalendar({
                       key={d}
                       className={`px-1 py-1 ${d === today ? 'ring-1 ring-inset ring-primary/40' : ''}`}
                     >
-                      {rem > 0 ? (
+                      {canReserve && rem > 0 ? (
                         <Link href={`/admin/trips/new?carId=${car.id}&pickup=${d}&dropoff=${d}`}>{inner}</Link>
                       ) : (
                         inner

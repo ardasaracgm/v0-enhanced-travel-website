@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 
-import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getDownloadUrl, getPolicyBucket } from '@/lib/r2'
 import type { InsuranceItemMetadata } from '@/lib/supabase'
@@ -16,13 +16,8 @@ export async function downloadPolicyPdfAction(formData: FormData): Promise<void>
   const locale = String(formData.get('locale') ?? 'tr')
   if (!tripId) throw new Error('invalid_request')
 
-  // Gate — aynı is_admin pattern.
-  const auth = await createSupabaseServerClient()
-  const { data: { user } } = await auth.auth.getUser()
-  if (!user) throw new Error('unauthorized')
-  const { data: profile } = await auth
-    .from('profiles').select('is_admin').eq('id', user.id).maybeSingle()
-  if (!profile?.is_admin) throw new Error('forbidden')
+  // Gate — full-admin (is_admin && admin_role='full'). cars_only reddedilir.
+  if (!(await requireFullAdmin()).ok) throw new Error('forbidden')
 
   // policy_r2_key'i server'dan oku — insurance trip_item metadata'sından.
   const admin = getSupabaseAdmin()

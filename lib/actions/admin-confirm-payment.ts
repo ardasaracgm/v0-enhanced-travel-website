@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { confirmTrip } from '@/lib/trips/confirm'
 import { claimAndSendPaidEmail } from '@/lib/email/send-paid-confirmation'
@@ -28,19 +28,9 @@ export async function confirmPayment(formData: FormData): Promise<void> {
     throw new Error('invalid_request')
   }
 
-  // 1) Gate — admin-update-visa-state.ts:31-42 ile birebir.
-  const auth = await createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await auth.auth.getUser()
-  if (!user) throw new Error('unauthorized')
-
-  const { data: profile } = await auth
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (!profile?.is_admin) throw new Error('forbidden')
+  // 1) Gate — full-admin (is_admin && admin_role='full'). cars_only reddedilir.
+  const gate = await requireFullAdmin()
+  if (!gate.ok) throw new Error('forbidden')
 
   // 2) Trip — tutar/para birimi SUNUCUDAN okunur (client'a güvenme); email alanları.
   const admin = getSupabaseAdmin()
@@ -66,7 +56,7 @@ export async function confirmPayment(formData: FormData): Promise<void> {
       provider,
       state:           'completed',
       idempotency_key: `manual:${trip.id}`,
-      metadata: { confirmed_by: user.id, channel: 'admin_manual' },
+      metadata: { confirmed_by: gate.userId, channel: 'admin_manual' },
       completed_at:    new Date().toISOString(),
     })
 

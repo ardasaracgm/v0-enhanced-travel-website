@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getAvailabilityForDates, computeEndDate, addDaysUtc, getAvailabilityCalendar } from '@/lib/car-availability'
 import type { AvailabilityCalendar as CalData } from '@/lib/car-availability'
 import { normalizeCar, dateDiffInDays } from '@/lib/normalize-car'
@@ -20,6 +21,11 @@ export default async function AdminCarsPage({
   searchParams: Promise<{ pickup?: string; dropoff?: string; start?: string }>
 }) {
   const { pickup: pickupParam, dropoff: dropoffParam, start: startParam } = await searchParams
+
+  // cars_only bu sayfaya GİREBİLİR ama rezervasyon AÇAMAZ (walk-in → /admin/trips/*
+  // full-admin gerektirir). Rezervasyon linklerini gizle — enforcement zaten
+  // trips/new notFound + createReservation gate'inde; bu yalnız UX temizliği.
+  const canReserve = (await requireFullAdmin()).ok
 
   // Atina günü = public car-rental sayfasıyla aynı (page.tsx:102).
   const todayAthens = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Athens' })
@@ -117,12 +123,14 @@ export default async function AdminCarsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-foreground">Car Availability</h1>
-        <Link
-          href={`/admin/trips/new?pickup=${pickup}&dropoff=${dropoff}`}
-          className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
-        >
-          + New reservation
-        </Link>
+        {canReserve && (
+          <Link
+            href={`/admin/trips/new?pickup=${pickup}&dropoff=${dropoff}`}
+            className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          >
+            + New reservation
+          </Link>
+        )}
       </div>
 
       {/* ── Yeni araç ekle (aktif plaka insert; envanter yaşam döngüsünün "ekle" ucu) ── */}
@@ -158,7 +166,7 @@ export default async function AdminCarsPage({
         {calErr ? (
           <p className="text-sm text-destructive">Calendar failed: {calErr}</p>
         ) : calendar ? (
-          <AvailabilityCalendar data={calendar} today={todayAthens} />
+          <AvailabilityCalendar data={calendar} today={todayAthens} canReserve={canReserve} />
         ) : null}
         <div className="flex gap-3 text-xs text-muted-foreground">
           <span>
@@ -228,7 +236,7 @@ export default async function AdminCarsPage({
           <p className="text-sm text-muted-foreground">
             {pickup} → {dropoff} · {days} days
           </p>
-          <CarFleetTable groups={groups} pickup={pickup} dropoff={dropoff} />
+          <CarFleetTable groups={groups} pickup={pickup} dropoff={dropoff} canReserve={canReserve} />
         </>
       )}
     </div>

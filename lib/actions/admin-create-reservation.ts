@@ -2,7 +2,7 @@
 
 import { createHash } from 'crypto'
 
-import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
@@ -48,18 +48,11 @@ export async function createReservation(
   if (customerPhone.length < 6) return { error: 'A valid phone number is required.' }
   if (!EMAIL_RE.test(customerEmailRaw)) return { error: 'A valid email is required.' }
 
-  // 3) Gate — admin-confirm-payment.ts:31-42 ile birebir.
-  const auth = await createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await auth.auth.getUser()
-  if (!user) return { error: 'Not authorized.' }
-  const { data: profile } = await auth
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (!profile?.is_admin) return { error: 'Not authorized.' }
+  // 3) Gate — full-admin gerektirir. Walk-in rezervasyon nesnesi araç-kapsamlı
+  // olsa da /admin/trips/[id]'e (genel trip detay + ödeme) yönlendirir → cars_only
+  // ERİŞEMEZ (K2 karar A: cars_only yalnız filo katalogu, rezervasyon açamaz).
+  const gate = await requireFullAdmin()
+  if (!gate.ok) return { error: 'Not authorized.' }
 
   // 4) Email artık ZORUNLU (yukarıda doğrulandı) → Mark paid onay maili atar.
   const email = customerEmailRaw
@@ -100,7 +93,7 @@ export async function createReservation(
       pickup,
       dropoff,
       days,
-      confirmed_by: user.id,
+      confirmed_by: gate.userId,
       ...(validOverride ? { negotiated_rate: priceAmount, original_rate: serverPrice } : {}),
     },
   }

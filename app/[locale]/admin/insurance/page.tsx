@@ -1,4 +1,7 @@
+import { notFound } from 'next/navigation'
+
 import { listInsuranceTrips } from '@/lib/actions/admin-list-insurance-trips'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import {
   Table,
   TableHeader,
@@ -47,7 +50,11 @@ export default async function AdminInsurancePage({
 }) {
   const { locale } = await params
   const { ok, err, msg } = await searchParams
-  // Gate layout'ta geçildi → burada veri-erişim helper'ı (service-role) ile oku.
+
+  // K2: cars_only sigorta sayfasına (PII) erişemez — sunucu-taraflı enforcement.
+  // (listInsuranceTrips ayrıca kendi içinde de gate'ler — defense-in-depth.)
+  if (!(await requireFullAdmin()).ok) notFound()
+
   const result = await listInsuranceTrips()
 
   return (

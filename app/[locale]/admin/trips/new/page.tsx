@@ -1,4 +1,7 @@
+import { notFound } from 'next/navigation'
+
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { normalizeCar } from '@/lib/normalize-car'
 import { computeEndDate } from '@/lib/car-availability'
 import { Link } from '@/i18n/routing'
@@ -15,6 +18,10 @@ export default async function AdminNewReservationPage({
 }) {
   const { locale } = await params
   const { carId, pickup, dropoff } = await searchParams
+
+  // K2: walk-in rezervasyon /admin/trips/[id]'e (genel trip + ödeme) çıkar →
+  // cars_only ERİŞEMEZ (karar A: yalnız filo katalogu). Sunucu-taraflı enforcement.
+  if (!(await requireFullAdmin()).ok) notFound()
 
   const supabase = getSupabaseAdmin()
   const { data: rawCars } = await supabase

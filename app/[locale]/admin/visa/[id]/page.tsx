@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getDownloadUrl } from '@/lib/r2'
 import { Link } from '@/i18n/routing'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +28,10 @@ export default async function AdminVisaDetailPage({
   params: Promise<{ locale: string; id: string }>
 }) {
   const { locale, id } = await params
+
+  // K2: cars_only vize PII'sine erişemez — sunucu-taraflı enforcement.
+  if (!(await requireFullAdmin()).ok) notFound()
+
   const supabase = getSupabaseAdmin()
 
   const { data: app } = await supabase

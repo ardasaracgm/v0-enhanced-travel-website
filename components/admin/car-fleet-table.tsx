@@ -46,10 +46,12 @@ export function CarFleetTable({
   groups,
   pickup,
   dropoff,
+  canReserve,
 }: {
   groups: ModelGroup[]
   pickup: string
   dropoff: string
+  canReserve: boolean
 }) {
   const router = useRouter()
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>(() =>
@@ -377,7 +379,7 @@ export function CarFleetTable({
                               )
                             ) : (
                               <>
-                                {p.status === 'active' && p.remaining > 0 ? (
+                                {canReserve && p.status === 'active' && p.remaining > 0 ? (
                                   <Link
                                     href={`/admin/trips/new?carId=${p.id}&pickup=${pickup}&dropoff=${dropoff}`}
                                     className="text-sm font-medium text-primary hover:underline"

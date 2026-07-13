@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { Link } from '@/i18n/routing'
 import { Badge } from '@/components/ui/badge'
 import { confirmPayment } from '@/lib/actions/admin-confirm-payment'
@@ -41,6 +42,10 @@ export default async function AdminTripDetailPage({
   params: Promise<{ locale: string; id: string }>
 }) {
   const { locale, id } = await params
+
+  // K2: cars_only trip detayına (PII/ödeme) erişemez — sunucu-taraflı enforcement.
+  if (!(await requireFullAdmin()).ok) notFound()
+
   const supabase = getSupabaseAdmin()
 
   const { data: trip } = await supabase.from('trips').select('*').eq('id', id).maybeSingle()

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { createSupabaseServerClient } from '@/lib/supabase-ssr'
+import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { fillVisaDocx, type VisaPhoto } from '@/lib/visa/docx/fill-visa-docx'
 import { upperAscii } from '@/lib/visa/docx/format'
@@ -20,19 +20,11 @@ export async function GET(
   const { id } = await params
 
   // ---- Gate: route handler KENDİ yetki doğrulamasını yapar (admin layout /api'yi
-  // korumaz). Auth-aware client → is_admin (own-row RLS). ----
-  const auth = await createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await auth.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-
-  const { data: profile } = await auth
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (!profile?.is_admin) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+  // korumaz). full-admin (is_admin && admin_role='full') değilse 403; cars_only
+  // vize PII'sine erişemez. (401/403 tek 403'e iner — auth durumu sızdırılmaz.) ----
+  if (!(await requireFullAdmin()).ok) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+  }
 
   // ---- Veri: service-role (RLS bypass) ----
   const { data: app, error } = await getSupabaseAdmin()
