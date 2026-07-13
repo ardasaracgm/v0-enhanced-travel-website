@@ -942,7 +942,14 @@ export function VisaWizard({ prefill }: { prefill?: WizardPrefill | null }) {
               {textField('phone', 'tel')}
             </div>
             <DocsSection title={t('docs.stepHeading')}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Görünür belge sayısı schengenLast3Years bayrağına bağlı (runtime):
+                  tek belge (Pasaport İlk Sayfa) → full-width; iki belge (+ Önceki
+                  Schengen) → 2-kolon. Bu adıma özel — diğer adımların grid'i ayrı. */}
+              <div
+                className={`grid gap-3 ${
+                  form.schengenLast3Years === 'true' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'
+                }`}
+              >
                 {renderDocSlot('passport_main')}
                 {/* Önceki Schengen vizesi — Adım 4'ten taşındı; schengenLast3Years
                     (aynı adımda) 'true' ise açılır + veriliş-tarihi inputu. */}
