@@ -176,6 +176,7 @@ export interface Trip {
   cancelled_at?: string | null
   cancellation_reason?: string | null
   viva_order_code?: string | null
+  public_token: string    // unguessable public /ticket/[token] capability (029)
 }
 
 /**

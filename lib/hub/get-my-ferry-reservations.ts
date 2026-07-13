@@ -11,6 +11,7 @@ export interface HubFerryLeg {
   date: string | null           // LOCAL calendar date "YYYY-MM-DD" in the DEPARTURE port's zone
   departureTime: string | null  // RAW provider wall-clock "HH:MM" — NEVER the instant
   arrivalTime: string | null
+  vessel: string | null         // metadata.vessel — public bilet sayfası için (PDF kullanmaz)
   operator: string | null       // Dentur, … — voucher'ın "Ferry" sütunu için
   pnrs: Array<{ pnr: number; passengerName?: string }>
 }
@@ -77,6 +78,29 @@ export async function getMyFerryReservations(email: string): Promise<HubFerryRes
     byTrip.set(it.trip_id, list)
   }
 
+  const out: HubFerryReservation[] = []
+  for (const t of mine) {
+    out.push(
+      ...buildFerryReservationsForTrip(
+        { id: t.id, reference: t.reference, state: t.state as TripState, created_at: t.created_at, currency: t.currency },
+        byTrip.get(t.id) ?? [],
+      ),
+    )
+  }
+  return out
+}
+
+/**
+ * Bir trip'in feribot rezervasyonlarını kurar — email/token gate'ten BAĞIMSIZ saf mantık.
+ * İki kritik kuralın TEK kaynağı: ham metadata saat + PNR→leg expeditionId eşleme.
+ * Hem getMyFerryReservations (email-gate) hem getPublicTicket (token-gate) bunu çağırır.
+ */
+export function buildFerryReservationsForTrip(
+  trip: { id: string; reference: string; state: TripState; created_at: string; currency: string | null },
+  tripItems: Array<{ id?: unknown; metadata?: unknown; scheduled_at?: string | null; price_amount?: unknown; price_currency?: string | null }>,
+): HubFerryReservation[] {
+  if (tripItems.length === 0) return []
+
   const safeExpId = (ferryId?: string): number | undefined => {
     try {
       return expeditionIdFromFerryId(ferryId)
@@ -85,55 +109,51 @@ export async function getMyFerryReservations(email: string): Promise<HubFerryRes
     }
   }
 
-  const out: HubFerryReservation[] = []
-  for (const t of mine) {
-    const tripItems = byTrip.get(t.id) ?? []
-    if (tripItems.length === 0) continue
+  // groupFerryLegs is generic over GroupableLeg — carry the extra display
+  // fields (scheduledAt/price) so groups return them without a second lookup.
+  const legs0 = tripItems.map((it, idx) => ({
+    id: String(it.id ?? idx),
+    meta: (it.metadata ?? {}) as FerryItemMetadata,
+    scheduledAt: (it.scheduled_at as string | null) ?? null,
+    priceAmount: Number(it.price_amount ?? 0),
+    priceCurrency: (it.price_currency as string | null) ?? trip.currency ?? 'EUR',
+  }))
 
-    // groupFerryLegs is generic over GroupableLeg — carry the extra display
-    // fields (scheduledAt/price) so groups return them without a second lookup.
-    const legs0 = tripItems.map((it, idx) => ({
-      id: String(it.id ?? idx),
-      meta: (it.metadata ?? {}) as FerryItemMetadata,
-      scheduledAt: (it.scheduled_at as string | null) ?? null,
-      priceAmount: Number(it.price_amount ?? 0),
-      priceCurrency: (it.price_currency as string | null) ?? t.currency ?? 'EUR',
+  const out: HubFerryReservation[] = []
+  for (const group of groupFerryLegs(legs0)) {
+    const anchor = group.anchor.meta
+    const all = anchor.vouchers ?? []
+    const byLeg = group.legs.map((leg) => {
+      const legExp = safeExpId(leg.meta.ferry_id)
+      return all.filter((v) => v.expeditionId != null && v.expeditionId === legExp)
+    })
+    const matched = byLeg.reduce((n, l) => n + l.length, 0)
+    const clean = all.length > 0 && matched === all.length
+
+    const legs: HubFerryLeg[] = group.legs.map((leg, i) => ({
+      route: `${leg.meta.from_port} → ${leg.meta.to_port}`,
+      date: ferryLocalDay(leg.scheduledAt, leg.meta.from_port),
+      departureTime: leg.meta.departure_time ?? null,
+      arrivalTime: leg.meta.arrival_time ?? null,
+      vessel: leg.meta.vessel ?? null,
+      operator: leg.meta.operator ?? null,
+      pnrs: (clean ? byLeg[i] : i === 0 ? all : []).map((v) => ({
+        pnr: v.pnr,
+        passengerName: v.passengerName || undefined,
+      })),
     }))
 
-    for (const group of groupFerryLegs(legs0)) {
-      const anchor = group.anchor.meta
-      const all = anchor.vouchers ?? []
-      const byLeg = group.legs.map((leg) => {
-        const legExp = safeExpId(leg.meta.ferry_id)
-        return all.filter((v) => v.expeditionId != null && v.expeditionId === legExp)
-      })
-      const matched = byLeg.reduce((n, l) => n + l.length, 0)
-      const clean = all.length > 0 && matched === all.length
-
-      const legs: HubFerryLeg[] = group.legs.map((leg, i) => ({
-        route: `${leg.meta.from_port} → ${leg.meta.to_port}`,
-        date: ferryLocalDay(leg.scheduledAt, leg.meta.from_port),
-        departureTime: leg.meta.departure_time ?? null,
-        arrivalTime: leg.meta.arrival_time ?? null,
-        operator: leg.meta.operator ?? null,
-        pnrs: (clean ? byLeg[i] : i === 0 ? all : []).map((v) => ({
-          pnr: v.pnr,
-          passengerName: v.passengerName || undefined,
-        })),
-      }))
-
-      out.push({
-        tripId: t.id,
-        reference: t.reference,
-        tripState: t.state as TripState,
-        createdAt: t.created_at,
-        voucherNo: typeof anchor.reservation_id === 'number' ? String(anchor.reservation_id) : null,
-        reserveState: anchor.reserve_state ?? null,
-        priceAmount: group.legs.reduce((s, leg) => s + leg.priceAmount, 0),
-        priceCurrency: group.legs[0]?.priceCurrency ?? t.currency ?? 'EUR',
-        legs,
-      })
-    }
+    out.push({
+      tripId: trip.id,
+      reference: trip.reference,
+      tripState: trip.state,
+      createdAt: trip.created_at,
+      voucherNo: typeof anchor.reservation_id === 'number' ? String(anchor.reservation_id) : null,
+      reserveState: anchor.reserve_state ?? null,
+      priceAmount: group.legs.reduce((s, leg) => s + leg.priceAmount, 0),
+      priceCurrency: group.legs[0]?.priceCurrency ?? trip.currency ?? 'EUR',
+      legs,
+    })
   }
   return out
 }
