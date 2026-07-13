@@ -38,14 +38,19 @@ export default async function AdminLayout({
     return null
   }
 
-  // Kendi satırından is_admin (own-row RLS izin verir).
+  // Kendi satırından is_admin + admin_role (own-row RLS izin verir).
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_admin')
+    .select('is_admin, admin_role')
     .eq('id', user.id)
     .maybeSingle()
 
   if (!profile?.is_admin) redirect({ href: '/hub', locale })
+
+  // Kapı-içi kısıt: cars_only yalnız Cars linkini görür. (K1 = sadece nav
+  // görünürlüğü; sayfa/action negatif-gate K2'de eklenecek — bu tek başına
+  // GÜVENLİK DEĞİL, doğrudan-URL erişimi K2'ye kadar hâlâ açık.)
+  const carsOnly = profile?.admin_role === 'cars_only'
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -53,18 +58,26 @@ export default async function AdminLayout({
         <div className="container px-4 md:px-6 py-4 flex items-center gap-6">
           <span className="text-lg font-bold text-foreground">TravelBeez Admin</span>
           <nav className="flex gap-4 text-sm">
-            <Link href="/admin" className="font-medium text-foreground">
-              Visa Applications
-            </Link>
-            <Link href="/admin/trips" className="text-muted-foreground hover:text-foreground">
-              Trips
-            </Link>
-            <Link href="/admin/cars" className="text-muted-foreground hover:text-foreground">
-              Cars
-            </Link>
-            <Link href="/admin/insurance" className="text-muted-foreground hover:text-foreground">
-              Insurance
-            </Link>
+            {carsOnly ? (
+              <Link href="/admin/cars" className="font-medium text-foreground">
+                Cars
+              </Link>
+            ) : (
+              <>
+                <Link href="/admin" className="font-medium text-foreground">
+                  Visa Applications
+                </Link>
+                <Link href="/admin/trips" className="text-muted-foreground hover:text-foreground">
+                  Trips
+                </Link>
+                <Link href="/admin/cars" className="text-muted-foreground hover:text-foreground">
+                  Cars
+                </Link>
+                <Link href="/admin/insurance" className="text-muted-foreground hover:text-foreground">
+                  Insurance
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
