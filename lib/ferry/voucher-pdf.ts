@@ -72,6 +72,10 @@ export async function buildFerryVoucherPdf(data: FerryVoucherData): Promise<Buff
   }
 
   doc.moveTo(48, 158).lineTo(547, 158).strokeColor(LINE).lineWidth(1).stroke()
+  // 🔧 K2a regresyon fix: QR label doc.text(…, 455, 138, {width:92, align:'center'}) doc.x'i
+  // 455'te (dar 92pt kolon) bıraktı → sonraki body flow sağ dar kolondan başlıyordu. Sol
+  // margin'e sıfırla ki body TAM genişlikten (x=48, 499pt) aksın. doc.y zaten set ediliyor.
+  doc.x = doc.page.margins.left
   doc.y = 178
 
   // ---- Rezervasyonlar (round-trip → 1 kayıt 2 bacak; open-jaw → kayıt başına 1) ----
