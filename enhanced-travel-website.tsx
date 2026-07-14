@@ -42,7 +42,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FerrySearchForm } from "@/components/ferry/ferry-search-form";
-import { PnrLookupAccordion } from "@/components/ferry/pnr-lookup-accordion";
 import { VisaHeroSearch } from "@/components/visa/visa-hero-search";
 import { CarHeroSearch } from "@/components/car2/car-hero-search";
 import { InsuranceHeroSearch } from "@/components/insurance/insurance-hero-search";
@@ -341,9 +340,9 @@ export default function TravelBeez() {
                     </TabsList>
                     {/* Feribot: tam arama formu (bare → hero kartının içine düz gömülür) */}
                     <TabsContent value="ferry" className="mt-0 sm:min-h-[148px] data-[state=active]:flex flex-col justify-end">
-                      <FerrySearchForm bare className="md:p-4" />
-                      {/* Misafir "biletimi bul" (K1b) — arama formunun altında açılır çubuk. */}
-                      <PnrLookupAccordion className="mx-4 mb-4 md:mx-6" />
+                      {/* showPnrLookup → arama alanlarıyla AYNI alanda toggle'lanan
+                          misafir "biletimi bul" paneli (K1b). Eski alt-accordion kaldırıldı. */}
+                      <FerrySearchForm bare showPnrLookup className="md:p-4" />
                     </TabsContent>
                     {/* Vize = inline ön-seçim formu (VisaHeroSearch → /visa?…);
                         kalan 3 servis generic CTA (sonraki turlarda aynı desen). */}

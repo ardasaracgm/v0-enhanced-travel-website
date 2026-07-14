@@ -2147,6 +2147,8 @@
   },
   "pnrLookup": {
     "trigger": "Έχετε κράτηση; Δείτε το εισιτήριό σας",
+    "toggle": "Έχετε κράτηση;",
+    "back": "Επιστροφή στην αναζήτηση πλοίων",
     "referenceLabel": "Κωδικός κράτησης",
     "referencePlaceholder": "TB-26-XXXXXX",
     "lastNameLabel": "Επώνυμο",

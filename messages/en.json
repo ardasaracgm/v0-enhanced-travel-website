@@ -2147,6 +2147,8 @@
   },
   "pnrLookup": {
     "trigger": "Have a booking? View your ticket",
+    "toggle": "Have a booking?",
+    "back": "Back to ferry search",
     "referenceLabel": "Booking reference",
     "referencePlaceholder": "TB-26-XXXXXX",
     "lastNameLabel": "Last name",

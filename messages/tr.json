@@ -2147,6 +2147,8 @@
   },
   "pnrLookup": {
     "trigger": "Biletiniz mi var? Biletinizi görüntüleyin",
+    "toggle": "Biletiniz mi var?",
+    "back": "Feribot aramaya dön",
     "referenceLabel": "Rezervasyon numarası",
     "referencePlaceholder": "TB-26-XXXXXX",
     "lastNameLabel": "Soyadı",

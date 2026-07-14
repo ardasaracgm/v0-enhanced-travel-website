@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from '@/i18n/routing'
-import { ArrowLeftRight, Minus, Plus } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, Minus, Plus, TicketCheck } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ import { getDeparturePortsAction, getArrivalPortsAction, type CatalogPort } from
 import { getRouteScheduleAction, type RouteAvailability } from '@/lib/actions/ferry-search'
 import { PortCombobox } from '@/components/ferry/port-combobox'
 import { DateRangeField } from '@/components/ferry/date-range-field'
+import { PnrLookupPanel } from '@/components/ferry/pnr-lookup-panel'
 import { FERRY_MIN_PAX, FERRY_MAX_PAX } from '@/lib/validation/booking'
 
 // Stepper kelepçesi. Sınırların gerekçesi ve submitBooking ile ortak kaynağı
@@ -41,6 +42,11 @@ interface FerrySearchFormProps {
   /** Form alan düzeni. 'horizontal' (default) = ESKİ tek-satır grid (homepage hero).
    *  'vertical' = dikey stack (/ferry sol rail). Salt layout — alanlar/akış aynı. */
   orientation?: 'horizontal' | 'vertical'
+  /** true → Blok A radio satırında "Biletiniz mi var?" tetikleyicisi + aynı-alan
+   *  PNR sorgu paneli (misafir bilet görüntüleme, K1b). Verilmezse (default false)
+   *  hiç render edilmez → /ferry + /islands birebir eski davranış. bare'e bağlı
+   *  DEĞİL (genel prop): şu an yalnız hero true geçer, ileride başka yüzey de açabilir. */
+  showPnrLookup?: boolean
 }
 
 /**
@@ -48,10 +54,15 @@ interface FerrySearchFormProps {
  * Tek kaynak: hem ferry sayfası hem ana sayfa hero kullanır. Davranış birebir;
  * RESET_CART → SET_SEARCH_PARAMS → push('/ferry/results') zinciri değişmez.
  */
-export function FerrySearchForm({ className, initial, bare, orientation = 'horizontal' }: FerrySearchFormProps) {
+export function FerrySearchForm({ className, initial, bare, orientation = 'horizontal', showPnrLookup = false }: FerrySearchFormProps) {
   const vertical = orientation === 'vertical'
   const t = useTranslations('ferryPage')
+  const tp = useTranslations('pnrLookup')
   const locale = useLocale()
+  // Aynı-alan mod: 'ferry' feribot grid'i, 'pnr' misafir bilet sorgu paneli.
+  // Blok B ikisi arasında geçer (kutu yüksekliği sabit); tetikleyici Blok A'da.
+  const [mode, setMode] = React.useState<'ferry' | 'pnr'>('ferry')
+  const pnr = showPnrLookup && mode === 'pnr'
   const router = useRouter()
   const { dispatch } = useBooking()
   // Bugün (Athens tz), kanonik YYYY-MM-DD — date öndolumu + takvim minDate tek kaynağı.
@@ -179,30 +190,64 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
   // İç içerik tek yerde (DRY) — sarmalayıcı bare'e göre değişir, JSX kopyalanmaz.
   const inner = (
     <>
-        <div className={bare
-          ? 'flex flex-col md:flex-row md:items-center md:justify-end gap-4 mb-3'
-          : 'flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6'}>
-          {!bare && <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>}
-          <RadioGroup
-            value={tripType}
-            onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="one-way" id="one-way" />
-              <Label htmlFor="one-way" className="cursor-pointer">{t('oneWay')}</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="round-trip" id="round-trip" />
-              <Label htmlFor="round-trip" className="cursor-pointer flex items-center gap-1">
-                <ArrowLeftRight className="h-4 w-4" />
-                {t('roundTrip')}
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
+        {/* Blok A — sol küme (başlık ve/veya PNR tetikleyici) + sağ RadioGroup.
+            justify: sol küme boşsa (bare & PNR yok) eskisi gibi radio sağa yaslı
+            (justify-end); sol küme varsa justify-between. PNR mode'da radio gizli,
+            tetikleyici "← geri" olur. */}
         <div className={cn(
-          'grid',
+          'flex flex-col md:flex-row md:items-center gap-4',
+          bare ? 'mb-3' : 'mb-6',
+          (!bare || showPnrLookup) ? 'md:justify-between' : 'md:justify-end',
+        )}>
+          {(!bare || showPnrLookup) && (
+            <div className="flex items-center gap-4">
+              {!bare && <h2 className="text-xl font-bold text-foreground">{t('searchTitle')}</h2>}
+              {showPnrLookup && (
+                <button
+                  type="button"
+                  onClick={() => setMode(pnr ? 'ferry' : 'pnr')}
+                  className="flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  {pnr
+                    ? <ArrowLeft className="h-4 w-4 shrink-0" />
+                    : <TicketCheck className="h-4 w-4 shrink-0" />}
+                  {pnr ? tp('back') : tp('toggle')}
+                </button>
+              )}
+            </div>
+          )}
+          {/* Tek yön / Gidiş-dönüş — yalnız feribot mode'da (PNR'de anlamsız). */}
+          {!pnr && (
+            <RadioGroup
+              value={tripType}
+              onValueChange={(value) => setTripType(value as 'one-way' | 'round-trip')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="one-way" id="one-way" />
+                <Label htmlFor="one-way" className="cursor-pointer">{t('oneWay')}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="round-trip" id="round-trip" />
+                <Label htmlFor="round-trip" className="cursor-pointer flex items-center gap-1">
+                  <ArrowLeftRight className="h-4 w-4" />
+                  {t('roundTrip')}
+                </Label>
+              </div>
+            </RadioGroup>
+          )}
+        </div>
+        {/* Blok B — aynı alanı feribot grid'i ile PNR paneli paylaşır. key={mode}
+            ile geçişte remount → animate-in fade-in (çıkan solar, giren belirir).
+            Masaüstünde iki mod da tek field-satırı yüksekliğinde → kutu büyümez,
+            height-animation gerekmez (eski accordion keyframe derdi biter). */}
+        {pnr ? (
+          <div key="pnr" className="animate-in fade-in duration-200">
+            <PnrLookupPanel />
+          </div>
+        ) : (
+        <div key="ferry" className={cn(
+          'grid animate-in fade-in duration-200',
           vertical
             ? 'grid-cols-2 gap-x-8 gap-y-3'
             : cn(bare ? 'gap-3' : 'gap-4', 'grid-cols-1 md:grid-cols-2 xl:grid-cols-6'),
@@ -352,6 +397,7 @@ export function FerrySearchForm({ className, initial, bare, orientation = 'horiz
             </Button>
           </div>
         </div>
+        )}
     </>
   )
 
