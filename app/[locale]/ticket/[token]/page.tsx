@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Download } from 'lucide-react'
 
 import { getPublicTicket } from '@/lib/ticket/get-public-ticket'
 import { formatDay } from '@/lib/dates/display'
@@ -10,10 +11,10 @@ import { FloatingWhatsApp } from '@/components/islandbee/floating-whatsapp'
 export const dynamic = 'force-dynamic'
 
 const COPY = {
-  tr: { title: 'Feribot Bileti', reference: 'Rezervasyon', voucher: 'Voucher No', operator: 'Operatör', pnr: 'PNR', passengers: 'Yolcular', depart: 'Kalkış', arrive: 'Varış', note: 'Bu sayfa TravelBeez tarafından bilet doğrulama için sunulur.', fmt: 'tr-TR' },
-  en: { title: 'Ferry Ticket', reference: 'Reference', voucher: 'Voucher No', operator: 'Operator', pnr: 'PNR', passengers: 'Passengers', depart: 'Departure', arrive: 'Arrival', note: 'This page is provided by TravelBeez for ticket verification.', fmt: 'en-GB' },
+  tr: { title: 'Feribot Bileti', reference: 'Rezervasyon', voucher: 'Voucher No', operator: 'Operatör', pnr: 'PNR', passengers: 'Yolcular', depart: 'Kalkış', arrive: 'Varış', download: 'Bileti İndir', note: 'Bu sayfa TravelBeez tarafından bilet doğrulama için sunulur.', fmt: 'tr-TR' },
+  en: { title: 'Ferry Ticket', reference: 'Reference', voucher: 'Voucher No', operator: 'Operator', pnr: 'PNR', passengers: 'Passengers', depart: 'Departure', arrive: 'Arrival', download: 'Download Ticket', note: 'This page is provided by TravelBeez for ticket verification.', fmt: 'en-GB' },
   // 🟢 EL — Dimitri native review bekliyor
-  el: { title: 'Εισιτήριο πλοίου', reference: 'Κωδικός κράτησης', voucher: 'Αρ. Voucher', operator: 'Εταιρεία', pnr: 'PNR', passengers: 'Επιβάτες', depart: 'Αναχώρηση', arrive: 'Άφιξη', note: 'Η σελίδα παρέχεται από την TravelBeez για επαλήθευση εισιτηρίου.', fmt: 'el-GR' },
+  el: { title: 'Εισιτήριο πλοίου', reference: 'Κωδικός κράτησης', voucher: 'Αρ. Voucher', operator: 'Εταιρεία', pnr: 'PNR', passengers: 'Επιβάτες', depart: 'Αναχώρηση', arrive: 'Άφιξη', download: 'Λήψη εισιτηρίου', note: 'Η σελίδα παρέχεται από την TravelBeez για επαλήθευση εισιτηρίου.', fmt: 'el-GR' },
 } as const
 
 export default async function PublicTicketPage({
@@ -79,7 +80,20 @@ export default async function PublicTicketPage({
             ))}
           </div>
 
-          <p className="mt-8 text-center text-xs text-slate-400">{t.note}</p>
+          {/* Public voucher indirme — token-gate'li /api/ticket/[token]/voucher.
+              Server component'te düz <a> (client JS gerekmez); endpoint Content-
+              Disposition:attachment ile indirmeyi zorlar. Fiyat/PII PDF'e girmez. */}
+          <div className="mt-8 flex justify-center">
+            <a
+              href={`/api/ticket/${token}/voucher`}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+            >
+              <Download className="h-4 w-4" />
+              {t.download}
+            </a>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-slate-400">{t.note}</p>
         </section>
       </main>
       <Footer />
