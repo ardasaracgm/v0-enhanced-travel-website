@@ -1,9 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
 
 // Admin'in atayabileceği hedef state'ler (review terminalleri). CHECK bunların
 // hepsini zaten geçerli sayıyor; burada admin'in dokunabileceği alt küme.
@@ -28,7 +31,9 @@ export async function updateVisaState(formData: FormData): Promise<void> {
   }
 
   // 1) Gate — full-admin (is_admin && admin_role='full'). cars_only reddedilir.
-  if (!(await requireFullAdmin()).ok) throw new Error('forbidden')
+  //    gate bind edilir (userId + email audit için); mantık değişmez, fail-closed.
+  const gate = await requireFullAdmin()
+  if (!gate.ok) throw new Error('forbidden')
 
   // 2) Yazma — service-role (RLS visa_applications UPDATE'e izin vermiyor).
   const admin = getSupabaseAdmin()
@@ -38,6 +43,17 @@ export async function updateVisaState(formData: FormData): Promise<void> {
     .eq('id', id)
 
   if (error) throw new Error(`state_update_failed: ${error.message}`)
+
+  // Audit izi — başarılı UPDATE sonrası, revalidate öncesi.
+  await logAuditEvent({
+    actorId: gate.userId,
+    actorEmail: gate.email,
+    action: 'visa.state',
+    targetType: 'visa',
+    targetId: id,
+    details: { state: target },
+    ip: clientIp(await headers()),
+  })
 
   // force-dynamic olsa da mutasyon sonrası iki görünümü tazele.
   revalidatePath(`/${locale}/admin/visa/${id}`)

@@ -2,12 +2,15 @@
 
 import { createHash } from 'crypto'
 
+import { headers } from 'next/headers'
 import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { createTrip } from '@/lib/actions/create-trip'
 import { sendPendingBookingEmail } from '@/lib/email/send-confirmation'
 import { isAvailable, computeEndDate } from '@/lib/car-availability'
 import { dateDiffInDays } from '@/lib/normalize-car'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
 import { redirect } from '@/i18n/routing'
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 
@@ -130,6 +133,27 @@ export async function createReservation(
     })
     if (bookErr) console.error('[createReservation] car_bookings insert failed (non-fatal):', bookErr.message)
   }
+
+  // Audit izi — BEDAVA-ARABA birinci sınıf yakalanır. original_rate HER ZAMAN
+  // serverPrice (override olmasa da hesaplı) → "ne olmalıydı vs ne verildi"
+  // karşılaştırılabilir; is_comp=priceAmount===0. skipped: idempotent çift-tık
+  // (alreadyExisted) da iz bırakır (no-op'u kaybetme).
+  await logAuditEvent({
+    actorId: gate.userId,
+    actorEmail: gate.email,
+    action: 'reservation.create',
+    targetType: 'trip',
+    targetId: tripResult.tripId,
+    details: {
+      negotiated_rate: priceAmount,
+      original_rate: serverPrice,
+      is_comp: priceAmount === 0,
+      car_id: carId,
+      days,
+      skipped: tripResult.alreadyExisted,
+    },
+    ip: clientIp(await headers()),
+  })
 
   // Pending+WhatsApp email. No Viva on the admin walk-in path, so there is no
   // fallback guard — every freshly created reservation emails the customer

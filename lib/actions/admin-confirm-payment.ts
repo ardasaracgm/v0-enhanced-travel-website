@@ -1,11 +1,14 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { confirmTrip } from '@/lib/trips/confirm'
 import { claimAndSendPaidEmail } from '@/lib/email/send-paid-confirmation'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
 
 // Admin'in manuel işaretleyebileceği sağlayıcılar (WhatsApp/banka ödemesi sonrası).
 // viva_wallet webhook'a ait; internal admin-manuel değil → yalnız bu ikisi.
@@ -81,6 +84,18 @@ export async function confirmPayment(formData: FormData): Promise<void> {
     console.error(`[admin-confirm] state update failed for trip ${trip.reference}:`, confirmRes.error)
     throw new Error(`state_update_failed: ${confirmRes.error}`)
   }
+
+  // Audit izi — trip confirmed olduktan SONRA, e-posta/revalidate ÖNCE. Comp (€0)
+  // dalını da kapsar: is_comp=amount<=0 → "kim bedava onayladı" /admin/audit'te.
+  await logAuditEvent({
+    actorId: gate.userId,
+    actorEmail: gate.email,
+    action: 'payment.confirm',
+    targetType: 'trip',
+    targetId: trip.id,
+    details: { amount, currency: trip.currency, provider, is_comp: amount <= 0 },
+    ip: clientIp(await headers()),
+  })
 
   // 5) Onay e-postası — race-safe claim ile (placeholder/.local guard + çift-send
   //    koruması helper içinde). Aynı confirmation_email_sent_at kolonunu webhook
