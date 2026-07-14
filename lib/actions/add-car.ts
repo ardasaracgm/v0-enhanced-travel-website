@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { MODEL_KEY_RE } from '@/lib/car-slug'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
+import { headers } from 'next/headers'
 
 export interface AddCarInput {
   brand: string
@@ -101,6 +104,16 @@ export async function addCar(input: AddCarInput): Promise<AddCarResult> {
       return { ok: false, error: `Plate ${plate} is already registered.` }
     return { ok: false, error: 'Insert failed.' }
   }
+
+  await logAuditEvent({
+    actorId: user.id,
+    actorEmail: user.email ?? null,
+    action: 'car.create',
+    targetType: 'car',
+    targetId: (data?.id as string | undefined) ?? null,
+    details: { brand, model, plate, price_per_day: pricePerDay },
+    ip: clientIp(await headers()),
+  })
 
   revalidatePath('/[locale]/admin/cars', 'page')
   return { ok: true, id: data?.id as string | undefined }

@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { MODEL_KEY_RE } from '@/lib/car-slug'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
+import { headers } from 'next/headers'
 
 export interface UpdateModelPriceResult {
   ok: boolean
@@ -43,6 +46,16 @@ export async function updateModelPrice(
     .update({ price_per_day: value })
     .eq('model_key', key)
   if (error) return { ok: false, error: 'Update failed.' }
+
+  await logAuditEvent({
+    actorId: user.id,
+    actorEmail: user.email ?? null,
+    action: 'car.price.update',
+    targetType: 'model',
+    targetId: key,
+    details: { price: value },
+    ip: clientIp(await headers()),
+  })
 
   revalidatePath('/[locale]/admin/cars', 'page')
   return { ok: true }

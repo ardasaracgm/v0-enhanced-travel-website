@@ -4,6 +4,9 @@ import { revalidatePath } from 'next/cache'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
+import { headers } from 'next/headers'
 
 export interface ActivateComingSoonCarResult {
   ok: boolean
@@ -52,6 +55,16 @@ export async function activateComingSoonCar(
   }
   if (!data || data.length === 0)
     return { ok: false, error: 'Car is not coming-soon (or not found).' }
+
+  await logAuditEvent({
+    actorId: user.id,
+    actorEmail: user.email ?? null,
+    action: 'car.activate',
+    targetType: 'car',
+    targetId: carId,
+    details: { plate: value },
+    ip: clientIp(await headers()),
+  })
 
   revalidatePath('/[locale]/admin/cars', 'page')
   return { ok: true }

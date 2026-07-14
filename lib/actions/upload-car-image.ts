@@ -4,6 +4,9 @@ import { randomUUID } from 'crypto'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
+import { headers } from 'next/headers'
 
 export interface UploadCarImageResult {
   ok: boolean
@@ -54,6 +57,16 @@ export async function uploadCarImage(formData: FormData): Promise<UploadCarImage
 
   const { data } = admin.storage.from(CAR_IMAGES_BUCKET).getPublicUrl(key)
   if (!data?.publicUrl) return { ok: false, error: 'Could not resolve public URL.' }
+
+  await logAuditEvent({
+    actorId: user.id,
+    actorEmail: user.email ?? null,
+    action: 'car.image.upload',
+    targetType: 'storage',
+    targetId: key,
+    details: { key, url: data.publicUrl },
+    ip: clientIp(await headers()),
+  })
 
   return { ok: true, url: data.publicUrl }
 }

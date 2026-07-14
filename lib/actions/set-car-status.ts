@@ -4,6 +4,9 @@ import { revalidatePath } from 'next/cache'
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
+import { headers } from 'next/headers'
 
 export interface SetCarStatusResult {
   ok: boolean
@@ -44,6 +47,16 @@ export async function setCarStatus(
 
   const { error: updErr } = await admin.from('cars').update({ status: next }).eq('id', carId)
   if (updErr) return { ok: false, error: 'Update failed.' }
+
+  await logAuditEvent({
+    actorId: user.id,
+    actorEmail: user.email ?? null,
+    action: 'car.status',
+    targetType: 'car',
+    targetId: carId,
+    details: { from: car.status, to: next },
+    ip: clientIp(await headers()),
+  })
 
   revalidatePath('/[locale]/admin/cars', 'page')
   return { ok: true, status: next }
