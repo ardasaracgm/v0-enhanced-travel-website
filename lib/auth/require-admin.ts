@@ -17,14 +17,17 @@ import { createSupabaseServerClient } from '@/lib/supabase-ssr'
  *   page   → if (!gate.ok) notFound()
  *   cars UI→ const canReserve = (await requireFullAdmin()).ok  (gate değil, görünürlük)
  *
- * userId döndürür (tam User nesnesi DEĞİL): tek tüketilen alan user.id
- * (confirmed_by). @supabase/auth-js User tip-importuna gerek kalmaz.
+ * userId + email döndürür (tam User nesnesi DEĞİL): tüketilenler user.id
+ * (confirmed_by) ve user.email (audit actor_email snapshot'i). email opsiyonel
+ * ek alandır — mevcut çağrılar (yalnız .ok / gate.userId) etkilenmez.
  *
  * 'use server' DEĞİL: action değil, auth-aware client (anon+cookie → own-row
  * RLS) ile KENDİ profiles satırını okuyan düz server util. Yazma/veri erişimi
  * ayrı: service-role (getSupabaseAdmin). Bu yalnız yetki gate'idir.
  */
-export type FullAdminGate = { ok: true; userId: string } | { ok: false }
+export type FullAdminGate =
+  | { ok: true; userId: string; email: string | null }
+  | { ok: false }
 
 export async function requireFullAdmin(): Promise<FullAdminGate> {
   const auth = await createSupabaseServerClient()
@@ -40,5 +43,5 @@ export async function requireFullAdmin(): Promise<FullAdminGate> {
     .maybeSingle()
 
   if (!profile?.is_admin || profile.admin_role !== 'full') return { ok: false }
-  return { ok: true, userId: user.id }
+  return { ok: true, userId: user.id, email: user.email ?? null }
 }
