@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { requireFullAdmin } from '@/lib/auth/require-admin'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit/log'
+import { clientIp } from '@/lib/auth/rate-limit'
 import { fillVisaDocx, type VisaPhoto } from '@/lib/visa/docx/fill-visa-docx'
 import { upperAscii } from '@/lib/visa/docx/format'
 import { getObjectBytes } from '@/lib/r2'
@@ -22,7 +24,8 @@ export async function GET(
   // ---- Gate: route handler KENDİ yetki doğrulamasını yapar (admin layout /api'yi
   // korumaz). full-admin (is_admin && admin_role='full') değilse 403; cars_only
   // vize PII'sine erişemez. (401/403 tek 403'e iner — auth durumu sızdırılmaz.) ----
-  if (!(await requireFullAdmin()).ok) {
+  const gate = await requireFullAdmin()
+  if (!gate.ok) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
@@ -57,6 +60,19 @@ export async function GET(
   // ---- Üret: şablonu DB satırıyla doldur ----
   const buf = await fillVisaDocx(app as VisaDocxRow, photo)
   const fname = `visa-${upperAscii(app.last_name) || 'APPLICATION'}-${id.slice(0, 8)}.docx`
+
+  // Audit izi — PII EGRESS: "kim hangi vize başvurusunun PII'ını Word indirdi"
+  // (GDPR/denetim değerli). docx üretimi başarılı SONRA, stream return'den ÖNCE.
+  // ip req'ten okunur (route handler → next/headers gerekmez). Stream/header'lara dokunulmaz.
+  await logAuditEvent({
+    actorId: gate.userId,
+    actorEmail: gate.email,
+    action: 'visa.docx.export',
+    targetType: 'visa',
+    targetId: id,
+    details: { fname },
+    ip: clientIp(_req.headers),
+  })
 
   return new NextResponse(new Uint8Array(buf), {
     headers: {
