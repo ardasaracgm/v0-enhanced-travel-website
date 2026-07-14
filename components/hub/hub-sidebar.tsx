@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { logAdminLogout } from '@/lib/actions/log-admin-logout'
 
 interface NavItem {
   key: string
@@ -50,6 +51,7 @@ export function HubSidebar() {
     href === '/hub' ? pathname === '/hub' : pathname === href || pathname.startsWith(`${href}/`)
 
   const handleSignOut = async () => {
+    await logAdminLogout() // admin ise denetim izi (signOut'tan ÖNCE — session hâlâ geçerli)
     const supabase = createSupabaseBrowserClient()
     await supabase.auth.signOut()
     router.push('/')

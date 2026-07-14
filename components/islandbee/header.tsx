@@ -18,6 +18,7 @@ import { TrustBar } from "@/components/islandbee/trust-bar";
 import { SERVICE_ROUTES, type ServiceKey } from "@/lib/services";
 import { buildWhatsAppLink, getPhoneCall } from "@/lib/contact";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { logAdminLogout } from "@/lib/actions/log-admin-logout";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -47,6 +48,7 @@ export function Header() {
   }, []);
 
   const handleSignOut = async () => {
+    await logAdminLogout(); // admin ise denetim izi (signOut'tan ÖNCE — session hâlâ geçerli)
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
     setAuthEmail(null);
