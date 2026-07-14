@@ -2144,5 +2144,15 @@
     "icsVessel": "Gemi",
     "icsOperator": "Operatör",
     "icsContact": "İletişim"
+  },
+  "pnrLookup": {
+    "trigger": "Biletiniz mi var? Biletinizi görüntüleyin",
+    "referenceLabel": "Rezervasyon numarası",
+    "referencePlaceholder": "TB-26-XXXXXX",
+    "lastNameLabel": "Soyadı",
+    "lastNamePlaceholder": "Bilet üzerindeki soyadı",
+    "submit": "Bileti Bul",
+    "notFound": "Bu bilgilerle bir feribot bileti bulamadık. Rezervasyon numaranızı ve soyadınızı kontrol edin.",
+    "rateLimited": "Çok fazla deneme yapıldı. Lütfen bir dakika sonra tekrar deneyin."
   }
 }

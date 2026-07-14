@@ -2144,5 +2144,15 @@
     "icsVessel": "Vessel",
     "icsOperator": "Operator",
     "icsContact": "Contact"
+  },
+  "pnrLookup": {
+    "trigger": "Have a booking? View your ticket",
+    "referenceLabel": "Booking reference",
+    "referencePlaceholder": "TB-26-XXXXXX",
+    "lastNameLabel": "Last name",
+    "lastNamePlaceholder": "Last name on the ticket",
+    "submit": "Find Ticket",
+    "notFound": "We couldn't find a ferry ticket with those details. Please check your booking reference and last name.",
+    "rateLimited": "Too many attempts. Please try again in a minute."
   }
 }
