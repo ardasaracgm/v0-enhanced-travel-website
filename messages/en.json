@@ -316,7 +316,8 @@
       },
       "account": {
         "title": "Account Details",
-        "editProfile": "Edit My Profile"
+        "editProfile": "Edit My Profile",
+        "adminPanel": "Admin Panel"
       },
       "support": {
         "title": "Need help?",

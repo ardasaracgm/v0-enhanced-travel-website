@@ -71,12 +71,23 @@ export default async function HubPage({
   const t = await getTranslations('hub.dashboard')
   const th = await getTranslations('hub') // tabs.* + reservationState.* zaten üç dilde var
 
-  const { data: self } = await supabase
-    .from('travel_companions')
-    .select('first_name, last_name')
-    .eq('owner_id', user.id)
-    .eq('is_self', true)
-    .maybeSingle()
+  // Own-row + admin bayrağı tek turda (paralel): ekstra sıralı roundtrip yok.
+  // is_admin profiles'ta (bkz. require-admin.ts); travel_companions'a eklenemez.
+  const [{ data: self }, { data: profile }] = await Promise.all([
+    supabase
+      .from('travel_companions')
+      .select('first_name, last_name')
+      .eq('owner_id', user.id)
+      .eq('is_self', true)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ])
+  // full + cars_only her ikisi de görür (admin layout gate'iyle aynı); müşteri görmez.
+  const isAdmin = profile?.is_admin === true
 
   const email = user.email ?? ''
   const data = await getDashboardData(email)
@@ -247,6 +258,16 @@ export default async function HubPage({
               {t('account.editProfile')}
             </Link>
           </div>
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-blue-950 shadow-sm transition-colors hover:bg-slate-50"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {t('account.adminPanel')}
+            </Link>
+          )}
 
           <div className="rounded-3xl border border-blue-100 bg-blue-50/60 p-6">
             <h2 className="text-base font-semibold text-blue-950">{t('support.title')}</h2>

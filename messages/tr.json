@@ -316,7 +316,8 @@
       },
       "account": {
         "title": "Hesap Bilgileriniz",
-        "editProfile": "Profilimi Düzenle"
+        "editProfile": "Profilimi Düzenle",
+        "adminPanel": "Yönetim Paneli"
       },
       "support": {
         "title": "Yardıma mı ihtiyacınız var?",
