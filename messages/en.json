@@ -2157,5 +2157,51 @@
     "submit": "Find Ticket",
     "notFound": "We couldn't find a ferry ticket with those details. Please check your booking reference and last name.",
     "rateLimited": "Too many attempts. Please try again in a minute."
+  },
+  "seo": {
+    "home": {
+      "title": "Greek Islands Ferry, Car Rental & Tours",
+      "description": "Licensed Greek travel agency in Kos. Ferry tickets from Turkey to the Greek islands, car rental, tours, visa support and insurance — secure payment, WhatsApp support."
+    },
+    "ferry": {
+      "title": "Ferry Tickets — Turkey to the Greek Islands",
+      "description": "Book ferry tickets from Bodrum, Turgutreis and Fethiye to Kos, Rhodes and Samos. Live availability, secure payment and support from our Kos office."
+    },
+    "carRental": {
+      "title": "Car Rental in the Greek Islands",
+      "description": "Affordable car rental in Kos and around. Full insurance, free-cancellation options and port pickup. Add it to your ferry booking."
+    },
+    "insurance": {
+      "title": "Travel Insurance",
+      "description": "Comprehensive travel insurance for your trip to Greece. Medical, cancellation and baggage cover — add it to your ferry booking in minutes."
+    },
+    "transfer": {
+      "title": "Airport & Port Transfer",
+      "description": "Private VIP transfers on the Bodrum and Kos sides. Comfortable transport between airport, port and hotel — book in advance."
+    },
+    "visa": {
+      "title": "Greece (Schengen) Visa Support",
+      "description": "Schengen visa application support for Turkish citizens travelling to Greece. Document preparation, appointments and application tracking with our experts."
+    },
+    "luggage": {
+      "title": "Luggage Shipping",
+      "description": "Luggage shipping between the islands and across Turkey–Greece. Small, medium and large sizes — add it to your ferry trip."
+    },
+    "tours": {
+      "title": "Greek Islands Tours & Excursions",
+      "description": "Guided tours, boat trips and day excursions across Kos and the Aegean islands. Small groups, local guides."
+    },
+    "packagePickup": {
+      "title": "Package Pickup Service",
+      "description": "We collect and forward your parcels and shipments in the Greek islands on your behalf. Safe, fast and trackable."
+    },
+    "events": {
+      "title": "Events & Celebrations",
+      "description": "Weddings, celebrations and corporate events in the Greek islands. Venue, transport and accommodation arranged end to end."
+    },
+    "contact": {
+      "title": "Contact — TravelBeez Kos Office",
+      "description": "Get in touch with TravelBeez. Our office at Kos port, plus WhatsApp and phone lines, are here for your ferry, car and tour bookings."
+    }
   }
 }

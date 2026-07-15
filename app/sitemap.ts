@@ -7,7 +7,8 @@ const LOCALES = ['tr', 'en', 'el'] as const
 // Public, indexlenebilir statik route'lar (auth/akış/coming-soon HARİÇ — sitemap keşfi 2026-07).
 const STATIC_PATHS = [
   '', '/ferry', '/car-rental', '/insurance', '/transfer',
-  '/visa', '/luggage', '/contact', '/privacy', '/terms',
+  '/visa', '/luggage', '/tours', '/package-pickup', '/events',
+  '/contact', '/privacy', '/terms',
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {

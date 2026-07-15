@@ -2157,5 +2157,51 @@
     "submit": "Bileti Bul",
     "notFound": "Bu bilgilerle bir feribot bileti bulamadık. Rezervasyon numaranızı ve soyadınızı kontrol edin.",
     "rateLimited": "Çok fazla deneme yapıldı. Lütfen bir dakika sonra tekrar deneyin."
+  },
+  "seo": {
+    "home": {
+      "title": "Yunan Adalarına Feribot, Araç Kiralama ve Turlar",
+      "description": "Kos merkezli lisanslı seyahat acentesi. Türkiye'den Yunan adalarına feribot bileti, araç kiralama, tur, vize desteği ve sigorta — güvenli ödeme, WhatsApp destek."
+    },
+    "ferry": {
+      "title": "Feribot Bileti — Türkiye'den Yunan Adalarına",
+      "description": "Bodrum, Turgutreis ve Fethiye'den Kos, Rodos ve Sisam'a feribot bileti. Anlık müsaitlik, güvenli ödeme ve Kos ofisinden destek."
+    },
+    "carRental": {
+      "title": "Yunan Adalarında Araç Kiralama",
+      "description": "Kos ve çevresinde ekonomik araç kiralama. Tam sigorta, ücretsiz iptal seçenekleri ve limanda teslim. Feribot rezervasyonunuza ekleyin."
+    },
+    "insurance": {
+      "title": "Seyahat Sigortası",
+      "description": "Yunanistan seyahatiniz için kapsamlı seyahat sigortası. Sağlık, iptal ve bagaj teminatı — feribot rezervasyonunuza dakikalar içinde ekleyin."
+    },
+    "transfer": {
+      "title": "Havalimanı ve Liman Transferi",
+      "description": "Bodrum ve Kos taraflarında özel VIP transfer. Havalimanı, liman ve otel arası konforlu ulaşım — önceden rezervasyon."
+    },
+    "visa": {
+      "title": "Yunanistan (Schengen) Vize Desteği",
+      "description": "Türk vatandaşları için Yunanistan Schengen vizesi başvuru desteği. Belge hazırlığı, randevu ve başvuru takibi — uzman ekiple."
+    },
+    "luggage": {
+      "title": "Bagaj Taşıma ve Kargo",
+      "description": "Adalar arası ve Türkiye-Yunanistan bagaj taşıma. Küçük, orta ve büyük boy seçenekleri — feribot yolculuğunuza ekleyin."
+    },
+    "tours": {
+      "title": "Yunan Adaları Turları ve Gezileri",
+      "description": "Kos ve Ege adalarında rehberli turlar, tekne gezileri ve günübirlik keşifler. Küçük gruplar, yerel rehberler."
+    },
+    "packagePickup": {
+      "title": "Paket Teslim Alma Hizmeti",
+      "description": "Yunan adalarındaki paket ve gönderilerinizi sizin adınıza teslim alıp iletiyoruz. Güvenli, hızlı ve takip edilebilir."
+    },
+    "events": {
+      "title": "Etkinlik ve Organizasyon",
+      "description": "Yunan adalarında düğün, kutlama ve kurumsal etkinlik organizasyonu. Mekan, ulaşım ve konaklama tek elden."
+    },
+    "contact": {
+      "title": "İletişim — TravelBeez Kos Ofisi",
+      "description": "TravelBeez ile iletişime geçin. Kos limanındaki ofisimiz, WhatsApp ve telefon hatlarımızla feribot, araç ve tur rezervasyonlarınızda yanınızdayız."
+    }
   }
 }
