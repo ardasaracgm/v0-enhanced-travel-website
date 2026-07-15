@@ -30,6 +30,8 @@ const ACTIONS = [
   'car.image.update',
   'car.activate',
   'car.image.upload',
+  'user.role.set',
+  'user.disable',
   'admin.login.success',
   'admin.login.failure',
   'admin.logout',

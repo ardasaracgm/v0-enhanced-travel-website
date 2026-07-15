@@ -76,6 +76,9 @@ export default async function AdminLayout({
                 <Link href="/admin/insurance" className="text-muted-foreground hover:text-foreground">
                   Insurance
                 </Link>
+                <Link href="/admin/users" className="text-muted-foreground hover:text-foreground">
+                  Users
+                </Link>
                 <Link href="/admin/audit" className="text-muted-foreground hover:text-foreground">
                   Audit
                 </Link>
