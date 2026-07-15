@@ -75,6 +75,7 @@ const ORG_JSONLD = {
       logo: `${SITE_URL}/travelbeez-logo.png`,
       image: `${SITE_URL}/travelbeez-kos-office.webp`,
       telephone: getLandline().href.replace('tel:', ''),
+      priceRange: '€€',
       address: {
         '@type': 'PostalAddress',
         streetAddress: '4 G. Averof str',
