@@ -1,0 +1,44 @@
+# TravelBeez
+
+> TravelBeez (travelbeez.gr) is a Greek-licensed online travel agency operated by FerryBee Travel IKE, based in Kos, Greece. We sell ferry tickets between the Greek islands and the Turkish coast, plus car rental, airport & VIP transfers, travel insurance, Schengen visa consultancy, and luggage services. Site is available in English (/en), Turkish (/tr), and Greek (/el).
+
+## Ferry tickets
+- [Ferry booking (EN)](https://travelbeez.gr/en/ferry): Search and book ferry tickets between Greek islands and Turkey.
+- [Feribot bileti (TR)](https://travelbeez.gr/tr/ferry): Yunan adaları ve Türkiye arası feribot bileti arama ve satın alma.
+- [Ακτοπλοϊκά εισιτήρια (EL)](https://travelbeez.gr/el/ferry): Αναζήτηση και κράτηση ακτοπλοϊκών εισιτηρίων.
+
+## Car rental
+- [Car rental (EN)](https://travelbeez.gr/en/car-rental): Rent a car in Kos and the surrounding region.
+- [Araç kiralama (TR)](https://travelbeez.gr/tr/car-rental): Kos ve çevresinde araç kiralama.
+- [Ενοικίαση αυτοκινήτου (EL)](https://travelbeez.gr/el/car-rental)
+
+## Transfers
+- [Airport & VIP transfer (EN)](https://travelbeez.gr/en/transfer): Bodrum airport and VIP transfer service.
+- [Havalimanı & VIP transfer (TR)](https://travelbeez.gr/tr/transfer): Bodrum havalimanı ve VIP transfer hizmeti.
+- [Μεταφορές (EL)](https://travelbeez.gr/el/transfer)
+
+## Travel insurance
+- [Travel insurance (EN)](https://travelbeez.gr/en/insurance): Travel and Schengen insurance policies.
+- [Seyahat sigortası (TR)](https://travelbeez.gr/tr/insurance): Seyahat ve Schengen sigortası poliçeleri.
+- [Ταξιδιωτική ασφάλεια (EL)](https://travelbeez.gr/el/insurance)
+
+## Visa consultancy
+- [Schengen visa consultancy (EN)](https://travelbeez.gr/en/visa): Schengen visa application consultancy service.
+- [Vize danışmanlığı (TR)](https://travelbeez.gr/tr/visa): Schengen vize başvuru danışmanlık hizmeti.
+- [Συμβουλευτική βίζας (EL)](https://travelbeez.gr/el/visa)
+
+## Luggage services
+- [Luggage services (EN)](https://travelbeez.gr/en/luggage): Luggage storage and handling.
+- [Bagaj hizmetleri (TR)](https://travelbeez.gr/tr/luggage): Bagaj saklama ve taşıma hizmetleri.
+- [Υπηρεσίες αποσκευών (EL)](https://travelbeez.gr/el/luggage)
+
+## Island guides
+- [Kos](https://travelbeez.gr/en/islands/kos) · [TR](https://travelbeez.gr/tr/islands/kos) · [EL](https://travelbeez.gr/el/islands/kos)
+- [Rhodes](https://travelbeez.gr/en/islands/rhodes) · [TR](https://travelbeez.gr/tr/islands/rhodes) · [EL](https://travelbeez.gr/el/islands/rhodes)
+- [Samos](https://travelbeez.gr/en/islands/samos) · [TR](https://travelbeez.gr/tr/islands/samos) · [EL](https://travelbeez.gr/el/islands/samos)
+- [Leros](https://travelbeez.gr/en/islands/leros) · [TR](https://travelbeez.gr/tr/islands/leros) · [EL](https://travelbeez.gr/el/islands/leros)
+- [Patmos](https://travelbeez.gr/en/islands/patmos) · [TR](https://travelbeez.gr/tr/islands/patmos) · [EL](https://travelbeez.gr/el/islands/patmos)
+
+## Contact
+- [Contact (EN)](https://travelbeez.gr/en/contact) · [İletişim (TR)](https://travelbeez.gr/tr/contact) · [Επικοινωνία (EL)](https://travelbeez.gr/el/contact)
+- Legal entity: FerryBee Travel IKE, Kos, Greece.
