@@ -20,7 +20,12 @@ import { ageOn, parseISODate, todayAthensISO } from './dates'
 // Canonical option sets (keep in lockstep with the DB CHECKs + i18n)
 // ============================================================
 export const ENTRY_POINTS     = ['kos', 'kalymnos', 'rhodos'] as const
-export const VESSEL_TYPES      = ['ferry_san_nicolas', 'catamaran_seastar'] as const
+// What we currently OFFER — drives both the dropdowns and the submit schema, so
+// a stale/crafted client cannot book a vessel we no longer sell. Deliberately
+// NOT in lockstep with the DB CHECK (033), which also still accepts the retired
+// 'ferry_san_nicolas' / 'catamaran_seastar' so historical rows stay readable.
+// "Storable" (VisaVesselType in lib/supabase.ts) is a superset of "offerable".
+export const VESSEL_TYPES      = ['ferry_tilos'] as const
 export const GENDERS           = ['male', 'female'] as const
 export const MARITAL_STATUSES  = ['single', 'married', 'separated', 'divorced', 'widowed'] as const
 export const DOC_TYPES         = ['normal', 'diplomatic', 'service', 'official', 'special'] as const

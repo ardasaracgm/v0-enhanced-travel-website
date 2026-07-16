@@ -1096,6 +1096,7 @@
       "options": {
         "entryPoint": { "kos": "Kos", "kalymnos": "Kalymnos", "rhodos": "Rhodes" },
         "vesselType": {
+          "ferry_tilos": "Ferry — Tilos",
           "ferry_san_nicolas": "Ferry — San Nicolas",
           "catamaran_seastar": "Catamaran — Seastar"
         },
