@@ -2,10 +2,14 @@ import type { Metadata } from 'next'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { GoogleAnalytics } from '@next/third-parties/google'
+import { Analytics } from '@vercel/analytics/react'
 import { routing } from '@/i18n/routing'
 import { SITE_URL } from '@/lib/site-config'
 import { getLandline } from '@/lib/contact'
 import { BookingProvider } from '@/lib/booking-context'
+import { ConsentProvider } from '@/lib/consent-context'
+import { CookieBanner } from '@/components/consent/cookie-banner'
 import { Suspense } from 'react'
 import { Dancing_Script } from 'next/font/google'
 import '../globals.css'
@@ -106,6 +110,24 @@ const ORG_JSONLD = {
   ],
 }
 
+// Consent Mode v2 — default-denied bootstrap.
+// MUST execute before GA4 loads, so it is rendered as a plain inline <script>
+// (parser-blocking) at the top of <body>, ahead of <GoogleAnalytics> (which
+// next/script defers to afterInteractive). Storage stays denied until the
+// visitor decides; ConsentProvider replays a stored decision via consent-update
+// on mount. wait_for_update buys that replay 500ms before GA acts on defaults.
+const CONSENT_BOOTSTRAP = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  'analytics_storage': 'denied',
+  'ad_storage': 'denied',
+  'ad_user_data': 'denied',
+  'ad_personalization': 'denied',
+  'wait_for_update': 500
+});
+`
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
@@ -133,15 +155,25 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${script.variable} antialiased`}>
+        {/* Consent Mode v2 default-denied — must stay the first script in <body>. */}
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_BOOTSTRAP }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSONLD) }}
         />
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Suspense fallback={null}>
-            <BookingProvider>{children}</BookingProvider>
+            <ConsentProvider>
+              <BookingProvider>{children}</BookingProvider>
+              <CookieBanner />
+            </ConsentProvider>
           </Suspense>
         </NextIntlClientProvider>
+        {/* Vercel Analytics is cookieless — outside consent scope, always on. */}
+        <Analytics />
       </body>
     </html>
   )

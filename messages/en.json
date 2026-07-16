@@ -2203,5 +2203,20 @@
       "title": "Contact — TravelBeez Kos Office",
       "description": "Get in touch with TravelBeez. Our office at Kos port, plus WhatsApp and phone lines, are here for your ferry, car and tour bookings."
     }
+  },
+  "cookieConsent": {
+    "title": "Your cookie preferences",
+    "description": "We use necessary cookies to run the site. With your permission we also measure visit statistics to improve it.",
+    "acceptAll": "Accept all",
+    "reject": "Reject",
+    "settings": "Settings",
+    "save": "Save preferences",
+    "necessaryLabel": "Necessary cookies",
+    "necessaryDesc": "Required for site security, your session and the booking flow. These cannot be switched off.",
+    "analyticsLabel": "Analytics cookies",
+    "analyticsDesc": "Help us measure anonymously how our pages are used.",
+    "marketingLabel": "Marketing cookies",
+    "marketingDesc": "Used to show you relevant ads. We do not use these at the moment.",
+    "privacyLink": "Privacy Policy"
   }
 }

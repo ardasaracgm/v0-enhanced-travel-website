@@ -2203,5 +2203,20 @@
       "title": "İletişim — TravelBeez Kos Ofisi",
       "description": "TravelBeez ile iletişime geçin. Kos limanındaki ofisimiz, WhatsApp ve telefon hatlarımızla feribot, araç ve tur rezervasyonlarınızda yanınızdayız."
     }
+  },
+  "cookieConsent": {
+    "title": "Çerez tercihleriniz",
+    "description": "Sitenin çalışması için zorunlu çerezleri kullanıyoruz. İzin verirseniz siteyi geliştirmek için ziyaret istatistiklerini de ölçeriz.",
+    "acceptAll": "Hepsini kabul et",
+    "reject": "Reddet",
+    "settings": "Ayarlar",
+    "save": "Tercihleri kaydet",
+    "necessaryLabel": "Zorunlu çerezler",
+    "necessaryDesc": "Site güvenliği, oturumunuz ve rezervasyon akışı için gereklidir. Kapatılamaz.",
+    "analyticsLabel": "Analitik çerezler",
+    "analyticsDesc": "Sayfaların nasıl kullanıldığını anonim olarak ölçmemize yardımcı olur.",
+    "marketingLabel": "Pazarlama çerezleri",
+    "marketingDesc": "Size uygun reklamları göstermek için kullanılır. Şu anda kullanmıyoruz.",
+    "privacyLink": "Gizlilik Politikası"
   }
 }
