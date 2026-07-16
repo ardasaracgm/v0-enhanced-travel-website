@@ -63,9 +63,24 @@ export default function PrivacyPage() {
 
             <section className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">6. Cookies</h2>
+              <p>We group cookies into three categories:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  <strong className="text-foreground">Necessary</strong> — required for site security,
+                  your session and the booking flow. These are always active and cannot be switched off.
+                </li>
+                <li>
+                  <strong className="text-foreground">Analytics</strong> — Google Analytics, which helps us
+                  measure anonymously how our pages are used. Only set if you allow it.
+                </li>
+                <li>
+                  <strong className="text-foreground">Marketing</strong> — used to show relevant ads.
+                  We do not use these at the moment.
+                </li>
+              </ul>
               <p>
-                We use cookies to improve your browsing experience and analyze website traffic. 
-                You can control cookie settings through your browser preferences.
+                Analytics and marketing cookies stay disabled until you consent. You can manage your
+                choices at any time through the cookie banner, or control cookies through your browser preferences.
               </p>
             </section>
 
