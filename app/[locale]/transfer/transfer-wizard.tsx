@@ -270,7 +270,7 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
                     {submitting ? t('nav.processing') : isLast ? t('nav.pay') : t('nav.next')}
                   </Button>
                 </div>
-                <div className="wc-panel lg:min-h-[min(28rem,60svh)] space-y-5">
+                <div className="wc-panel lg:min-h-[29rem] space-y-5">
                 {step === 0 ? (
             <>
               <p className="wc-optional text-sm text-muted-foreground">
@@ -305,7 +305,7 @@ export function TransferWizard({ prefill }: { prefill?: TransferPrefill | null }
                           selected ? 'border-primary shadow-md ring-2 ring-primary' : 'border-border/50'
                         }`}>
                         {/* Görsel — 5:3 oran korunur, max-h ile %75'e kısılır (üst şerit için), object-contain → kırpma yok */}
-                        <div className="wc-media relative aspect-[5/3] max-h-[7.25rem] w-full bg-white">
+                        <div className="wc-media relative aspect-[5/3] max-h-[5rem] w-full bg-white">
                           {vSrc && (
                             <Image src={vSrc} alt={v.label} fill sizes="(max-width: 640px) 50vw, 16rem" className="object-contain" />
                           )}

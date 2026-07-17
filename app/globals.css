@@ -163,7 +163,7 @@
   /* Marker'lar — davranış tek yerde, JSX sadece kanca takar */
   .wizard-compact .wc-optional { display: none; }   /* dekoratif/opsiyonel satır */
   .wizard-compact .wc-panel { min-height: 0; }       /* panel min-h floor'unu kaldır */
-  .wizard-compact .wc-media { max-height: 5.5rem; }  /* görseli kıs */
+  .wizard-compact .wc-media { max-height: 5rem; }    /* görseli kıs — desktop ile eşit (80px) */
 
   /* Marketing hero (car-rental/visa) — kısa ekranda üst-nefes trim. Kök
      .hero-compact <section>'da; generic Tailwind-class hedefleme (wizard-compact
