@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { SITE_URL } from '@/lib/site-config'
+import { buildMetadata } from '@/lib/seo'
 import EventsClient from './events-client'
 
 // Server wrapper: metadata + Service JSON-LD. Sayfa gövdesi events-client.tsx'te.
@@ -14,19 +15,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'seo.events' })
-  const title = t('title')
-  const description = t('description')
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `/${locale}${PATH}`,
-      languages: {
-        tr: `/tr${PATH}`, en: `/en${PATH}`, el: `/el${PATH}`, 'x-default': `/en${PATH}`,
-      },
-    },
-    openGraph: { title, description, type: 'website', locale },
-  }
+  // og:image yok → helper images set etmez → root layout default'una düşer.
+  return buildMetadata({
+    locale,
+    path: PATH,
+    title: t('title'),
+    description: t('description'),
+  })
 }
 
 export default async function EventsPage({

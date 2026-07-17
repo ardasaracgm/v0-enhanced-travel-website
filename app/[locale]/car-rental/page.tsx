@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { SITE_URL } from '@/lib/site-config'
+import { buildMetadata } from '@/lib/seo'
 import CarRentalClient from './car-rental-client'
 
 // Server wrapper: metadata + Service JSON-LD. Client hook'lar (useSearchParams,
@@ -14,21 +15,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'seo.carRental' })
-  const title = t('title')
-  const description = t('description')
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `/${locale}${PATH}`,
-      languages: {
-        tr: `/tr${PATH}`, en: `/en${PATH}`, el: `/el${PATH}`, 'x-default': `/en${PATH}`,
-      },
-    },
-    openGraph: {
-      title, description, type: 'website', locale, images: ['/cars/kos-hero.webp'],
-    },
-  }
+  return buildMetadata({
+    locale,
+    path: PATH,
+    title: t('title'),
+    description: t('description'),
+    image: '/cars/kos-hero.webp',
+  })
 }
 
 export default async function CarRentalPage({

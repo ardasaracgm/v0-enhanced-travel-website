@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
+import { buildMetadata } from '@/lib/seo'
 import { Header } from '@/components/islandbee/header'
 import Component from '../../enhanced-travel-website'
 
@@ -15,22 +16,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'seo.home' })
-  const title = t('title')
-  const description = t('description')
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        tr: '/tr', en: '/en', el: '/el', 'x-default': '/en',
-      },
-    },
-    openGraph: {
-      title, description, type: 'website', locale,
-      images: ['/hero-greek-islands.webp'],
-    },
-  }
+  return buildMetadata({
+    locale,
+    path: '',
+    title: t('title'),
+    description: t('description'),
+    image: '/hero-greek-islands.webp',
+  })
 }
 
 export default async function HomePage() {

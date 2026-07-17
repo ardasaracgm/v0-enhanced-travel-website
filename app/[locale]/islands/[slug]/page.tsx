@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/accordion'
 import { ISLANDS, ISLAND_SLUGS, type Locale } from '@/lib/islands-content'
 import { SITE_URL } from '@/lib/site-config'
+import { buildMetadata } from '@/lib/seo'
 
 // SSG: her ada slug'ı statik üretilir (locale × slug, [locale] segmentiyle çarpılır).
 export function generateStaticParams() {
@@ -36,18 +37,18 @@ export async function generateMetadata({
   const title = t(`meta.${slug}.title`) || tTr(`meta.${slug}.title`)
   const description = t(`meta.${slug}.description`) || tTr(`meta.${slug}.description`)
 
-  const path = `/islands/${slug}`
-  return {
-    // meta zaten "| TravelBeez" içeriyor → absolute (layout %s·template'ini bypass et).
-    title: { absolute: title },
+  // meta zaten "| TravelBeez" içeriyor → absoluteTitle (layout %s·template bypass).
+  // hreflang 3 dil, x-default YOK (eski davranış korunur). og:type article.
+  return buildMetadata({
+    locale,
+    path: `/islands/${slug}`,
+    title,
     description,
-    // GÖRELİ — metadataBase (SITE_URL) mutlaklar. hreflang 3 dil.
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: { tr: `/tr${path}`, en: `/en${path}`, el: `/el${path}` },
-    },
-    openGraph: { title, description, type: 'article', images: [island.heroImage], locale },
-  }
+    image: island.heroImage,
+    ogType: 'article',
+    absoluteTitle: true,
+    xDefault: false,
+  })
 }
 
 const LOCALES = ['tr', 'en', 'el'] as const

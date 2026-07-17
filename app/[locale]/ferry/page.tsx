@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { SITE_URL } from '@/lib/site-config'
+import { buildMetadata } from '@/lib/seo'
 import FerryClient from './ferry-client'
 
 // Server wrapper: metadata + Service JSON-LD. Sayfa gövdesi (client hook'lar,
@@ -15,21 +16,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'seo.ferry' })
-  const title = t('title')
-  const description = t('description')
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `/${locale}${PATH}`,
-      languages: {
-        tr: `/tr${PATH}`, en: `/en${PATH}`, el: `/el${PATH}`, 'x-default': `/en${PATH}`,
-      },
-    },
-    openGraph: {
-      title, description, type: 'website', locale, images: ['/ferry-hero.webp'],
-    },
-  }
+  return buildMetadata({
+    locale,
+    path: PATH,
+    title: t('title'),
+    description: t('description'),
+    image: '/ferry-hero.webp',
+  })
 }
 
 export default async function FerryPage({

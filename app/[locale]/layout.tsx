@@ -56,13 +56,11 @@ export const metadata: Metadata = {
       'Licensed Greek travel agency. Ferry tickets, car rentals and tours across the Aegean. Operating from Kos Port.',
     images: [{ url: '/hero-greek-islands.webp', width: 1200, height: 630 }],
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'TravelBeez · Greek Islands Ferry, Car Rental & Tours',
-    description:
-      'Ferry tickets, car rentals and tours across the Aegean. From Kos Port.',
-    images: ['/hero-greek-islands.webp'],
-  },
+  // twitter bloğu bilinçli olarak YOK: içerik sayfaları twitter'ı lib/seo.ts
+  // buildMetadata ile locale'e göre üretir; generateMetadata'sı olmayan iç
+  // rotalar (checkout/hub/admin/ferry-akış) twitter'ı Next'in fallback'iyle
+  // yukarıdaki openGraph'tan türetir. Tek kaynak = openGraph + buildMetadata;
+  // eskiden buradaki SABİT İngilizce twitter her sayfaya sızıyordu.
 }
 
 // Site-geneli yapılandırılmış veri — statik, locale-bağımsız → tek yer (root <body>).
