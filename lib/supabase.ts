@@ -173,6 +173,7 @@ export interface Trip {
   updated_at: string
   confirmed_at?: string | null
   confirmation_email_sent_at?: string | null
+  transfer_operator_notified_at?: string | null  // single-owner claim for the operator notice (034)
   cancelled_at?: string | null
   cancellation_reason?: string | null
   viva_order_code?: string | null

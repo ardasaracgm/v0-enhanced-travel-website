@@ -3,6 +3,7 @@ import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { issuePolicy } from '@/lib/insurance/issue-policy'
 import { reserveFerry } from '@/lib/ferry/reserve-ferry'
+import { claimAndNotifyTransferOperator } from '@/lib/email/send-transfer-operator-email'
 
 export type ConfirmTripResult =
   | { ok: true; alreadyConfirmed: boolean }
@@ -78,7 +79,40 @@ const reserveFerryEffect: ConfirmSideEffect = async (_supabase, tripId) => {
   }
 }
 
-const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [confirmCarBookings, issuePolicyEffect, reserveFerryEffect]
+// transfer → e-mail the operator (Sena Grup / Milas Transfer) the paid booking.
+// There is no operator API, so this mail IS the handoff. claimAndNotifyTransferOperator
+// is idempotent (trips.transfer_operator_notified_at claim, migration 034) and returns
+// skipped:'no_transfer' for trips without a transfer (no-op). Mirrors reserveFerryEffect.
+const notifyTransferOperatorEffect: ConfirmSideEffect = async (_supabase, tripId) => {
+  try {
+    const r = await claimAndNotifyTransferOperator(tripId)
+    if (r.ok) {
+      if (r.skipped === 'no_transfer') return
+      if (r.skipped === 'already_notified') {
+        console.info(`[confirmTrip] transfer operator already notified for trip ${tripId} (idempotent)`)
+      } else if (r.skipped === 'no_operator_email') {
+        // Not an error in dev/preview; in prod it means a paid transfer nobody told
+        // the firm about → the NULL stamp is the admin backstop signal.
+        console.warn(`[confirmTrip] TRANSFER_OPERATOR_EMAIL unset — operator notice skipped for trip ${tripId}`)
+      } else if (r.skipped === 'no_mailer') {
+        console.warn(`[confirmTrip] RESEND_API_KEY unset — operator notice skipped for trip ${tripId}`)
+      } else {
+        console.log(`[confirmTrip] transfer operator notified for trip ${tripId}`)
+      }
+    } else {
+      console.error(`[confirmTrip] notifyTransferOperator failed for trip ${tripId} — admin backstop needed: ${r.error}`)
+    }
+  } catch (err) {
+    console.error(`[confirmTrip] notifyTransferOperator threw for trip ${tripId}:`, err instanceof Error ? err.message : err)
+  }
+}
+
+const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [
+  confirmCarBookings,
+  issuePolicyEffect,
+  reserveFerryEffect,
+  notifyTransferOperatorEffect,
+]
 
 /**
  * Idempotently confirm a trip. Flips trips→confirmed (FATAL: returns {ok:false}
