@@ -34,6 +34,6 @@ export const SERVICE_ROUTES: Record<ServiceKey, ServiceRoute> = {
   visa:          { href: "/visa",           disabled: false },
   tours:         { href: "/tours",          disabled: true, hidden: true },
   events:        { href: "/events",         disabled: true, hidden: true },
-  packagePickup: { href: "/package-pickup", disabled: true, hidden: true },
+  packagePickup: { href: "/package-pickup", disabled: false },
   contact:       { href: "/contact",        disabled: false },
 };

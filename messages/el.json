@@ -621,8 +621,8 @@
     "s4Desc": "Guided experiences and excursions",
     "s5Title": "Visa Support",
     "s5Desc": "Schengen visa assistance",
-    "s6Title": "Package Pickup",
-    "s6Desc": "Secure delivery address and storage at Kos Port",
+    "s6Title": "Παραλαβή Δεμάτων",
+    "s6Desc": "Ασφαλής διεύθυνση παράδοσης και αποθήκευση στο λιμάνι της Κω",
     "s7Title": "Travel Insurance",
     "s7Desc": "Schengen & travel insurance — instant policy",
     "s8Title": "VIP Transfer",
@@ -1392,23 +1392,23 @@
 
   "packagePickupPage": {
     "hero": {
-      "badge": "Package Pickup & Kos Storage",
-      "titleLead": "Shop Abroad.",
-      "titleHighlight": "Pick Up in Kos.",
-      "subtitle": "Send your online purchases to our Kos Port office and collect them during your island visit.",
-      "ctaReserve": "Reserve Your Box"
+      "badge": "Παραλαβή Δεμάτων & Αποθήκευση στην Κω",
+      "titleLead": "Ψώνισε από το εξωτερικό.",
+      "titleHighlight": "Παράλαβε στην Κω.",
+      "subtitle": "Στείλε τις online αγορές σου στο γραφείο μας στο λιμάνι της Κω και παράλαβέ τες κατά την επίσκεψή σου στο νησί.",
+      "ctaReserve": "Κράτησε το κουτί σου"
     },
     "hiw": {
-      "title": "How It Works",
-      "intro": "Simple 4-step process to receive your international packages in Kos",
-      "step1Title": "Reserve Your Box",
-      "step1Desc": "Contact us via WhatsApp to reserve your package slot or storage box.",
-      "step2Title": "Use Our Address",
-      "step2Desc": "Ship your online purchases to our secure Kos Port office address.",
-      "step3Title": "Get Notified",
-      "step3Desc": "We notify you via WhatsApp when your package arrives safely.",
-      "step4Title": "Pick Up at Kos",
-      "step4Desc": "Collect your packages at Kos Port before returning to Turkey."
+      "title": "Πώς Λειτουργεί",
+      "intro": "Απλή διαδικασία 4 βημάτων για να παραλάβεις τα διεθνή δέματά σου στην Κω",
+      "step1Title": "Κράτησε το κουτί σου",
+      "step1Desc": "Επικοινώνησε μαζί μας μέσω WhatsApp για να κρατήσεις τη θέση δέματος ή το κουτί αποθήκευσης.",
+      "step2Title": "Χρησιμοποίησε τη διεύθυνσή μας",
+      "step2Desc": "Στείλε τις online αγορές σου στην ασφαλή διεύθυνση του γραφείου μας στο λιμάνι της Κω.",
+      "step3Title": "Ενημερώσου",
+      "step3Desc": "Σε ειδοποιούμε μέσω WhatsApp μόλις το δέμα σου φτάσει με ασφάλεια.",
+      "step4Title": "Παράλαβε στην Κω",
+      "step4Desc": "Παράλαβε τα δέματά σου στο λιμάνι της Κω πριν επιστρέψεις στην Τουρκία."
     },
     "storage": {
       "title": "Επιλογές Αποθήκευσης",
@@ -1456,26 +1456,26 @@
       "successWhatsapp": "Πλήρωσε μέσω WhatsApp"
     },
     "trust": {
-      "title": "Why Trust TravelBeez?",
-      "intro": "Your packages are in safe hands at our Kos Port office",
-      "f1Title": "Physical Office",
-      "f1Desc": "Real office at Kos Port, G Averos 4",
-      "f2Title": "Staff-Controlled",
-      "f2Desc": "Professional team handles all packages",
-      "f3Title": "Camera Monitored",
-      "f3Desc": "24/7 security camera coverage",
-      "f4Title": "WhatsApp Updates",
-      "f4Desc": "Real-time delivery notifications",
-      "f5Title": "Turkish Support",
-      "f5Desc": "Full Turkish language support"
+      "title": "Γιατί να εμπιστευτείς την TravelBeez;",
+      "intro": "Τα δέματά σου είναι σε ασφαλή χέρια στο γραφείο μας στο λιμάνι της Κω",
+      "f1Title": "Φυσικό Γραφείο",
+      "f1Desc": "Πραγματικό γραφείο στο λιμάνι της Κω, Γ. Αβέρωφ 4",
+      "f2Title": "Ελεγχόμενο από Προσωπικό",
+      "f2Desc": "Επαγγελματική ομάδα διαχειρίζεται όλα τα δέματα",
+      "f3Title": "Παρακολούθηση με Κάμερα",
+      "f3Desc": "Κάλυψη με κάμερες ασφαλείας 24/7",
+      "f4Title": "Ενημερώσεις WhatsApp",
+      "f4Desc": "Ειδοποιήσεις παράδοσης σε πραγματικό χρόνο",
+      "f5Title": "Υποστήριξη στα Τουρκικά",
+      "f5Desc": "Πλήρης υποστήριξη στην τουρκική γλώσσα"
     },
     "notice": {
-      "title": "Important Notice",
-      "body": "Customers are responsible for customs duties, taxes, product legality, and all import/export regulations. TravelBeez provides address, storage, and handover services only. We do not inspect package contents and cannot be held responsible for the nature of items shipped. Please ensure your purchases comply with both Greek and Turkish customs regulations."
+      "title": "Σημαντική Ειδοποίηση",
+      "body": "Οι πελάτες είναι υπεύθυνοι για τους δασμούς, τους φόρους, τη νομιμότητα των προϊόντων και όλους τους κανονισμούς εισαγωγής/εξαγωγής. Η TravelBeez παρέχει μόνο υπηρεσίες διεύθυνσης, αποθήκευσης και παράδοσης. Δεν ελέγχουμε το περιεχόμενο των δεμάτων και δεν φέρουμε ευθύνη για τη φύση των αντικειμένων που αποστέλλονται. Βεβαιώσου ότι οι αγορές σου συμμορφώνονται με τους τελωνειακούς κανονισμούς της Ελλάδας και της Τουρκίας."
     },
     "cta": {
-      "title": "Ready to Start?",
-      "subtitle": "Contact us on WhatsApp to reserve your package slot or ask any questions. We respond in Turkish!"
+      "title": "Έτοιμος να ξεκινήσεις;",
+      "subtitle": "Επικοινώνησε μαζί μας στο WhatsApp για να κρατήσεις τη θέση δέματος ή για οποιαδήποτε ερώτηση. Απαντάμε στα τουρκικά!"
     }
   },
 
