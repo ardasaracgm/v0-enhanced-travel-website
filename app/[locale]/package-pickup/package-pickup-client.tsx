@@ -5,6 +5,12 @@ import Image from 'next/image'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 import { buildWhatsAppLink } from '@/lib/contact'
+import {
+  PACKAGE_BOX_RATES_EUR,
+  PACKAGE_BOX_SIZES,
+  PACKAGE_BOX_FREE_MONTHS,
+  type PackageBoxSize,
+} from '@/lib/package-box-rates'
 import { motion } from 'framer-motion'
 import {
   Package,
@@ -18,7 +24,6 @@ import {
   Users,
   Clock,
   Box,
-  Calendar,
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react'
@@ -30,13 +35,24 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-const storageOptions = [
-  { id: 'small', price: '5', periodKey: 'perDay', icon: <Box className="h-6 w-6" /> },
-  { id: 'medium', price: '8', periodKey: 'perDay', icon: <Box className="h-7 w-7" />, popular: true },
-  { id: 'large', price: '12', periodKey: 'perDay', icon: <Box className="h-8 w-8" /> },
-  { id: 'bag', price: '5', periodKey: 'perDay', icon: <Package className="h-6 w-6" /> },
-  { id: 'monthly', price: '50', periodKey: 'perMonth', icon: <Calendar className="h-6 w-6" /> },
-]
+// Ölçüler kos-box.com referansından alındı; kendi kutu ölçülerimizle ofis
+// teyidi BEKLİYOR. cm/L evrensel → i18n'de değil kodda (luggage dims deseni).
+const BOX_DIMS: Record<PackageBoxSize, string> = {
+  xs: '30×25×15 cm · 11 L',
+  s: '30×30×30 cm · 36 L',
+  m: '40×40×30 cm · 60 L',
+  l: '60×40×40 cm · 96 L',
+  xl: '70×50×40 cm · 140 L',
+}
+
+// Fiyat lib/package-box-rates.ts'ten (tek kaynak) — hepsi AYLIK.
+const storageOptions = PACKAGE_BOX_SIZES.map((size) => ({
+  id: size,
+  price: PACKAGE_BOX_RATES_EUR[size],
+  dims: BOX_DIMS[size],
+  popular: size === 'm',
+  icon: <Box className="h-7 w-7" />,
+}))
 
 const howItWorks = [
   { step: 1, icon: <MessageCircle className="h-6 w-6" /> },
@@ -182,15 +198,29 @@ export default function PackagePickupClient() {
                         {option.icon}
                       </div>
                       <h3 className="font-semibold text-foreground mb-1">{t(`storage.${option.id}Name`)}</h3>
+                      <p className="text-xs text-muted-foreground">{option.dims}</p>
                       <p className="text-xs text-muted-foreground mb-4">{t(`storage.${option.id}Desc`)}</p>
                       <div className="text-2xl font-bold text-primary">
                         &euro;{option.price}
-                        <span className="text-sm font-normal text-muted-foreground ml-1">{t(`storage.${option.periodKey}`)}</span>
+                        <span className="text-sm font-normal text-muted-foreground ml-1">{t('storage.perMonth')}</span>
                       </div>
                     </CardContent>
                   </Card>
                 </motion.div>
               ))}
+            </div>
+            {/* Ücretsiz-ay rozeti — rakamlar PACKAGE_BOX_FREE_MONTHS'tan TÜRER (hardcode yok) */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm">
+              {[...PACKAGE_BOX_FREE_MONTHS]
+                .sort((a, b) => a.minMonths - b.minMonths)
+                .map((tier, i) => (
+                  <React.Fragment key={tier.minMonths}>
+                    {i > 0 && <span className="text-muted-foreground">·</span>}
+                    <span className="font-medium text-primary">
+                      {t('storage.freeMonths', { rent: tier.minMonths, free: tier.freeMonths })}
+                    </span>
+                  </React.Fragment>
+                ))}
             </div>
           </div>
         </section>

@@ -4,6 +4,7 @@ import {
   PACKAGE_BOX_RATES_EUR,
   PACKAGE_BOX_MIN_MONTHS,
   PACKAGE_BOX_MAX_MONTHS,
+  packageBoxFreeMonths,
   type PackageBoxSize,
 } from '@/lib/package-box-rates'
 
@@ -25,9 +26,10 @@ function assertValidSize(size: string): asserts size is PackageBoxSize {
 }
 
 /**
- * Kutu kirası toplam fiyatı (cents) — flat aylık: months × aylık tarife.
- * months 1..12 tam sayı. Geçersizde RangeError (çağıran try/catch ile
- * { ok:false }'a çevirir — luggage deseni).
+ * Kutu kirası toplam fiyatı (cents) — flat aylık, ÜCRETSİZ-AY indirimli:
+ * billableMonths = months − hediye ay; total = billableMonths × aylık tarife.
+ * months 1..12 tam sayı. İndirim tam ay olduğundan cents kayıpsız. Geçersizde
+ * RangeError (çağıran try/catch ile { ok:false }'a çevirir — luggage deseni).
  */
 export function calculatePackageBoxTotalCents(size: string, months: number): number {
   assertValidSize(size)
@@ -40,7 +42,15 @@ export function calculatePackageBoxTotalCents(size: string, months: number): num
       `package-box: months must be an integer in ${PACKAGE_BOX_MIN_MONTHS}..${PACKAGE_BOX_MAX_MONTHS}, got ${months}`,
     )
   }
-  return months * PACKAGE_BOX_MONTHLY_RATES_CENTS[size]
+  const billableMonths = months - packageBoxFreeMonths(months)
+  // Guard: en az 1 ödenen ay. months≥1 + eşik tablosu (minMonths hep
+  // freeMonths'tan büyük) buna asla aykırı düşmez; yine de assert.
+  if (billableMonths < 1) {
+    throw new RangeError(
+      `package-box: billableMonths must be >= 1, got ${billableMonths} (months=${months})`,
+    )
+  }
+  return billableMonths * PACKAGE_BOX_MONTHLY_RATES_CENTS[size]
 }
 
 /**

@@ -20,6 +20,7 @@ import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
 import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
 import { calculatePackageBoxTotalCents, packageBoxEndDate } from '@/lib/package-box-pricing'
+import { packageBoxFreeMonths } from '@/lib/package-box-rates'
 import type {
   ResolvedTripItem,
   FerryResolveCtx,
@@ -217,6 +218,8 @@ export function resolvePackageBoxItem(ctx: PackageBoxResolveCtx): ResolvedTripIt
   const { item } = ctx
   const totalCents = calculatePackageBoxTotalCents(item.size, item.months)
   const endDate = packageBoxEndDate(item.startDate, item.months)
+  const freeMonths = packageBoxFreeMonths(item.months)
+  const billableMonths = item.months - freeMonths
   return {
     type: 'package_pickup',
     title: `Package box — ${item.size.toUpperCase()} (${item.months} ${item.months === 1 ? 'month' : 'months'})`,
@@ -228,6 +231,8 @@ export function resolvePackageBoxItem(ctx: PackageBoxResolveCtx): ResolvedTripIt
     metadata: {
       box_size: item.size,
       months: item.months,
+      free_months: freeMonths,
+      billable_months: billableMonths,
       start_date: item.startDate,
       end_date: endDate,
       location: item.location,
