@@ -149,6 +149,22 @@ export interface LuggageResolveCtx {
   item: LuggageSubmitItem
 }
 
+// Package box (Kos kutu kirası) — STANDALONE satış, cart/registry'de DEĞİL.
+// package_pickup PlannedItemType'ta kalır; submit action resolver'ı doğrudan
+// çağırır (luggage standalone deseni). Bu yüzden SubmitItem/ResolveCtx
+// union'larına EKLENMEZ — registry exhaustiveness'i bilinçli olarak es geçilir.
+export interface PackageBoxSubmitItem {
+  type: 'package_pickup'
+  size: string // PackageBoxSize; pricing katmanı doğrular
+  months: number
+  startDate: string // YYYY-MM-DD
+  location: string
+}
+
+export interface PackageBoxResolveCtx {
+  item: PackageBoxSubmitItem
+}
+
 export interface InsuranceResolveCtx {
   item: InsuranceSubmitItem
   /** Otoriter fiyat — getInsuranceQuote'tan (A0: mock 0). I/O call site'ta. */

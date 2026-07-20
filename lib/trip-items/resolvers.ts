@@ -19,6 +19,7 @@ import { portTimezone, zonedDateTime } from '@/lib/ferry/timezone'
 import { calculateLuggageTotalCents } from '@/lib/luggage-pricing'
 import { calculateTransferTotalCents } from '@/lib/transfer-pricing'
 import { TRANSFER_REGIONS } from '@/lib/transfer-rates'
+import { calculatePackageBoxTotalCents, packageBoxEndDate } from '@/lib/package-box-pricing'
 import type {
   ResolvedTripItem,
   FerryResolveCtx,
@@ -26,6 +27,7 @@ import type {
   LuggageResolveCtx,
   InsuranceResolveCtx,
   TransferResolveCtx,
+  PackageBoxResolveCtx,
 } from './types'
 
 export function resolveFerryItem(ctx: FerryResolveCtx): ResolvedTripItem {
@@ -197,6 +199,38 @@ export function resolveTransferItem(ctx: TransferResolveCtx): ResolvedTripItem {
       dropoff_location: routeLabel,
       total_cents: totalCents,
       ...(item.passengerCount ? { passenger_count_info: item.passengerCount } : {}),
+    },
+  }
+}
+
+/**
+ * Package box (Kos kutu kirası) — STANDALONE. Fiyat flat aylık
+ * (calculatePackageBoxTotalCents), bitiş takvim-ayı (packageBoxEndDate).
+ * İkisi de RangeError fırlatır → caller (submit action) 'invalid_package_box'a
+ * çevirir. Client fiyatı yok sayılır (luggage deseni). scheduledAt/endsAt saat
+ * kısmı 'Z' (UTC): Kos Atina EET/EEST'te, kira 1-12 ay DST sınırını geçer;
+ * tüketiciler (get-dashboard-data zonedDate, formatLocalDay) bunu Atina
+ * zonunda okur, Atina UTC'nin doğusunda → UTC-gece-yarısı yıl boyu aynı gün.
+ * Sabit +03:00 kışın günü kaydırırdı. Asıl kaynak metadata.start_date/end_date.
+ */
+export function resolvePackageBoxItem(ctx: PackageBoxResolveCtx): ResolvedTripItem {
+  const { item } = ctx
+  const totalCents = calculatePackageBoxTotalCents(item.size, item.months)
+  const endDate = packageBoxEndDate(item.startDate, item.months)
+  return {
+    type: 'package_pickup',
+    title: `Package box — ${item.size.toUpperCase()} (${item.months} ${item.months === 1 ? 'month' : 'months'})`,
+    scheduledAt: `${item.startDate}T00:00:00Z`,
+    endsAt: `${endDate}T00:00:00Z`,
+    passengerCount: 1,
+    priceAmount: totalCents / 100, // tarifeler tam euro → bölme kayıpsız
+    priceCurrency: 'EUR',
+    metadata: {
+      box_size: item.size,
+      months: item.months,
+      start_date: item.startDate,
+      end_date: endDate,
+      location: item.location,
     },
   }
 }
