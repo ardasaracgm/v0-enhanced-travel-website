@@ -107,11 +107,52 @@ const notifyTransferOperatorEffect: ConfirmSideEffect = async (_supabase, tripId
   }
 }
 
+/**
+ * Package box kutu numarası atama. Self-gating (package_pickup item yoksa
+ * no-op), non-fatal (log, throw yok — confirmTrip'i kırma). İdempotency DB
+ * fonksiyonundaki claim UPDATE'te (WHERE package_box_number IS NULL) → confirmTrip
+ * 3 yoldan (webhook/heal/admin) her çağrıda koşsa da tek atama. nextval JS
+ * builder'dan set edilemez → claim atomik kalsın diye DB fonksiyonu (rpc).
+ * CONFIRM_SIDE_EFFECTS'te claimAndSendPaidEmail'DEN ÖNCE koşar → kutu no paid
+ * mailine girebilir (K4b adres bloğu).
+ */
+const assignBoxNumberEffect: ConfirmSideEffect = async (supabase, tripId) => {
+  const { data: items, error: itemsErr } = await supabase
+    .from('trip_items')
+    .select('metadata')
+    .eq('trip_id', tripId)
+    .eq('item_type', 'package_pickup')
+    .limit(1)
+
+  if (itemsErr) {
+    console.error(`[confirmTrip] box-number: trip_items read failed for trip ${tripId}: ${itemsErr.message}`)
+    return
+  }
+  if (!items?.length) return // package_pickup yok → skip (self-gating)
+
+  const boxSize = (items[0].metadata as { box_size?: string } | null)?.box_size
+  if (!boxSize) {
+    console.error(`[confirmTrip] box-number: box_size missing in metadata for trip ${tripId}`)
+    return
+  }
+
+  const { data, error } = await supabase.rpc('assign_package_box_number', {
+    p_trip_id: tripId,
+    p_box_size: boxSize,
+  })
+  if (error) {
+    console.error(`[confirmTrip] box-number: assign rpc failed for trip ${tripId}: ${error.message}`)
+    return
+  }
+  if (!data) console.error(`[confirmTrip] box-number: rpc returned null for trip ${tripId}`)
+}
+
 const CONFIRM_SIDE_EFFECTS: ConfirmSideEffect[] = [
   confirmCarBookings,
   issuePolicyEffect,
   reserveFerryEffect,
   notifyTransferOperatorEffect,
+  assignBoxNumberEffect,
 ]
 
 /**
