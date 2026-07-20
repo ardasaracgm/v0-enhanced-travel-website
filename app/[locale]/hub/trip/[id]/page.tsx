@@ -5,6 +5,7 @@ import { Ship, Users, Ticket, CheckCircle2, Clock, AlertCircle, Download } from 
 
 import { createSupabaseServerClient } from '@/lib/supabase-ssr'
 import { getMyTripById } from '@/lib/hub/get-my-trip-by-id'
+import { PackageBoxAddressCard } from '@/components/hub/package-box-address-card'
 import { formatDay, formatLocalDay, formatFerryDay } from '@/lib/dates/display'
 import { buildWhatsAppLink, buildPaymentMessage } from '@/lib/contact'
 import { Badge } from '@/components/ui/badge'
@@ -196,6 +197,9 @@ export default async function HubTripDetailPage({
                 </div>
               </div>
             )}
+
+            {/* Package box — Kos teslim adresi (kutu no atanmışsa = confirmed package trip) */}
+            {trip.boxNumber && <PackageBoxAddressCard boxNumber={trip.boxNumber} />}
 
             {/* Passengers — hidden when the trip has none (luggage-only / transfer-only) */}
             {trip.passengers.length > 0 && (

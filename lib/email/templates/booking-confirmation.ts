@@ -99,6 +99,10 @@ const T: Record<Locale, Record<string, string>> = {
       'TravelBeez · FerryBee Travel IKE · Kos Port, Greece · Licensed by the Greek Ministry of Tourism (MH.T.E.)',
     contactLine: `Questions? WhatsApp ${getWhatsAppDisplay('en')} or call ${getLandline().display}`,
     pickupAddressHeading: 'Package Pickup Address',
+    // ⚠️ boxWarning (tüm diller) hub.tripDetail.boxWarning (messages/*.json) ile
+    // AYNI metni taşır — biri değişirse İKİSİ güncellenir. Mail next-intl
+    // kullanamaz (ayrı dünya) → senkron elle; JSON tarafı yorum tutamaz, not
+    // orada tüketicide (components/hub/package-box-address-card.tsx).
     boxWarning:
       'Use this address exactly as shown — the box number is on the recipient line. Without it we match by name and delivery may be delayed.',
   },

@@ -40,6 +40,7 @@ export interface HubTripDetail {
   passengers: HubTripPassenger[]
   ferryVouchers: VoucherSection[]  // Dentur-style Voucher No + PNR sections
   ferryReserveFailed: boolean      // any ferry leg whose provider reserve failed
+  boxNumber: string | null         // package_box_number (035) — package box teslim kartı
 }
 
 /**
@@ -59,7 +60,7 @@ export async function getMyTripById(id: string, email: string): Promise<HubTripD
   const supabase = getSupabaseAdmin()
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, reference, state, total_amount, currency, created_at, confirmed_at, contact_email, contact_phone')
+    .select('id, reference, state, total_amount, currency, created_at, confirmed_at, contact_email, contact_phone, package_box_number')
     .eq('id', id)
     .maybeSingle()
 
@@ -133,5 +134,6 @@ export async function getMyTripById(id: string, email: string): Promise<HubTripD
     passengers,
     ferryVouchers,
     ferryReserveFailed,
+    boxNumber: (trip.package_box_number as string | null) ?? null,
   }
 }
