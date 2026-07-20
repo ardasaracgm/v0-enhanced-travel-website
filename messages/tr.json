@@ -339,6 +339,7 @@
       "car_rental": "Araç Kiralamalarım",
       "visa": "Vize İşlemlerim",
       "insurance": "Sigortalarım",
+      "package_pickup": "Paket Teslimlerim",
       "companions": "Seyahat Arkadaşlarım",
       "payments": "Ödemelerim",
       "messages": "Mesajlarım",
@@ -357,7 +358,7 @@
       "tour": "Turlar",
       "hotel": "Oteller",
       "transfer": "Transferler",
-      "package_pickup": "Koli Teslim",
+      "package_pickup": "Paket Teslim",
       "insurance": "Sigorta",
       "esim": "eSIM",
       "luggage": "Bagaj",
@@ -469,6 +470,14 @@
       "large": "büyük",
       "dropOff": "Bırakma",
       "pickup": "Alma"
+    },
+    "packagePickupPage": {
+      "title": "Paket Teslimlerim",
+      "noPackages": "{email} için paket teslim rezervasyonu bulunamadı.",
+      "back": "← Hub",
+      "boxNumber": "Kutu No",
+      "size": "Boyut",
+      "duration": "{count} ay"
     },
     "tripDetail": {
       "back": "← Hub",

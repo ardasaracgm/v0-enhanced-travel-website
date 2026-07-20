@@ -339,6 +339,7 @@
       "car_rental": "Οι Ενοικιάσεις μου",
       "visa": "Οι Αιτήσεις Βίζας μου",
       "insurance": "Οι Ασφαλίσεις μου",
+      "package_pickup": "Οι Παραλαβές Δεμάτων μου",
       "companions": "Συνταξιδιώτες",
       "payments": "Οι Πληρωμές μου",
       "messages": "Τα Μηνύματά μου",
@@ -469,6 +470,14 @@
       "large": "μεγάλη",
       "dropOff": "Παράδοση",
       "pickup": "Παραλαβή"
+    },
+    "packagePickupPage": {
+      "title": "Παραλαβές Δεμάτων",
+      "noPackages": "Δεν βρέθηκαν παραλαβές δεμάτων για {email}.",
+      "back": "← Hub",
+      "boxNumber": "Αρ. Κουτιού",
+      "size": "Μέγεθος",
+      "duration": "{count, plural, one {# μήνας} other {# μήνες}}"
     },
     "tripDetail": {
       "back": "← Hub",

@@ -339,6 +339,7 @@
       "car_rental": "My Car Rentals",
       "visa": "My Visa Applications",
       "insurance": "My Insurance",
+      "package_pickup": "My Package Pickups",
       "companions": "Travel Companions",
       "payments": "My Payments",
       "messages": "My Messages",
@@ -469,6 +470,14 @@
       "large": "large",
       "dropOff": "Drop-off",
       "pickup": "Pick-up"
+    },
+    "packagePickupPage": {
+      "title": "Package Pickups",
+      "noPackages": "No package pickups found for {email}.",
+      "back": "← Hub",
+      "boxNumber": "Box No",
+      "size": "Size",
+      "duration": "{count, plural, one {# month} other {# months}}"
     },
     "tripDetail": {
       "back": "← Hub",

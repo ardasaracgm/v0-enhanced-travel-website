@@ -14,7 +14,7 @@ import { Link, usePathname, useRouter } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
 import {
   Home, CalendarCheck, Ship, Car, FileCheck, ShieldCheck,
-  Users, CreditCard, MessageSquare, UserCircle, LogOut,
+  Users, CreditCard, MessageSquare, UserCircle, LogOut, Package,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -34,6 +34,7 @@ const NAV: NavItem[] = [
   { key: 'car_rental',   icon: Car,           href: '/hub/car-rental' },
   { key: 'visa',         icon: FileCheck,     href: '/hub/visa' },
   { key: 'insurance',    icon: ShieldCheck,   href: '/hub/insurance' },
+  { key: 'package_pickup', icon: Package,     href: '/hub/package-pickup' },
   { key: 'companions',   icon: Users,         href: '/hub/companions' },
   { key: 'payments',     icon: CreditCard,    href: '/hub/payments' },
   { key: 'messages',     icon: MessageSquare /* coming soon */ },
