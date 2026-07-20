@@ -39,3 +39,15 @@ export function packageBoxFreeMonths(months: number): number {
   }
   return 0
 }
+
+// Kutu iç ölçüleri (universal cm/L; luggage dims deseni — i18n'de DEĞİL kodda).
+// İki tüketici: storage kartları + rezervasyon wizard'ı → tek kaynak burası.
+// TODO: Ölçüler kos-box.com referansından alındı; kendi kutu ölçülerimizle
+// ofis teyidi BEKLİYOR.
+export const PACKAGE_BOX_DIMS: Record<PackageBoxSize, string> = {
+  xs: '30×25×15 cm · 11 L',
+  s: '30×30×30 cm · 36 L',
+  m: '40×40×30 cm · 60 L',
+  l: '60×40×40 cm · 96 L',
+  xl: '70×50×40 cm · 140 L',
+}

@@ -9,8 +9,9 @@ import {
   PACKAGE_BOX_RATES_EUR,
   PACKAGE_BOX_SIZES,
   PACKAGE_BOX_FREE_MONTHS,
-  type PackageBoxSize,
+  PACKAGE_BOX_DIMS,
 } from '@/lib/package-box-rates'
+import { PackageBoxWizard } from './package-box-wizard'
 import { motion } from 'framer-motion'
 import {
   Package,
@@ -35,21 +36,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-// Ölçüler kos-box.com referansından alındı; kendi kutu ölçülerimizle ofis
-// teyidi BEKLİYOR. cm/L evrensel → i18n'de değil kodda (luggage dims deseni).
-const BOX_DIMS: Record<PackageBoxSize, string> = {
-  xs: '30×25×15 cm · 11 L',
-  s: '30×30×30 cm · 36 L',
-  m: '40×40×30 cm · 60 L',
-  l: '60×40×40 cm · 96 L',
-  xl: '70×50×40 cm · 140 L',
-}
-
-// Fiyat lib/package-box-rates.ts'ten (tek kaynak) — hepsi AYLIK.
+// Fiyat + ölçüler lib/package-box-rates.ts'ten (tek kaynak). Hepsi AYLIK.
 const storageOptions = PACKAGE_BOX_SIZES.map((size) => ({
   id: size,
   price: PACKAGE_BOX_RATES_EUR[size],
-  dims: BOX_DIMS[size],
+  dims: PACKAGE_BOX_DIMS[size],
   popular: size === 'm',
   icon: <Box className="h-7 w-7" />,
 }))
@@ -122,10 +113,18 @@ export default function PackagePickupClient() {
                 transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row gap-4"
               >
-                <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
+                {/* Birincil satış CTA → wizard'a kaydırır (#reserve) */}
+                <a href="#reserve">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                    <MessageCircle className="h-5 w-5" />
+                    <Package className="h-5 w-5" />
                     {t('hero.ctaReserve')}
+                  </Button>
+                </a>
+                {/* WhatsApp — ikincil kanal */}
+                <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
+                  <Button size="lg" variant="outline" className="gap-2">
+                    <MessageCircle className="h-5 w-5" />
+                    {tWa('buttonLong')}
                   </Button>
                 </Link>
               </motion.div>
@@ -225,6 +224,18 @@ export default function PackagePickupClient() {
           </div>
         </section>
 
+        {/* Reserve / satış akışı — wizard */}
+        <section id="reserve" className="w-full py-16 md:py-24 bg-secondary/30">
+          <div className="container px-4 md:px-6">
+            <div className="mx-auto mb-8 max-w-2xl text-center">
+              <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-amber-600">{t('reserve.eyebrow')}</p>
+              <h2 className="mb-3 text-3xl font-bold text-blue-950 md:text-4xl">{t('reserve.title')}</h2>
+              <p className="text-lg text-muted-foreground">{t('reserve.subtitle')}</p>
+            </div>
+            <PackageBoxWizard />
+          </div>
+        </section>
+
         {/* Trust Section */}
         <section className="w-full py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/30">
           <div className="container px-4 md:px-6">
@@ -286,13 +297,23 @@ export default function PackagePickupClient() {
               <p className="text-primary-foreground/80 mb-8">
                 {t('cta.subtitle')}
               </p>
-              <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
-                <Button size="lg" variant="secondary" className="gap-2">
-                  <MessageCircle className="h-5 w-5" />
-                  {tWa('buttonLong')}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {/* Birincil → wizard */}
+                <a href="#reserve">
+                  <Button size="lg" variant="secondary" className="gap-2">
+                    <Package className="h-5 w-5" />
+                    {t('hero.ctaReserve')}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </a>
+                {/* WhatsApp — ikincil */}
+                <Link href={buildWhatsAppLink(locale, 'Merhaba, paket teslim hizmeti hakkında bilgi almak istiyorum')} target="_blank">
+                  <Button size="lg" variant="secondary" className="gap-2 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">
+                    <MessageCircle className="h-5 w-5" />
+                    {tWa('buttonLong')}
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
