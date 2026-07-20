@@ -80,7 +80,7 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
     .update({ confirmation_email_sent_at: new Date().toISOString() })
     .eq('id', tripId)
     .is('confirmation_email_sent_at', null)
-    .select('reference, contact_email, contact_phone, total_amount, currency, locale')
+    .select('reference, contact_email, contact_phone, total_amount, currency, locale, package_box_number')
     .maybeSingle()
 
   if (claimErr) {
@@ -174,6 +174,7 @@ export async function claimAndSendPaidEmail(tripId: string): Promise<void> {
         }
       }),
       ferryVouchers,
+      packageBoxNumber: claimed.package_box_number,
       paymentWhatsAppUrl: '', // unused on the paid path (no WhatsApp CTA rendered)
     }, attachments)
   } catch (emailErr) {

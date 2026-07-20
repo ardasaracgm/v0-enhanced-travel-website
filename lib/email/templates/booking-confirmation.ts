@@ -16,6 +16,7 @@
 
 import type { Locale } from '@/lib/notifications/whatsapp-link'
 import { getWhatsAppDisplay, getLandline } from '@/lib/contact'
+import { buildPackageBoxAddressBlock } from '@/lib/package-box-address'
 
 export interface BookingEmailData {
   reference: string
@@ -62,6 +63,11 @@ export interface BookingEmailData {
    * the existing "awaiting payment" + WhatsApp-CTA flow is used unchanged.
    */
   paid?: boolean
+  /**
+   * Package box path — assignBoxNumberEffect atadıysa KOS-{SIZE}-{n}. Varsa Kos
+   * teslim adresi bloğu render edilir (PAID mail; pending'de henüz atanmamıştır).
+   */
+  packageBoxNumber?: string | null
 }
 
 const T: Record<Locale, Record<string, string>> = {
@@ -92,6 +98,9 @@ const T: Record<Locale, Record<string, string>> = {
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Port, Greece · Licensed by the Greek Ministry of Tourism (MH.T.E.)',
     contactLine: `Questions? WhatsApp ${getWhatsAppDisplay('en')} or call ${getLandline().display}`,
+    pickupAddressHeading: 'Package Pickup Address',
+    boxWarning:
+      'Use this address exactly as shown — the box number is on the recipient line. Without it we match by name and delivery may be delayed.',
   },
   tr: {
     subject: 'TravelBeez rezervasyon onayınız',
@@ -120,6 +129,9 @@ const T: Record<Locale, Record<string, string>> = {
     footer:
       'TravelBeez · FerryBee Travel IKE · Kos Limanı, Yunanistan · Yunan Turizm Bakanlığı (MH.T.E.) lisanslı',
     contactLine: `Sorularınız? WhatsApp ${getWhatsAppDisplay('tr')} veya telefon ${getLandline().display}`,
+    pickupAddressHeading: 'Paket Teslim Adresi',
+    boxWarning:
+      'Bu adresi olduğu gibi kullanın — kutu numarası alıcı satırında yer alır. Numara olmadan gönderi ad-soyadla eşleştirilir ve teslim gecikebilir.',
   },
   el: {
     subject: 'Επιβεβαίωση κράτησης TravelBeez',
@@ -148,6 +160,9 @@ const T: Record<Locale, Record<string, string>> = {
     footer:
       'TravelBeez · FerryBee Travel ΙΚΕ · Λιμένας Κω, Ελλάδα · Αδειοδοτημένο από το Υπουργείο Τουρισμού (Μ.Η.Τ.Ε.)',
     contactLine: `Ερωτήσεις; WhatsApp ${getWhatsAppDisplay('el')} ή τηλ. ${getLandline().display}`,
+    pickupAddressHeading: 'Διεύθυνση Παραλαβής Δέματος',
+    boxWarning:
+      'Χρησιμοποίησε αυτή τη διεύθυνση όπως ακριβώς εμφανίζεται — ο αριθμός κουτιού είναι στη γραμμή παραλήπτη. Χωρίς αυτόν η αντιστοίχιση γίνεται με το όνομα και η παράδοση μπορεί να καθυστερήσει.',
   },
 }
 
@@ -221,6 +236,24 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
         </td></tr>`
       : ''
 
+  // Package box teslim adresi (paid path, kutu no atanmışsa). Monospace
+  // kopyalanabilir blok (Reference kutusu deseni) + tarif satırı (directionsEl,
+  // plainText'te YOK) + kopyala-yapıştır uyarısı. Adres gövdesi tek kaynaktan.
+  const packageBoxBlock = data.packageBoxNumber
+    ? (() => {
+        const a = buildPackageBoxAddressBlock(data.packageBoxNumber as string)
+        return `
+        <tr><td style="padding:0 32px 24px 32px;">
+          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:#0f172a;text-transform:uppercase;letter-spacing:0.5px;">${escape(t.pickupAddressHeading)}</h2>
+          <div style="background:#f1f5f9;border-radius:8px;padding:16px;">
+            <div style="font-family:monospace;font-size:14px;line-height:1.7;color:#0f172a;">${escape(a.plainText).replace(/\n/g, '<br>')}</div>
+          </div>
+          <p style="margin:10px 0 0 0;color:#64748b;font-size:13px;">${escape(a.directionsEl)}</p>
+          <p style="margin:8px 0 0 0;color:#b45309;font-size:13px;line-height:1.5;">${escape(t.boxWarning)}</p>
+        </td></tr>`
+      })()
+    : ''
+
   const html = `<!DOCTYPE html>
 <html lang="${data.locale}">
 <head>
@@ -273,6 +306,7 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
           </table>
         </td></tr>
         ${ferryVoucherBlock}
+        ${packageBoxBlock}
 
         <!-- Payment CTA (unpaid) / confirmation (paid) -->
         <tr><td style="padding:32px 32px 24px 32px;">
@@ -346,6 +380,12 @@ export function renderBookingConfirmationEmail(data: BookingEmailData): {
             ),
           ]),
         ]
+      : []),
+    ...(data.packageBoxNumber
+      ? (() => {
+          const a = buildPackageBoxAddressBlock(data.packageBoxNumber as string)
+          return ['', `${t.pickupAddressHeading}:`, a.plainText, a.directionsEl, t.boxWarning]
+        })()
       : []),
     '',
     payHeading,
