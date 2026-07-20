@@ -311,7 +311,8 @@
           "visa": "Belgeleri Gör",
           "insurance": "Poliçeyi Gör",
           "transfer": "Rezervasyonu Gör",
-          "luggage": "Rezervasyonu Gör"
+          "luggage": "Rezervasyonu Gör",
+          "package_pickup": "Rezervasyonu Gör"
         }
       },
       "account": {

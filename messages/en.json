@@ -311,7 +311,8 @@
           "visa": "View Documents",
           "insurance": "View Policy",
           "transfer": "View Booking",
-          "luggage": "View Booking"
+          "luggage": "View Booking",
+          "package_pickup": "View Booking"
         }
       },
       "account": {

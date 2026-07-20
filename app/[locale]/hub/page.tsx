@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import {
   Ship, Car, FileCheck, ShieldCheck, UserCircle, Lock,
   ArrowRight, CalendarClock, Headphones, MapPin, BadgeCheck,
-  Clock, Users, ChevronRight, Luggage, Bus,
+  Clock, Users, ChevronRight, Luggage, Bus, Package,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -27,6 +27,7 @@ const TYPE_TONE: Record<HubDashboardRowType, { icon: LucideIcon; tint: string; i
   insurance:  { icon: ShieldCheck, tint: 'bg-violet-100',  ink: 'text-violet-600' },
   transfer:   { icon: Bus,         tint: 'bg-sky-100',     ink: 'text-sky-600' },
   luggage:    { icon: Luggage,     tint: 'bg-amber-100',   ink: 'text-amber-600' },
+  package_pickup: { icon: Package, tint: 'bg-teal-100',    ink: 'text-teal-600' },
 }
 
 const SUMMARY: Array<{ key: HubDashboardCard; href: string }> = [

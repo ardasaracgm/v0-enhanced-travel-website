@@ -21,7 +21,7 @@ const LISTED_STATES: TripState[] = [...OWNED_STATES, 'pending_payment']
 const PAST_STATES: TripState[] = [...OWNED_STATES, 'completed']
 
 export type HubDashboardCard = 'ferry' | 'car_rental' | 'visa' | 'insurance'
-export type HubDashboardRowType = HubDashboardCard | 'transfer' | 'luggage'
+export type HubDashboardRowType = HubDashboardCard | 'transfer' | 'luggage' | 'package_pickup'
 
 export interface HubDashboardRow {
   key: string
@@ -186,7 +186,7 @@ export async function getDashboardData(email: string): Promise<HubDashboardData>
 }
 
 const CARDS: HubDashboardCard[] = ['ferry', 'car_rental', 'visa', 'insurance']
-const ROW_TYPES: HubDashboardRowType[] = [...CARDS, 'transfer', 'luggage']
+const ROW_TYPES: HubDashboardRowType[] = [...CARDS, 'transfer', 'luggage', 'package_pickup']
 
 const isCard = (t: HubDashboardRowType): t is HubDashboardCard => (CARDS as string[]).includes(t)
 const isRowType = (t: string): t is HubDashboardRowType => (ROW_TYPES as string[]).includes(t)
