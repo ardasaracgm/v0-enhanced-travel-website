@@ -25,7 +25,7 @@ export const ENTRY_POINTS     = ['kos', 'kalymnos', 'rhodos'] as const
 // NOT in lockstep with the DB CHECK (033), which also still accepts the retired
 // 'ferry_san_nicolas' / 'catamaran_seastar' so historical rows stay readable.
 // "Storable" (VisaVesselType in lib/supabase.ts) is a superset of "offerable".
-export const VESSEL_TYPES      = ['ferry_tilos'] as const
+export const VESSEL_TYPES      = ['ferry_tilos', 'ferry_dentur'] as const
 export const GENDERS           = ['male', 'female'] as const
 export const MARITAL_STATUSES  = ['single', 'married', 'separated', 'divorced', 'widowed'] as const
 export const DOC_TYPES         = ['normal', 'diplomatic', 'service', 'official', 'special'] as const

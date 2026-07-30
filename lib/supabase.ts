@@ -467,10 +467,10 @@ export type VisaApplicationState =
   | 'rejected'
 
 export type VisaEntryPoint    = 'kos' | 'kalymnos' | 'rhodos'
-// Everything the column can hold (DB CHECK, migration 033) — a superset of what
-// the form offers today (VESSEL_TYPES in lib/validation/visa.ts = ferry_tilos).
-// The first two are retired but still present on pre-033 rows.
-export type VisaVesselType     = 'ferry_san_nicolas' | 'catamaran_seastar' | 'ferry_tilos'
+// Everything the column can hold (DB CHECK, migration 036) — a superset of what
+// the form offers today (VESSEL_TYPES in lib/validation/visa.ts = ferry_tilos, ferry_dentur).
+// The first two are the retired original 005 CHECK values, still present on pre-033 rows.
+export type VisaVesselType     = 'ferry_san_nicolas' | 'catamaran_seastar' | 'ferry_tilos' | 'ferry_dentur'
 export type VisaGender         = 'male' | 'female'
 export type VisaMaritalStatus  = 'single' | 'married' | 'separated' | 'divorced' | 'widowed'
 export type VisaDocType        = 'normal' | 'diplomatic' | 'service' | 'official' | 'special'
